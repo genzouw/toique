@@ -11,11 +11,13 @@ import Onboarding from './pages/Onboarding';
 import Forms from './pages/Forms';
 import FormEdit from './pages/FormEdit';
 import Submissions from './pages/Submissions';
+import Help from './pages/Help';
 
 export default function App() {
   return (
     <BrowserRouter>
       <Routes>
+        <Route path="/help" element={<Help />} />
         <Route
           path="/login"
           element={

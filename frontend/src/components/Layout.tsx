@@ -6,6 +6,8 @@ import {
   LogOut,
   FileText,
   Inbox,
+  HelpCircle,
+  ExternalLink,
 } from 'lucide-react';
 import { cn } from '../lib/utils';
 import { signOut, useSession } from '../lib/auth-client';
@@ -55,6 +57,16 @@ export default function Layout() {
               </NavLink>
             );
           })}
+          <a
+            href="/help"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-2 px-3 py-2 rounded-md text-sm text-slate-700 hover:bg-slate-100"
+          >
+            <HelpCircle size={16} />
+            ヘルプ
+            <ExternalLink size={12} className="ml-auto text-slate-400" />
+          </a>
         </nav>
         <div className="px-5 py-3 border-t border-slate-200">
           {session?.user && (
