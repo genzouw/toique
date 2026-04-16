@@ -1,11 +1,20 @@
 import { NavLink, Outlet, useNavigate } from 'react-router';
-import { MessageSquare, Plug, LayoutDashboard, LogOut } from 'lucide-react';
+import {
+  MessageSquare,
+  Plug,
+  LayoutDashboard,
+  LogOut,
+  FileText,
+  Inbox,
+} from 'lucide-react';
 import { cn } from '../lib/utils';
 import { signOut, useSession } from '../lib/auth-client';
 
 const navItems = [
   { to: '/dashboard', label: 'ダッシュボード', icon: LayoutDashboard },
   { to: '/channels', label: 'LINEチャネル', icon: Plug },
+  { to: '/forms', label: 'フォーム', icon: FileText },
+  { to: '/submissions', label: '問い合わせ', icon: Inbox },
   { to: '/messages', label: '受信メッセージ', icon: MessageSquare },
 ];
 

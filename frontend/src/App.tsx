@@ -8,6 +8,8 @@ import Messages from './pages/Messages';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
 import Onboarding from './pages/Onboarding';
+import Forms from './pages/Forms';
+import FormEdit from './pages/FormEdit';
 
 export default function App() {
   return (
@@ -47,6 +49,8 @@ export default function App() {
           <Route index element={<Navigate to="/dashboard" replace />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/channels" element={<Channels />} />
+          <Route path="/forms" element={<Forms />} />
+          <Route path="/forms/:id" element={<FormEdit />} />
           <Route path="/messages" element={<Messages />} />
         </Route>
       </Routes>

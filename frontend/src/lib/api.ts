@@ -51,6 +51,29 @@ export type OnboardingStatus = {
   } | null;
 };
 
+export type Form = {
+  id: string;
+  tenantId: string;
+  lineChannelId: string;
+  name: string;
+  status: 'draft' | 'published' | 'archived';
+  triggerKeyword: string | null;
+  schema: Record<string, unknown>;
+  version: number;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type Submission = {
+  id: string;
+  tenantId: string;
+  formId: string;
+  lineUserId: string;
+  answers: Record<string, unknown>;
+  status: 'new' | 'in_review' | 'done';
+  submittedAt: string;
+};
+
 export const api = {
   getOnboardingStatus: () => request<OnboardingStatus>('/api/v1/onboarding/me'),
   createTenant: (tenantName: string) =>
@@ -74,4 +97,33 @@ export const api = {
   deleteChannel: (id: string) =>
     request<void>(`/api/v1/line-channels/${id}`, { method: 'DELETE' }),
   listMessages: () => request<InboundMessage[]>('/api/v1/messages'),
+  listForms: () => request<Form[]>('/api/v1/forms'),
+  getForm: (id: string) => request<Form>(`/api/v1/forms/${id}`),
+  createForm: (input: {
+    name: string;
+    lineChannelId: string;
+    status?: string;
+    triggerKeyword?: string | null;
+    schema: Record<string, unknown>;
+  }) =>
+    request<Form>('/api/v1/forms', {
+      method: 'POST',
+      body: JSON.stringify(input),
+    }),
+  updateForm: (
+    id: string,
+    input: Partial<{
+      name: string;
+      status: string;
+      triggerKeyword: string | null;
+      schema: Record<string, unknown>;
+    }>,
+  ) =>
+    request<Form>(`/api/v1/forms/${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify(input),
+    }),
+  deleteForm: (id: string) =>
+    request<void>(`/api/v1/forms/${id}`, { method: 'DELETE' }),
+  listSubmissions: () => request<Submission[]>('/api/v1/submissions'),
 };
