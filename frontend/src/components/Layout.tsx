@@ -1,6 +1,7 @@
-import { NavLink, Outlet } from 'react-router';
-import { MessageSquare, Plug, LayoutDashboard } from 'lucide-react';
+import { NavLink, Outlet, useNavigate } from 'react-router';
+import { MessageSquare, Plug, LayoutDashboard, LogOut } from 'lucide-react';
 import { cn } from '../lib/utils';
+import { signOut, useSession } from '../lib/auth-client';
 
 const navItems = [
   { to: '/dashboard', label: 'ダッシュボード', icon: LayoutDashboard },
@@ -9,6 +10,14 @@ const navItems = [
 ];
 
 export default function Layout() {
+  const { data: session } = useSession();
+  const navigate = useNavigate();
+
+  async function handleSignOut() {
+    await signOut();
+    navigate('/login', { replace: true });
+  }
+
   return (
     <div className="flex h-full bg-slate-50">
       <aside className="w-60 border-r border-slate-200 bg-white flex flex-col">
@@ -38,8 +47,21 @@ export default function Layout() {
             );
           })}
         </nav>
-        <div className="px-5 py-3 text-xs text-slate-400 border-t border-slate-200">
-          v0.1.0 (Phase 2b)
+        <div className="px-5 py-3 border-t border-slate-200">
+          {session?.user && (
+            <>
+              <div className="text-xs text-slate-500 truncate">
+                {session.user.email}
+              </div>
+              <button
+                onClick={handleSignOut}
+                className="mt-2 w-full inline-flex items-center gap-2 px-2 py-1.5 text-xs text-slate-700 hover:bg-slate-100 rounded-md"
+              >
+                <LogOut size={12} />
+                ログアウト
+              </button>
+            </>
+          )}
         </div>
       </aside>
       <main className="flex-1 overflow-auto p-8">

@@ -5,6 +5,7 @@ const BASE_URL =
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const res = await fetch(`${BASE_URL}${path}`, {
     ...init,
+    credentials: 'include',
     headers: {
       'Content-Type': 'application/json',
       ...(init?.headers ?? {}),
@@ -20,6 +21,7 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
 
 export type LineChannel = {
   id: string;
+  tenantId: string;
   channelId: string;
   channelSecret: string;
   channelAccessToken: string;
@@ -39,7 +41,25 @@ export type InboundMessage = {
   receivedAt: string;
 };
 
+export type OnboardingStatus = {
+  user: { id: string; email: string; name: string };
+  tenant: {
+    id: string;
+    name: string;
+    plan: string;
+    role: string;
+  } | null;
+};
+
 export const api = {
+  getOnboardingStatus: () => request<OnboardingStatus>('/api/v1/onboarding/me'),
+  createTenant: (tenantName: string) =>
+    request<{
+      tenant: { id: string; name: string; plan: string; role: string };
+    }>('/api/v1/onboarding', {
+      method: 'POST',
+      body: JSON.stringify({ tenantName }),
+    }),
   listChannels: () => request<LineChannel[]>('/api/v1/line-channels'),
   createChannel: (input: {
     channelId: string;
