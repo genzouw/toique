@@ -20,7 +20,7 @@ services:
       context: ./backend
       target: dev
     ports:
-      - "3001:3000"
+      - "3000:3000"
     environment:
       DATABASE_URL: postgresql://toique:toique@db:5432/toique
       PORT: "3000"
