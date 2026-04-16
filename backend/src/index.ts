@@ -8,6 +8,8 @@ import lineWebhook from './routes/webhooks/line.js';
 import lineChannels from './routes/line-channels.js';
 import messages from './routes/messages.js';
 import onboarding from './routes/onboarding.js';
+import forms from './routes/forms.js';
+import submissions from './routes/submissions.js';
 
 const app = new Hono({ strict: false });
 
@@ -39,6 +41,12 @@ app.route('/api/v1/line-channels', lineChannels);
 
 app.use('/api/v1/messages/*', requireTenant);
 app.route('/api/v1/messages', messages);
+
+app.use('/api/v1/forms/*', requireTenant);
+app.route('/api/v1/forms', forms);
+
+app.use('/api/v1/submissions/*', requireTenant);
+app.route('/api/v1/submissions', submissions);
 
 const port = Number(process.env.PORT) || 3000;
 serve({ fetch: app.fetch, port }, () => {
