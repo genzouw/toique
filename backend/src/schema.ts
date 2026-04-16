@@ -8,9 +8,118 @@ import {
   unique,
 } from 'drizzle-orm/pg-core';
 
-// LINE公式アカウント (テナントが登録する)
+// -----------------------------
+// Better Auth core tables
+// -----------------------------
+export const users = pgTable('users', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  name: text('name').notNull(),
+  email: text('email').notNull().unique(),
+  emailVerified: boolean('email_verified').notNull().default(false),
+  image: text('image'),
+  createdAt: timestamp('created_at', { withTimezone: true })
+    .notNull()
+    .defaultNow(),
+  updatedAt: timestamp('updated_at', { withTimezone: true })
+    .notNull()
+    .defaultNow(),
+});
+
+export const sessions = pgTable('sessions', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
+  token: text('token').notNull().unique(),
+  createdAt: timestamp('created_at', { withTimezone: true })
+    .notNull()
+    .defaultNow(),
+  updatedAt: timestamp('updated_at', { withTimezone: true })
+    .notNull()
+    .defaultNow(),
+  ipAddress: text('ip_address'),
+  userAgent: text('user_agent'),
+  userId: uuid('user_id')
+    .notNull()
+    .references(() => users.id, { onDelete: 'cascade' }),
+});
+
+export const accounts = pgTable('accounts', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  accountId: text('account_id').notNull(),
+  providerId: text('provider_id').notNull(),
+  userId: uuid('user_id')
+    .notNull()
+    .references(() => users.id, { onDelete: 'cascade' }),
+  accessToken: text('access_token'),
+  refreshToken: text('refresh_token'),
+  idToken: text('id_token'),
+  accessTokenExpiresAt: timestamp('access_token_expires_at', {
+    withTimezone: true,
+  }),
+  refreshTokenExpiresAt: timestamp('refresh_token_expires_at', {
+    withTimezone: true,
+  }),
+  scope: text('scope'),
+  password: text('password'),
+  createdAt: timestamp('created_at', { withTimezone: true })
+    .notNull()
+    .defaultNow(),
+  updatedAt: timestamp('updated_at', { withTimezone: true })
+    .notNull()
+    .defaultNow(),
+});
+
+export const verifications = pgTable('verifications', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  identifier: text('identifier').notNull(),
+  value: text('value').notNull(),
+  expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
+  createdAt: timestamp('created_at', { withTimezone: true })
+    .notNull()
+    .defaultNow(),
+  updatedAt: timestamp('updated_at', { withTimezone: true })
+    .notNull()
+    .defaultNow(),
+});
+
+// -----------------------------
+// Tenancy
+// -----------------------------
+export const tenants = pgTable('tenants', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  name: text('name').notNull(),
+  plan: text('plan').notNull().default('free'),
+  createdAt: timestamp('created_at', { withTimezone: true })
+    .notNull()
+    .defaultNow(),
+});
+
+// Phase 2a では 1ユーザー = 1テナント (user_id に UNIQUE)
+export const tenantMembers = pgTable(
+  'tenant_members',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    tenantId: uuid('tenant_id')
+      .notNull()
+      .references(() => tenants.id, { onDelete: 'cascade' }),
+    userId: uuid('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    role: text('role').notNull().default('admin'), // admin / operator / viewer
+    createdAt: timestamp('created_at', { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (t) => [unique('tenant_members_user_id_key').on(t.userId)],
+);
+
+// -----------------------------
+// LINE domain (tenant-scoped)
+// -----------------------------
 export const lineChannels = pgTable('line_channels', {
   id: uuid('id').primaryKey().defaultRandom(),
+  tenantId: uuid('tenant_id')
+    .notNull()
+    .references(() => tenants.id, { onDelete: 'cascade' }),
   channelId: text('channel_id').notNull().unique(),
   channelSecret: text('channel_secret').notNull(),
   channelAccessToken: text('channel_access_token').notNull(),
@@ -21,7 +130,6 @@ export const lineChannels = pgTable('line_channels', {
     .defaultNow(),
 });
 
-// LINEユーザー (問い合わせ者)
 export const lineUsers = pgTable(
   'line_users',
   {
@@ -42,7 +150,6 @@ export const lineUsers = pgTable(
   (t) => [unique().on(t.lineChannelId, t.lineUserId)],
 );
 
-// 受信メッセージ (Phase 1 では汎用的にイベントを記録)
 export const inboundMessages = pgTable('inbound_messages', {
   id: uuid('id').primaryKey().defaultRandom(),
   lineChannelId: uuid('line_channel_id')
@@ -51,8 +158,8 @@ export const inboundMessages = pgTable('inbound_messages', {
   lineUserId: uuid('line_user_id').references(() => lineUsers.id, {
     onDelete: 'set null',
   }),
-  eventType: text('event_type').notNull(), // message / follow / unfollow / postback
-  messageType: text('message_type'), // text / image / video / etc
+  eventType: text('event_type').notNull(),
+  messageType: text('message_type'),
   text: text('text'),
   rawEvent: jsonb('raw_event').notNull(),
   receivedAt: timestamp('received_at', { withTimezone: true })
