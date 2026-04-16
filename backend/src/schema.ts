@@ -2,6 +2,7 @@ import {
   pgTable,
   uuid,
   text,
+  integer,
   boolean,
   timestamp,
   jsonb,
@@ -163,6 +164,72 @@ export const inboundMessages = pgTable('inbound_messages', {
   text: text('text'),
   rawEvent: jsonb('raw_event').notNull(),
   receivedAt: timestamp('received_at', { withTimezone: true })
+    .notNull()
+    .defaultNow(),
+});
+
+// -----------------------------
+// Forms (Phase 3)
+// -----------------------------
+export const forms = pgTable('forms', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  tenantId: uuid('tenant_id')
+    .notNull()
+    .references(() => tenants.id, { onDelete: 'cascade' }),
+  lineChannelId: uuid('line_channel_id')
+    .notNull()
+    .references(() => lineChannels.id, { onDelete: 'cascade' }),
+  name: text('name').notNull(),
+  status: text('status').notNull().default('draft'), // draft / published / archived
+  triggerKeyword: text('trigger_keyword'),
+  schema: jsonb('schema').notNull(),
+  version: integer('version').notNull().default(1),
+  createdAt: timestamp('created_at', { withTimezone: true })
+    .notNull()
+    .defaultNow(),
+  updatedAt: timestamp('updated_at', { withTimezone: true })
+    .notNull()
+    .defaultNow(),
+});
+
+export const lineSessions = pgTable(
+  'line_sessions',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    lineUserId: uuid('line_user_id')
+      .notNull()
+      .references(() => lineUsers.id, { onDelete: 'cascade' }),
+    formId: uuid('form_id')
+      .notNull()
+      .references(() => forms.id, { onDelete: 'cascade' }),
+    currentStep: text('current_step').notNull(),
+    answers: jsonb('answers').notNull().default({}),
+    status: text('status').notNull().default('in_progress'), // in_progress / completed / abandoned
+    startedAt: timestamp('started_at', { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    updatedAt: timestamp('updated_at', { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
+  },
+  (t) => [unique('line_sessions_user_form_key').on(t.lineUserId, t.formId)],
+);
+
+export const submissions = pgTable('submissions', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  tenantId: uuid('tenant_id')
+    .notNull()
+    .references(() => tenants.id, { onDelete: 'cascade' }),
+  formId: uuid('form_id')
+    .notNull()
+    .references(() => forms.id, { onDelete: 'cascade' }),
+  lineUserId: uuid('line_user_id')
+    .notNull()
+    .references(() => lineUsers.id, { onDelete: 'cascade' }),
+  answers: jsonb('answers').notNull(),
+  status: text('status').notNull().default('new'), // new / in_review / done
+  submittedAt: timestamp('submitted_at', { withTimezone: true })
     .notNull()
     .defaultNow(),
 });
