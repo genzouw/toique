@@ -5,17 +5,25 @@ import { api, type OnboardingStatus } from '../lib/api';
 
 type Props = {
   requireTenant?: boolean;
+  // テナント登録済みユーザーがこのページに入ろうとしたら /dashboard へ戻す
+  redirectIfTenantExists?: boolean;
   children: React.ReactNode;
 };
 
-export default function AuthGuard({ requireTenant = true, children }: Props) {
+export default function AuthGuard({
+  requireTenant = true,
+  redirectIfTenantExists = false,
+  children,
+}: Props) {
   const { data: session, isPending } = useSession();
   const [status, setStatus] = useState<OnboardingStatus | null>(null);
-  const [loading, setLoading] = useState(requireTenant);
+  const [loading, setLoading] = useState(
+    requireTenant || redirectIfTenantExists,
+  );
   const location = useLocation();
 
   useEffect(() => {
-    if (!requireTenant) return;
+    if (!requireTenant && !redirectIfTenantExists) return;
     if (isPending) return;
     if (!session?.user) {
       setLoading(false);
@@ -29,7 +37,7 @@ export default function AuthGuard({ requireTenant = true, children }: Props) {
         setLoading(false);
       }
     })();
-  }, [isPending, session?.user, requireTenant]);
+  }, [isPending, session?.user, requireTenant, redirectIfTenantExists]);
 
   if (isPending || loading) {
     return (
@@ -41,6 +49,10 @@ export default function AuthGuard({ requireTenant = true, children }: Props) {
 
   if (!session?.user) {
     return <Navigate to="/login" replace state={{ from: location }} />;
+  }
+
+  if (redirectIfTenantExists && status?.tenant) {
+    return <Navigate to="/dashboard" replace />;
   }
 
   if (requireTenant && !status?.tenant) {

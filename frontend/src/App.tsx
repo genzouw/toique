@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router';
 import Layout from './components/Layout';
 import AuthGuard from './components/AuthGuard';
+import RedirectIfAuthed from './components/RedirectIfAuthed';
 import Dashboard from './pages/Dashboard';
 import Channels from './pages/Channels';
 import Messages from './pages/Messages';
@@ -12,12 +13,26 @@ export default function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/login" element={<Login />} />
-        <Route path="/signup" element={<Signup />} />
+        <Route
+          path="/login"
+          element={
+            <RedirectIfAuthed>
+              <Login />
+            </RedirectIfAuthed>
+          }
+        />
+        <Route
+          path="/signup"
+          element={
+            <RedirectIfAuthed>
+              <Signup />
+            </RedirectIfAuthed>
+          }
+        />
         <Route
           path="/onboarding"
           element={
-            <AuthGuard requireTenant={false}>
+            <AuthGuard requireTenant={false} redirectIfTenantExists>
               <Onboarding />
             </AuthGuard>
           }
