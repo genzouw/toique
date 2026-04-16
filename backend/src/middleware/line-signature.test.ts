@@ -3,30 +3,34 @@ import { createHmac } from 'node:crypto';
 import { Hono } from 'hono';
 import { lineSignature } from './line-signature.js';
 import db from '../db.js';
-import { lineChannels } from '../schema.js';
+import { lineChannels, tenants } from '../schema.js';
 import { eq } from 'drizzle-orm';
 
 const TEST_CHANNEL_ID = 'test-channel-1';
 const TEST_SECRET = 'test-secret';
+let tenantId: string;
 
 describe('lineSignature middleware', () => {
   beforeEach(async () => {
-    await db
-      .insert(lineChannels)
-      .values({
-        channelId: TEST_CHANNEL_ID,
-        channelSecret: TEST_SECRET,
-        channelAccessToken: 'token',
-        displayName: 'Test',
-        isActive: true,
-      })
-      .onConflictDoNothing();
+    const [t] = await db
+      .insert(tenants)
+      .values({ name: 'Sig Test' })
+      .returning({ id: tenants.id });
+    tenantId = t.id;
+
+    await db.insert(lineChannels).values({
+      tenantId,
+      channelId: TEST_CHANNEL_ID,
+      channelSecret: TEST_SECRET,
+      channelAccessToken: 'token',
+      displayName: 'Test',
+      isActive: true,
+    });
   });
 
   afterEach(async () => {
-    await db
-      .delete(lineChannels)
-      .where(eq(lineChannels.channelId, TEST_CHANNEL_ID));
+    // cascade で line_channels も消える
+    await db.delete(tenants).where(eq(tenants.id, tenantId));
   });
 
   function buildApp() {

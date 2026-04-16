@@ -1,17 +1,21 @@
 import { Hono } from 'hono';
-import { eq } from 'drizzle-orm';
+import { and, eq } from 'drizzle-orm';
 import db from '../db.js';
 import { lineChannels } from '../schema.js';
 
 const app = new Hono();
 
 app.get('/', async (c) => {
-  const rows = await db.select().from(lineChannels);
-  // Phase 1: 平文で返す（Phase 2 で secret/token をマスク化）
+  const tenant = c.get('tenant');
+  const rows = await db
+    .select()
+    .from(lineChannels)
+    .where(eq(lineChannels.tenantId, tenant.id));
   return c.json(rows);
 });
 
 app.post('/', async (c) => {
+  const tenant = c.get('tenant');
   const body = (await c.req.json()) as {
     channelId: string;
     channelSecret: string;
@@ -30,6 +34,7 @@ app.post('/', async (c) => {
   const [created] = await db
     .insert(lineChannels)
     .values({
+      tenantId: tenant.id,
       channelId: body.channelId,
       channelSecret: body.channelSecret,
       channelAccessToken: body.channelAccessToken,
@@ -41,8 +46,11 @@ app.post('/', async (c) => {
 });
 
 app.delete('/:id', async (c) => {
+  const tenant = c.get('tenant');
   const id = c.req.param('id');
-  await db.delete(lineChannels).where(eq(lineChannels.id, id));
+  await db
+    .delete(lineChannels)
+    .where(and(eq(lineChannels.id, id), eq(lineChannels.tenantId, tenant.id)));
   return c.body(null, 204);
 });
 

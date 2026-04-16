@@ -3,6 +3,7 @@ import { cors } from 'hono/cors';
 import { serve } from '@hono/node-server';
 import { sql } from './db.js';
 import { auth } from './auth/better-auth.js';
+import { requireTenant } from './middleware/auth.js';
 import lineWebhook from './routes/webhooks/line.js';
 import lineChannels from './routes/line-channels.js';
 import messages from './routes/messages.js';
@@ -33,7 +34,10 @@ app.route('/webhooks/line', lineWebhook);
 app.route('/api/v1/onboarding', onboarding);
 
 // 管理API (認証 + テナント必須)
+app.use('/api/v1/line-channels/*', requireTenant);
 app.route('/api/v1/line-channels', lineChannels);
+
+app.use('/api/v1/messages/*', requireTenant);
 app.route('/api/v1/messages', messages);
 
 const port = Number(process.env.PORT) || 3000;

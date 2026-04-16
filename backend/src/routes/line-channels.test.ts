@@ -1,26 +1,48 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { eq } from 'drizzle-orm';
 import { Hono } from 'hono';
 import db from '../db.js';
-import { lineChannels } from '../schema.js';
+import { lineChannels, tenants } from '../schema.js';
 import lineChannelsRoute from './line-channels.js';
 
 const TEST_CHANNEL_ID = 'crud-test-channel';
+let tenantId: string;
+
+function buildApp() {
+  const app = new Hono();
+  app.use('*', async (c, next) => {
+    c.set('tenant', {
+      id: tenantId,
+      name: 'Test Tenant',
+      plan: 'free',
+      role: 'admin',
+    });
+    c.set('authUser', {
+      id: '00000000-0000-0000-0000-000000000000',
+      email: 't@t.test',
+      name: 'Test',
+    });
+    await next();
+  });
+  app.route('/api/v1/line-channels', lineChannelsRoute);
+  return app;
+}
 
 describe('line-channels routes', () => {
   beforeEach(async () => {
-    await db
-      .delete(lineChannels)
-      .where(eq(lineChannels.channelId, TEST_CHANNEL_ID));
+    const [t] = await db
+      .insert(tenants)
+      .values({ name: 'Test Tenant' })
+      .returning({ id: tenants.id });
+    tenantId = t.id;
   });
 
-  function buildApp() {
-    const app = new Hono();
-    app.route('/api/v1/line-channels', lineChannelsRoute);
-    return app;
-  }
+  afterEach(async () => {
+    // cascade で line_channels も消える
+    await db.delete(tenants).where(eq(tenants.id, tenantId));
+  });
 
-  it('POST creates a channel', async () => {
+  it('POST creates a channel scoped to tenant', async () => {
     const app = buildApp();
     const res = await app.request('/api/v1/line-channels', {
       method: 'POST',
@@ -33,11 +55,15 @@ describe('line-channels routes', () => {
       }),
     });
     expect(res.status).toBe(201);
-    const body = (await res.json()) as { channelId: string };
+    const body = (await res.json()) as {
+      channelId: string;
+      tenantId: string;
+    };
     expect(body.channelId).toBe(TEST_CHANNEL_ID);
+    expect(body.tenantId).toBe(tenantId);
   });
 
-  it('GET returns a list including the created channel', async () => {
+  it('GET returns only channels for the current tenant', async () => {
     const app = buildApp();
     await app.request('/api/v1/line-channels', {
       method: 'POST',
@@ -51,8 +77,13 @@ describe('line-channels routes', () => {
     });
     const res = await app.request('/api/v1/line-channels');
     expect(res.status).toBe(200);
-    const body = (await res.json()) as Array<{ channelId: string }>;
-    expect(body.some((c) => c.channelId === TEST_CHANNEL_ID)).toBe(true);
+    const body = (await res.json()) as Array<{
+      channelId: string;
+      tenantId: string;
+    }>;
+    expect(body.length).toBe(1);
+    expect(body[0].channelId).toBe(TEST_CHANNEL_ID);
+    expect(body[0].tenantId).toBe(tenantId);
   });
 
   it('DELETE removes a channel by id', async () => {

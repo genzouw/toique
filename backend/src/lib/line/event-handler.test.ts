@@ -1,7 +1,12 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { eq } from 'drizzle-orm';
 import db from '../../db.js';
-import { lineChannels, lineUsers, inboundMessages } from '../../schema.js';
+import {
+  lineChannels,
+  lineUsers,
+  inboundMessages,
+  tenants,
+} from '../../schema.js';
 import { handleLineEvent } from './event-handler.js';
 import type { LineMessageEvent } from './types.js';
 
@@ -9,6 +14,8 @@ const TEST_CHANNEL_ID = 'test-evt-channel';
 const TEST_SECRET = 'sec';
 const TEST_TOKEN = 'tok';
 const TEST_USER_ID = 'Uxxxxxxxxxxxxxxx';
+
+let tenantId: string;
 
 async function getTestChannel() {
   const [c] = await db
@@ -21,16 +28,20 @@ async function getTestChannel() {
 
 describe('handleLineEvent', () => {
   beforeEach(async () => {
-    await db
-      .insert(lineChannels)
-      .values({
-        channelId: TEST_CHANNEL_ID,
-        channelSecret: TEST_SECRET,
-        channelAccessToken: TEST_TOKEN,
-        displayName: 'EvtTest',
-        isActive: true,
-      })
-      .onConflictDoNothing();
+    const [t] = await db
+      .insert(tenants)
+      .values({ name: 'Evt Test' })
+      .returning({ id: tenants.id });
+    tenantId = t.id;
+
+    await db.insert(lineChannels).values({
+      tenantId,
+      channelId: TEST_CHANNEL_ID,
+      channelSecret: TEST_SECRET,
+      channelAccessToken: TEST_TOKEN,
+      displayName: 'EvtTest',
+      isActive: true,
+    });
     vi.stubGlobal(
       'fetch',
       vi.fn(async () => new Response('{}', { status: 200 })),
@@ -39,14 +50,8 @@ describe('handleLineEvent', () => {
 
   afterEach(async () => {
     vi.unstubAllGlobals();
-    const ch = await getTestChannel();
-    if (ch) {
-      await db
-        .delete(inboundMessages)
-        .where(eq(inboundMessages.lineChannelId, ch.id));
-      await db.delete(lineUsers).where(eq(lineUsers.lineChannelId, ch.id));
-      await db.delete(lineChannels).where(eq(lineChannels.id, ch.id));
-    }
+    // cascade で lineChannels, lineUsers, inboundMessages も消える
+    await db.delete(tenants).where(eq(tenants.id, tenantId));
   });
 
   it('saves a text message and replies with the same text (echo)', async () => {
