@@ -20,6 +20,15 @@ export const auth = betterAuth({
       // PostgreSQL の gen_random_uuid() default に任せる (schema 側で uuid 型使用のため)
       generateId: false,
     },
+    // フロントエンド(pages.dev)とバックエンド(fly.dev)が異なるドメインのため
+    // クロスオリジンでCookieを送受信できるよう設定
+    crossSubDomainCookies: {
+      enabled: false,
+    },
+    defaultCookieAttributes: {
+      sameSite: 'none',
+      secure: true,
+    },
   },
   // Drizzle schema のテーブル名は複数形のため明示的に map
   user: { modelName: 'users' },
