@@ -44,3 +44,10 @@ drizzle/
 # Misc
 .cache/
 .turbo/
+
+# Claude Code
+.claude/
+skills-lock.json
+
+# Cloudflare Wrangler
+.wrangler/
