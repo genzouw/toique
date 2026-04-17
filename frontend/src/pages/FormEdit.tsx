@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate, useParams, Link } from 'react-router';
 import { ChevronLeft, Trash2 } from 'lucide-react';
 import { api, type Form, type LineChannel } from '../lib/api';
+import FormSchemaBuilder from '../components/FormSchemaBuilder';
 
 const DEFAULT_SCHEMA = {
   startStep: 'カテゴリ',
@@ -41,6 +42,59 @@ const DEFAULT_SCHEMA = {
   },
 };
 
+type TabId = 'visual' | 'json';
+
+/** JSON スキーマのバリデーション */
+function validateSchema(schema: Record<string, unknown>): string | null {
+  if (!schema.startStep || typeof schema.startStep !== 'string') {
+    return 'startStep が必要です';
+  }
+  if (
+    !schema.steps ||
+    typeof schema.steps !== 'object' ||
+    Array.isArray(schema.steps)
+  ) {
+    return 'steps オブジェクトが必要です';
+  }
+  const steps = schema.steps as Record<string, Record<string, unknown>>;
+  if (!(schema.startStep in steps)) {
+    return `startStep "${schema.startStep}" が steps に存在しません`;
+  }
+
+  let hasEnd = false;
+  for (const [id, step] of Object.entries(steps)) {
+    if (!step.type) return `ステップ "${id}" に type がありません`;
+    if (step.type === 'end') {
+      hasEnd = true;
+      if (!step.thanks || typeof step.thanks !== 'string') {
+        return `ステップ "${id}" に thanks メッセージが必要です`;
+      }
+    } else if (step.type === 'text') {
+      if (!step.prompt) return `ステップ "${id}" に prompt が必要です`;
+      if (!step.field) return `ステップ "${id}" に field が必要です`;
+      if (!step.next || !((step.next as string) in steps)) {
+        return `ステップ "${id}" の next "${step.next}" が steps に存在しません`;
+      }
+    } else if (step.type === 'choice') {
+      if (!step.prompt) return `ステップ "${id}" に prompt が必要です`;
+      if (!step.field) return `ステップ "${id}" に field が必要です`;
+      if (!Array.isArray(step.choices) || step.choices.length === 0) {
+        return `ステップ "${id}" に choices が必要です`;
+      }
+      for (const c of step.choices as Array<Record<string, string>>) {
+        if (!c.label) return `ステップ "${id}" の選択肢に label が必要です`;
+        if (!c.next || !(c.next in steps)) {
+          return `ステップ "${id}" の選択肢 "${c.label}" の next "${c.next}" が steps に存在しません`;
+        }
+      }
+    } else {
+      return `ステップ "${id}" の type "${step.type}" は無効です (choice / text / end)`;
+    }
+  }
+  if (!hasEnd) return 'end タイプのステップが必要です';
+  return null;
+}
+
 export default function FormEdit() {
   const { id } = useParams();
   const isNew = !id || id === 'new';
@@ -52,9 +106,14 @@ export default function FormEdit() {
   const [lineChannelId, setLineChannelId] = useState('');
   const [status, setStatus] = useState<Form['status']>('draft');
   const [triggerKeyword, setTriggerKeyword] = useState('');
+  const [schemaObj, setSchemaObj] = useState(
+    DEFAULT_SCHEMA as Record<string, unknown>,
+  );
   const [schemaJson, setSchemaJson] = useState(
     JSON.stringify(DEFAULT_SCHEMA, null, 2),
   );
+  const [jsonError, setJsonError] = useState<string | null>(null);
+  const [tab, setTab] = useState<TabId>('visual');
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -73,6 +132,7 @@ export default function FormEdit() {
           setLineChannelId(f.lineChannelId);
           setStatus(f.status);
           setTriggerKeyword(f.triggerKeyword ?? '');
+          setSchemaObj(f.schema);
           setSchemaJson(JSON.stringify(f.schema, null, 2));
         } else if (chs.length > 0) {
           setLineChannelId(chs[0].id);
@@ -85,16 +145,66 @@ export default function FormEdit() {
     })();
   }, [id, isNew]);
 
+  // ビジュアルビルダーからの更新
+  function handleBuilderChange(newSchema: Record<string, unknown>) {
+    setSchemaObj(newSchema);
+    setSchemaJson(JSON.stringify(newSchema, null, 2));
+    setJsonError(null);
+  }
+
+  // JSONテキストからの更新
+  function handleJsonChange(text: string) {
+    setSchemaJson(text);
+    try {
+      const parsed = JSON.parse(text);
+      setSchemaObj(parsed);
+      setJsonError(null);
+    } catch {
+      setJsonError('JSON の構文が不正です');
+    }
+  }
+
+  // タブ切替時にJSONからビジュアルへ同期
+  function switchTab(newTab: TabId) {
+    if (newTab === 'visual' && tab === 'json') {
+      try {
+        const parsed = JSON.parse(schemaJson);
+        setSchemaObj(parsed);
+        setJsonError(null);
+      } catch {
+        setJsonError(
+          'JSON の構文が不正です。修正してからビジュアルモードに切り替えてください。',
+        );
+        return;
+      }
+    }
+    if (newTab === 'json' && tab === 'visual') {
+      setSchemaJson(JSON.stringify(schemaObj, null, 2));
+    }
+    setTab(newTab);
+  }
+
   async function handleSave() {
     setSaving(true);
     setError(null);
+
     try {
       let schema: Record<string, unknown>;
-      try {
-        schema = JSON.parse(schemaJson);
-      } catch {
-        throw new Error('JSON の構文が不正です');
+      if (tab === 'json') {
+        try {
+          schema = JSON.parse(schemaJson);
+        } catch {
+          throw new Error('JSON の構文が不正です');
+        }
+      } else {
+        schema = schemaObj;
       }
+
+      const validationError = validateSchema(schema);
+      if (validationError) {
+        throw new Error(`スキーマ検証エラー: ${validationError}`);
+      }
+
       if (isNew) {
         const created = await api.createForm({
           name,
@@ -220,20 +330,68 @@ export default function FormEdit() {
           />
         </Field>
 
-        <Field label="スキーマ (JSON)">
-          <textarea
-            value={schemaJson}
-            onChange={(e) => setSchemaJson(e.target.value)}
-            rows={20}
-            spellCheck={false}
-            className="w-full px-3 py-2 border border-slate-300 rounded-md text-xs font-mono bg-slate-50"
-          />
-        </Field>
+        {/* スキーマ編集: タブ切替 */}
+        <div>
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-sm font-medium text-slate-700">
+              フォーム設計
+            </span>
+            <div className="flex bg-slate-100 rounded-md p-0.5">
+              <button
+                onClick={() => switchTab('visual')}
+                className={`px-3 py-1 text-xs rounded ${
+                  tab === 'visual'
+                    ? 'bg-white text-slate-900 shadow-sm'
+                    : 'text-slate-600'
+                }`}
+              >
+                ビジュアル
+              </button>
+              <button
+                onClick={() => switchTab('json')}
+                className={`px-3 py-1 text-xs rounded ${
+                  tab === 'json'
+                    ? 'bg-white text-slate-900 shadow-sm'
+                    : 'text-slate-600'
+                }`}
+              >
+                JSON
+              </button>
+            </div>
+          </div>
+
+          {tab === 'visual' ? (
+            <FormSchemaBuilder
+              schema={
+                schemaObj as {
+                  startStep: string;
+                  steps: Record<string, unknown>;
+                }
+              }
+              onChange={handleBuilderChange}
+            />
+          ) : (
+            <>
+              <textarea
+                value={schemaJson}
+                onChange={(e) => handleJsonChange(e.target.value)}
+                rows={20}
+                spellCheck={false}
+                className={`w-full px-3 py-2 border rounded-md text-xs font-mono bg-slate-50 ${
+                  jsonError ? 'border-red-400' : 'border-slate-300'
+                }`}
+              />
+              {jsonError && (
+                <div className="text-xs text-red-600 mt-1">{jsonError}</div>
+              )}
+            </>
+          )}
+        </div>
 
         <div className="flex justify-end">
           <button
             onClick={handleSave}
-            disabled={saving || !name || !lineChannelId}
+            disabled={saving || !name || !lineChannelId || !!jsonError}
             className="px-4 py-2 bg-slate-900 text-white text-sm rounded-md disabled:opacity-50"
           >
             {saving ? '保存中…' : '保存'}
