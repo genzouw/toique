@@ -54,7 +54,7 @@ describe('handleLineEvent', () => {
     await db.delete(tenants).where(eq(tenants.id, tenantId));
   });
 
-  it('saves a text message and replies with the same text (echo)', async () => {
+  it('saves a text message without auto-reply when no form matches', async () => {
     const channel = await getTestChannel();
     const event: LineMessageEvent = {
       type: 'message',
@@ -75,11 +75,9 @@ describe('handleLineEvent', () => {
     expect(saved[0].messageType).toBe('text');
     expect(saved[0].text).toBe('hello world');
 
+    // エコー応答は廃止済み — フォーム未マッチ時は自動返信しない
     const fetchMock = global.fetch as unknown as ReturnType<typeof vi.fn>;
-    expect(fetchMock).toHaveBeenCalledTimes(1);
-    const body = JSON.parse(fetchMock.mock.calls[0][1].body);
-    expect(body.replyToken).toBe('rt-1');
-    expect(body.messages).toEqual([{ type: 'text', text: 'hello world' }]);
+    expect(fetchMock).toHaveBeenCalledTimes(0);
   });
 
   it('upserts a line_user record on first message', async () => {
