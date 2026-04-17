@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react';
-import { RefreshCw, Inbox } from 'lucide-react';
+import { useEffect, useMemo, useState } from 'react';
+import { RefreshCw, Inbox, Download } from 'lucide-react';
 import { api, type Submission, type Form } from '../lib/api';
 
 const STATUS_LABEL: Record<Submission['status'], string> = {
@@ -16,9 +16,16 @@ const STATUS_COLOR: Record<Submission['status'], string> = {
 
 export default function Submissions() {
   const [items, setItems] = useState<Submission[]>([]);
-  const [forms, setForms] = useState<Record<string, Form>>({});
+  const [forms, setForms] = useState<Form[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [exportFormId, setExportFormId] = useState<string>('');
+  const [downloading, setDownloading] = useState(false);
+
+  const formsById = useMemo(
+    () => Object.fromEntries(forms.map((f) => [f.id, f])),
+    [forms],
+  );
 
   async function refresh() {
     setLoading(true);
@@ -28,7 +35,10 @@ export default function Submissions() {
         api.listForms(),
       ]);
       setItems(subs);
-      setForms(Object.fromEntries(fs.map((f) => [f.id, f])));
+      setForms(fs);
+      if (!exportFormId && fs.length > 0) {
+        setExportFormId(fs[0].id);
+      }
       setError(null);
     } catch (e) {
       setError((e as Error).message);
@@ -39,7 +49,25 @@ export default function Submissions() {
 
   useEffect(() => {
     refresh();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  async function handleDownload() {
+    if (!exportFormId) return;
+    const form = formsById[exportFormId];
+    setDownloading(true);
+    setError(null);
+    try {
+      await api.downloadSubmissionsCsv(
+        exportFormId,
+        form?.name ?? 'submissions',
+      );
+    } catch (e) {
+      setError((e as Error).message);
+    } finally {
+      setDownloading(false);
+    }
+  }
 
   return (
     <div>
@@ -65,6 +93,46 @@ export default function Submissions() {
         </div>
       )}
 
+      {/* CSV エクスポート */}
+      <div className="mt-6 bg-white border border-slate-200 rounded-lg p-4">
+        <div className="flex items-end gap-3 flex-wrap">
+          <label className="flex-1 min-w-[240px]">
+            <span className="text-sm font-medium text-slate-700">
+              CSVダウンロード対象のフォーム
+            </span>
+            <select
+              value={exportFormId}
+              onChange={(e) => setExportFormId(e.target.value)}
+              disabled={forms.length === 0}
+              className="mt-1 w-full px-3 py-2 border border-slate-300 rounded-md text-sm disabled:bg-slate-50"
+            >
+              {forms.length === 0 ? (
+                <option>フォームがありません</option>
+              ) : (
+                forms.map((f) => (
+                  <option key={f.id} value={f.id}>
+                    {f.name}
+                  </option>
+                ))
+              )}
+            </select>
+          </label>
+          <button
+            onClick={handleDownload}
+            disabled={!exportFormId || downloading}
+            className="inline-flex items-center gap-2 px-4 py-2 bg-slate-900 text-white text-sm rounded-md disabled:opacity-50"
+          >
+            <Download size={14} />
+            {downloading ? 'ダウンロード中…' : 'CSVダウンロード'}
+          </button>
+        </div>
+        <p className="text-xs text-slate-500 mt-2">
+          選択したフォームのスキーマに応じたカラム構成のCSVを出力します (UTF-8 /
+          Excel対応)。
+        </p>
+      </div>
+
+      {/* 一覧 */}
       <div className="mt-6 bg-white border border-slate-200 rounded-lg overflow-hidden">
         {loading ? (
           <div className="p-5 text-sm text-slate-500">読み込み中…</div>
@@ -90,7 +158,7 @@ export default function Submissions() {
                     {new Date(s.submittedAt).toLocaleString('ja-JP')}
                   </td>
                   <td className="px-4 py-2 text-slate-900 whitespace-nowrap">
-                    {forms[s.formId]?.name ?? s.formId.slice(0, 8)}
+                    {formsById[s.formId]?.name ?? s.formId.slice(0, 8)}
                   </td>
                   <td className="px-4 py-2 whitespace-nowrap">
                     <span

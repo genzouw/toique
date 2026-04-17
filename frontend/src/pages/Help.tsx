@@ -223,30 +223,39 @@ export default function Help() {
           </h3>
           <pre className="bg-slate-900 text-slate-100 p-4 rounded-md text-xs overflow-x-auto">
             {`{
-  "startStep": "category",
+  "startStep": "カテゴリ",
   "steps": {
-    "category": {
+    "カテゴリ": {
       "type": "choice",
       "prompt": "カテゴリを選んでください",
-      "field": "category",
+      "field": "カテゴリ",
       "choices": [
-        { "label": "時計", "value": "watch", "next": "brand" },
-        { "label": "バッグ", "value": "bag", "next": "brand" }
+        { "label": "時計", "value": "時計", "next": "ブランド" },
+        { "label": "バッグ", "value": "バッグ", "next": "ブランド" },
+        { "label": "宝石・ジュエリー", "value": "宝石・ジュエリー", "next": "ブランド" },
+        { "label": "アパレル", "value": "アパレル", "next": "ブランド" }
       ]
     },
-    "brand": {
+    "ブランド": {
       "type": "text",
       "prompt": "ブランド名を教えてください",
-      "field": "brand",
-      "next": "complete"
+      "field": "ブランド",
+      "next": "完了"
     },
-    "complete": {
+    "完了": {
       "type": "end",
       "thanks": "ありがとうございました"
     }
   }
 }`}
           </pre>
+          <div className="p-3 rounded-md bg-slate-100 text-slate-700 text-xs mt-3">
+            ステップID / <code>field</code> / <code>value</code> /{' '}
+            <code>next</code>{' '}
+            などユーザー定義の識別子は日本語で指定できます。問い合わせ一覧での回答キーも日本語で表示されます。構造プロパティ（
+            <code>startStep</code> / <code>type</code> / <code>prompt</code>{' '}
+            など）は英語のままで使用してください。
+          </div>
 
           <h3 className="font-semibold text-slate-900 mt-4">
             4.3 利用可能なステップ

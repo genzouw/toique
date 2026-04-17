@@ -1,5 +1,6 @@
 import { Hono } from 'hono';
 import { cors } from 'hono/cors';
+import { logger } from 'hono/logger';
 import { serve } from '@hono/node-server';
 import { sql } from './db.js';
 import { auth } from './auth/better-auth.js';
@@ -12,6 +13,9 @@ import forms from './routes/forms.js';
 import submissions from './routes/submissions.js';
 
 const app = new Hono({ strict: false });
+
+// 全リクエストをログ出力 (method / path / status / duration)
+app.use('*', logger());
 
 app.use(
   '/api/*',

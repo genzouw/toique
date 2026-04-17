@@ -4,30 +4,36 @@ import { ChevronLeft, Trash2 } from 'lucide-react';
 import { api, type Form, type LineChannel } from '../lib/api';
 
 const DEFAULT_SCHEMA = {
-  startStep: 'category',
+  startStep: 'カテゴリ',
   steps: {
-    category: {
+    カテゴリ: {
       type: 'choice',
       prompt: 'ご希望のカテゴリを選んでください',
-      field: 'category',
+      field: 'カテゴリ',
       choices: [
-        { label: '時計', value: 'watch', next: 'brand' },
-        { label: 'バッグ', value: 'bag', next: 'brand' },
+        { label: '時計', value: '時計', next: 'ブランド' },
+        { label: 'バッグ', value: 'バッグ', next: 'ブランド' },
+        {
+          label: '宝石・ジュエリー',
+          value: '宝石・ジュエリー',
+          next: 'ブランド',
+        },
+        { label: 'アパレル', value: 'アパレル', next: 'ブランド' },
       ],
     },
-    brand: {
+    ブランド: {
       type: 'text',
       prompt: 'ブランド名を教えてください',
-      field: 'brand',
-      next: 'customer_name',
+      field: 'ブランド',
+      next: 'お名前',
     },
-    customer_name: {
+    お名前: {
       type: 'text',
       prompt: 'お名前をフルネームで教えてください',
-      field: 'customer_name',
-      next: 'complete',
+      field: 'お名前',
+      next: '完了',
     },
-    complete: {
+    完了: {
       type: 'end',
       thanks:
         'お問い合わせありがとうございました。担当者よりご連絡いたします。',

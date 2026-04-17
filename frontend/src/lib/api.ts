@@ -126,4 +126,24 @@ export const api = {
   deleteForm: (id: string) =>
     request<void>(`/api/v1/forms/${id}`, { method: 'DELETE' }),
   listSubmissions: () => request<Submission[]>('/api/v1/submissions'),
+  exportSubmissionsUrl: (formId: string) =>
+    `${BASE_URL}/api/v1/submissions/export?formId=${encodeURIComponent(formId)}`,
+  async downloadSubmissionsCsv(formId: string, suggestedName: string) {
+    const res = await fetch(this.exportSubmissionsUrl(formId), {
+      credentials: 'include',
+    });
+    if (!res.ok) {
+      throw new Error(`CSV ダウンロードに失敗しました: ${res.status}`);
+    }
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    const stamp = new Date().toISOString().slice(0, 10).replace(/-/g, '');
+    a.download = `${suggestedName}_${stamp}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  },
 };

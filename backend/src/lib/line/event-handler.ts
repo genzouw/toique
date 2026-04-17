@@ -104,12 +104,8 @@ export async function handleLineEvent(
       return;
     }
 
-    // 3. フォールバック: Phase 1 のオウム返し
-    await replyMessage({
-      accessToken: channel.channelAccessToken,
-      replyToken,
-      messages: [{ type: 'text', text }],
-    });
+    // 3. 該当なし: 自動応答はせず、受信ログだけ残す
+    // (必要なら管理画面から手動で返信する運用 — 手動返信UIは Phase 2.5 で対応予定)
     return;
   }
 
