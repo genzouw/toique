@@ -76,16 +76,30 @@ export default function Dashboard() {
               ),
             )}
           </div>
-          {usageData.plan === 'free' && (
-            <div className="mt-4">
+          <div className="mt-4 flex gap-4">
+            {usageData.plan === 'free' ? (
               <Link
                 to="/pricing"
                 className="text-sm text-slate-600 hover:text-slate-900 underline"
               >
                 Pro プランにアップグレード
               </Link>
-            </div>
-          )}
+            ) : (
+              <button
+                onClick={async () => {
+                  try {
+                    const { url } = await api.createPortalSession();
+                    if (url) window.location.href = url;
+                  } catch {
+                    setError('ポータルの表示に失敗しました');
+                  }
+                }}
+                className="text-sm text-slate-600 hover:text-slate-900 underline"
+              >
+                サブスクリプション管理
+              </button>
+            )}
+          </div>
         </div>
       )}
     </div>

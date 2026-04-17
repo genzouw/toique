@@ -139,6 +139,10 @@ export const api = {
     request<void>(`/api/v1/forms/${id}`, { method: 'DELETE' }),
   listSubmissions: () => request<Submission[]>('/api/v1/submissions'),
   getUsage: () => request<UsageResponse>('/api/v1/usage'),
+  createCheckout: () =>
+    request<{ url: string }>('/api/v1/billing/checkout', { method: 'POST' }),
+  createPortalSession: () =>
+    request<{ url: string }>('/api/v1/billing/portal', { method: 'POST' }),
   exportSubmissionsUrl: (formId: string) =>
     `${BASE_URL}/api/v1/submissions/export?formId=${encodeURIComponent(formId)}`,
   async downloadSubmissionsCsv(formId: string, suggestedName: string) {

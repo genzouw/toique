@@ -1,5 +1,8 @@
+import { useState } from 'react';
 import { Link } from 'react-router';
 import { Check } from 'lucide-react';
+import { api } from '../lib/api';
+import { useSession } from '../lib/auth-client';
 
 const PLANS = [
   {
@@ -37,6 +40,21 @@ const PLANS = [
 ];
 
 export default function Pricing() {
+  const { data: session } = useSession();
+  const [upgrading, setUpgrading] = useState(false);
+
+  async function handleUpgrade() {
+    setUpgrading(true);
+    try {
+      const { url } = await api.createCheckout();
+      if (url) window.location.href = url;
+    } catch {
+      alert('アップグレード処理に失敗しました');
+    } finally {
+      setUpgrading(false);
+    }
+  }
+
   return (
     <div className="min-h-full bg-white">
       {/* Header */}
@@ -109,16 +127,26 @@ export default function Pricing() {
                 ))}
               </ul>
 
-              <Link
-                to={plan.ctaTo}
-                className={`mt-6 block text-center px-4 py-2.5 text-sm font-medium rounded-md ${
-                  plan.highlight
-                    ? 'bg-slate-900 text-white hover:bg-slate-800'
-                    : 'border border-slate-300 text-slate-700 hover:bg-slate-50'
-                }`}
-              >
-                {plan.cta}
-              </Link>
+              {plan.highlight && session?.user ? (
+                <button
+                  onClick={handleUpgrade}
+                  disabled={upgrading}
+                  className="mt-6 block w-full text-center px-4 py-2.5 text-sm font-medium rounded-md bg-slate-900 text-white hover:bg-slate-800 disabled:opacity-50"
+                >
+                  {upgrading ? '処理中…' : plan.cta}
+                </button>
+              ) : (
+                <Link
+                  to={plan.ctaTo}
+                  className={`mt-6 block text-center px-4 py-2.5 text-sm font-medium rounded-md ${
+                    plan.highlight
+                      ? 'bg-slate-900 text-white hover:bg-slate-800'
+                      : 'border border-slate-300 text-slate-700 hover:bg-slate-50'
+                  }`}
+                >
+                  {plan.cta}
+                </Link>
+              )}
             </div>
           ))}
         </div>

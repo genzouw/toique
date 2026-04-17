@@ -22,6 +22,13 @@
       "when": 1776323989506,
       "tag": "0002_wonderful_miracleman",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1776467473447,
+      "tag": "0003_steady_karma",
+      "breakpoints": true
     }
   ]
 }
