@@ -16,19 +16,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 22
-          cache: npm
-          cache-dependency-path: frontend/package-lock.json
-      - run: npm ci
-        working-directory: frontend
-      - run: npm run format:check
-        working-directory: frontend
-      - run: npm run lint
-        working-directory: frontend
-      - run: npm run typecheck
-        working-directory: frontend
+      - name: Build and run checks in Docker
+        run: docker build --target frontend-ci -f Dockerfile.ci .
 
   backend:
     name: Backend (lint / typecheck / format / test)
@@ -49,26 +38,17 @@ jobs:
           --health-retries 5
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 22
-          cache: npm
-          cache-dependency-path: backend/package-lock.json
-      - run: npm ci
-        working-directory: backend
-      - run: npm run format:check
-        working-directory: backend
-      - run: npm run lint
-        working-directory: backend
-      - run: npm run typecheck
-        working-directory: backend
+      - name: Build and run checks in Docker
+        run: docker build --target backend-ci -f Dockerfile.ci .
+      - name: Build test image
+        run: docker build --target backend-test -t toique-backend-test -f Dockerfile.ci .
       - name: Run migrations
-        working-directory: backend
-        run: npx drizzle-kit migrate
-        env:
-          DATABASE_URL: postgresql://toique:toique@localhost:5432/toique
+        run: >
+          docker run --rm --network host
+          -e DATABASE_URL=postgresql://toique:toique@localhost:5432/toique
+          toique-backend-test npx drizzle-kit migrate
       - name: Run tests with coverage
-        working-directory: backend
-        run: npm run test:coverage
-        env:
-          DATABASE_URL: postgresql://toique:toique@localhost:5432/toique
+        run: >
+          docker run --rm --network host
+          -e DATABASE_URL=postgresql://toique:toique@localhost:5432/toique
+          toique-backend-test
