@@ -5,13 +5,11 @@ import {
   lineSessions,
   submissions,
   lineUsers as lineUsersTable,
-  lineChannels,
 } from '../../schema.js';
 import type { LineMessage } from '../line/client.js';
 import { buildStepMessages, parsePostbackData } from './messages.js';
 import type { FormSchema, FormStep } from './types.js';
 
-type Channel = typeof lineChannels.$inferSelect;
 type Form = typeof forms.$inferSelect;
 type Session = typeof lineSessions.$inferSelect;
 type LineUser = typeof lineUsersTable.$inferSelect;
@@ -96,7 +94,7 @@ export async function advanceSession(
   }
 
   const answers = { ...(session.answers as Record<string, unknown>) };
-  let nextStepId: string | null = null;
+  let nextStepId: string | null | undefined;
 
   if (currentStep.type === 'choice') {
     if (input.kind !== 'postback' || !input.postbackData) {
