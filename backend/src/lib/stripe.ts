@@ -9,4 +9,4 @@ export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY ?? '', {
 });
 
 export const STRIPE_PRO_PRICE_ID =
-  process.env.STRIPE_PRO_PRICE_ID ?? 'price_1TNLXGR6vv0vv2hJC9OxLU3l';
+  process.env.STRIPE_PRO_PRICE_ID ?? 'price_1TNM1yIlm7LOZC27Pv95rexs';
