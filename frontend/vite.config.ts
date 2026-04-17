@@ -1,15 +1,29 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import tailwindcss from '@tailwindcss/vite';
+import Sitemap from 'vite-plugin-sitemap';
 
 export default defineConfig({
-  plugins: [react(), tailwindcss()],
+  plugins: [
+    react(),
+    tailwindcss(),
+    Sitemap({
+      hostname: 'https://toique.pages.dev',
+      dynamicRoutes: ['/help', '/login', '/signup'],
+      exclude: [
+        '/dashboard',
+        '/channels',
+        '/forms',
+        '/submissions',
+        '/messages',
+        '/onboarding',
+      ],
+      changefreq: 'monthly',
+    }),
+  ],
   server: {
     host: true,
     port: 5173,
-    // Vite 6 以降はデフォルトで外部ホストを拒否する。
-    // 開発中は ngrok などの一時URLからもアクセスしたいので許可する。
-    // 本番では Vite dev server を使わないため、dev用途に限定した設定。
     allowedHosts: [
       '.ngrok-free.dev',
       '.ngrok-free.app',
