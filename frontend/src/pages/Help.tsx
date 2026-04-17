@@ -19,15 +19,12 @@ export default function Help() {
             <span className="text-xl font-bold text-slate-900">Toique</span>
             <span className="text-sm text-slate-500">ヘルプ</span>
           </Link>
-          <a
-            href="https://github.com/genzouw/toique"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-1 text-sm text-slate-600 hover:text-slate-900"
+          <Link
+            to="/login"
+            className="text-sm text-slate-600 hover:text-slate-900"
           >
-            GitHub
-            <ExternalLink size={12} />
-          </a>
+            ログイン
+          </Link>
         </div>
       </header>
 
