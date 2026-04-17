@@ -11,38 +11,8 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  frontend-lint:
-    name: Frontend Lint
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 22
-          cache: npm
-          cache-dependency-path: frontend/package-lock.json
-      - run: npm ci
-        working-directory: frontend
-      - run: npm run lint
-        working-directory: frontend
-
-  frontend-typecheck:
-    name: Frontend TypeCheck
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 22
-          cache: npm
-          cache-dependency-path: frontend/package-lock.json
-      - run: npm ci
-        working-directory: frontend
-      - run: npm run typecheck
-        working-directory: frontend
-
-  frontend-format:
-    name: Frontend Format
+  frontend:
+    name: Frontend (lint / typecheck / format)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -55,54 +25,13 @@ jobs:
         working-directory: frontend
       - run: npm run format:check
         working-directory: frontend
-
-  backend-lint:
-    name: Backend Lint
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 22
-          cache: npm
-          cache-dependency-path: backend/package-lock.json
-      - run: npm ci
-        working-directory: backend
       - run: npm run lint
-        working-directory: backend
-
-  backend-typecheck:
-    name: Backend TypeCheck
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 22
-          cache: npm
-          cache-dependency-path: backend/package-lock.json
-      - run: npm ci
-        working-directory: backend
+        working-directory: frontend
       - run: npm run typecheck
-        working-directory: backend
+        working-directory: frontend
 
-  backend-format:
-    name: Backend Format
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 22
-          cache: npm
-          cache-dependency-path: backend/package-lock.json
-      - run: npm ci
-        working-directory: backend
-      - run: npm run format:check
-        working-directory: backend
-
-  backend-test:
-    name: Backend Test
+  backend:
+    name: Backend (lint / typecheck / format / test)
     runs-on: ubuntu-latest
     services:
       postgres:
@@ -126,6 +55,12 @@ jobs:
           cache: npm
           cache-dependency-path: backend/package-lock.json
       - run: npm ci
+        working-directory: backend
+      - run: npm run format:check
+        working-directory: backend
+      - run: npm run lint
+        working-directory: backend
+      - run: npm run typecheck
         working-directory: backend
       - name: Run migrations
         working-directory: backend
