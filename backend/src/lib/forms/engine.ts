@@ -5,7 +5,9 @@ import {
   lineSessions,
   submissions,
   lineUsers as lineUsersTable,
+  tenants,
 } from '../../schema.js';
+import { checkQuota } from '../quota.js';
 import type { LineMessage } from '../line/client.js';
 import { buildStepMessages, parsePostbackData } from './messages.js';
 import type { FormSchema, FormStep } from './types.js';
@@ -173,6 +175,44 @@ async function finalize(
   answers: Record<string, unknown>,
   endStep: Extract<FormStep, { type: 'end' }>,
 ): Promise<EngineOutcome> {
+  // サブミッション数クォータチェック (fail-open: エラー時は許可)
+  try {
+    const [tenant] = await db
+      .select({ plan: tenants.plan })
+      .from(tenants)
+      .where(eq(tenants.id, form.tenantId))
+      .limit(1);
+    if (tenant) {
+      const quota = await checkQuota(
+        form.tenantId,
+        tenant.plan,
+        'submissionsPerMonth',
+      );
+      if (!quota.allowed) {
+        await db
+          .update(lineSessions)
+          .set({ status: 'completed', answers, updatedAt: sql`now()` })
+          .where(
+            and(
+              eq(lineSessions.lineUserId, lineUser.id),
+              eq(lineSessions.formId, form.id),
+            ),
+          );
+        return {
+          replyMessages: [
+            {
+              type: 'text',
+              text: '申し訳ございません。現在、回答の受付上限に達しております。しばらく経ってから再度お試しください。',
+            },
+          ],
+          completed: true,
+        };
+      }
+    }
+  } catch {
+    // クォータチェック失敗時は受付を継続
+  }
+
   await db.insert(submissions).values({
     tenantId: form.tenantId,
     formId: form.id,

@@ -2,6 +2,7 @@ import { Hono } from 'hono';
 import { and, eq } from 'drizzle-orm';
 import db from '../db.js';
 import { forms, lineChannels } from '../schema.js';
+import { checkQuota } from '../lib/quota.js';
 
 const app = new Hono();
 
@@ -72,6 +73,11 @@ app.post('/', async (c) => {
     )
     .limit(1);
   if (!channel) return c.text('lineChannelId not in this tenant', 400);
+
+  const quota = await checkQuota(tenant.id, tenant.plan, 'forms');
+  if (!quota.allowed) {
+    return c.json({ error: 'フォームの作成上限に達しています', ...quota }, 403);
+  }
 
   const schemaError = validateSchema(body.schema);
   if (schemaError) return c.text(schemaError, 400);

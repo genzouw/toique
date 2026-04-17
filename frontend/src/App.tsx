@@ -14,6 +14,7 @@ import Forms from './pages/Forms';
 import FormEdit from './pages/FormEdit';
 import Submissions from './pages/Submissions';
 import Help from './pages/Help';
+import Pricing from './pages/Pricing';
 
 /** SPA 内のルート遷移を gtag に送信する */
 function usePageView() {
@@ -33,6 +34,7 @@ function AppRoutes() {
     <Routes>
       <Route index element={<Landing />} />
       <Route path="/help" element={<Help />} />
+      <Route path="/pricing" element={<Pricing />} />
       <Route
         path="/login"
         element={

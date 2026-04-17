@@ -11,6 +11,7 @@ import messages from './routes/messages.js';
 import onboarding from './routes/onboarding.js';
 import forms from './routes/forms.js';
 import submissions from './routes/submissions.js';
+import usage from './routes/usage.js';
 
 const app = new Hono({ strict: false });
 
@@ -51,6 +52,9 @@ app.route('/api/v1/forms', forms);
 
 app.use('/api/v1/submissions/*', requireTenant);
 app.route('/api/v1/submissions', submissions);
+
+app.use('/api/v1/usage', requireTenant);
+app.route('/api/v1/usage', usage);
 
 const port = Number(process.env.PORT) || 3000;
 serve({ fetch: app.fetch, port }, () => {

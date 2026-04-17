@@ -37,6 +37,12 @@ export default function Landing() {
           <span className="text-lg font-bold text-slate-900">Toique</span>
           <div className="flex items-center gap-4">
             <Link
+              to="/pricing"
+              className="text-sm text-slate-700 hover:text-slate-900"
+            >
+              料金プラン
+            </Link>
+            <Link
               to="/login"
               className="text-sm text-slate-700 hover:text-slate-900"
             >
@@ -174,6 +180,9 @@ export default function Landing() {
         <div className="max-w-5xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500">
           <span>Toique</span>
           <div className="flex gap-4">
+            <Link to="/pricing" className="hover:text-slate-900">
+              料金プラン
+            </Link>
             <Link to="/help" className="hover:text-slate-900">
               ヘルプ
             </Link>

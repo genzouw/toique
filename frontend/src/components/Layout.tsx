@@ -1,4 +1,5 @@
-import { NavLink, Outlet, useNavigate } from 'react-router';
+import { NavLink, Outlet, useNavigate, Link } from 'react-router';
+import { useEffect, useState } from 'react';
 import {
   MessageSquare,
   Plug,
@@ -8,9 +9,11 @@ import {
   Inbox,
   HelpCircle,
   ExternalLink,
+  X,
 } from 'lucide-react';
 import { cn } from '../lib/utils';
 import { signOut, useSession } from '../lib/auth-client';
+import { api, type UsageResponse } from '../lib/api';
 
 const navItems = [
   { to: '/dashboard', label: 'ダッシュボード', icon: LayoutDashboard },
@@ -20,14 +23,40 @@ const navItems = [
   { to: '/messages', label: '受信メッセージ', icon: MessageSquare },
 ];
 
+type BannerLevel = 'none' | 'warning' | 'critical';
+
+function evaluateBanner(usage: UsageResponse | null): BannerLevel {
+  if (!usage) return 'none';
+  for (const resource of Object.values(usage.usage)) {
+    if (resource.limit === -1) continue;
+    if (resource.current >= resource.limit) return 'critical';
+  }
+  for (const resource of Object.values(usage.usage)) {
+    if (resource.limit === -1) continue;
+    if (resource.current / resource.limit >= 0.8) return 'warning';
+  }
+  return 'none';
+}
+
 export default function Layout() {
   const { data: session } = useSession();
   const navigate = useNavigate();
+  const [bannerLevel, setBannerLevel] = useState<BannerLevel>('none');
+  const [dismissed, setDismissed] = useState(false);
+
+  useEffect(() => {
+    api
+      .getUsage()
+      .then((u) => setBannerLevel(evaluateBanner(u)))
+      .catch(() => {});
+  }, []);
 
   async function handleSignOut() {
     await signOut();
     navigate('/login', { replace: true });
   }
+
+  const showBanner = bannerLevel !== 'none' && !dismissed;
 
   return (
     <div className="flex h-full bg-slate-50">
@@ -86,6 +115,27 @@ export default function Layout() {
         </div>
       </aside>
       <main className="flex-1 overflow-auto p-8">
+        {showBanner && (
+          <div
+            className={`mb-6 px-4 py-3 rounded-md text-sm flex items-center justify-between ${
+              bannerLevel === 'critical'
+                ? 'bg-red-50 text-red-800'
+                : 'bg-amber-50 text-amber-800'
+            }`}
+          >
+            <span>
+              {bannerLevel === 'critical'
+                ? '利用上限に達しているリソースがあります。'
+                : '利用上限に近づいているリソースがあります。'}
+              <Link to="/pricing" className="ml-1 underline font-medium">
+                料金プランを見る
+              </Link>
+            </span>
+            <button onClick={() => setDismissed(true)} className="ml-4">
+              <X size={14} />
+            </button>
+          </div>
+        )}
         <Outlet />
       </main>
     </div>

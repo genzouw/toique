@@ -74,6 +74,18 @@ export type Submission = {
   submittedAt: string;
 };
 
+export type ResourceUsage = { current: number; limit: number };
+
+export type UsageResponse = {
+  plan: string;
+  usage: {
+    lineChannels: ResourceUsage;
+    forms: ResourceUsage;
+    submissionsPerMonth: ResourceUsage;
+    members: ResourceUsage;
+  };
+};
+
 export const api = {
   getOnboardingStatus: () => request<OnboardingStatus>('/api/v1/onboarding/me'),
   createTenant: (tenantName: string) =>
@@ -126,6 +138,7 @@ export const api = {
   deleteForm: (id: string) =>
     request<void>(`/api/v1/forms/${id}`, { method: 'DELETE' }),
   listSubmissions: () => request<Submission[]>('/api/v1/submissions'),
+  getUsage: () => request<UsageResponse>('/api/v1/usage'),
   exportSubmissionsUrl: (formId: string) =>
     `${BASE_URL}/api/v1/submissions/export?formId=${encodeURIComponent(formId)}`,
   async downloadSubmissionsCsv(formId: string, suggestedName: string) {

@@ -1,20 +1,31 @@
 import { useEffect, useState } from 'react';
-import { api } from '../lib/api';
+import { Link } from 'react-router';
+import { api, type UsageResponse, type ResourceUsage } from '../lib/api';
+
+const RESOURCE_LABELS: Record<string, string> = {
+  lineChannels: 'LINEチャネル',
+  forms: 'フォーム',
+  submissionsPerMonth: '今月の回答数',
+  members: 'メンバー',
+};
 
 export default function Dashboard() {
   const [channels, setChannels] = useState<number | null>(null);
   const [messages, setMessages] = useState<number | null>(null);
+  const [usageData, setUsageData] = useState<UsageResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     (async () => {
       try {
-        const [c, m] = await Promise.all([
+        const [c, m, u] = await Promise.all([
           api.listChannels(),
           api.listMessages(),
+          api.getUsage(),
         ]);
         setChannels(c.length);
         setMessages(m.length);
+        setUsageData(u);
       } catch (e) {
         setError((e as Error).message);
       }
@@ -23,10 +34,16 @@ export default function Dashboard() {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold text-slate-900">ダッシュボード</h1>
-      <p className="text-sm text-slate-500 mt-1">
-        Phase 1 動作状況を表示します
-      </p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-slate-900">ダッシュボード</h1>
+          {usageData && (
+            <span className="inline-block mt-1 px-2 py-0.5 text-xs font-medium rounded bg-slate-100 text-slate-700">
+              {usageData.plan === 'pro' ? 'Pro' : 'Free'} プラン
+            </span>
+          )}
+        </div>
+      </div>
 
       {error && (
         <div className="mt-4 p-3 rounded-md bg-red-50 text-red-700 text-sm">
@@ -42,6 +59,35 @@ export default function Dashboard() {
           unit="件"
         />
       </div>
+
+      {/* 利用状況 */}
+      {usageData && (
+        <div className="mt-8">
+          <h2 className="text-lg font-semibold text-slate-900">利用状況</h2>
+          <div className="mt-4 grid gap-3">
+            {(Object.entries(usageData.usage) as [string, ResourceUsage][]).map(
+              ([key, resource]) => (
+                <UsageBar
+                  key={key}
+                  label={RESOURCE_LABELS[key] ?? key}
+                  current={resource.current}
+                  limit={resource.limit}
+                />
+              ),
+            )}
+          </div>
+          {usageData.plan === 'free' && (
+            <div className="mt-4">
+              <Link
+                to="/pricing"
+                className="text-sm text-slate-600 hover:text-slate-900 underline"
+              >
+                Pro プランにアップグレード
+              </Link>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }
@@ -64,6 +110,40 @@ function StatCard({
         </span>
         <span className="text-sm text-slate-500">{unit}</span>
       </div>
+    </div>
+  );
+}
+
+function UsageBar({
+  label,
+  current,
+  limit,
+}: {
+  label: string;
+  current: number;
+  limit: number;
+}) {
+  const isUnlimited = limit === -1;
+  const pct = isUnlimited ? 0 : Math.min((current / limit) * 100, 100);
+  const color =
+    pct >= 100 ? 'bg-red-500' : pct >= 80 ? 'bg-amber-500' : 'bg-emerald-500';
+
+  return (
+    <div className="bg-white border border-slate-200 rounded-lg p-4">
+      <div className="flex items-center justify-between text-sm">
+        <span className="text-slate-700">{label}</span>
+        <span className="font-medium text-slate-900">
+          {current} / {isUnlimited ? '無制限' : limit}
+        </span>
+      </div>
+      {!isUnlimited && (
+        <div className="mt-2 h-2 bg-slate-100 rounded-full overflow-hidden">
+          <div
+            className={`h-full rounded-full ${color}`}
+            style={{ width: `${pct}%` }}
+          />
+        </div>
+      )}
     </div>
   );
 }

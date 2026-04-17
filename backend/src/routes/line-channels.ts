@@ -2,6 +2,7 @@ import { Hono } from 'hono';
 import { and, eq } from 'drizzle-orm';
 import db from '../db.js';
 import { lineChannels } from '../schema.js';
+import { checkQuota } from '../lib/quota.js';
 
 const app = new Hono();
 
@@ -29,6 +30,14 @@ app.post('/', async (c) => {
     !body.displayName
   ) {
     return c.text('Missing required fields', 400);
+  }
+
+  const quota = await checkQuota(tenant.id, tenant.plan, 'lineChannels');
+  if (!quota.allowed) {
+    return c.json(
+      { error: 'LINEチャネルの登録上限に達しています', ...quota },
+      403,
+    );
   }
 
   const [created] = await db
