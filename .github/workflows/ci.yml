@@ -17,7 +17,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Build and run checks in Docker
-        run: docker build --target frontend-ci -f Dockerfile.ci .
+        run: docker build --target ci-check -f frontend/Dockerfile .
 
   backend:
     name: Backend (lint / typecheck / format / test)
@@ -39,9 +39,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Build and run checks in Docker
-        run: docker build --target backend-ci -f Dockerfile.ci .
+        run: docker build --target ci-check -f backend/Dockerfile .
       - name: Build test image
-        run: docker build --target backend-test -t toique-backend-test -f Dockerfile.ci .
+        run: docker build --target ci-test -t toique-backend-test -f backend/Dockerfile .
       - name: Run migrations
         run: >
           docker run --rm --network host

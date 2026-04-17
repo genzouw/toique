@@ -6,24 +6,25 @@ services:
       POSTGRES_PASSWORD: toique
       POSTGRES_DB: toique
     ports:
-      - "5433:5432"
+      - '5433:5432'
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U toique"]
+      test: ['CMD-SHELL', 'pg_isready -U toique']
       interval: 5s
       timeout: 3s
       retries: 5
 
   backend:
     build:
-      context: ./backend
+      context: .
+      dockerfile: backend/Dockerfile
       target: dev
     ports:
-      - "3000:3000"
+      - '3000:3000'
     environment:
       DATABASE_URL: postgresql://toique:toique@db:5432/toique
-      PORT: "3000"
+      PORT: '3000'
     volumes:
       - ./backend/src:/app/src
     depends_on:
@@ -32,10 +33,11 @@ services:
 
   frontend:
     build:
-      context: ./frontend
+      context: .
+      dockerfile: frontend/Dockerfile
       target: dev
     ports:
-      - "5173:5173"
+      - '5173:5173'
     environment:
       VITE_API_URL: http://localhost:3000
     volumes:

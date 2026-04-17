@@ -7,7 +7,7 @@ app = 'toique'
 primary_region = 'nrt'
 
 [build]
-  dockerfile = 'Dockerfile.fly'
+  dockerfile = 'backend/Dockerfile'
 
 [deploy]
   release_command = 'npx drizzle-kit migrate'
