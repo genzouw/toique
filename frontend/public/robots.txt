@@ -1,0 +1,10 @@
+User-agent: *
+Allow: /
+Disallow: /dashboard
+Disallow: /channels
+Disallow: /forms
+Disallow: /submissions
+Disallow: /messages
+Disallow: /onboarding
+
+Sitemap: https://toique.pages.dev/sitemap.xml
