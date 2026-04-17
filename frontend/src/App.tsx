@@ -1,7 +1,8 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router';
+import { BrowserRouter, Routes, Route } from 'react-router';
 import Layout from './components/Layout';
 import AuthGuard from './components/AuthGuard';
 import RedirectIfAuthed from './components/RedirectIfAuthed';
+import Landing from './pages/Landing';
 import Dashboard from './pages/Dashboard';
 import Channels from './pages/Channels';
 import Messages from './pages/Messages';
@@ -17,6 +18,7 @@ export default function App() {
   return (
     <BrowserRouter>
       <Routes>
+        <Route index element={<Landing />} />
         <Route path="/help" element={<Help />} />
         <Route
           path="/login"
@@ -49,7 +51,6 @@ export default function App() {
             </AuthGuard>
           }
         >
-          <Route index element={<Navigate to="/dashboard" replace />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/channels" element={<Channels />} />
           <Route path="/forms" element={<Forms />} />
