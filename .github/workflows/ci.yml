@@ -67,8 +67,8 @@ jobs:
         run: npx drizzle-kit migrate
         env:
           DATABASE_URL: postgresql://toique:toique@localhost:5432/toique
-      - name: Run tests
+      - name: Run tests with coverage
         working-directory: backend
-        run: npm test
+        run: npm run test:coverage
         env:
           DATABASE_URL: postgresql://toique:toique@localhost:5432/toique
