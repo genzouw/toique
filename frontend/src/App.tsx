@@ -1,7 +1,9 @@
 import { BrowserRouter, Routes, Route, useLocation } from 'react-router';
 import { useEffect } from 'react';
 import Layout from './components/Layout';
+import AdminLayout from './components/AdminLayout';
 import AuthGuard from './components/AuthGuard';
+import OperatorGuard from './components/OperatorGuard';
 import RedirectIfAuthed from './components/RedirectIfAuthed';
 import Landing from './pages/Landing';
 import Dashboard from './pages/Dashboard';
@@ -15,6 +17,10 @@ import FormEdit from './pages/FormEdit';
 import Submissions from './pages/Submissions';
 import Help from './pages/Help';
 import Pricing from './pages/Pricing';
+import Contact from './pages/Contact';
+import AdminHome from './pages/admin/AdminHome';
+import AdminContacts from './pages/admin/AdminContacts';
+import AdminContactDetail from './pages/admin/AdminContactDetail';
 
 /** SPA 内のルート遷移を gtag に送信する */
 function usePageView() {
@@ -35,6 +41,7 @@ function AppRoutes() {
       <Route index element={<Landing />} />
       <Route path="/help" element={<Help />} />
       <Route path="/pricing" element={<Pricing />} />
+      <Route path="/contact" element={<Contact />} />
       <Route
         path="/login"
         element={
@@ -72,6 +79,18 @@ function AppRoutes() {
         <Route path="/forms/:id" element={<FormEdit />} />
         <Route path="/submissions" element={<Submissions />} />
         <Route path="/messages" element={<Messages />} />
+      </Route>
+      <Route
+        path="/admin"
+        element={
+          <OperatorGuard>
+            <AdminLayout />
+          </OperatorGuard>
+        }
+      >
+        <Route index element={<AdminHome />} />
+        <Route path="contacts" element={<AdminContacts />} />
+        <Route path="contacts/:id" element={<AdminContactDetail />} />
       </Route>
     </Routes>
   );

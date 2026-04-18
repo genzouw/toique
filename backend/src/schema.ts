@@ -235,3 +235,32 @@ export const submissions = pgTable('submissions', {
     .notNull()
     .defaultNow(),
 });
+
+// -----------------------------
+// Contacts (Toique 運営者向け問い合わせ)
+// -----------------------------
+// 契約者・見込み客からの問い合わせを保存。
+// 閲覧は OPERATOR_EMAILS に登録された運営者のみ。
+export const contacts = pgTable('contacts', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  // ログイン済みユーザーからの問い合わせなら紐付け。未ログインは null
+  userId: uuid('user_id').references(() => users.id, { onDelete: 'set null' }),
+  tenantId: uuid('tenant_id').references(() => tenants.id, {
+    onDelete: 'set null',
+  }),
+  name: text('name').notNull(),
+  email: text('email').notNull(),
+  category: text('category').notNull(), // bug / feature / pricing / consultation / other
+  subject: text('subject').notNull(),
+  body: text('body').notNull(),
+  url: text('url'),
+  status: text('status').notNull().default('new'), // new / in_review / done
+  userAgent: text('user_agent'),
+  ipAddress: text('ip_address'),
+  createdAt: timestamp('created_at', { withTimezone: true })
+    .notNull()
+    .defaultNow(),
+  updatedAt: timestamp('updated_at', { withTimezone: true })
+    .notNull()
+    .defaultNow(),
+});

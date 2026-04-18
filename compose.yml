@@ -25,8 +25,21 @@ services:
     environment:
       DATABASE_URL: postgresql://toique:toique@db:5432/toique
       PORT: '3000'
+      # dev コンテナ内にマウントした migrations を指す
+      DRIZZLE_MIGRATIONS_DIR: /migrations
+      # ローカル開発用のダミー値 (Stripe API を実際には叩かない)。
+      # 実キーで検証する場合は .env 等で上書きしてください。
+      STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY:-sk_test_dummy}
+      STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET:-whsec_dummy}
+      STRIPE_PRO_PRICE_ID: ${STRIPE_PRO_PRICE_ID:-price_dummy}
+      # 運営者エリアを使う場合はここに自分のメールを入れる
+      OPERATOR_EMAILS: ${OPERATOR_EMAILS:-}
+      # Resend で通知メールを送る場合のみ設定
+      RESEND_API_KEY: ${RESEND_API_KEY:-}
+      CONTACT_FROM: ${CONTACT_FROM:-}
     volumes:
       - ./backend/src:/app/src
+      - ./db/migrations:/migrations
     depends_on:
       db:
         condition: service_healthy

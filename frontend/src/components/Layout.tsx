@@ -10,6 +10,7 @@ import {
   HelpCircle,
   ExternalLink,
   X,
+  Shield,
 } from 'lucide-react';
 import { cn } from '../lib/utils';
 import { signOut, useSession } from '../lib/auth-client';
@@ -43,12 +44,18 @@ export default function Layout() {
   const navigate = useNavigate();
   const [bannerLevel, setBannerLevel] = useState<BannerLevel>('none');
   const [dismissed, setDismissed] = useState(false);
+  const [isOperator, setIsOperator] = useState(false);
 
   useEffect(() => {
     api
       .getUsage()
       .then((u) => setBannerLevel(evaluateBanner(u)))
       .catch(() => {});
+    // 運営者判定: 404 (非運営者) は握りつぶす
+    api
+      .getAdminMe()
+      .then(() => setIsOperator(true))
+      .catch(() => setIsOperator(false));
   }, []);
 
   async function handleSignOut() {
@@ -96,6 +103,15 @@ export default function Layout() {
             ヘルプ
             <ExternalLink size={12} className="ml-auto text-slate-400" />
           </a>
+          {isOperator && (
+            <Link
+              to="/admin"
+              className="flex items-center gap-2 px-3 py-2 rounded-md text-sm text-amber-700 hover:bg-amber-50 border border-dashed border-amber-300 mt-2"
+            >
+              <Shield size={16} />
+              運営者エリア
+            </Link>
+          )}
         </nav>
         <div className="px-5 py-3 border-t border-slate-200">
           {session?.user && (

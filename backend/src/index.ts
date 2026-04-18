@@ -4,7 +4,7 @@ import { logger } from 'hono/logger';
 import { serve } from '@hono/node-server';
 import { sql } from './db.js';
 import { auth } from './auth/better-auth.js';
-import { requireTenant } from './middleware/auth.js';
+import { requireOperator, requireTenant } from './middleware/auth.js';
 import lineWebhook from './routes/webhooks/line.js';
 import stripeWebhook from './routes/webhooks/stripe.js';
 import billing from './routes/billing.js';
@@ -14,6 +14,9 @@ import onboarding from './routes/onboarding.js';
 import forms from './routes/forms.js';
 import submissions from './routes/submissions.js';
 import usage from './routes/usage.js';
+import contact from './routes/contact.js';
+import adminContacts from './routes/admin/contacts.js';
+import adminMe from './routes/admin/me.js';
 
 const app = new Hono({ strict: false });
 
@@ -61,6 +64,14 @@ app.route('/api/v1/usage', usage);
 
 app.use('/api/v1/billing/*', requireTenant);
 app.route('/api/v1/billing', billing);
+
+// 公開フォーム送信 (誰でもPOST可、レート制限+ハニーポット)
+app.route('/api/v1/contact', contact);
+
+// 運営者限定API (URLプレフィックスで一括ガード)
+app.use('/api/v1/admin/*', requireOperator);
+app.route('/api/v1/admin/me', adminMe);
+app.route('/api/v1/admin/contacts', adminContacts);
 
 const port = Number(process.env.PORT) || 3000;
 serve({ fetch: app.fetch, port }, () => {

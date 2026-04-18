@@ -24,10 +24,43 @@ declare module 'hono' {
   }
 }
 
+/**
+ * OPERATOR_EMAILS 環境変数 (カンマ区切り) に含まれるメールアドレスかを判定する。
+ * 比較は小文字正規化・trim 済み。
+ */
+export function isOperatorEmail(email: string | null | undefined): boolean {
+  if (!email) return false;
+  const raw = process.env.OPERATOR_EMAILS ?? '';
+  const allowlist = raw
+    .split(',')
+    .map((s) => s.trim().toLowerCase())
+    .filter(Boolean);
+  return allowlist.includes(email.trim().toLowerCase());
+}
+
 export const requireAuth: MiddlewareHandler = async (c, next) => {
   const session = await auth.api.getSession({ headers: c.req.raw.headers });
   if (!session?.user) return c.text('Unauthorized', 401);
 
+  c.set('authUser', {
+    id: session.user.id,
+    email: session.user.email,
+    name: session.user.name,
+  });
+  await next();
+};
+
+/**
+ * 運営者 (Toique を運営する側) のみ通過させるミドルウェア。
+ * - ログイン済みであること
+ * - セッションユーザーのメールが OPERATOR_EMAILS allowlist に含まれること
+ * 該当しない場合は 404 を返す (存在を漏らさないため)
+ */
+export const requireOperator: MiddlewareHandler = async (c, next) => {
+  const session = await auth.api.getSession({ headers: c.req.raw.headers });
+  if (!session?.user || !isOperatorEmail(session.user.email)) {
+    return c.text('Not Found', 404);
+  }
   c.set('authUser', {
     id: session.user.id,
     email: session.user.email,
