@@ -29,6 +29,15 @@ pg_dump -h "${POSTGRES_HOST}" -p "${POSTGRES_PORT:-5432}" -U "${POSTGRES_USER}" 
 
 echo "Backup successfully created at ${BACKUP_FILEPATH}."
 
+# バックアップファイルの整合性チェック
+gzip -t "${BACKUP_FILEPATH}"
+BACKUP_SIZE=$(stat -c %s "${BACKUP_FILEPATH}" 2>/dev/null || stat -f %z "${BACKUP_FILEPATH}")
+if [ "$BACKUP_SIZE" -lt 1024 ]; then
+  echo "Error: backup file suspiciously small: ${BACKUP_SIZE} bytes"
+  exit 1
+fi
+echo "Integrity check passed (${BACKUP_SIZE} bytes)."
+
 # GCS にアップロード
 echo "Uploading backup to GCS bucket ${GCS_BUCKET}..."
 gcloud storage cp "${BACKUP_FILEPATH}" "gs://${GCS_BUCKET}/${BACKUP_FILENAME}"
