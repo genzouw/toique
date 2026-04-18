@@ -6,7 +6,7 @@ CRON_SCHEDULE=${CRON_SCHEDULE:-"0 3 * * *"}
 echo "Starting cron scheduler with schedule: ${CRON_SCHEDULE}"
 
 # 環境変数をcronから実行されるスクリプトに渡すためにファイルに保存
-printenv | grep -E '^(POSTGRES|AWS|S3)_' | sed 's/^\(.*\)=\(.*\)$/export \1="\2"/' > /app/env.sh
+export -p | grep -E '^export (POSTGRES|AWS|S3)_' > /app/env.sh
 chmod +x /app/env.sh
 
 cat <<EOF > /app/run_backup.sh
