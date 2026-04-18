@@ -84,12 +84,17 @@ export const requireOperator: MiddlewareHandler = async (c, next) => {
   const expectedUsername = process.env.ADMIN_USERNAME || 'admin';
   const expectedPassword = process.env.ADMIN_PASSWORD || 'admin';
 
+  const usernameBuf = Buffer.from(username);
+  const expectedUsernameBuf = Buffer.from(expectedUsername);
+  const passwordBuf = Buffer.from(password);
+  const expectedPasswordBuf = Buffer.from(expectedPassword);
+
   const usernameMatch =
-    username.length === expectedUsername.length &&
-    timingSafeEqual(Buffer.from(username), Buffer.from(expectedUsername));
+    usernameBuf.length === expectedUsernameBuf.length &&
+    timingSafeEqual(usernameBuf, expectedUsernameBuf);
   const passwordMatch =
-    password.length === expectedPassword.length &&
-    timingSafeEqual(Buffer.from(password), Buffer.from(expectedPassword));
+    passwordBuf.length === expectedPasswordBuf.length &&
+    timingSafeEqual(passwordBuf, expectedPasswordBuf);
   if (!usernameMatch || !passwordMatch) {
     return c.json({ error: 'Unauthorized' }, 401);
   }
