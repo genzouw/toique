@@ -30,6 +30,15 @@ const OPERATOR_ALLOWLIST = (process.env.OPERATOR_EMAILS ?? '')
   .map((s) => s.trim().toLowerCase())
   .filter(Boolean);
 
+if (
+  process.env.NODE_ENV === 'production' &&
+  (!process.env.ADMIN_USERNAME || !process.env.ADMIN_PASSWORD)
+) {
+  throw new Error(
+    'ADMIN_USERNAME and ADMIN_PASSWORD must be set in production',
+  );
+}
+
 export function isOperatorEmail(email: string | null | undefined): boolean {
   if (!email) return false;
   return OPERATOR_ALLOWLIST.includes(email.trim().toLowerCase());
@@ -73,14 +82,19 @@ export const requireOperator: MiddlewareHandler = async (c, next) => {
   const username = decoded.slice(0, colonIndex);
   const password = decoded.slice(colonIndex + 1);
   const expectedUsername = process.env.ADMIN_USERNAME || 'admin';
-  const expectedPassword = process.env.ADMIN_PASSWORD || 'password';
+  const expectedPassword = process.env.ADMIN_PASSWORD || 'admin';
+
+  const usernameBuf = Buffer.from(username);
+  const expectedUsernameBuf = Buffer.from(expectedUsername);
+  const passwordBuf = Buffer.from(password);
+  const expectedPasswordBuf = Buffer.from(expectedPassword);
 
   const usernameMatch =
-    username.length === expectedUsername.length &&
-    timingSafeEqual(Buffer.from(username), Buffer.from(expectedUsername));
+    usernameBuf.length === expectedUsernameBuf.length &&
+    timingSafeEqual(usernameBuf, expectedUsernameBuf);
   const passwordMatch =
-    password.length === expectedPassword.length &&
-    timingSafeEqual(Buffer.from(password), Buffer.from(expectedPassword));
+    passwordBuf.length === expectedPasswordBuf.length &&
+    timingSafeEqual(passwordBuf, expectedPasswordBuf);
   if (!usernameMatch || !passwordMatch) {
     return c.json({ error: 'Unauthorized' }, 401);
   }

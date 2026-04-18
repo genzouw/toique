@@ -81,12 +81,14 @@ jobs:
             STRIPE_PRO_PRICE_ID=price_1TNM1yIlm7LOZC27Pv95rexs
             CONTACT_FROM=noreply@toique.pages.dev
             OPERATOR_EMAILS=genzouw@gmail.com
+            ADMIN_USERNAME=admin
           secrets: |
             DATABASE_URL=DATABASE_URL:latest
             BETTER_AUTH_SECRET=BETTER_AUTH_SECRET:latest
             STRIPE_SECRET_KEY=STRIPE_SECRET_KEY:latest
             STRIPE_WEBHOOK_SECRET=STRIPE_WEBHOOK_SECRET:latest
             RESEND_API_KEY=RESEND_API_KEY:latest
+            ADMIN_PASSWORD=ADMIN_PASSWORD:latest
 
       - name: Set BETTER_AUTH_URL to deployed Cloud Run URL
         run: |
