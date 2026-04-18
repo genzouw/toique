@@ -133,7 +133,7 @@ export default function FormSchemaBuilder({
                   disabled={idx === 0}
                   className="text-slate-400 hover:text-slate-700 disabled:opacity-30"
                   title="上へ"
-                  aria-label="上へ移動"
+                  aria-label="ステップを上へ移動"
                 >
                   <GripVertical size={14} />
                 </button>
@@ -178,7 +178,7 @@ export default function FormSchemaBuilder({
                   onClick={() => removeStep(idx)}
                   className="p-1 text-red-500 hover:bg-red-50 rounded"
                   title="削除"
-                  aria-label="削除"
+                  aria-label="ステップを削除"
                 >
                   <Trash2 size={14} />
                 </button>
@@ -223,7 +223,7 @@ export default function FormSchemaBuilder({
                         onClick={() => removeChoice(idx, ci)}
                         disabled={step.choices.length <= 1}
                         className="p-1 text-red-400 hover:text-red-600 disabled:opacity-30"
-                        aria-label="削除"
+                        aria-label="選択肢を削除"
                       >
                         <Trash2 size={12} />
                       </button>
