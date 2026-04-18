@@ -54,6 +54,17 @@ export default function Layout() {
   }, [location.pathname]);
 
   useEffect(() => {
+    if (isSidebarOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [isSidebarOpen]);
+
+  useEffect(() => {
     api
       .getUsage()
       .then((u) => setBannerLevel(evaluateBanner(u)))
@@ -82,6 +93,7 @@ export default function Layout() {
         </div>
         <button
           onClick={() => setIsSidebarOpen(true)}
+          aria-label="メニューを開く"
           className="p-1.5 text-slate-600 hover:bg-slate-100 rounded-md"
         >
           <Menu size={20} />
@@ -99,8 +111,8 @@ export default function Layout() {
       {/* Sidebar */}
       <aside
         className={cn(
-          "fixed inset-y-0 left-0 z-50 w-60 bg-white border-r border-slate-200 flex flex-col transition-transform duration-200 ease-in-out md:static md:translate-x-0",
-          isSidebarOpen ? "translate-x-0" : "-translate-x-full"
+          'fixed inset-y-0 left-0 z-50 w-60 bg-white border-r border-slate-200 flex flex-col transition-transform duration-200 ease-in-out md:static md:translate-x-0',
+          isSidebarOpen ? 'translate-x-0' : '-translate-x-full',
         )}
       >
         <div className="px-5 py-4 border-b border-slate-200 flex items-center justify-between">
@@ -110,6 +122,7 @@ export default function Layout() {
           </div>
           <button
             onClick={() => setIsSidebarOpen(false)}
+            aria-label="メニューを閉じる"
             className="md:hidden p-1 text-slate-500 hover:bg-slate-100 rounded-md"
           >
             <X size={20} />

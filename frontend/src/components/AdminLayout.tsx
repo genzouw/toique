@@ -20,6 +20,17 @@ export default function AdminLayout() {
     setIsSidebarOpen(false);
   }, [location.pathname]);
 
+  useEffect(() => {
+    if (isSidebarOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [isSidebarOpen]);
+
   async function handleSignOut() {
     await signOut();
     navigate('/login', { replace: true });
@@ -36,6 +47,7 @@ export default function AdminLayout() {
         </div>
         <button
           onClick={() => setIsSidebarOpen(true)}
+          aria-label="メニューを開く"
           className="p-1.5 text-slate-300 hover:bg-slate-800 rounded-md"
         >
           <Menu size={20} />
@@ -53,8 +65,8 @@ export default function AdminLayout() {
       {/* Sidebar */}
       <aside
         className={cn(
-          "fixed inset-y-0 left-0 z-50 w-60 border-r border-slate-800 bg-slate-900 text-slate-100 flex flex-col transition-transform duration-200 ease-in-out md:static md:translate-x-0",
-          isSidebarOpen ? "translate-x-0" : "-translate-x-full"
+          'fixed inset-y-0 left-0 z-50 w-60 border-r border-slate-800 bg-slate-900 text-slate-100 flex flex-col transition-transform duration-200 ease-in-out md:static md:translate-x-0',
+          isSidebarOpen ? 'translate-x-0' : '-translate-x-full',
         )}
       >
         <div className="px-5 py-4 border-b border-slate-800 flex items-center justify-between">
@@ -67,6 +79,7 @@ export default function AdminLayout() {
           </div>
           <button
             onClick={() => setIsSidebarOpen(false)}
+            aria-label="メニューを閉じる"
             className="md:hidden p-1 text-slate-400 hover:bg-slate-800 rounded-md"
           >
             <X size={20} />
