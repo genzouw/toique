@@ -1,35 +1,60 @@
 // Form schema definition used in forms.schema (JSONB)
+import { z } from 'zod';
 
-export type ChoiceStep = {
-  type: 'choice';
-  prompt: string;
-  field: string;
-  choices: Array<{
-    label: string;
-    value: string;
-    next: string;
-  }>;
-};
+export const choiceStepSchema = z.object({
+  type: z.literal('choice'),
+  prompt: z.string(),
+  field: z.string(),
+  choices: z.array(
+    z.object({
+      label: z.string(),
+      value: z.string(),
+      next: z.string(),
+    }),
+  ),
+});
 
-export type TextStep = {
-  type: 'text';
-  prompt: string;
-  field: string;
-  next: string;
-};
+export type ChoiceStep = z.infer<typeof choiceStepSchema>;
 
-export type EndStep = {
-  type: 'end';
-  thanks: string;
-};
+export const textStepSchema = z.object({
+  type: z.literal('text'),
+  prompt: z.string(),
+  field: z.string(),
+  next: z.string(),
+});
 
-export type FormStep = ChoiceStep | TextStep | EndStep;
+export type TextStep = z.infer<typeof textStepSchema>;
 
-export type FormSchema = {
-  startStep: string;
-  steps: Record<string, FormStep>;
-};
+export const endStepSchema = z.object({
+  type: z.literal('end'),
+  thanks: z.string(),
+});
+
+export type EndStep = z.infer<typeof endStepSchema>;
+
+export const formStepSchema = z.discriminatedUnion('type', [
+  choiceStepSchema,
+  textStepSchema,
+  endStepSchema,
+]);
+
+export type FormStep = z.infer<typeof formStepSchema>;
+
+export const formSchemaSchema = z.object({
+  startStep: z.string(),
+  steps: z.record(z.string(), formStepSchema),
+});
+
+export type FormSchema = z.infer<typeof formSchemaSchema>;
 
 export function getStep(schema: FormSchema, stepId: string): FormStep | null {
   return schema.steps[stepId] ?? null;
+}
+
+export function parseFormSchema(data: unknown): FormSchema {
+  const result = formSchemaSchema.safeParse(data);
+  if (!result.success) {
+    throw new Error(`Invalid form schema: ${result.error.message}`);
+  }
+  return result.data;
 }
