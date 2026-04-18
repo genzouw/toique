@@ -1,4 +1,4 @@
-import { NavLink, Outlet, useNavigate, Link } from 'react-router';
+import { NavLink, Outlet, useNavigate, Link, useLocation } from 'react-router';
 import { useEffect, useState } from 'react';
 import {
   MessageSquare,
@@ -11,6 +11,7 @@ import {
   ExternalLink,
   X,
   Shield,
+  Menu,
 } from 'lucide-react';
 import { cn } from '../lib/utils';
 import { signOut, useSession } from '../lib/auth-client';
@@ -42,9 +43,15 @@ function evaluateBanner(usage: UsageResponse | null): BannerLevel {
 export default function Layout() {
   const { data: session } = useSession();
   const navigate = useNavigate();
+  const location = useLocation();
   const [bannerLevel, setBannerLevel] = useState<BannerLevel>('none');
   const [dismissed, setDismissed] = useState(false);
   const [isOperator, setIsOperator] = useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+
+  useEffect(() => {
+    setIsSidebarOpen(false);
+  }, [location.pathname]);
 
   useEffect(() => {
     api
@@ -66,11 +73,47 @@ export default function Layout() {
   const showBanner = bannerLevel !== 'none' && !dismissed;
 
   return (
-    <div className="flex h-full bg-slate-50">
-      <aside className="w-60 border-r border-slate-200 bg-white flex flex-col">
-        <div className="px-5 py-4 border-b border-slate-200">
-          <div className="text-xl font-bold text-slate-900">Toique</div>
-          <div className="text-xs text-slate-500 mt-0.5">管理画面</div>
+    <div className="flex flex-col md:flex-row h-full bg-slate-50">
+      {/* Mobile Header */}
+      <div className="md:hidden flex items-center justify-between px-4 py-3 bg-white border-b border-slate-200">
+        <div className="flex items-center gap-2">
+          <div className="text-lg font-bold text-slate-900">Toique</div>
+          <div className="text-xs text-slate-500 mt-1">管理画面</div>
+        </div>
+        <button
+          onClick={() => setIsSidebarOpen(true)}
+          className="p-1.5 text-slate-600 hover:bg-slate-100 rounded-md"
+        >
+          <Menu size={20} />
+        </button>
+      </div>
+
+      {/* Overlay */}
+      {isSidebarOpen && (
+        <div
+          className="fixed inset-0 bg-black/50 z-40 md:hidden"
+          onClick={() => setIsSidebarOpen(false)}
+        />
+      )}
+
+      {/* Sidebar */}
+      <aside
+        className={cn(
+          "fixed inset-y-0 left-0 z-50 w-60 bg-white border-r border-slate-200 flex flex-col transition-transform duration-200 ease-in-out md:static md:translate-x-0",
+          isSidebarOpen ? "translate-x-0" : "-translate-x-full"
+        )}
+      >
+        <div className="px-5 py-4 border-b border-slate-200 flex items-center justify-between">
+          <div>
+            <div className="text-xl font-bold text-slate-900">Toique</div>
+            <div className="text-xs text-slate-500 mt-0.5">管理画面</div>
+          </div>
+          <button
+            onClick={() => setIsSidebarOpen(false)}
+            className="md:hidden p-1 text-slate-500 hover:bg-slate-100 rounded-md"
+          >
+            <X size={20} />
+          </button>
         </div>
         <nav className="flex-1 px-2 py-4 space-y-1">
           {navItems.map((item) => {
@@ -130,7 +173,7 @@ export default function Layout() {
           )}
         </div>
       </aside>
-      <main className="flex-1 overflow-auto p-8">
+      <main className="flex-1 overflow-auto p-4 md:p-8">
         {showBanner && (
           <div
             className={`mb-6 px-4 py-3 rounded-md text-sm flex items-center justify-between ${
