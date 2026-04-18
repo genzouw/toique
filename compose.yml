@@ -46,5 +46,24 @@ services:
     depends_on:
       - backend
 
+  backup:
+    build:
+      context: ./backup
+      dockerfile: Dockerfile
+    environment:
+      POSTGRES_HOST: db
+      POSTGRES_USER: toique
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-toique}
+      POSTGRES_DB: toique
+      POSTGRES_PORT: 5432
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID:-""}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY:-""}
+      AWS_DEFAULT_REGION: ${AWS_DEFAULT_REGION:-ap-northeast-1}
+      S3_BUCKET: ${S3_BUCKET:-""}
+      CRON_SCHEDULE: ${CRON_SCHEDULE:-"0 3 * * *"}
+    depends_on:
+      db:
+        condition: service_healthy
+
 volumes:
   pgdata:
