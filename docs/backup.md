@@ -37,11 +37,11 @@ Terraform および CDKTF がインストールされていることを前提と
 
 `docker compose` を実行する環境、または `.env` ファイルに以下の環境変数を設定してください。
 
-* `GCP_PROJECT_ID`: GCPのプロジェクトID (例: `toique-app-prod`)
-* `GCS_BUCKET`: バックアップファイルのアップロード先となるGCSバケット名 (例: `toique-app-prod-db-backups`)
-* `GOOGLE_APPLICATION_CREDENTIALS_JSON`: GCSへの書き込み権限を持つサービスアカウントのJSONキーの中身 (改行を含んだJSON文字列をそのまま指定)
-* `CRON_SCHEDULE`: バックアップの実行スケジュール（任意。デフォルトは `"0 3 * * *"` で毎日午前3時 JST）
-* `POSTGRES_PASSWORD`: データベースのパスワード（任意。デフォルトは `toique`）
+- `GCP_PROJECT_ID`: GCPのプロジェクトID (例: `toique-app-prod`)
+- `GCS_BUCKET`: バックアップファイルのアップロード先となるGCSバケット名 (例: `toique-app-prod-db-backups`)
+- `GOOGLE_APPLICATION_CREDENTIALS_JSON`: GCSへの書き込み権限を持つサービスアカウントのJSONキーの中身 (改行を含んだJSON文字列をそのまま指定)
+- `CRON_SCHEDULE`: バックアップの実行スケジュール（任意。デフォルトは `"0 3 * * *"` で毎日午前3時 JST）
+- `POSTGRES_PASSWORD`: データベースのパスワード（任意。デフォルトは `toique`）
 
 ### .envファイルの設定例
 
@@ -68,6 +68,6 @@ CRON_SCHEDULE="0 3 * * *"
 docker compose logs -f backup
 ```
 
-## 本番環境への展開 (Fly.ioなどの場合)
+## 本番環境への展開
 
-Fly.ioなどの環境にデプロイする場合は、同様の環境変数をシークレットとして設定するか、Fly.ioのcron機能（Fly Machinesの場合はスケジュール実行など）を利用して、バックアップ用のコンテナまたはタスクを実行するように設定を調整してください。特にJSONのシークレット設定時にはエスケープに注意してください。
+> **注意**: この仕組みはローカル/検証環境向けです。本番環境では Cloud Run Jobs + Cloud Scheduler での定期実行、または Cloud SQL の自動バックアップ/PITR の利用を推奨します。
