@@ -24,6 +24,20 @@ const RATE_LIMIT_WINDOW_MS = 60 * 60 * 1000;
 const RATE_LIMIT_MAX = 5;
 const rateBuckets = new Map<string, number[]>();
 
+// 古いエントリを定期的にクリーンアップしてメモリリークを防止
+setInterval(() => {
+  const now = Date.now();
+  const windowStart = now - RATE_LIMIT_WINDOW_MS;
+  for (const [ip, timestamps] of rateBuckets) {
+    const valid = timestamps.filter((t) => t > windowStart);
+    if (valid.length === 0) {
+      rateBuckets.delete(ip);
+    } else {
+      rateBuckets.set(ip, valid);
+    }
+  }
+}, RATE_LIMIT_WINDOW_MS).unref();
+
 function rateLimited(ip: string): boolean {
   const now = Date.now();
   const windowStart = now - RATE_LIMIT_WINDOW_MS;
