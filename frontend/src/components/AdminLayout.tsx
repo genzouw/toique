@@ -2,7 +2,6 @@ import { NavLink, Outlet, Link, useNavigate, useLocation } from 'react-router';
 import { LogOut, Inbox, Shield, ArrowLeft, Menu, X } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { cn } from '../lib/utils';
-import { signOut, useSession } from '../lib/auth-client';
 
 const navItems = [{ to: '/admin/contacts', label: '問い合わせ', icon: Inbox }];
 
@@ -11,7 +10,6 @@ const navItems = [{ to: '/admin/contacts', label: '問い合わせ', icon: Inbox
  * URL プレフィックス /admin 配下で使われ、契約者向け管理画面とは視覚的に区別する。
  */
 export default function AdminLayout() {
-  const { data: session } = useSession();
   const navigate = useNavigate();
   const location = useLocation();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -31,9 +29,9 @@ export default function AdminLayout() {
     };
   }, [isSidebarOpen]);
 
-  async function handleSignOut() {
-    await signOut();
-    navigate('/login', { replace: true });
+  function handleSignOut() {
+    localStorage.removeItem('adminAuth');
+    navigate('/admin/login', { replace: true });
   }
 
   return (
@@ -115,20 +113,16 @@ export default function AdminLayout() {
           </Link>
         </nav>
         <div className="px-5 py-3 border-t border-slate-800">
-          {session?.user && (
-            <>
-              <div className="text-xs text-slate-400 truncate">
-                {session.user.email}
-              </div>
-              <button
-                onClick={handleSignOut}
-                className="mt-2 w-full inline-flex items-center gap-2 px-2 py-1.5 text-xs text-slate-300 hover:bg-slate-800 rounded-md"
-              >
-                <LogOut size={12} />
-                ログアウト
-              </button>
-            </>
-          )}
+          <div className="text-xs text-slate-400 truncate">
+            運営者アカウント
+          </div>
+          <button
+            onClick={handleSignOut}
+            className="mt-2 w-full inline-flex items-center gap-2 px-2 py-1.5 text-xs text-slate-300 hover:bg-slate-800 rounded-md"
+          >
+            <LogOut size={12} />
+            ログアウト
+          </button>
         </div>
       </aside>
       <main className="flex-1 overflow-auto p-4 md:p-8">

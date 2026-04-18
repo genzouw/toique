@@ -1,3 +1,4 @@
+import { timingSafeEqual } from 'node:crypto';
 import type { MiddlewareHandler } from 'hono';
 import { eq } from 'drizzle-orm';
 import db from '../db.js';
@@ -48,20 +49,42 @@ export const requireAuth: MiddlewareHandler = async (c, next) => {
 
 /**
  * 運営者 (Toique を運営する側) のみ通過させるミドルウェア。
- * - ログイン済みであること
- * - セッションユーザーのメールが OPERATOR_EMAILS allowlist に含まれること
- * 該当しない場合は 404 を返す (存在を漏らさないため)
+ * Basic認証で固定ID/パスワードを確認する。
+ * 該当しない場合は 401 を返す。
  */
 export const requireOperator: MiddlewareHandler = async (c, next) => {
-  const session = await auth.api.getSession({ headers: c.req.raw.headers });
-  if (!session?.user || !isOperatorEmail(session.user.email)) {
-    return c.text('Not Found', 404);
+  const authHeader = c.req.header('Authorization');
+  if (!authHeader || !authHeader.startsWith('Basic ')) {
+    return c.json({ error: 'Unauthorized' }, 401);
   }
-  c.set('authUser', {
-    id: session.user.id,
-    email: session.user.email,
-    name: session.user.name,
-  });
+
+  const base64Credentials = authHeader.split(' ')[1];
+  let decoded: string;
+  try {
+    decoded = Buffer.from(base64Credentials, 'base64').toString('utf-8');
+  } catch {
+    return c.json({ error: 'Unauthorized' }, 401);
+  }
+
+  const colonIndex = decoded.indexOf(':');
+  if (colonIndex === -1) {
+    return c.json({ error: 'Unauthorized' }, 401);
+  }
+  const username = decoded.slice(0, colonIndex);
+  const password = decoded.slice(colonIndex + 1);
+  const expectedUsername = process.env.ADMIN_USERNAME || 'admin';
+  const expectedPassword = process.env.ADMIN_PASSWORD || 'password';
+
+  const usernameMatch =
+    username.length === expectedUsername.length &&
+    timingSafeEqual(Buffer.from(username), Buffer.from(expectedUsername));
+  const passwordMatch =
+    password.length === expectedPassword.length &&
+    timingSafeEqual(Buffer.from(password), Buffer.from(expectedPassword));
+  if (!usernameMatch || !passwordMatch) {
+    return c.json({ error: 'Unauthorized' }, 401);
+  }
+
   await next();
 };
 
