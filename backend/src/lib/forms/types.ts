@@ -5,13 +5,15 @@ export const choiceStepSchema = z.object({
   type: z.literal('choice'),
   prompt: z.string(),
   field: z.string(),
-  choices: z.array(
-    z.object({
-      label: z.string(),
-      value: z.string(),
-      next: z.string(),
-    }),
-  ),
+  choices: z
+    .array(
+      z.object({
+        label: z.string(),
+        value: z.string(),
+        next: z.string(),
+      }),
+    )
+    .max(13, 'LINE quick replies support a maximum of 13 choices'),
 });
 
 export type ChoiceStep = z.infer<typeof choiceStepSchema>;
