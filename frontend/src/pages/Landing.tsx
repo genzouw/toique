@@ -171,7 +171,7 @@ export default function Landing() {
                   <u.icon size={24} />
                 </div>
                 <div>
-                  <div className="flex items-center gap-2 mb-2">
+                  <div className="flex items-start gap-2 mb-2">
                     <span className="px-2 py-0.5 text-xs font-medium bg-slate-100 text-slate-600 rounded-full">
                       {u.category}
                     </span>
