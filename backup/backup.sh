@@ -19,7 +19,7 @@ echo "Starting backup of database ${POSTGRES_DB} to ${BACKUP_FILEPATH}..."
 
 # pg_dump を実行してgzip圧縮
 export PGPASSWORD="${POSTGRES_PASSWORD}"
-pg_dump -h "${POSTGRES_HOST}" -p "${POSTGRES_PORT:-5432}" -U "${POSTGRES_USER}" -d "${POSTGRES_DB}" | gzip > "${BACKUP_FILEPATH}"
+set -o pipefail; pg_dump -h "${POSTGRES_HOST}" -p "${POSTGRES_PORT:-5432}" -U "${POSTGRES_USER}" -d "${POSTGRES_DB}" | gzip > "${BACKUP_FILEPATH}"
 
 if [ $? -eq 0 ]; then
   echo "Backup successfully created at ${BACKUP_FILEPATH}."
