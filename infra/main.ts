@@ -1,34 +1,31 @@
-import { Construct } from "constructs";
-import { App, TerraformStack } from "cdktf";
-import { GoogleProvider } from "@cdktf/provider-google/lib/provider";
-import { StorageBucket } from "@cdktf/provider-google/lib/storage-bucket";
+import { Construct } from 'constructs';
+import { App, TerraformStack } from 'cdktf';
+import { GoogleProvider } from '@cdktf/provider-google/lib/provider';
+import { StorageBucket } from '@cdktf/provider-google/lib/storage-bucket';
 
 class MyStack extends TerraformStack {
   constructor(scope: Construct, id: string) {
     super(scope, id);
 
-    const projectId = "toique-app-prod";
-    const region = "asia-northeast1";
+    const projectId = 'toique-app-prod';
+    const region = 'asia-northeast1';
 
-    new GoogleProvider(this, "Google", {
+    new GoogleProvider(this, 'Google', {
       project: projectId,
       region: region,
     });
 
-    new StorageBucket(this, "backup-bucket", {
+    new StorageBucket(this, 'backup-bucket', {
       name: `${projectId}-db-backups`,
       location: region,
-      storageClass: "STANDARD",
-      versioning: {
-        enabled: true,
-      },
+      storageClass: 'STANDARD',
       lifecycleRule: [
         {
           action: {
-            type: "Delete",
+            type: 'Delete',
           },
           condition: {
-            age: 30, // 30日経過で削除 (例)
+            age: 30,
           },
         },
       ],
@@ -38,5 +35,5 @@ class MyStack extends TerraformStack {
 }
 
 const app = new App();
-new MyStack(app, "toique-infra");
+new MyStack(app, 'toique-infra');
 app.synth();
