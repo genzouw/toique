@@ -1,5 +1,45 @@
 import { Link } from 'react-router';
-import { MessageSquare, ListChecks, Download, Zap } from 'lucide-react';
+import {
+  MessageSquare,
+  ListChecks,
+  Download,
+  Zap,
+  Calendar,
+  ShoppingBag,
+  Monitor,
+  Activity,
+} from 'lucide-react';
+
+const USE_CASES = [
+  {
+    icon: Calendar,
+    title: '美容室・サロンの予約受付',
+    category: '業務効率化',
+    description:
+      'LINEから希望日時やメニュー、担当者を選択。対話形式で予約を自動受付し、スタッフの電話対応の時間を削減します。',
+  },
+  {
+    icon: ShoppingBag,
+    title: '飲食店でのテイクアウト注文',
+    category: '業務効率化',
+    description:
+      'メニュー選択から個数、受取時間の指定までをLINEで完結。注文データは一覧で確認でき、スムーズな商品の提供が可能です。',
+  },
+  {
+    icon: Monitor,
+    title: '社内ヘルプデスク・備品申請',
+    category: '業務効率化',
+    description:
+      '社員からの各種申請やトラブル報告をLINEで一元化。必要な情報を漏れなく収集し、管理部門の対応をスムーズにします。',
+  },
+  {
+    icon: Activity,
+    title: '日々の出費や習慣の記録',
+    category: '生活の自動化',
+    description:
+      '「今日の支出は？」「運動した？」などの質問を定期的に自動送信。回答はCSVでエクスポートでき、手軽に記録を管理できます。',
+  },
+];
 
 const FEATURES = [
   {
@@ -112,8 +152,45 @@ export default function Landing() {
         </div>
       </section>
 
+      {/* Use Cases */}
+      <section className="py-16 px-6 bg-white">
+        <div className="max-w-5xl mx-auto">
+          <h2 className="text-2xl font-bold text-slate-900 text-center">
+            具体的な利用シーン
+          </h2>
+          <p className="mt-4 text-center text-slate-600 max-w-2xl mx-auto">
+            Toiqueは、様々な業種での業務効率化や、個人の生活の自動化・記録に活用できます。
+          </p>
+          <div className="mt-10 grid gap-8 sm:grid-cols-2">
+            {USE_CASES.map((u) => (
+              <div
+                key={u.title}
+                className="bg-white border border-slate-200 rounded-lg p-6 flex flex-col sm:flex-row gap-4"
+              >
+                <div className="flex-shrink-0 w-12 h-12 bg-slate-50 text-slate-700 rounded-lg flex items-center justify-center">
+                  <u.icon size={24} />
+                </div>
+                <div>
+                  <div className="flex items-start gap-2 mb-2">
+                    <span className="px-2 py-0.5 text-xs font-medium bg-slate-100 text-slate-600 rounded-full">
+                      {u.category}
+                    </span>
+                    <h3 className="text-base font-semibold text-slate-900">
+                      {u.title}
+                    </h3>
+                  </div>
+                  <p className="text-sm text-slate-600 leading-relaxed">
+                    {u.description}
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* How it works */}
-      <section className="py-16 px-6">
+      <section className="py-16 px-6 bg-slate-50">
         <div className="max-w-3xl mx-auto">
           <h2 className="text-2xl font-bold text-slate-900 text-center">
             3ステップで始められます
