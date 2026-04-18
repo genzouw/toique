@@ -203,7 +203,11 @@ export default function Layout() {
                 料金プランを見る
               </Link>
             </span>
-            <button onClick={() => setDismissed(true)} className="ml-4">
+            <button
+              onClick={() => setDismissed(true)}
+              className="ml-4"
+              aria-label="メッセージを閉じる"
+            >
               <X size={14} />
             </button>
           </div>
