@@ -17,14 +17,8 @@ EOF
 
 chmod +x /app/run_backup.sh
 
-# cronの設定ファイルを作成
-echo "${CRON_SCHEDULE} /app/run_backup.sh >> /var/log/backup.log 2>&1" > /etc/crontabs/root
-
-# ログファイルの作成
-touch /var/log/backup.log
+# cronの設定ファイルを作成（ログを標準出力にリダイレクト）
+echo "${CRON_SCHEDULE} /app/run_backup.sh >> /proc/1/fd/1 2>&1" > /etc/crontabs/root
 
 # cronをフォアグラウンドで実行
-crond -f -l 2 &
-
-# ログを標準出力に流す
-tail -f /var/log/backup.log
+exec crond -f -l 2
