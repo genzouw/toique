@@ -5,7 +5,7 @@ const BASE_URL =
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
-    ...(init?.headers as Record<string, string> ?? {}),
+    ...((init?.headers as Record<string, string>) ?? {}),
   };
 
   if (path.startsWith('/api/v1/admin/')) {
