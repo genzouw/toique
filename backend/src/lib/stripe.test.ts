@@ -1,4 +1,12 @@
-import { describe, it, expect, vi, beforeAll, afterAll, beforeEach } from 'vitest';
+import {
+  describe,
+  it,
+  expect,
+  vi,
+  afterAll,
+  afterEach,
+  beforeEach,
+} from 'vitest';
 
 const originalEnv = process.env;
 
@@ -6,6 +14,10 @@ describe('stripe', () => {
   beforeEach(() => {
     vi.resetModules();
     process.env = { ...originalEnv };
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
   });
 
   afterAll(() => {
@@ -30,23 +42,20 @@ describe('stripe', () => {
   it('should fallback to default STRIPE_PRO_PRICE_ID if not provided', async () => {
     process.env.STRIPE_SECRET_KEY = 'sk_test_123';
     delete process.env.STRIPE_PRO_PRICE_ID;
-    const { STRIPE_PRO_PRICE_ID } = await import('./stripe');
+    const { STRIPE_PRO_PRICE_ID, DEFAULT_STRIPE_PRO_PRICE_ID } =
+      await import('./stripe');
     expect(typeof STRIPE_PRO_PRICE_ID).toBe('string');
-    expect(STRIPE_PRO_PRICE_ID).toBe('price_1TNM1yIlm7LOZC27Pv95rexs');
+    expect(STRIPE_PRO_PRICE_ID).toBe(DEFAULT_STRIPE_PRO_PRICE_ID);
   });
 
   it('should log a warning if STRIPE_SECRET_KEY is not set', async () => {
     delete process.env.STRIPE_SECRET_KEY;
-    const consoleWarnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const consoleWarnSpy = vi
+      .spyOn(console, 'warn')
+      .mockImplementation(() => {});
 
-    // Using a try-catch because Stripe throws an error if apiKey is empty or undefined
-    try {
-      await import('./stripe');
-    } catch (e) {
-      // Expected to throw because of empty API key in this mock test
-    }
+    await expect(import('./stripe')).rejects.toThrow();
 
     expect(consoleWarnSpy).toHaveBeenCalledWith('STRIPE_SECRET_KEY is not set');
-    consoleWarnSpy.mockRestore();
   });
 });
