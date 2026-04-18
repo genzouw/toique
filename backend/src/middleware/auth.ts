@@ -73,7 +73,7 @@ export const requireOperator: MiddlewareHandler = async (c, next) => {
   const username = decoded.slice(0, colonIndex);
   const password = decoded.slice(colonIndex + 1);
   const expectedUsername = process.env.ADMIN_USERNAME || 'admin';
-  const expectedPassword = process.env.ADMIN_PASSWORD || 'password';
+  const expectedPassword = process.env.ADMIN_PASSWORD || 'admin';
 
   const usernameMatch =
     username.length === expectedUsername.length &&
