@@ -30,6 +30,15 @@ const OPERATOR_ALLOWLIST = (process.env.OPERATOR_EMAILS ?? '')
   .map((s) => s.trim().toLowerCase())
   .filter(Boolean);
 
+if (
+  process.env.NODE_ENV === 'production' &&
+  (!process.env.ADMIN_USERNAME || !process.env.ADMIN_PASSWORD)
+) {
+  throw new Error(
+    'ADMIN_USERNAME and ADMIN_PASSWORD must be set in production',
+  );
+}
+
 export function isOperatorEmail(email: string | null | undefined): boolean {
   if (!email) return false;
   return OPERATOR_ALLOWLIST.includes(email.trim().toLowerCase());
