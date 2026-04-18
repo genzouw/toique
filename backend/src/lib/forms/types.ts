@@ -61,7 +61,9 @@ export function getStep(schema: FormSchema, stepId: string): FormStep | null {
 export function parseFormSchema(data: unknown): FormSchema {
   const result = formSchemaSchema.safeParse(data);
   if (!result.success) {
-    throw new Error(`Invalid form schema: ${result.error.message}`);
+    throw new Error(
+      `Invalid form schema: ${JSON.stringify(result.error.flatten())}`,
+    );
   }
   return result.data;
 }
