@@ -3,23 +3,16 @@ import { and, eq } from 'drizzle-orm';
 import db from '../db.js';
 import { forms, lineChannels } from '../schema.js';
 import { checkQuota } from '../lib/quota.js';
+import { FormSchemaDef } from '../lib/forms/types.js';
 
 const app = new Hono();
 
-type FormSchema = {
-  startStep?: string;
-  steps?: Record<string, unknown>;
-};
-
 function validateSchema(schema: unknown): string | null {
-  if (!schema || typeof schema !== 'object') return 'schema must be an object';
-  const s = schema as FormSchema;
-  if (!s.startStep || typeof s.startStep !== 'string') {
-    return 'schema.startStep is required';
+  const result = FormSchemaDef.safeParse(schema);
+  if (!result.success) {
+    return 'Invalid schema format';
   }
-  if (!s.steps || typeof s.steps !== 'object') {
-    return 'schema.steps is required';
-  }
+  const s = result.data;
   if (!(s.startStep in s.steps)) {
     return `schema.steps must contain the startStep "${s.startStep}"`;
   }
