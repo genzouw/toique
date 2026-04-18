@@ -10,8 +10,8 @@ if [ -n "$GOOGLE_APPLICATION_CREDENTIALS_JSON" ]; then
     echo "$GOOGLE_APPLICATION_CREDENTIALS_JSON" > /app/gcp-key.json
 fi
 
-# jsonの中身を除く環境変数をエクスポート (JSONを直接扱うのを避ける)
-printenv | grep -E '^(POSTGRES|GCP|GCS)_' | sed 's/^\(.*\)=\(.*\)$/export \1="\2"/' > /app/env.sh
+# 環境変数をエクスポート (export -p で特殊文字を安全に処理)
+export -p | grep -E '^export (POSTGRES|GCP|GCS)_' > /app/env.sh
 if [ -f /app/gcp-key.json ]; then
     echo 'export GOOGLE_APPLICATION_CREDENTIALS=/app/gcp-key.json' >> /app/env.sh
 fi
@@ -26,14 +26,8 @@ EOF
 
 chmod +x /app/run_backup.sh
 
-# cronの設定ファイルを作成
-echo "${CRON_SCHEDULE} /app/run_backup.sh >> /var/log/backup.log 2>&1" > /etc/crontabs/root
-
-# ログファイルの作成
-touch /var/log/backup.log
+# cronの設定ファイルを作成 (ログはコンテナの標準出力に直接出力)
+echo "${CRON_SCHEDULE} /app/run_backup.sh > /proc/1/fd/1 2>/proc/1/fd/2" > /etc/crontabs/root
 
 # cronをフォアグラウンドで実行
-crond -f -l 2 &
-
-# ログを標準出力に流す
-tail -f /var/log/backup.log
+exec crond -f -l 2
