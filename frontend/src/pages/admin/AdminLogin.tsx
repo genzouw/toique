@@ -16,7 +16,11 @@ export default function AdminLogin() {
     setIsLoading(true);
 
     try {
-      const token = btoa(`${username}:${password}`);
+      const token = btoa(
+        String.fromCharCode(
+          ...new TextEncoder().encode(`${username}:${password}`),
+        ),
+      );
       localStorage.setItem('adminAuth', token);
 
       // Verify credentials
