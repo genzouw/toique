@@ -42,10 +42,15 @@ export const formStepSchema = z.discriminatedUnion('type', [
 
 export type FormStep = z.infer<typeof formStepSchema>;
 
-export const formSchemaSchema = z.object({
-  startStep: z.string(),
-  steps: z.record(z.string(), formStepSchema),
-});
+export const formSchemaSchema = z
+  .object({
+    startStep: z.string(),
+    steps: z.record(z.string(), formStepSchema),
+  })
+  .refine((data) => data.startStep in data.steps, {
+    message: 'startStep must exist in steps',
+    path: ['startStep'],
+  });
 
 export type FormSchema = z.infer<typeof formSchemaSchema>;
 
