@@ -364,18 +364,27 @@ export default function Help() {
           </dl>
         </Section>
 
-        <footer className="pt-6 border-t border-slate-200 text-sm text-slate-500">
-          このページは随時更新されます。最新版は{' '}
-          <a
-            href="https://github.com/genzouw/toique"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="underline inline-flex items-center gap-1"
-          >
-            GitHub リポジトリ
-            <ExternalLink size={12} />
-          </a>{' '}
-          を参照してください。
+        <footer className="pt-6 border-t border-slate-200 text-sm text-slate-500 space-y-2">
+          <p>
+            解決しない場合は{' '}
+            <Link to="/contact" className="underline">
+              お問い合わせフォーム
+            </Link>{' '}
+            からご連絡ください。
+          </p>
+          <p>
+            このページは随時更新されます。最新版は{' '}
+            <a
+              href="https://github.com/genzouw/toique"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="underline inline-flex items-center gap-1"
+            >
+              GitHub リポジトリ
+              <ExternalLink size={12} />
+            </a>{' '}
+            を参照してください。
+          </p>
         </footer>
       </main>
     </div>

@@ -186,6 +186,9 @@ export default function Landing() {
             <Link to="/help" className="hover:text-slate-900">
               ヘルプ
             </Link>
+            <Link to="/contact" className="hover:text-slate-900">
+              お問い合わせ
+            </Link>
             <Link to="/login" className="hover:text-slate-900">
               ログイン
             </Link>

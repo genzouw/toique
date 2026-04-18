@@ -9,7 +9,7 @@ export default defineConfig({
     tailwindcss(),
     Sitemap({
       hostname: 'https://toique.pages.dev',
-      dynamicRoutes: ['/help', '/pricing', '/login', '/signup'],
+      dynamicRoutes: ['/help', '/pricing', '/contact', '/login', '/signup'],
       exclude: [
         '/dashboard',
         '/channels',

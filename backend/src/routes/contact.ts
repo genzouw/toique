@@ -1,0 +1,160 @@
+import { Hono } from 'hono';
+import { eq } from 'drizzle-orm';
+import db from '../db.js';
+import { contacts, tenantMembers, tenants } from '../schema.js';
+import { auth } from '../auth/better-auth.js';
+import { notifyContact } from '../lib/notify-contact.js';
+
+const app = new Hono();
+
+const CATEGORIES = new Set([
+  'bug',
+  'feature',
+  'pricing',
+  'consultation',
+  'other',
+]);
+
+// ------------------------------------
+// 簡易レート制限 (プロセスメモリ内)
+// ------------------------------------
+// 同一IPから 1 時間に 5 件までに制限。
+// 分散環境を考慮するなら Redis 等に置き換える。
+const RATE_LIMIT_WINDOW_MS = 60 * 60 * 1000;
+const RATE_LIMIT_MAX = 5;
+const rateBuckets = new Map<string, number[]>();
+
+// 古いエントリを定期的にクリーンアップしてメモリリークを防止
+setInterval(() => {
+  const now = Date.now();
+  const windowStart = now - RATE_LIMIT_WINDOW_MS;
+  for (const [ip, timestamps] of rateBuckets) {
+    const valid = timestamps.filter((t) => t > windowStart);
+    if (valid.length === 0) {
+      rateBuckets.delete(ip);
+    } else {
+      rateBuckets.set(ip, valid);
+    }
+  }
+}, RATE_LIMIT_WINDOW_MS).unref();
+
+function rateLimited(ip: string): boolean {
+  const now = Date.now();
+  const windowStart = now - RATE_LIMIT_WINDOW_MS;
+  const history = (rateBuckets.get(ip) ?? []).filter((t) => t > windowStart);
+  if (history.length >= RATE_LIMIT_MAX) {
+    rateBuckets.set(ip, history);
+    return true;
+  }
+  history.push(now);
+  rateBuckets.set(ip, history);
+  return false;
+}
+
+function clientIp(headers: Headers): string {
+  const xff = headers.get('x-forwarded-for');
+  if (xff) return xff.split(',')[0]!.trim();
+  return headers.get('x-real-ip') ?? 'unknown';
+}
+
+/**
+ * 公開問い合わせ送信
+ * POST /api/v1/contact
+ */
+app.post('/', async (c) => {
+  const body = (await c.req.json().catch(() => null)) as Record<
+    string,
+    unknown
+  > | null;
+  if (!body) return c.text('Invalid JSON', 400);
+
+  // ハニーポット: 人間が触らない hidden フィールドが埋まっていたら成功レスポンスを返しつつ破棄
+  if (typeof body.website === 'string' && body.website.length > 0) {
+    return c.json({ ok: true });
+  }
+
+  const name = typeof body.name === 'string' ? body.name.trim() : '';
+  const email = typeof body.email === 'string' ? body.email.trim() : '';
+  const category =
+    typeof body.category === 'string' ? body.category.trim() : '';
+  const subject = typeof body.subject === 'string' ? body.subject.trim() : '';
+  const content = typeof body.body === 'string' ? body.body.trim() : '';
+  const url = typeof body.url === 'string' ? body.url.trim() : '';
+
+  if (!name || name.length > 100) return c.text('name is invalid', 400);
+  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || email.length > 200)
+    return c.text('email is invalid', 400);
+  if (!CATEGORIES.has(category)) return c.text('category is invalid', 400);
+  if (!subject || subject.length > 200)
+    return c.text('subject is invalid', 400);
+  if (!content || content.length > 5000) return c.text('body is invalid', 400);
+  if (url && url.length > 500) return c.text('url is invalid', 400);
+
+  const ip = clientIp(c.req.raw.headers);
+  if (rateLimited(ip)) {
+    return c.text('Too Many Requests', 429);
+  }
+
+  // ログイン状態なら紐付け (任意)
+  let userId: string | null = null;
+  let tenantId: string | null = null;
+  try {
+    const session = await auth.api.getSession({ headers: c.req.raw.headers });
+    if (session?.user) {
+      userId = session.user.id;
+      const [member] = await db
+        .select({ tenantId: tenantMembers.tenantId })
+        .from(tenantMembers)
+        .where(eq(tenantMembers.userId, session.user.id))
+        .limit(1);
+      if (member) tenantId = member.tenantId;
+    }
+  } catch {
+    // セッション取得失敗は無視して未ログイン扱い
+  }
+
+  const userAgent = c.req.header('user-agent') ?? null;
+
+  const [inserted] = await db
+    .insert(contacts)
+    .values({
+      userId,
+      tenantId,
+      name,
+      email,
+      category,
+      subject,
+      body: content,
+      url: url || null,
+      userAgent,
+      ipAddress: ip === 'unknown' ? null : ip,
+    })
+    .returning();
+
+  // テナント名解決 (通知メール用)
+  let tenantName: string | null = null;
+  if (tenantId) {
+    const [t] = await db
+      .select({ name: tenants.name })
+      .from(tenants)
+      .where(eq(tenants.id, tenantId))
+      .limit(1);
+    tenantName = t?.name ?? null;
+  }
+
+  // 通知は best-effort (失敗してもレスポンスには影響させない)
+  void notifyContact({
+    id: inserted.id,
+    name,
+    email,
+    category,
+    subject,
+    body: content,
+    url: url || null,
+    tenantName,
+  });
+
+  return c.json({ ok: true, id: inserted.id });
+});
+
+export default app;

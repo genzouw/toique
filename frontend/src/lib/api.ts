@@ -74,6 +74,47 @@ export type Submission = {
   submittedAt: string;
 };
 
+export type ContactCategory =
+  | 'bug'
+  | 'feature'
+  | 'pricing'
+  | 'consultation'
+  | 'other';
+
+export type ContactStatus = 'new' | 'in_review' | 'done';
+
+export type ContactListItem = {
+  id: string;
+  userId: string | null;
+  tenantId: string | null;
+  tenantName: string | null;
+  name: string;
+  email: string;
+  category: ContactCategory;
+  subject: string;
+  status: ContactStatus;
+  createdAt: string;
+};
+
+export type ContactDetail = ContactListItem & {
+  body: string;
+  url: string | null;
+  userAgent: string | null;
+  ipAddress: string | null;
+  updatedAt: string;
+};
+
+export type ContactSubmitInput = {
+  name: string;
+  email: string;
+  category: ContactCategory;
+  subject: string;
+  body: string;
+  url?: string;
+  /** ハニーポット: 常に空文字で送る */
+  website?: string;
+};
+
 export type ResourceUsage = { current: number; limit: number };
 
 export type UsageResponse = {
@@ -145,6 +186,23 @@ export const api = {
     request<{ url: string }>('/api/v1/billing/portal', { method: 'POST' }),
   exportSubmissionsUrl: (formId: string) =>
     `${BASE_URL}/api/v1/submissions/export?formId=${encodeURIComponent(formId)}`,
+  submitContact: (input: ContactSubmitInput) =>
+    request<{ ok: true; id: string }>('/api/v1/contact', {
+      method: 'POST',
+      body: JSON.stringify(input),
+    }),
+  getAdminMe: () =>
+    request<{ user: { id: string; email: string; name: string } }>(
+      '/api/v1/admin/me',
+    ),
+  listAdminContacts: () => request<ContactListItem[]>('/api/v1/admin/contacts'),
+  getAdminContact: (id: string) =>
+    request<ContactDetail>(`/api/v1/admin/contacts/${id}`),
+  updateAdminContactStatus: (id: string, status: ContactStatus) =>
+    request<ContactDetail>(`/api/v1/admin/contacts/${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify({ status }),
+    }),
   async downloadSubmissionsCsv(formId: string, suggestedName: string) {
     const res = await fetch(this.exportSubmissionsUrl(formId), {
       credentials: 'include',
