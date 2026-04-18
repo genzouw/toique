@@ -1,33 +1,59 @@
 # データベースバックアップ設定
 
-このプロジェクトでは、データベースのバックアップをAmazon S3に保存する仕組みを提供しています。
+このプロジェクトでは、データベースのバックアップを Google Cloud Storage (GCS) に保存する仕組みを提供しています。
 
 ## 概要
 
-`docker compose`の `backup` サービスとして組み込まれており、定期的に（デフォルトで毎日午前3時に）`pg_dump`によるバックアップを実行し、その結果をgzip圧縮してAWS S3にアップロードします。
+`docker compose`の `backup` サービスとして組み込まれており、定期的に（デフォルトで毎日午前3時に）`pg_dump`によるバックアップを実行し、その結果をgzip圧縮して GCP の Cloud Storage にアップロードします。
 
-## AWS S3の準備
+## GCSバケットの準備 (CDKTFを使用)
 
-バックアップを利用するためには、アップロード先となるAmazon S3のバケットを作成し、そのバケットへ書き込み権限を持つIAMユーザーの認証情報（アクセスキーID、シークレットアクセスキー）を用意する必要があります。
+バックアップを利用するためには、アップロード先となる GCS のバケットを作成し、そのバケットへ書き込み権限を持つサービスアカウントの認証情報（JSONキー）を用意する必要があります。
+
+このプロジェクトでは、CDK for Terraform (CDKTF) を用いて、バックアップ用のバケット (`toique-app-prod-db-backups`) を構築できます。
+
+### バケットの構築手順
+
+Terraform および CDKTF がインストールされていることを前提とします。
+
+1. `infra` ディレクトリに移動します。
+   ```bash
+   cd infra
+   ```
+2. 依存パッケージをインストールします。
+   ```bash
+   npm install
+   ```
+3. GCPの認証を行います（構築を実行するユーザーの権限で実行します）。
+   ```bash
+   gcloud auth application-default login
+   ```
+4. CDKTFでデプロイを実行します。
+   ```bash
+   cdktf deploy
+   ```
 
 ## 環境変数の設定
 
 `docker compose` を実行する環境、または `.env` ファイルに以下の環境変数を設定してください。
 
-* `S3_BUCKET`: バックアップファイルのアップロード先となるS3バケット名（必須）
-* `AWS_ACCESS_KEY_ID`: IAMユーザーのアクセスキーID（必須）
-* `AWS_SECRET_ACCESS_KEY`: IAMユーザーのシークレットアクセスキー（必須）
-* `AWS_DEFAULT_REGION`: S3バケットのリージョン（任意。デフォルトは `ap-northeast-1`）
-* `CRON_SCHEDULE`: バックアップの実行スケジュール（任意。デフォルトは `"0 3 * * *"` で毎日午前3時）
+* `GCP_PROJECT_ID`: GCPのプロジェクトID (例: `toique-app-prod`)
+* `GCS_BUCKET`: バックアップファイルのアップロード先となるGCSバケット名 (例: `toique-app-prod-db-backups`)
+* `GOOGLE_APPLICATION_CREDENTIALS_JSON`: GCSへの書き込み権限を持つサービスアカウントのJSONキーの中身 (改行を含んだJSON文字列をそのまま指定)
+* `CRON_SCHEDULE`: バックアップの実行スケジュール（任意。デフォルトは `"0 3 * * *"` で毎日午前3時 JST）
 * `POSTGRES_PASSWORD`: データベースのパスワード（任意。デフォルトは `toique`）
 
 ### .envファイルの設定例
 
 ```env
-S3_BUCKET=my-toique-backup-bucket
-AWS_ACCESS_KEY_ID=AKIAIOSFODNN7EXAMPLE
-AWS_SECRET_ACCESS_KEY=wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
-AWS_DEFAULT_REGION=ap-northeast-1
+GCP_PROJECT_ID=toique-app-prod
+GCS_BUCKET=toique-app-prod-db-backups
+# JSONは1行にするか、クォートで囲む等環境に合わせて適切に設定してください
+GOOGLE_APPLICATION_CREDENTIALS_JSON='{
+  "type": "service_account",
+  "project_id": "toique-app-prod",
+  ...
+}'
 CRON_SCHEDULE="0 3 * * *"
 ```
 
@@ -44,4 +70,4 @@ docker compose logs -f backup
 
 ## 本番環境への展開 (Fly.ioなどの場合)
 
-Fly.ioなどの環境にデプロイする場合は、同様の環境変数をシークレットとして設定するか、Fly.ioのcron機能（Fly Machinesの場合はスケジュール実行など）を利用して、バックアップ用のコンテナまたはタスクを実行するように設定を調整してください。
+Fly.ioなどの環境にデプロイする場合は、同様の環境変数をシークレットとして設定するか、Fly.ioのcron機能（Fly Machinesの場合はスケジュール実行など）を利用して、バックアップ用のコンテナまたはタスクを実行するように設定を調整してください。特にJSONのシークレット設定時にはエスケープに注意してください。

@@ -1,6 +1,6 @@
-FROM postgres:17-alpine
+FROM google/cloud-sdk:alpine
 
-RUN apk add --no-cache aws-cli tzdata
+RUN apk add --no-cache postgresql-client tzdata
 
 ENV TZ=Asia/Tokyo
 
