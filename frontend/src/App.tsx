@@ -21,6 +21,7 @@ import Contact from './pages/Contact';
 import AdminHome from './pages/admin/AdminHome';
 import AdminContacts from './pages/admin/AdminContacts';
 import AdminContactDetail from './pages/admin/AdminContactDetail';
+import AdminLogin from './pages/admin/AdminLogin';
 
 /** SPA 内のルート遷移を gtag に送信する */
 function usePageView() {
@@ -80,6 +81,7 @@ function AppRoutes() {
         <Route path="/submissions" element={<Submissions />} />
         <Route path="/messages" element={<Messages />} />
       </Route>
+      <Route path="/admin/login" element={<AdminLogin />} />
       <Route
         path="/admin"
         element={

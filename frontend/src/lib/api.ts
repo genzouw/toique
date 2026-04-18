@@ -3,13 +3,22 @@ const BASE_URL =
   'http://localhost:3000';
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+    ...(init?.headers as Record<string, string> ?? {}),
+  };
+
+  if (path.startsWith('/api/v1/admin/')) {
+    const adminAuth = localStorage.getItem('adminAuth');
+    if (adminAuth) {
+      headers['Authorization'] = `Basic ${adminAuth}`;
+    }
+  }
+
   const res = await fetch(`${BASE_URL}${path}`, {
     ...init,
     credentials: 'include',
-    headers: {
-      'Content-Type': 'application/json',
-      ...(init?.headers ?? {}),
-    },
+    headers,
   });
   if (!res.ok) {
     const text = await res.text();
