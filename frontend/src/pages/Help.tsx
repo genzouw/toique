@@ -9,6 +9,7 @@ import {
   MessageSquare,
   ExternalLink,
 } from 'lucide-react';
+import Mermaid from '../components/Mermaid';
 
 export default function Help() {
   return (
@@ -80,11 +81,52 @@ export default function Help() {
 
         <Section icon={Plug} title="3. LINE 公式アカウントの接続" id="channel">
           <p>
-            Toique で受信するには、LINE Messaging API
-            のチャネルを接続する必要があります。
+            Toique で受信するには、LINE 公式アカウントと Messaging API
+            のチャネルを接続する必要があります。2024年9月以降、LINE Developers
+            Console からの直接作成が非推奨になり、LINE Official Account Manager
+            からの作成が推奨されています。
           </p>
+          <div className="mt-4 mb-6">
+            <Mermaid
+              chart={`
+graph TD
+    A[LINE Official Account Manager<br>でアカウント作成] --> B[Messaging APIを利用する設定]
+    B --> C[LINE Developers Console<br>で認証情報取得]
+    C --> D[Toiqueに<br>チャネル情報を登録]
+    D --> E[LINE Developers Console<br>にWebhook URL設定]
+              `}
+            />
+          </div>
+
           <h3 className="font-semibold text-slate-900 mt-4">
-            3.1 LINE Developers でチャネル作成
+            3.1 LINE 公式アカウントを作成・API 有効化
+          </h3>
+          <ol className="list-decimal pl-5 space-y-1">
+            <li>
+              <a
+                href="https://manager.line.biz/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="underline inline-flex items-center gap-1"
+              >
+                LINE Official Account Manager
+                <ExternalLink size={12} />
+              </a>{' '}
+              にログイン
+            </li>
+            <li>LINE 公式アカウントを作成</li>
+            <li>
+              アカウント設定の <strong>Messaging API</strong> メニューから、「
+              <strong>Messaging APIを利用する</strong>」を有効にする
+            </li>
+            <li>
+              プロバイダーを選択または新規作成し、チャネル（Messaging
+              API）を作成
+            </li>
+          </ol>
+
+          <h3 className="font-semibold text-slate-900 mt-4">
+            3.2 LINE Developers から認証情報を取得
           </h3>
           <ol className="list-decimal pl-5 space-y-1">
             <li>
@@ -99,10 +141,7 @@ export default function Help() {
               </a>{' '}
               にログイン
             </li>
-            <li>プロバイダーを作成、または既存を選択</li>
-            <li>
-              新規チャネル → <strong>Messaging API</strong> を選択
-            </li>
+            <li>作成したチャネルを開く</li>
             <li>
               以下の値を控える:
               <ul className="list-disc pl-5 mt-1">
@@ -110,13 +149,13 @@ export default function Help() {
                   <code className="px-1 py-0.5 bg-slate-100 rounded text-xs">
                     Channel ID
                   </code>{' '}
-                  (Basic settings)
+                  (Basic settings タブ)
                 </li>
                 <li>
                   <code className="px-1 py-0.5 bg-slate-100 rounded text-xs">
                     Channel secret
                   </code>{' '}
-                  (Basic settings)
+                  (Basic settings タブ)
                 </li>
                 <li>
                   <code className="px-1 py-0.5 bg-slate-100 rounded text-xs">
@@ -129,7 +168,7 @@ export default function Help() {
           </ol>
 
           <h3 className="font-semibold text-slate-900 mt-4">
-            3.2 Toique にチャネルを登録
+            3.3 Toique にチャネルを登録
           </h3>
           <ol className="list-decimal pl-5 space-y-1">
             <li>
@@ -142,7 +181,7 @@ export default function Help() {
           </ol>
 
           <h3 className="font-semibold text-slate-900 mt-4">
-            3.3 LINE Developers に Webhook URL を登録
+            3.4 LINE Developers に Webhook URL を登録
           </h3>
           <ol className="list-decimal pl-5 space-y-1">
             <li>
@@ -153,15 +192,26 @@ export default function Help() {
               </code>
             </li>
             <li>
-              <strong>Use webhook</strong> を ON
+              <strong>Webhookの利用 (Use webhook)</strong> を ON
             </li>
             <li>
-              <strong>Auto-reply messages</strong> を OFF（Toique
-              で制御するため）
-            </li>
-            <li>
-              「Verify」ボタンで <code className="text-xs">Success</code>{' '}
+              「Verify (検証)」ボタンで{' '}
+              <code className="text-xs">成功 (Success)</code>{' '}
               が表示されれば接続完了
+            </li>
+          </ol>
+
+          <h3 className="font-semibold text-slate-900 mt-4">
+            3.5 LINE Official Account Manager で応答設定を変更
+          </h3>
+          <ol className="list-decimal pl-5 space-y-1">
+            <li>LINE Official Account Manager の「応答設定」を開く</li>
+            <li>
+              <strong>あいさつメッセージ</strong> を オフ（Toique
+              で制御する場合）
+            </li>
+            <li>
+              <strong>応答メッセージ</strong> を オフ（Toique で制御するため）
             </li>
           </ol>
           <div className="p-3 rounded-md bg-slate-100 text-slate-700 text-sm mt-3">
