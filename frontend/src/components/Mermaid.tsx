@@ -1,7 +1,11 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useId, useRef, useState } from 'react';
 import mermaid from 'mermaid';
 
-let idCounter = 0;
+mermaid.initialize({
+  startOnLoad: false,
+  theme: 'default',
+  securityLevel: 'loose',
+});
 
 interface MermaidProps {
   chart: string;
@@ -9,15 +13,10 @@ interface MermaidProps {
 
 export default function Mermaid({ chart }: MermaidProps) {
   const [svg, setSvg] = useState('');
-  const id = useRef(`mermaid-${idCounter++}`);
+  const uniqueId = useId();
+  const id = useRef(`mermaid-${uniqueId.replace(/:/g, '')}`);
 
   useEffect(() => {
-    mermaid.initialize({
-      startOnLoad: false,
-      theme: 'default',
-      securityLevel: 'loose',
-    });
-
     const renderChart = async () => {
       try {
         const { svg: svgContent } = await mermaid.render(id.current, chart);
