@@ -10,20 +10,94 @@ concurrency:
   group: deploy-${{ github.ref }}
   cancel-in-progress: true
 
+env:
+  GCP_PROJECT_ID: toique-app-prod
+  GCP_PROJECT_NUMBER: '800954033936'
+  GCP_REGION: asia-northeast1
+  CLOUD_RUN_SERVICE: toique-backend
+  ARTIFACT_REPO: toique
+
 jobs:
   deploy-backend:
-    name: Backend (Fly.io)
+    name: Backend (Cloud Run)
     runs-on: ubuntu-latest
     if: github.event.workflow_run.conclusion == 'success'
+    permissions:
+      contents: read
+      id-token: write
+    outputs:
+      service_url: ${{ steps.deploy.outputs.url }}
     steps:
       - uses: actions/checkout@v4
-      - uses: superfly/flyctl-actions/setup-flyctl@master
-      - run: flyctl deploy --remote-only
-        env:
-          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+
+      - uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: projects/800954033936/locations/global/workloadIdentityPools/github-pool/providers/github-provider
+          service_account: github-deployer@toique-app-prod.iam.gserviceaccount.com
+
+      - uses: google-github-actions/setup-gcloud@v2
+
+      - name: Configure Docker for Artifact Registry
+        run: gcloud auth configure-docker ${{ env.GCP_REGION }}-docker.pkg.dev --quiet
+
+      - name: Build and push backend image
+        run: |
+          IMAGE="${{ env.GCP_REGION }}-docker.pkg.dev/${{ env.GCP_PROJECT_ID }}/${{ env.ARTIFACT_REPO }}/backend:${{ github.sha }}"
+          docker build --target production -f backend/Dockerfile -t "$IMAGE" .
+          docker push "$IMAGE"
+          echo "IMAGE=$IMAGE" >> "$GITHUB_ENV"
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: backend/package-lock.json
+
+      - name: Run database migrations
+        working-directory: backend
+        run: |
+          DATABASE_URL="$(gcloud secrets versions access latest --secret=DATABASE_URL --project=${{ env.GCP_PROJECT_ID }})"
+          export DATABASE_URL
+          npm ci
+          npx drizzle-kit migrate
+
+      - id: deploy
+        uses: google-github-actions/deploy-cloudrun@v2
+        with:
+          service: ${{ env.CLOUD_RUN_SERVICE }}
+          region: ${{ env.GCP_REGION }}
+          image: ${{ env.IMAGE }}
+          flags: >-
+            --min-instances=0
+            --max-instances=3
+            --concurrency=80
+            --cpu=1
+            --memory=512Mi
+            --allow-unauthenticated
+            --port=8080
+          env_vars: |
+            NODE_ENV=production
+            CORS_ORIGIN=https://toique.pages.dev
+            STRIPE_PRO_PRICE_ID=price_1TNM1yIlm7LOZC27Pv95rexs
+            CONTACT_FROM=noreply@toique.pages.dev
+            OPERATOR_EMAILS=genzouw@gmail.com
+          secrets: |
+            DATABASE_URL=DATABASE_URL:latest
+            BETTER_AUTH_SECRET=BETTER_AUTH_SECRET:latest
+            STRIPE_SECRET_KEY=STRIPE_SECRET_KEY:latest
+            STRIPE_WEBHOOK_SECRET=STRIPE_WEBHOOK_SECRET:latest
+            RESEND_API_KEY=RESEND_API_KEY:latest
+
+      - name: Set BETTER_AUTH_URL to deployed Cloud Run URL
+        run: |
+          gcloud run services update ${{ env.CLOUD_RUN_SERVICE }} \
+            --region=${{ env.GCP_REGION }} \
+            --project=${{ env.GCP_PROJECT_ID }} \
+            --update-env-vars "BETTER_AUTH_URL=${{ steps.deploy.outputs.url }}"
 
   deploy-frontend:
     name: Frontend (Cloudflare Pages)
+    needs: deploy-backend
     runs-on: ubuntu-latest
     if: github.event.workflow_run.conclusion == 'success'
     steps:
@@ -39,7 +113,7 @@ jobs:
           npm ci
           npm run build
         env:
-          VITE_API_URL: https://toique.fly.dev
+          VITE_API_URL: ${{ needs.deploy-backend.outputs.service_url }}
       - name: Deploy to Cloudflare Pages
         uses: cloudflare/wrangler-action@v3
         with:
