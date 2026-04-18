@@ -223,6 +223,7 @@ export default function FormSchemaBuilder({
                         onClick={() => removeChoice(idx, ci)}
                         disabled={step.choices.length <= 1}
                         className="p-1 text-red-400 hover:text-red-600 disabled:opacity-30"
+                        title="削除"
                         aria-label="選択肢を削除"
                       >
                         <Trash2 size={12} />
