@@ -1,5 +1,6 @@
-import { NavLink, Outlet, Link, useNavigate } from 'react-router';
-import { LogOut, Inbox, Shield, ArrowLeft } from 'lucide-react';
+import { NavLink, Outlet, Link, useNavigate, useLocation } from 'react-router';
+import { LogOut, Inbox, Shield, ArrowLeft, Menu, X } from 'lucide-react';
+import { useState, useEffect } from 'react';
 import { cn } from '../lib/utils';
 import { signOut, useSession } from '../lib/auth-client';
 
@@ -12,6 +13,23 @@ const navItems = [{ to: '/admin/contacts', label: '問い合わせ', icon: Inbox
 export default function AdminLayout() {
   const { data: session } = useSession();
   const navigate = useNavigate();
+  const location = useLocation();
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+
+  useEffect(() => {
+    setIsSidebarOpen(false);
+  }, [location.pathname]);
+
+  useEffect(() => {
+    if (isSidebarOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [isSidebarOpen]);
 
   async function handleSignOut() {
     await signOut();
@@ -19,14 +37,53 @@ export default function AdminLayout() {
   }
 
   return (
-    <div className="flex h-full bg-slate-50">
-      <aside className="w-60 border-r border-slate-800 bg-slate-900 text-slate-100 flex flex-col">
-        <div className="px-5 py-4 border-b border-slate-800">
-          <div className="text-xl font-bold flex items-center gap-2">
-            <Shield size={18} className="text-amber-400" />
-            Toique
+    <div className="flex flex-col md:flex-row h-full bg-slate-50">
+      {/* Mobile Header */}
+      <div className="md:hidden flex items-center justify-between px-4 py-3 bg-slate-900 text-slate-100 border-b border-slate-800">
+        <div className="flex items-center gap-2">
+          <Shield size={18} className="text-amber-400" />
+          <div className="text-lg font-bold">Toique</div>
+          <div className="text-xs text-amber-400 mt-1 ml-1">運営者エリア</div>
+        </div>
+        <button
+          onClick={() => setIsSidebarOpen(true)}
+          aria-label="メニューを開く"
+          className="p-1.5 text-slate-300 hover:bg-slate-800 rounded-md"
+        >
+          <Menu size={20} />
+        </button>
+      </div>
+
+      {/* Overlay */}
+      {isSidebarOpen && (
+        <div
+          className="fixed inset-0 bg-black/50 z-40 md:hidden"
+          onClick={() => setIsSidebarOpen(false)}
+        />
+      )}
+
+      {/* Sidebar */}
+      <aside
+        className={cn(
+          'fixed inset-y-0 left-0 z-50 w-60 border-r border-slate-800 bg-slate-900 text-slate-100 flex flex-col transition-transform duration-200 ease-in-out md:static md:translate-x-0',
+          isSidebarOpen ? 'translate-x-0' : '-translate-x-full',
+        )}
+      >
+        <div className="px-5 py-4 border-b border-slate-800 flex items-center justify-between">
+          <div>
+            <div className="text-xl font-bold flex items-center gap-2">
+              <Shield size={18} className="text-amber-400" />
+              Toique
+            </div>
+            <div className="text-xs text-amber-400 mt-0.5">運営者エリア</div>
           </div>
-          <div className="text-xs text-amber-400 mt-0.5">運営者エリア</div>
+          <button
+            onClick={() => setIsSidebarOpen(false)}
+            aria-label="メニューを閉じる"
+            className="md:hidden p-1 text-slate-400 hover:bg-slate-800 rounded-md"
+          >
+            <X size={20} />
+          </button>
         </div>
         <nav className="flex-1 px-2 py-4 space-y-1">
           {navItems.map((item) => {
@@ -74,7 +131,7 @@ export default function AdminLayout() {
           )}
         </div>
       </aside>
-      <main className="flex-1 overflow-auto p-8">
+      <main className="flex-1 overflow-auto p-4 md:p-8">
         <Outlet />
       </main>
     </div>
