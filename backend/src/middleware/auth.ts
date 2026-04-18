@@ -24,18 +24,14 @@ declare module 'hono' {
   }
 }
 
-/**
- * OPERATOR_EMAILS 環境変数 (カンマ区切り) に含まれるメールアドレスかを判定する。
- * 比較は小文字正規化・trim 済み。
- */
+const OPERATOR_ALLOWLIST = (process.env.OPERATOR_EMAILS ?? '')
+  .split(',')
+  .map((s) => s.trim().toLowerCase())
+  .filter(Boolean);
+
 export function isOperatorEmail(email: string | null | undefined): boolean {
   if (!email) return false;
-  const raw = process.env.OPERATOR_EMAILS ?? '';
-  const allowlist = raw
-    .split(',')
-    .map((s) => s.trim().toLowerCase())
-    .filter(Boolean);
-  return allowlist.includes(email.trim().toLowerCase());
+  return OPERATOR_ALLOWLIST.includes(email.trim().toLowerCase());
 }
 
 export const requireAuth: MiddlewareHandler = async (c, next) => {
