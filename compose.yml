@@ -59,5 +59,23 @@ services:
     depends_on:
       - backend
 
+  backup:
+    build:
+      context: ./backup
+      dockerfile: Dockerfile
+    environment:
+      POSTGRES_HOST: db
+      POSTGRES_USER: toique
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-toique}
+      POSTGRES_DB: toique
+      POSTGRES_PORT: 5432
+      GCP_PROJECT_ID: ${GCP_PROJECT_ID:-"toique-app-prod"}
+      GCS_BUCKET: ${GCS_BUCKET:-""}
+      GOOGLE_APPLICATION_CREDENTIALS_JSON: ${GOOGLE_APPLICATION_CREDENTIALS_JSON:-""}
+      CRON_SCHEDULE: ${CRON_SCHEDULE:-"0 3 * * *"}
+    depends_on:
+      db:
+        condition: service_healthy
+
 volumes:
   pgdata:
