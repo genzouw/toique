@@ -1,6 +1,6 @@
 import { render, screen } from '@testing-library/react';
 import { MemoryRouter, Routes, Route, useLocation } from 'react-router';
-import { vi } from 'vitest';
+import { vi, describe, it, expect, beforeEach } from 'vitest';
 import RedirectIfAuthed from './RedirectIfAuthed';
 import { useSession } from '../lib/auth-client';
 
