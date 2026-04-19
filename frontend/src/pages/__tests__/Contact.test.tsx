@@ -1,13 +1,10 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router';
+import { Mock } from 'vitest';
 import Contact from '../Contact';
+import * as authClient from '../../lib/auth-client';
 
-type UseSessionReturn = ReturnType<
-  (typeof import('../../lib/auth-client'))['useSession']
->;
-
-// Mock auth-client
+// モック化
 vi.mock('../../lib/auth-client', () => ({
   useSession: vi.fn(),
 }));
@@ -24,34 +21,30 @@ describe('Contact Page', () => {
     vi.clearAllMocks();
   });
 
-  it('should auto-fill name and email when user is logged in', async () => {
-    const { useSession } = await import('../../lib/auth-client');
+  it('ログインユーザーの情報を自動入力する', () => {
+    const mockUser = {
+      id: 'user-1',
+      name: 'テスト太郎',
+      email: 'test@example.com',
+      emailVerified: true,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
 
-    // Mock the session with a logged-in user
-    vi.mocked(useSession).mockReturnValue({
+    const mockSession = {
+      id: 'session-1',
+      userId: 'user-1',
+      expiresAt: new Date(),
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+
+    (authClient.useSession as Mock).mockReturnValue({
       data: {
-        user: {
-          id: '123',
-          name: 'Test User',
-          email: 'test@example.com',
-          emailVerified: true,
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        },
-        session: {
-          id: 'abc',
-          userId: '123',
-          expiresAt: new Date(),
-          ipAddress: '127.0.0.1',
-          userAgent: 'test',
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        },
+        user: mockUser,
+        session: mockSession,
       },
-      isPending: false,
-      error: null,
-      refetch: vi.fn(),
-    } as UseSessionReturn);
+    });
 
     render(
       <MemoryRouter>
@@ -59,27 +52,19 @@ describe('Contact Page', () => {
       </MemoryRouter>,
     );
 
-    // Get the input fields
-    const nameInput = screen.getByLabelText(/お名前/i) as HTMLInputElement;
+    const nameInput = screen.getByLabelText(/お名前/) as HTMLInputElement;
     const emailInput = screen.getByLabelText(
-      /メールアドレス/i,
+      /メールアドレス/,
     ) as HTMLInputElement;
 
-    // Check if they are auto-filled
-    expect(nameInput.value).toBe('Test User');
+    expect(nameInput.value).toBe('テスト太郎');
     expect(emailInput.value).toBe('test@example.com');
   });
 
-  it('should not auto-fill when user is not logged in', async () => {
-    const { useSession } = await import('../../lib/auth-client');
-
-    // Mock the session with no user
-    vi.mocked(useSession).mockReturnValue({
+  it('未ログインの場合は空のままである', () => {
+    (authClient.useSession as Mock).mockReturnValue({
       data: null,
-      isPending: false,
-      error: null,
-      refetch: vi.fn(),
-    } as UseSessionReturn);
+    });
 
     render(
       <MemoryRouter>
@@ -87,13 +72,11 @@ describe('Contact Page', () => {
       </MemoryRouter>,
     );
 
-    // Get the input fields
-    const nameInput = screen.getByLabelText(/お名前/i) as HTMLInputElement;
+    const nameInput = screen.getByLabelText(/お名前/) as HTMLInputElement;
     const emailInput = screen.getByLabelText(
-      /メールアドレス/i,
+      /メールアドレス/,
     ) as HTMLInputElement;
 
-    // Check if they are empty
     expect(nameInput.value).toBe('');
     expect(emailInput.value).toBe('');
   });
