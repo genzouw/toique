@@ -42,22 +42,24 @@ describe('Contact Page', () => {
           userAgent: 'test',
           createdAt: new Date(),
           updatedAt: new Date(),
-        }
+        },
       },
       isPending: false,
       error: null,
       refetch: vi.fn(),
-    } as ReturnType<typeof vi.mocked>);
+    } as any);
 
     render(
       <MemoryRouter>
         <Contact />
-      </MemoryRouter>
+      </MemoryRouter>,
     );
 
     // Get the input fields
     const nameInput = screen.getByLabelText(/お名前/i) as HTMLInputElement;
-    const emailInput = screen.getByLabelText(/メールアドレス/i) as HTMLInputElement;
+    const emailInput = screen.getByLabelText(
+      /メールアドレス/i,
+    ) as HTMLInputElement;
 
     // Check if they are auto-filled
     expect(nameInput.value).toBe('Test User');
@@ -73,17 +75,19 @@ describe('Contact Page', () => {
       isPending: false,
       error: null,
       refetch: vi.fn(),
-    } as ReturnType<typeof vi.mocked>);
+    } as any);
 
     render(
       <MemoryRouter>
         <Contact />
-      </MemoryRouter>
+      </MemoryRouter>,
     );
 
     // Get the input fields
     const nameInput = screen.getByLabelText(/お名前/i) as HTMLInputElement;
-    const emailInput = screen.getByLabelText(/メールアドレス/i) as HTMLInputElement;
+    const emailInput = screen.getByLabelText(
+      /メールアドレス/i,
+    ) as HTMLInputElement;
 
     // Check if they are empty
     expect(nameInput.value).toBe('');
