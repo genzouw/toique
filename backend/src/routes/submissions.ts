@@ -109,10 +109,13 @@ app.get('/export', async (c) => {
   return c.body(csv);
 });
 
+const CSV_ESCAPE_TEST = /[",\r\n]/;
+const CSV_ESCAPE_REPLACE = /"/g;
+
 function escapeCsv(value: string | number | null | undefined): string {
   const s = value == null ? '' : String(value);
-  if (/[",\r\n]/.test(s)) {
-    return `"${s.replace(/"/g, '""')}"`;
+  if (CSV_ESCAPE_TEST.test(s)) {
+    return `"${s.replace(CSV_ESCAPE_REPLACE, '""')}"`;
   }
   return s;
 }
