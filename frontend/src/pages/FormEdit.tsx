@@ -373,6 +373,7 @@ export default function FormEdit() {
           ) : (
             <>
               <textarea
+                aria-label="JSON schema editor"
                 value={schemaJson}
                 onChange={(e) => handleJsonChange(e.target.value)}
                 rows={20}
