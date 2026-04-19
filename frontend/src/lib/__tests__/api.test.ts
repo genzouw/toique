@@ -20,8 +20,18 @@ describe('API client library', () => {
         text: () => Promise.resolve('Bad Request'),
       } as Response);
 
-      await expect(api.listForms()).rejects.toThrow('API error: 400 Bad Request');
-      expect(fetchSpy).toHaveBeenCalledTimes(1);
+      await expect(api.listForms()).rejects.toThrow(
+        'API error: 400 Bad Request',
+      );
+      expect(fetchSpy).toHaveBeenCalledWith(
+        expect.stringContaining('/api/v1/forms'),
+        expect.objectContaining({
+          credentials: 'include',
+          headers: expect.objectContaining({
+            'Content-Type': 'application/json',
+          }),
+        }),
+      );
     });
   });
 
