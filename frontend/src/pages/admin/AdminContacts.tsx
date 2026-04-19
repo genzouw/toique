@@ -47,7 +47,9 @@ export default function AdminContacts() {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-slate-900">問い合わせ</h1>
+        <h1 className="text-2xl font-bold text-slate-900">
+          システム問い合わせ
+        </h1>
         <select
           value={filter}
           onChange={(e) => setFilter(e.target.value as ContactStatus | 'all')}
@@ -70,7 +72,7 @@ export default function AdminContacts() {
         <div className="text-sm text-slate-500">読み込み中…</div>
       ) : filtered.length === 0 ? (
         <div className="text-sm text-slate-500 bg-white border border-slate-200 rounded-md px-4 py-6 text-center">
-          問い合わせはありません。
+          システム問い合わせはありません。
         </div>
       ) : (
         <div className="bg-white border border-slate-200 rounded-lg overflow-hidden">
