@@ -33,10 +33,14 @@ describe('AdminLogin', () => {
       </BrowserRouter>,
     );
 
-    expect(screen.getByRole('heading', { name: '運営者ログイン' })).toBeInTheDocument();
+    expect(
+      screen.getByRole('heading', { name: '運営者ログイン' }),
+    ).toBeInTheDocument();
     expect(screen.getByLabelText('ユーザーID')).toBeInTheDocument();
     expect(screen.getByLabelText('パスワード')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'ログイン' })).toBeInTheDocument();
+    expect(
+      screen.getByRole('button', { name: 'ログイン' }),
+    ).toBeInTheDocument();
   });
 
   it('shows error and removes auth token on unauthenticated path (login failure)', async () => {
@@ -52,7 +56,9 @@ describe('AdminLogin', () => {
     );
 
     // Initial assertions
-    expect(screen.queryByText('IDまたはパスワードが正しくありません。')).not.toBeInTheDocument();
+    expect(
+      screen.queryByText('IDまたはパスワードが正しくありません。'),
+    ).not.toBeInTheDocument();
     expect(localStorage.getItem('adminAuth')).toBeNull();
 
     // Fill in credentials
@@ -73,7 +79,9 @@ describe('AdminLogin', () => {
 
     await waitFor(() => {
       // Expect error message to be shown
-      expect(screen.getByText('IDまたはパスワードが正しくありません。')).toBeInTheDocument();
+      expect(
+        screen.getByText('IDまたはパスワードが正しくありません。'),
+      ).toBeInTheDocument();
     });
 
     // Check localStorage was cleared
@@ -108,13 +116,17 @@ describe('AdminLogin', () => {
 
     await waitFor(() => {
       // Check localStorage was set
-      expect(localStorage.getItem('adminAuth')).not.toBeNull();
+      expect(localStorage.getItem('adminAuth')).toBe(
+        'YWRtaW46Y29ycmVjdHBhc3N3b3Jk',
+      );
 
       // Check navigation happened
       expect(mockNavigate).toHaveBeenCalledWith('/admin', { replace: true });
     });
 
     // No error should be shown
-    expect(screen.queryByText('IDまたはパスワードが正しくありません。')).not.toBeInTheDocument();
+    expect(
+      screen.queryByText('IDまたはパスワードが正しくありません。'),
+    ).not.toBeInTheDocument();
   });
 });
