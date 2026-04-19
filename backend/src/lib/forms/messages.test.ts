@@ -134,19 +134,19 @@ describe('messages', () => {
       expect(result).toHaveLength(1);
 
       // Should have only 13 items because of .slice(0, 13)
-      // @ts-ignore
+      // @ts-expect-error
       expect(result[0].quickReply.items).toHaveLength(13);
 
       // Should truncate label to 20 chars
-      // @ts-ignore
+      // @ts-expect-error
       expect(result[0].quickReply.items[0].action.label).toBe(
         'This is a very long ',
       );
-      // @ts-ignore
+      // @ts-expect-error
       expect(result[0].quickReply.items[0].action.label).toHaveLength(20);
 
       // But displayText is not truncated
-      // @ts-ignore
+      // @ts-expect-error
       expect(result[0].quickReply.items[0].action.displayText).toBe(
         'This is a very long option label 0',
       );
