@@ -32,7 +32,7 @@ describe('Line Webhook Route', () => {
     const handleLineEventSpy = vi.spyOn(eventHandler, 'handleLineEvent');
 
     // Simulate async processing
-    let resolveFirstEvent: (value: unknown) => void;
+    let resolveFirstEvent!: (value: unknown) => void;
     const firstEventPromise = new Promise((resolve) => {
       resolveFirstEvent = resolve;
     });
@@ -49,7 +49,7 @@ describe('Line Webhook Route', () => {
     // Simulate setting rawBody which is done by lineSignature in reality, but we mocked it
     testApp.use('*', async (c, next) => {
       c.set(
-        'rawBody',
+        'rawBody' as never,
         JSON.stringify({
           events: [{ replyToken: 'token-1' }, { replyToken: 'token-2' }],
         }),
@@ -73,6 +73,6 @@ describe('Line Webhook Route', () => {
     // Both events should have started processing even though the first one is blocked
     await vi.waitFor(() => expect(handleLineEventSpy).toHaveBeenCalledTimes(2));
 
-    resolveFirstEvent(); // Clean up
+    resolveFirstEvent(undefined); // Clean up
   });
 });
