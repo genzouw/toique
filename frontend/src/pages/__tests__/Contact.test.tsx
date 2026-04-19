@@ -3,6 +3,10 @@ import { render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router';
 import Contact from '../Contact';
 
+type UseSessionReturn = ReturnType<
+  (typeof import('../../lib/auth-client'))['useSession']
+>;
+
 // Mock auth-client
 vi.mock('../../lib/auth-client', () => ({
   useSession: vi.fn(),
@@ -47,7 +51,7 @@ describe('Contact Page', () => {
       isPending: false,
       error: null,
       refetch: vi.fn(),
-    } as any);
+    } as UseSessionReturn);
 
     render(
       <MemoryRouter>
@@ -75,7 +79,7 @@ describe('Contact Page', () => {
       isPending: false,
       error: null,
       refetch: vi.fn(),
-    } as any);
+    } as UseSessionReturn);
 
     render(
       <MemoryRouter>
