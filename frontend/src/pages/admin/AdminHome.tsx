@@ -23,10 +23,10 @@ export default function AdminHome() {
         >
           <div className="flex items-center gap-2 text-slate-900 font-semibold">
             <Inbox size={18} />
-            問い合わせ
+            システム問い合わせ
           </div>
           <p className="text-sm text-slate-600 mt-1">
-            契約者・見込み客から届いた問い合わせを確認・対応します。
+            契約者・見込み客から届いたシステム問い合わせを確認・対応します。
           </p>
         </Link>
       </div>
