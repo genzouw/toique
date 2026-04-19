@@ -9,7 +9,7 @@ export const ChoiceStepSchema = z.object({
   choices: z
     .array(
       z.object({
-        label: z.string(),
+        label: z.string().max(20, 'Label must be 20 characters or less'),
         value: z.string(),
         next: z.string(),
       }),
