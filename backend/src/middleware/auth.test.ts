@@ -3,6 +3,8 @@ import { Hono } from 'hono';
 import { requireAuth } from './auth.js';
 import { auth } from '../auth/better-auth.js';
 
+type SessionResult = Awaited<ReturnType<typeof auth.api.getSession>>;
+
 vi.mock('../auth/better-auth.js', () => ({
   auth: {
     api: {
@@ -37,7 +39,9 @@ describe('requireAuth middleware', () => {
   });
 
   it('returns 401 when session exists but user is null', async () => {
-    vi.mocked(auth.api.getSession).mockResolvedValue({ user: null } as any);
+    vi.mocked(auth.api.getSession).mockResolvedValue({
+      user: null,
+    } as unknown as SessionResult);
     const app = buildApp();
     const res = await app.request('/test');
     expect(res.status).toBe(401);
@@ -51,7 +55,9 @@ describe('requireAuth middleware', () => {
       name: 'Test User',
       role: 'admin',
     };
-    vi.mocked(auth.api.getSession).mockResolvedValue({ user: mockUser } as any);
+    vi.mocked(auth.api.getSession).mockResolvedValue({
+      user: mockUser,
+    } as unknown as SessionResult);
 
     const app = buildApp();
     const res = await app.request('/test');
