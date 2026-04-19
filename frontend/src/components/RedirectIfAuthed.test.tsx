@@ -31,6 +31,7 @@ describe('RedirectIfAuthed', () => {
       data: null,
       isPending: true,
       error: null,
+      refetch: vi.fn(),
     } as ReturnType<typeof useSession>);
 
     render(
@@ -50,6 +51,7 @@ describe('RedirectIfAuthed', () => {
       data: { user: { id: '1', name: 'Test User' } },
       isPending: false,
       error: null,
+      refetch: vi.fn(),
     } as ReturnType<typeof useSession>);
 
     render(
@@ -80,6 +82,7 @@ describe('RedirectIfAuthed', () => {
       data: null,
       isPending: false,
       error: null,
+      refetch: vi.fn(),
     } as ReturnType<typeof useSession>);
 
     render(
