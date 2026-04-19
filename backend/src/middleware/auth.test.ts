@@ -85,37 +85,42 @@ describe('isOperatorEmail', () => {
     vi.unstubAllEnvs();
   });
 
-  it('returns true if email is in OPERATOR_EMAILS', async () => {
-    vi.stubEnv('OPERATOR_EMAILS', 'admin@example.com,test@example.com');
+  async function loadIsOperatorEmail(operatorEmails: string) {
+    vi.stubEnv('OPERATOR_EMAILS', operatorEmails);
     const { isOperatorEmail } = await import('./auth.js');
+    return isOperatorEmail;
+  }
+
+  it('returns true if email is in OPERATOR_EMAILS', async () => {
+    const isOperatorEmail = await loadIsOperatorEmail(
+      'admin@example.com,test@example.com',
+    );
     expect(isOperatorEmail('admin@example.com')).toBe(true);
     expect(isOperatorEmail('test@example.com')).toBe(true);
   });
 
   it('is case-insensitive and trims whitespace', async () => {
-    vi.stubEnv('OPERATOR_EMAILS', ' admin@EXAMPLE.com ,  test@example.com');
-    const { isOperatorEmail } = await import('./auth.js');
+    const isOperatorEmail = await loadIsOperatorEmail(
+      ' admin@EXAMPLE.com ,  test@example.com',
+    );
     expect(isOperatorEmail('ADMIN@example.com')).toBe(true);
     expect(isOperatorEmail('  test@example.com  ')).toBe(true);
   });
 
   it('returns false for unknown emails', async () => {
-    vi.stubEnv('OPERATOR_EMAILS', 'admin@example.com');
-    const { isOperatorEmail } = await import('./auth.js');
+    const isOperatorEmail = await loadIsOperatorEmail('admin@example.com');
     expect(isOperatorEmail('unknown@example.com')).toBe(false);
   });
 
   it('returns false for null, undefined, or empty string', async () => {
-    vi.stubEnv('OPERATOR_EMAILS', 'admin@example.com');
-    const { isOperatorEmail } = await import('./auth.js');
+    const isOperatorEmail = await loadIsOperatorEmail('admin@example.com');
     expect(isOperatorEmail(null)).toBe(false);
     expect(isOperatorEmail(undefined)).toBe(false);
     expect(isOperatorEmail('')).toBe(false);
   });
 
   it('handles empty OPERATOR_EMAILS gracefully', async () => {
-    vi.stubEnv('OPERATOR_EMAILS', '');
-    const { isOperatorEmail } = await import('./auth.js');
+    const isOperatorEmail = await loadIsOperatorEmail('');
     expect(isOperatorEmail('admin@example.com')).toBe(false);
   });
 });
