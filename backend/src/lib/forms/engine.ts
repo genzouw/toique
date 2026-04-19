@@ -10,7 +10,7 @@ import {
 import { checkQuota } from '../quota.js';
 import type { LineMessage } from '../line/client.js';
 import { buildStepMessages, parsePostbackData } from './messages.js';
-import type { FormSchema, FormStep } from './types.js';
+import { type FormStep, parseFormSchema } from './types.js';
 
 type Form = typeof forms.$inferSelect;
 type Session = typeof lineSessions.$inferSelect;
@@ -36,7 +36,7 @@ export async function startSession(
   lineUser: LineUser,
   form: Form,
 ): Promise<EngineOutcome> {
-  const schema = form.schema as unknown as FormSchema;
+  const schema = parseFormSchema(form.schema);
   const firstStep = schema.steps[schema.startStep];
   if (!firstStep) {
     throw new Error(`Form ${form.id} has no startStep "${schema.startStep}"`);
@@ -87,7 +87,7 @@ export async function advanceSession(
   session: Session,
   input: AdvanceInput,
 ): Promise<EngineOutcome> {
-  const schema = form.schema as unknown as FormSchema;
+  const schema = parseFormSchema(form.schema);
   const currentStep = schema.steps[session.currentStep];
   if (!currentStep) {
     throw new Error(

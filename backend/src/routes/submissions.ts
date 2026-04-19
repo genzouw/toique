@@ -2,7 +2,7 @@ import { Hono } from 'hono';
 import { and, desc, eq } from 'drizzle-orm';
 import db from '../db.js';
 import { forms, submissions } from '../schema.js';
-import type { FormSchema, FormStep } from '../lib/forms/types.js';
+import { type FormStep, parseFormSchema } from '../lib/forms/types.js';
 
 const app = new Hono();
 
@@ -38,7 +38,7 @@ app.get('/export', async (c) => {
   if (!form) return c.text('Form not found', 404);
 
   // スキーマから出現順に field を抽出 (重複除去)
-  const schema = form.schema as unknown as FormSchema;
+  const schema = parseFormSchema(form.schema);
   const fieldKeys: string[] = [];
   const startStep = schema.startStep;
   const visited = new Set<string>();
