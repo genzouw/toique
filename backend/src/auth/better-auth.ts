@@ -3,11 +3,22 @@ import { drizzleAdapter } from 'better-auth/adapters/drizzle';
 import db from '../db.js';
 import * as schema from '../schema.js';
 
+function getAuthSecret() {
+  const secret = process.env.BETTER_AUTH_SECRET;
+  if (!secret) {
+    if (process.env.NODE_ENV === 'production') {
+      throw new Error(
+        'BETTER_AUTH_SECRET environment variable is required in production',
+      );
+    }
+    return 'dev-only-secret-replace-in-production-min-32-chars';
+  }
+  return secret;
+}
+
 export const auth = betterAuth({
   baseURL: process.env.BETTER_AUTH_URL || 'http://localhost:3000',
-  secret:
-    process.env.BETTER_AUTH_SECRET ||
-    'dev-only-secret-replace-in-production-min-32-chars',
+  secret: getAuthSecret(),
   database: drizzleAdapter(db, { provider: 'pg', schema }),
   emailAndPassword: {
     enabled: true,
