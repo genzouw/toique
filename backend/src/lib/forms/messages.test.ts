@@ -122,10 +122,11 @@ describe('messages', () => {
       const step: FormStep = {
         type: 'choice',
         prompt: 'Select an option',
-        variable: 'option',
+        field: 'option',
         choices: Array.from({ length: 15 }, (_, i) => ({
           label: `This is a very long option label ${i}`,
-          value: `${i}`,
+          value: String(i),
+          next: `next${i}`,
         })),
       };
 
