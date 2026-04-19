@@ -11,6 +11,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
   GCP_PROJECT_ID: toique-app-prod
   GCP_PROJECT_NUMBER: '800954033936'
   GCP_REGION: asia-northeast1
