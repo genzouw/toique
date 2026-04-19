@@ -38,6 +38,7 @@ describe('AdminContactDetail', () => {
     // Assert: Wait for the component to handle the rejection and display the error
     await waitFor(() => {
       expect(screen.getByText(errorMessage)).toBeInTheDocument();
+      expect(screen.queryByText('読み込み中…')).not.toBeInTheDocument();
     });
 
     expect(api.getAdminContact).toHaveBeenCalledWith('123');
