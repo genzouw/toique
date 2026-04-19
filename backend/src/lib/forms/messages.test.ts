@@ -50,7 +50,7 @@ describe('messages', () => {
 
     it('should handle special characters', () => {
       expect(encodePostbackData('step 1', 'value & yes')).toBe(
-        'step=step%201&value=value%20%26%20yes'
+        'step=step%201&value=value%20%26%20yes',
       );
     });
   });
@@ -60,7 +60,8 @@ describe('messages', () => {
       const step: FormStep = {
         type: 'text',
         prompt: 'What is your name?',
-        variable: 'name',
+        field: 'name',
+        next: 'step2',
       };
       expect(buildStepMessages('step1', step)).toEqual([
         { type: 'text', text: 'What is your name?' },
@@ -81,10 +82,10 @@ describe('messages', () => {
       const step: FormStep = {
         type: 'choice',
         prompt: 'Select an option',
-        variable: 'option',
+        field: 'option',
         choices: [
-          { label: 'Option A', value: 'a' },
-          { label: 'Option B', value: 'b' },
+          { label: 'Option A', value: 'a', next: 'stepA' },
+          { label: 'Option B', value: 'b', next: 'stepB' },
         ],
       };
       expect(buildStepMessages('step3', step)).toEqual([
@@ -137,13 +138,17 @@ describe('messages', () => {
 
       // Should truncate label to 20 chars
       // @ts-ignore
-      expect(result[0].quickReply.items[0].action.label).toBe('This is a very long ');
+      expect(result[0].quickReply.items[0].action.label).toBe(
+        'This is a very long ',
+      );
       // @ts-ignore
       expect(result[0].quickReply.items[0].action.label).toHaveLength(20);
 
       // But displayText is not truncated
       // @ts-ignore
-      expect(result[0].quickReply.items[0].action.displayText).toBe('This is a very long option label 0');
+      expect(result[0].quickReply.items[0].action.displayText).toBe(
+        'This is a very long option label 0',
+      );
     });
   });
 });
