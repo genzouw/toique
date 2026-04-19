@@ -1,7 +1,8 @@
-// Form schema definition used in forms.schema (JSONB)
 import { z } from 'zod';
 
-export const choiceStepSchema = z.object({
+// Form schema definition used in forms.schema (JSONB)
+
+export const ChoiceStepSchema = z.object({
   type: z.literal('choice'),
   prompt: z.string(),
   field: z.string(),
@@ -16,50 +17,50 @@ export const choiceStepSchema = z.object({
     .max(13, 'LINE quick replies support a maximum of 13 choices'),
 });
 
-export type ChoiceStep = z.infer<typeof choiceStepSchema>;
+export type ChoiceStep = z.infer<typeof ChoiceStepSchema>;
 
-export const textStepSchema = z.object({
+export const TextStepSchema = z.object({
   type: z.literal('text'),
   prompt: z.string(),
   field: z.string(),
   next: z.string(),
 });
 
-export type TextStep = z.infer<typeof textStepSchema>;
+export type TextStep = z.infer<typeof TextStepSchema>;
 
-export const endStepSchema = z.object({
+export const EndStepSchema = z.object({
   type: z.literal('end'),
   thanks: z.string(),
 });
 
-export type EndStep = z.infer<typeof endStepSchema>;
+export type EndStep = z.infer<typeof EndStepSchema>;
 
-export const formStepSchema = z.discriminatedUnion('type', [
-  choiceStepSchema,
-  textStepSchema,
-  endStepSchema,
+export const FormStepSchema = z.discriminatedUnion('type', [
+  ChoiceStepSchema,
+  TextStepSchema,
+  EndStepSchema,
 ]);
 
-export type FormStep = z.infer<typeof formStepSchema>;
+export type FormStep = z.infer<typeof FormStepSchema>;
 
-export const formSchemaSchema = z
+export const FormSchemaDef = z
   .object({
     startStep: z.string(),
-    steps: z.record(z.string(), formStepSchema),
+    steps: z.record(z.string(), FormStepSchema),
   })
   .refine((data) => data.startStep in data.steps, {
     message: 'startStep must exist in steps',
     path: ['startStep'],
   });
 
-export type FormSchema = z.infer<typeof formSchemaSchema>;
+export type FormSchema = z.infer<typeof FormSchemaDef>;
 
 export function getStep(schema: FormSchema, stepId: string): FormStep | null {
   return schema.steps[stepId] ?? null;
 }
 
 export function parseFormSchema(data: unknown): FormSchema {
-  const result = formSchemaSchema.safeParse(data);
+  const result = FormSchemaDef.safeParse(data);
   if (!result.success) {
     throw new Error(
       `Invalid form schema: ${JSON.stringify(result.error.flatten())}`,
