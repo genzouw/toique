@@ -73,9 +73,9 @@ export default function Submissions() {
     <div>
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">問い合わせ</h1>
+          <h1 className="text-2xl font-bold text-slate-900">フォーム回答</h1>
           <p className="text-sm text-slate-500 mt-1">
-            フォーム完了時に記録された問い合わせデータです
+            フォーム完了時に記録された回答データです
           </p>
         </div>
         <button
@@ -139,7 +139,7 @@ export default function Submissions() {
         ) : items.length === 0 ? (
           <div className="p-8 text-center text-sm text-slate-500">
             <Inbox className="mx-auto mb-2 text-slate-300" size={32} />
-            まだ問い合わせはありません
+            まだ回答はありません
           </div>
         ) : (
           <table className="w-full text-sm">
