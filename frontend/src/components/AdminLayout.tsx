@@ -3,7 +3,9 @@ import { LogOut, Inbox, Shield, ArrowLeft, Menu, X } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { cn } from '../lib/utils';
 
-const navItems = [{ to: '/admin/contacts', label: '問い合わせ', icon: Inbox }];
+const navItems = [
+  { to: '/admin/contacts', label: 'システム問い合わせ', icon: Inbox },
+];
 
 /**
  * 運営者エリア共通レイアウト。
