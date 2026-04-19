@@ -10,6 +10,7 @@
 | **Phase 2b** | 管理画面・最小 (ダッシュボード / チャネル管理 / 受信メッセージ一覧) | [plan](superpowers/plans/2026-04-16-frontend-minimal-admin.md)         |
 | **Phase 2a** | 認証 + マルチテナント (better-auth / tenants / tenant_members)      | [plan](superpowers/plans/2026-04-16-auth-multitenancy.md)              |
 | **Phase 3**  | フォームエンジン (JSONスキーマ駆動対話型フォーム、submissions記録)  | [plan](superpowers/plans/2026-04-16-forms-engine.md)                   |
+| **Infrastructure** | 本番ホスティング決定とCI/CDパイプライン (Cloud Run, Cloudflare Pages, GitHub Actions) | - |
 
 ---
 
@@ -84,10 +85,6 @@
 
 ### インフラ / 本番化
 
-- [ ] **本番ホスティング決定**
-  - Vercel / Fly.io / Cloud Run / ECS 比較
-- [ ] **CI/CD パイプライン**
-  - GitHub Actions で test / build / deploy
 - [ ] **非同期処理のスケール化**
   - 現在 queueMicrotask → BullMQ (Redis) or Cloud Tasks に差し替え
 - [ ] **課金・サブスク決済 (Stripe)**
