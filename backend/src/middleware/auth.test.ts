@@ -31,6 +31,9 @@ describe('requireAuth middleware', () => {
     const res = await app.request('/test');
     expect(res.status).toBe(401);
     expect(await res.text()).toBe('Unauthorized');
+    expect(auth.api.getSession).toHaveBeenCalledWith({
+      headers: expect.any(Headers),
+    });
   });
 
   it('returns 401 when session exists but user is null', async () => {
@@ -46,6 +49,7 @@ describe('requireAuth middleware', () => {
       id: 'test-user-id',
       email: 'test@example.com',
       name: 'Test User',
+      role: 'admin',
     };
     vi.mocked(auth.api.getSession).mockResolvedValue({ user: mockUser } as any);
 
@@ -62,5 +66,6 @@ describe('requireAuth middleware', () => {
         name: 'Test User',
       },
     });
+    expect(body.user).not.toHaveProperty('role');
   });
 });
