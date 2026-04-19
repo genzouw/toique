@@ -21,7 +21,7 @@ const navItems = [
   { to: '/dashboard', label: 'ダッシュボード', icon: LayoutDashboard },
   { to: '/channels', label: 'LINEチャネル', icon: Plug },
   { to: '/forms', label: 'フォーム', icon: FileText },
-  { to: '/submissions', label: '問い合わせ', icon: Inbox },
+  { to: '/submissions', label: 'フォーム回答', icon: Inbox },
   { to: '/messages', label: '受信メッセージ', icon: MessageSquare },
 ];
 
