@@ -6,13 +6,15 @@ export const ChoiceStepSchema = z.object({
   type: z.literal('choice'),
   prompt: z.string(),
   field: z.string(),
-  choices: z.array(
-    z.object({
-      label: z.string(),
-      value: z.string(),
-      next: z.string(),
-    }),
-  ),
+  choices: z
+    .array(
+      z.object({
+        label: z.string().max(20, 'Label must be 20 characters or less'),
+        value: z.string(),
+        next: z.string(),
+      }),
+    )
+    .max(13, 'LINE quick replies support a maximum of 13 choices'),
 });
 
 export type ChoiceStep = z.infer<typeof ChoiceStepSchema>;
@@ -53,10 +55,16 @@ export const FormSchemaDef = z
 
 export type FormSchema = z.infer<typeof FormSchemaDef>;
 
-export function parseFormSchema(data: unknown): FormSchema {
-  return FormSchemaDef.parse(data);
-}
-
 export function getStep(schema: FormSchema, stepId: string): FormStep | null {
   return schema.steps[stepId] ?? null;
+}
+
+export function parseFormSchema(data: unknown): FormSchema {
+  const result = FormSchemaDef.safeParse(data);
+  if (!result.success) {
+    throw new Error(
+      `Invalid form schema: ${JSON.stringify(result.error.flatten())}`,
+    );
+  }
+  return result.data;
 }
