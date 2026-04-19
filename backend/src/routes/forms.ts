@@ -10,7 +10,9 @@ const app = new Hono();
 function validateSchema(schema: unknown): string | null {
   const result = FormSchemaDef.safeParse(schema);
   if (!result.success) {
-    return 'Invalid schema format';
+    return result.error.issues
+      .map((i) => i.path.join('.') + ': ' + i.message)
+      .join('; ');
   }
   const s = result.data;
   if (!(s.startStep in s.steps)) {
