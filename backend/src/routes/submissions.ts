@@ -113,11 +113,12 @@ const CSV_ESCAPE_TEST = /[",\r\n]/;
 const CSV_ESCAPE_REPLACE = /"/g;
 
 function escapeCsv(value: string | number | null | undefined): string {
-  const s = value == null ? '' : String(value);
-  if (CSV_ESCAPE_TEST.test(s)) {
-    return `"${s.replace(CSV_ESCAPE_REPLACE, '""')}"`;
+  if (typeof value === 'number') return String(value);
+  if (value == null) return '';
+  if (CSV_ESCAPE_TEST.test(value)) {
+    return '"' + value.replace(CSV_ESCAPE_REPLACE, '""') + '"';
   }
-  return s;
+  return value;
 }
 
 function asciiFallback(name: string): string {
