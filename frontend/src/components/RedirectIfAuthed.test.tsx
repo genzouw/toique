@@ -32,7 +32,7 @@ describe('RedirectIfAuthed', () => {
       isPending: true,
       error: null,
       refetch: vi.fn(),
-    } as ReturnType<typeof useSession>);
+    } as unknown as ReturnType<typeof useSession>);
 
     render(
       <MemoryRouter initialEntries={['/login']}>
@@ -52,7 +52,7 @@ describe('RedirectIfAuthed', () => {
       isPending: false,
       error: null,
       refetch: vi.fn(),
-    } as ReturnType<typeof useSession>);
+    } as unknown as ReturnType<typeof useSession>);
 
     render(
       <MemoryRouter initialEntries={['/login']}>
@@ -83,7 +83,7 @@ describe('RedirectIfAuthed', () => {
       isPending: false,
       error: null,
       refetch: vi.fn(),
-    } as ReturnType<typeof useSession>);
+    } as unknown as ReturnType<typeof useSession>);
 
     render(
       <MemoryRouter initialEntries={['/login']}>
