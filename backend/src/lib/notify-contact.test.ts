@@ -2,8 +2,7 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { notifyContact } from './notify-contact.js';
 
 describe('notifyContact', () => {
-  const originalEnv = process.env;
-  let warnSpy: any;
+  let warnSpy: ReturnType<typeof vi.spyOn>;
 
   const dummyInput = {
     id: 'test-id',
@@ -33,7 +32,7 @@ describe('notifyContact', () => {
     await notifyContact(dummyInput);
 
     expect(warnSpy).toHaveBeenCalledWith(
-      '[notify-contact] skipped: RESEND_API_KEY / CONTACT_FROM / OPERATOR_EMAILS いずれかが未設定'
+      '[notify-contact] skipped: RESEND_API_KEY / CONTACT_FROM / OPERATOR_EMAILS いずれかが未設定',
     );
   });
 
@@ -45,7 +44,7 @@ describe('notifyContact', () => {
     await notifyContact(dummyInput);
 
     expect(warnSpy).toHaveBeenCalledWith(
-      '[notify-contact] skipped: RESEND_API_KEY / CONTACT_FROM / OPERATOR_EMAILS いずれかが未設定'
+      '[notify-contact] skipped: RESEND_API_KEY / CONTACT_FROM / OPERATOR_EMAILS いずれかが未設定',
     );
   });
 
@@ -57,7 +56,7 @@ describe('notifyContact', () => {
     await notifyContact(dummyInput);
 
     expect(warnSpy).toHaveBeenCalledWith(
-      '[notify-contact] skipped: RESEND_API_KEY / CONTACT_FROM / OPERATOR_EMAILS いずれかが未設定'
+      '[notify-contact] skipped: RESEND_API_KEY / CONTACT_FROM / OPERATOR_EMAILS いずれかが未設定',
     );
   });
 
@@ -69,7 +68,7 @@ describe('notifyContact', () => {
     await notifyContact(dummyInput);
 
     expect(warnSpy).toHaveBeenCalledWith(
-      '[notify-contact] skipped: RESEND_API_KEY / CONTACT_FROM / OPERATOR_EMAILS いずれかが未設定'
+      '[notify-contact] skipped: RESEND_API_KEY / CONTACT_FROM / OPERATOR_EMAILS いずれかが未設定',
     );
   });
 });
