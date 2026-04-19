@@ -14,10 +14,6 @@ function validateSchema(schema: unknown): string | null {
       .map((i) => i.path.join('.') + ': ' + i.message)
       .join('; ');
   }
-  const s = result.data;
-  if (!(s.startStep in s.steps)) {
-    return `schema.steps must contain the startStep "${s.startStep}"`;
-  }
   return null;
 }
 
