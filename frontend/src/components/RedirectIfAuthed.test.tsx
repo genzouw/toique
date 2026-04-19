@@ -31,7 +31,7 @@ describe('RedirectIfAuthed', () => {
       data: null,
       isPending: true,
       error: null,
-    } as any);
+    } as ReturnType<typeof useSession>);
 
     render(
       <MemoryRouter initialEntries={['/login']}>
@@ -50,7 +50,7 @@ describe('RedirectIfAuthed', () => {
       data: { user: { id: '1', name: 'Test User' } },
       isPending: false,
       error: null,
-    } as any);
+    } as ReturnType<typeof useSession>);
 
     render(
       <MemoryRouter initialEntries={['/login']}>
@@ -80,7 +80,7 @@ describe('RedirectIfAuthed', () => {
       data: null,
       isPending: false,
       error: null,
-    } as any);
+    } as ReturnType<typeof useSession>);
 
     render(
       <MemoryRouter initialEntries={['/login']}>
