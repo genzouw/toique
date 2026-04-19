@@ -9,6 +9,13 @@ vi.mock('../../lib/auth-client', () => ({
   useSession: vi.fn(),
 }));
 
+// Mock api
+vi.mock('../../lib/api', () => ({
+  api: {
+    submitContact: vi.fn(),
+  },
+}));
+
 describe('Contact Page', () => {
   beforeEach(() => {
     vi.clearAllMocks();
