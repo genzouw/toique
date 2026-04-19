@@ -99,7 +99,9 @@ describe('AdminLogin', () => {
     const user = userEvent.setup();
 
     // Mock API success
-    vi.mocked(api.getAdminMe).mockResolvedValueOnce({ user: { id: '1', email: 'admin@example.com', name: 'admin' } });
+    vi.mocked(api.getAdminMe).mockResolvedValueOnce({
+      user: { id: '1', email: 'admin@example.com', name: 'admin' },
+    });
 
     render(
       <BrowserRouter>
