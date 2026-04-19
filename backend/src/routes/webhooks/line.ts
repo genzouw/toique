@@ -1,10 +1,7 @@
 import { Hono } from 'hono';
 import { lineSignature } from '../../middleware/line-signature.js';
 import { handleLineEvent } from '../../lib/line/event-handler.js';
-import type {
-  LineWebhookPayload,
-  LineWebhookEvent,
-} from '../../lib/line/types.js';
+import type { LineWebhookPayload } from '../../lib/line/types.js';
 import type { lineChannels } from '../../schema.js';
 
 type Channel = typeof lineChannels.$inferSelect;
@@ -25,13 +22,13 @@ app.post('/:channelId', lineSignature, async (c) => {
   // 3秒ルール対策: 即座に200返却し、処理は非同期化
   queueMicrotask(async () => {
     await Promise.all(
-      (payload.events as LineWebhookEvent[]).map(async (event) => {
+      payload.events.map(async (event) => {
         try {
           await handleLineEvent(channel, event);
         } catch (err) {
           console.error('[line-webhook] event handling failed', err);
         }
-      })
+      }),
     );
   });
 
