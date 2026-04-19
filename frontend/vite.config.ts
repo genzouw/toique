@@ -32,4 +32,9 @@ export default defineConfig({
       'localhost',
     ],
   },
+  test: {
+    environment: 'jsdom',
+    setupFiles: ['./src/setupTests.ts'],
+    globals: true,
+  },
 });
