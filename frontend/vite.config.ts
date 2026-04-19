@@ -1,4 +1,5 @@
-import { defineConfig } from 'vite';
+/// <reference types="vitest" />
+import { defineConfig } from "vitest/config";
 import react from '@vitejs/plugin-react';
 import tailwindcss from '@tailwindcss/vite';
 import Sitemap from 'vite-plugin-sitemap';
@@ -31,5 +32,10 @@ export default defineConfig({
       '.ngrok.app',
       'localhost',
     ],
+  },
+  test: {
+    environment: 'jsdom',
+    globals: true,
+    setupFiles: ['./vitest.setup.ts'],
   },
 });
