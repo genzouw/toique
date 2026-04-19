@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { Hono } from 'hono';
 import { requireAuth } from './auth.js';
 import { auth } from '../auth/better-auth.js';
@@ -73,5 +73,49 @@ describe('requireAuth middleware', () => {
       },
     });
     expect(body.user).not.toHaveProperty('role');
+  });
+});
+
+describe('isOperatorEmail', () => {
+  beforeEach(() => {
+    vi.resetModules();
+  });
+
+  afterEach(() => {
+    vi.unstubAllEnvs();
+  });
+
+  it('returns true if email is in OPERATOR_EMAILS', async () => {
+    vi.stubEnv('OPERATOR_EMAILS', 'admin@example.com,test@example.com');
+    const { isOperatorEmail } = await import('./auth.js');
+    expect(isOperatorEmail('admin@example.com')).toBe(true);
+    expect(isOperatorEmail('test@example.com')).toBe(true);
+  });
+
+  it('is case-insensitive and trims whitespace', async () => {
+    vi.stubEnv('OPERATOR_EMAILS', ' admin@EXAMPLE.com ,  test@example.com');
+    const { isOperatorEmail } = await import('./auth.js');
+    expect(isOperatorEmail('ADMIN@example.com')).toBe(true);
+    expect(isOperatorEmail('  test@example.com  ')).toBe(true);
+  });
+
+  it('returns false for unknown emails', async () => {
+    vi.stubEnv('OPERATOR_EMAILS', 'admin@example.com');
+    const { isOperatorEmail } = await import('./auth.js');
+    expect(isOperatorEmail('unknown@example.com')).toBe(false);
+  });
+
+  it('returns false for null, undefined, or empty string', async () => {
+    vi.stubEnv('OPERATOR_EMAILS', 'admin@example.com');
+    const { isOperatorEmail } = await import('./auth.js');
+    expect(isOperatorEmail(null)).toBe(false);
+    expect(isOperatorEmail(undefined)).toBe(false);
+    expect(isOperatorEmail('')).toBe(false);
+  });
+
+  it('handles empty OPERATOR_EMAILS gracefully', async () => {
+    vi.stubEnv('OPERATOR_EMAILS', '');
+    const { isOperatorEmail } = await import('./auth.js');
+    expect(isOperatorEmail('admin@example.com')).toBe(false);
   });
 });
