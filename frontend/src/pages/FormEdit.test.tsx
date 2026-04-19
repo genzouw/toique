@@ -43,4 +43,27 @@ describe('FormEdit', () => {
     // Verify error message disappears
     expect(screen.queryByText('JSON の構文が不正です')).not.toBeInTheDocument();
   });
+
+  it('shows specific error message when switching to visual tab with invalid JSON', async () => {
+    render(
+      <MemoryRouter>
+        <FormEdit />
+      </MemoryRouter>,
+    );
+    await screen.findByText('新規フォーム');
+
+    fireEvent.click(screen.getByRole('button', { name: 'JSON' }));
+    const textarea = screen.getByRole('textbox', {
+      name: 'JSON schema editor',
+    });
+
+    fireEvent.change(textarea, { target: { value: '{' } });
+    fireEvent.click(screen.getByRole('button', { name: 'ビジュアル' }));
+
+    expect(
+      screen.getByText(
+        'JSON の構文が不正です。修正してからビジュアルモードに切り替えてください。',
+      ),
+    ).toBeInTheDocument();
+  });
 });
