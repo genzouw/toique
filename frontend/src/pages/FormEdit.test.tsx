@@ -1,5 +1,5 @@
 import { render, screen, fireEvent } from '@testing-library/react';
-import { BrowserRouter } from 'react-router';
+import { MemoryRouter } from 'react-router';
 import { describe, it, expect, vi } from 'vitest';
 import FormEdit from './FormEdit';
 
@@ -7,15 +7,15 @@ vi.mock('../lib/api', () => ({
   api: {
     listChannels: vi.fn().mockResolvedValue([]),
     getForm: vi.fn(),
-  }
+  },
 }));
 
 describe('FormEdit', () => {
   it('shows error message when typing invalid JSON', async () => {
     render(
-      <BrowserRouter>
+      <MemoryRouter>
         <FormEdit />
-      </BrowserRouter>
+      </MemoryRouter>,
     );
 
     // Wait for the component to load
@@ -25,10 +25,11 @@ describe('FormEdit', () => {
     const jsonTab = screen.getByRole('button', { name: 'JSON' });
     fireEvent.click(jsonTab);
 
-    // Find the textarea for JSON edit. There are multiple textboxes (表示名, トリガーキーワード), so query by tag and maybe verify the value starts with {
-    const textboxes = screen.getAllByRole('textbox');
-    const textarea = textboxes.find(el => el.tagName.toLowerCase() === 'textarea') as HTMLTextAreaElement;
-    expect(textarea).toBeTruthy();
+    // Find the textarea for JSON edit by aria-label
+    const textarea = screen.getByRole('textbox', {
+      name: 'JSON schema editor',
+    });
+    expect(textarea).toBeInTheDocument();
 
     // Type invalid JSON
     fireEvent.change(textarea, { target: { value: '{a:}' } });
