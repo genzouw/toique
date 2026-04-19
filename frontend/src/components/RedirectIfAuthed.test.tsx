@@ -11,11 +11,15 @@ vi.mock('../lib/auth-client', () => ({
 // Dummy component to show that redirect worked
 const Dashboard = () => {
   const location = useLocation();
-  return <div data-testid="dashboard">Dashboard (Path: {location.pathname})</div>;
+  return (
+    <div data-testid="dashboard">Dashboard (Path: {location.pathname})</div>
+  );
 };
 
 // Dummy component for testing children rendering
-const ChildrenContent = () => <div data-testid="children">Children Content</div>;
+const ChildrenContent = () => (
+  <div data-testid="children">Children Content</div>
+);
 
 describe('RedirectIfAuthed', () => {
   beforeEach(() => {
@@ -34,7 +38,7 @@ describe('RedirectIfAuthed', () => {
         <RedirectIfAuthed>
           <ChildrenContent />
         </RedirectIfAuthed>
-      </MemoryRouter>
+      </MemoryRouter>,
     );
 
     expect(screen.getByText('読み込み中…')).toBeInTheDocument();
@@ -61,11 +65,13 @@ describe('RedirectIfAuthed', () => {
           />
           <Route path="/dashboard" element={<Dashboard />} />
         </Routes>
-      </MemoryRouter>
+      </MemoryRouter>,
     );
 
     expect(screen.getByTestId('dashboard')).toBeInTheDocument();
-    expect(screen.getByText('Dashboard (Path: /dashboard)')).toBeInTheDocument();
+    expect(
+      screen.getByText('Dashboard (Path: /dashboard)'),
+    ).toBeInTheDocument();
     expect(screen.queryByTestId('children')).not.toBeInTheDocument();
   });
 
@@ -81,7 +87,7 @@ describe('RedirectIfAuthed', () => {
         <RedirectIfAuthed>
           <ChildrenContent />
         </RedirectIfAuthed>
-      </MemoryRouter>
+      </MemoryRouter>,
     );
 
     expect(screen.getByTestId('children')).toBeInTheDocument();
