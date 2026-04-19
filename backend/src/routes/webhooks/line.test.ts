@@ -5,7 +5,10 @@ import { Hono } from 'hono';
 
 // Mock dependencies
 vi.mock('../../middleware/line-signature.js', () => ({
-  lineSignature: async (c: import('hono').Context, next: import('hono').Next) => {
+  lineSignature: async (
+    c: import('hono').Context,
+    next: import('hono').Next,
+  ) => {
     // Set a dummy channel to skip DB check
     c.set('lineChannel', { id: 'test-channel' });
     await next();
@@ -35,7 +38,7 @@ describe('Line Webhook Route', () => {
     });
 
     handleLineEventSpy.mockImplementation(async (channel, event) => {
-      if ((event as {replyToken?: string}).replyToken === 'token-1') {
+      if ((event as { replyToken?: string }).replyToken === 'token-1') {
         await firstEventPromise;
       }
       return Promise.resolve();
@@ -49,7 +52,7 @@ describe('Line Webhook Route', () => {
         'rawBody',
         JSON.stringify({
           events: [{ replyToken: 'token-1' }, { replyToken: 'token-2' }],
-        })
+        }),
       );
       await next();
     });
@@ -67,11 +70,8 @@ describe('Line Webhook Route', () => {
 
     expect(res.status).toBe(200);
 
-    // Wait for microtasks to flush
-    await new Promise((resolve) => setTimeout(resolve, 10));
-
     // Both events should have started processing even though the first one is blocked
-    expect(handleLineEventSpy).toHaveBeenCalledTimes(2);
+    await vi.waitFor(() => expect(handleLineEventSpy).toHaveBeenCalledTimes(2));
 
     resolveFirstEvent(); // Clean up
   });
