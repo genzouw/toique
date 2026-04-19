@@ -93,7 +93,6 @@ updates:
           - 'react'
           - 'react-dom'
           - 'react-router'
-          - 'eslint-plugin-react*'
       tailwind:
         patterns:
           - 'tailwindcss'
