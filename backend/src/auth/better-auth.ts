@@ -30,7 +30,7 @@ export const auth = betterAuth({
       // PostgreSQL の gen_random_uuid() default に任せる (schema 側で uuid 型使用のため)
       generateId: false,
     },
-    // フロントエンド(pages.dev)とバックエンド(Cloud Run)が異なるドメインのため
+    // フロントエンド(Cloudflare Pages)とバックエンド(Cloud Run)が異なるドメインのため
     // クロスオリジンでCookieを送受信できるよう設定
     crossSubDomainCookies: {
       enabled: false,
