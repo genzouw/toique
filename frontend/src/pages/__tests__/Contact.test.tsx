@@ -1,6 +1,6 @@
 import { render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router';
-import { vi, describe, it, expect, beforeEach, Mock } from 'vitest';
+import { Mock } from 'vitest';
 import Contact from '../Contact';
 import * as authClient from '../../lib/auth-client';
 
