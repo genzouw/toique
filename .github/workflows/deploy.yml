@@ -121,6 +121,7 @@ jobs:
           npm run build
         env:
           VITE_API_URL: ${{ needs.deploy-backend.outputs.service_url }}
+          VITE_GA_TRACKING_ID: ${{ vars.VITE_GA_TRACKING_ID }}
       - name: Deploy to Cloudflare Pages
         uses: cloudflare/wrangler-action@v3
         with:

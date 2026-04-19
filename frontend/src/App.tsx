@@ -27,8 +27,11 @@ import AdminLogin from './pages/admin/AdminLogin';
 function usePageView() {
   const location = useLocation();
   useEffect(() => {
-    if (typeof window.gtag === 'function') {
-      window.gtag('config', 'G-ZTGBDFT2KX', {
+    if (
+      typeof window.gtag === 'function' &&
+      import.meta.env.VITE_GA_TRACKING_ID
+    ) {
+      window.gtag('config', import.meta.env.VITE_GA_TRACKING_ID, {
         page_path: location.pathname + location.search,
       });
     }
