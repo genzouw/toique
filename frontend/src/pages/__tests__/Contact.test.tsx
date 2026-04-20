@@ -1,8 +1,10 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, act } from '@testing-library/react';
 import { MemoryRouter } from 'react-router';
 import { Mock, vi, describe, it, expect, beforeEach } from 'vitest';
+import userEvent from '@testing-library/user-event';
 import Contact from '../Contact';
 import * as authClient from '../../lib/auth-client';
+import { api } from '../../lib/api';
 
 // モック化
 vi.mock('../../lib/auth-client', () => ({
@@ -21,7 +23,7 @@ describe('Contact Page', () => {
     vi.clearAllMocks();
   });
 
-  it('ログインユーザーの情報を自動入力する', () => {
+  it('ログインユーザーの情報を自動入力する', async () => {
     const mockUser = {
       id: 'user-1',
       name: 'テスト太郎',
@@ -46,11 +48,13 @@ describe('Contact Page', () => {
       },
     });
 
-    render(
-      <MemoryRouter>
-        <Contact />
-      </MemoryRouter>,
-    );
+    await act(async () => {
+      render(
+        <MemoryRouter>
+          <Contact />
+        </MemoryRouter>,
+      );
+    });
 
     const nameInput = screen.getByLabelText(/お名前/) as HTMLInputElement;
     const emailInput = screen.getByLabelText(
@@ -61,16 +65,18 @@ describe('Contact Page', () => {
     expect(emailInput.value).toBe('test@example.com');
   });
 
-  it('未ログインの場合は空のままである', () => {
+  it('未ログインの場合は空のままである', async () => {
     (authClient.useSession as Mock).mockReturnValue({
       data: null,
     });
 
-    render(
-      <MemoryRouter>
-        <Contact />
-      </MemoryRouter>,
-    );
+    await act(async () => {
+      render(
+        <MemoryRouter>
+          <Contact />
+        </MemoryRouter>,
+      );
+    });
 
     const nameInput = screen.getByLabelText(/お名前/) as HTMLInputElement;
     const emailInput = screen.getByLabelText(
@@ -79,5 +85,45 @@ describe('Contact Page', () => {
 
     expect(nameInput.value).toBe('');
     expect(emailInput.value).toBe('');
+  });
+
+  it('送信に失敗した場合、エラーメッセージが表示される', async () => {
+    (authClient.useSession as Mock).mockReturnValue({
+      data: null,
+    });
+
+    const errorMessage = 'サーバーエラーが発生しました';
+    (api.submitContact as Mock).mockRejectedValue(new Error(errorMessage));
+
+    const user = userEvent.setup();
+    await act(async () => {
+      render(
+        <MemoryRouter>
+          <Contact />
+        </MemoryRouter>,
+      );
+    });
+
+    await user.type(screen.getByLabelText(/お名前/), 'Test User');
+    await user.type(
+      screen.getByLabelText(/メールアドレス/),
+      'test@example.com',
+    );
+    await user.type(screen.getByLabelText(/件名/), 'Test Subject');
+    await user.type(screen.getByLabelText(/お問い合わせ内容/), 'Test Body');
+
+    await user.click(screen.getByRole('button', { name: '送信する' }));
+
+    expect(await screen.findByText(errorMessage)).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '送信する' })).not.toBeDisabled();
+    expect(api.submitContact).toHaveBeenCalledWith({
+      name: 'Test User',
+      email: 'test@example.com',
+      category: 'other',
+      subject: 'Test Subject',
+      body: 'Test Body',
+      url: undefined,
+      website: '',
+    });
   });
 });
