@@ -20,6 +20,7 @@ export default function OperatorGuard({
   useEffect(() => {
     const adminAuth = localStorage.getItem('adminAuth');
     if (!adminAuth) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setState('not-operator');
       return;
     }
@@ -29,7 +30,8 @@ export default function OperatorGuard({
         await api.getAdminMe();
         setState('operator');
       } catch {
-        setState('not-operator');
+
+      setState('not-operator');
       }
     })();
   }, []);

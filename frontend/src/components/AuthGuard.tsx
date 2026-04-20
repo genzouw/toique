@@ -26,6 +26,7 @@ export default function AuthGuard({
     if (!requireTenant && !redirectIfTenantExists) return;
     if (isPending) return;
     if (!session?.user) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setLoading(false);
       return;
     }
@@ -34,7 +35,8 @@ export default function AuthGuard({
         const s = await api.getOnboardingStatus();
         setStatus(s);
       } finally {
-        setLoading(false);
+
+      setLoading(false);
       }
     })();
   }, [isPending, session?.user, requireTenant, redirectIfTenantExists]);

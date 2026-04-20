@@ -27,6 +27,7 @@ export default function Channels() {
   }
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     refresh();
   }, []);
 
@@ -41,7 +42,8 @@ export default function Channels() {
         channelAccessToken: '',
         displayName: '',
       });
-      await refresh();
+      await
+    refresh();
     } catch (err) {
       setError((err as Error).message);
     } finally {
@@ -53,7 +55,8 @@ export default function Channels() {
     if (!confirm('削除してよろしいですか？')) return;
     try {
       await api.deleteChannel(id);
-      await refresh();
+      await
+    refresh();
     } catch (err) {
       setError((err as Error).message);
     }

@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, act } from '@testing-library/react';
 import { MemoryRouter } from 'react-router';
 import { Mock, vi, describe, it, expect, beforeEach } from 'vitest';
 import userEvent from '@testing-library/user-event';
@@ -23,7 +23,7 @@ describe('Contact Page', () => {
     vi.clearAllMocks();
   });
 
-  it('ログインユーザーの情報を自動入力する', () => {
+  it('ログインユーザーの情報を自動入力する', async () => {
     const mockUser = {
       id: 'user-1',
       name: 'テスト太郎',
@@ -48,11 +48,13 @@ describe('Contact Page', () => {
       },
     });
 
-    render(
-      <MemoryRouter>
-        <Contact />
-      </MemoryRouter>,
-    );
+    await act(async () => {
+      render(
+        <MemoryRouter>
+          <Contact />
+        </MemoryRouter>,
+      );
+    });
 
     const nameInput = screen.getByLabelText(/お名前/) as HTMLInputElement;
     const emailInput = screen.getByLabelText(
@@ -63,16 +65,18 @@ describe('Contact Page', () => {
     expect(emailInput.value).toBe('test@example.com');
   });
 
-  it('未ログインの場合は空のままである', () => {
+  it('未ログインの場合は空のままである', async () => {
     (authClient.useSession as Mock).mockReturnValue({
       data: null,
     });
 
-    render(
-      <MemoryRouter>
-        <Contact />
-      </MemoryRouter>,
-    );
+    await act(async () => {
+      render(
+        <MemoryRouter>
+          <Contact />
+        </MemoryRouter>,
+      );
+    });
 
     const nameInput = screen.getByLabelText(/お名前/) as HTMLInputElement;
     const emailInput = screen.getByLabelText(
@@ -92,11 +96,13 @@ describe('Contact Page', () => {
     (api.submitContact as Mock).mockRejectedValue(new Error(errorMessage));
 
     const user = userEvent.setup();
-    render(
-      <MemoryRouter>
-        <Contact />
-      </MemoryRouter>,
-    );
+    await act(async () => {
+      render(
+        <MemoryRouter>
+          <Contact />
+        </MemoryRouter>,
+      );
+    });
 
     await user.type(screen.getByLabelText(/お名前/), 'Test User');
     await user.type(screen.getByLabelText(/メールアドレス/), 'test@example.com');
