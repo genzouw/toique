@@ -22,7 +22,7 @@ describe('Signup Page', () => {
     const mockErrorMessage = '既に登録されているメールアドレスです';
     vi.mocked(signUp.email).mockResolvedValueOnce({
       error: { message: mockErrorMessage },
-    } as any);
+    } as unknown as ReturnType<typeof signUp.email>);
 
     render(
       <MemoryRouter>
@@ -34,7 +34,10 @@ describe('Signup Page', () => {
 
     // フォームに入力
     await user.type(screen.getByLabelText(/お名前/), 'テストユーザー');
-    await user.type(screen.getByLabelText(/メールアドレス/), 'test@example.com');
+    await user.type(
+      screen.getByLabelText(/メールアドレス/),
+      'test@example.com',
+    );
     await user.type(screen.getByLabelText(/パスワード/), 'password123');
 
     // 送信ボタンをクリック
@@ -53,6 +56,8 @@ describe('Signup Page', () => {
     });
 
     // ボタンのテキストが元に戻っていることを確認
-    expect(screen.getByRole('button', { name: /アカウント登録/ })).not.toBeDisabled();
+    expect(
+      screen.getByRole('button', { name: /アカウント登録/ }),
+    ).not.toBeDisabled();
   });
 });
