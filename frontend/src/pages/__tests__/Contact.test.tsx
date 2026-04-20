@@ -105,12 +105,25 @@ describe('Contact Page', () => {
     });
 
     await user.type(screen.getByLabelText(/お名前/), 'Test User');
-    await user.type(screen.getByLabelText(/メールアドレス/), 'test@example.com');
+    await user.type(
+      screen.getByLabelText(/メールアドレス/),
+      'test@example.com',
+    );
     await user.type(screen.getByLabelText(/件名/), 'Test Subject');
     await user.type(screen.getByLabelText(/お問い合わせ内容/), 'Test Body');
 
     await user.click(screen.getByRole('button', { name: '送信する' }));
 
     expect(await screen.findByText(errorMessage)).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '送信する' })).not.toBeDisabled();
+    expect(api.submitContact).toHaveBeenCalledWith({
+      name: 'Test User',
+      email: 'test@example.com',
+      category: 'other',
+      subject: 'Test Subject',
+      body: 'Test Body',
+      url: undefined,
+      website: '',
+    });
   });
 });
