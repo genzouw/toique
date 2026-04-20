@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router';
 import { vi, describe, it, expect, beforeEach } from 'vitest';
@@ -6,11 +6,16 @@ import Signup from '../Signup';
 import { signUp } from '../../lib/auth-client';
 
 // モック化
-vi.mock('../../lib/auth-client', () => ({
-  signUp: {
-    email: vi.fn(),
-  },
-}));
+vi.mock('../../lib/auth-client', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../../lib/auth-client')>();
+  return {
+    ...actual,
+    signUp: {
+      ...actual.signUp,
+      email: vi.fn(),
+    },
+  };
+});
 
 describe('Signup Page', () => {
   beforeEach(() => {
@@ -51,9 +56,7 @@ describe('Signup Page', () => {
     });
 
     // エラーメッセージが表示されることを確認
-    await waitFor(() => {
-      expect(screen.getByText(mockErrorMessage)).toBeInTheDocument();
-    });
+    expect(await screen.findByText(mockErrorMessage)).toBeInTheDocument();
 
     // ボタンのテキストが元に戻っていることを確認
     expect(
