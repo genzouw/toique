@@ -35,13 +35,13 @@ describe('Channels Page', () => {
     vi.mocked(api.listChannels).mockResolvedValue([
       {
         id: '1',
+        tenantId: 'tenant-1',
         channelId: 'channel-1',
         displayName: 'Test Channel 1',
         channelSecret: 'secret-1',
         channelAccessToken: 'token-1',
-        userId: 'user-1',
-        createdAt: new Date(),
-        updatedAt: new Date(),
+        isActive: true,
+        createdAt: new Date().toISOString(),
       },
     ]);
 
