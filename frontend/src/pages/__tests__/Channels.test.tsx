@@ -41,8 +41,8 @@ describe('Channels Page', () => {
         channelAccessToken: 'token-1',
         userId: 'user-1',
         createdAt: new Date(),
-        updatedAt: new Date()
-      }
+        updatedAt: new Date(),
+      },
     ]);
 
     render(<Channels />);
