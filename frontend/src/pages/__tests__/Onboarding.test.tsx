@@ -73,8 +73,12 @@ describe('Onboarding', () => {
     const user = userEvent.setup();
 
     vi.mocked(api.createTenant).mockResolvedValueOnce({
-      id: '1',
-      name: 'Test Tenant',
+      tenant: {
+        id: '1',
+        name: 'Test Tenant',
+        plan: 'free',
+        role: 'owner',
+      },
     });
 
     render(
