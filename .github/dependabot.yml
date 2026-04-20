@@ -13,6 +13,8 @@ updates:
       timezone: 'Asia/Tokyo'
     open-pull-requests-limit: 10
     target-branch: 'main'
+    reviewers:
+      - 'genzouw'
     labels:
       - 'dependencies'
       - 'backend'
@@ -29,7 +31,6 @@ updates:
           - '@eslint/*'
           - 'typescript-eslint'
           - '@typescript-eslint/*'
-          - 'prettier*'
       testing:
         patterns:
           - 'vitest'
@@ -60,6 +61,8 @@ updates:
       timezone: 'Asia/Tokyo'
     open-pull-requests-limit: 10
     target-branch: 'main'
+    reviewers:
+      - 'genzouw'
     labels:
       - 'dependencies'
       - 'frontend'
@@ -76,7 +79,6 @@ updates:
           - '@eslint/*'
           - 'typescript-eslint'
           - '@typescript-eslint/*'
-          - 'prettier*'
       testing:
         patterns:
           - 'vitest'
@@ -116,6 +118,8 @@ updates:
       timezone: 'Asia/Tokyo'
     open-pull-requests-limit: 5
     target-branch: 'main'
+    reviewers:
+      - 'genzouw'
     labels:
       - 'dependencies'
       - 'github-actions'
@@ -135,6 +139,8 @@ updates:
       timezone: 'Asia/Tokyo'
     open-pull-requests-limit: 3
     target-branch: 'main'
+    reviewers:
+      - 'genzouw'
     labels:
       - 'dependencies'
       - 'docker'
@@ -154,6 +160,8 @@ updates:
       timezone: 'Asia/Tokyo'
     open-pull-requests-limit: 3
     target-branch: 'main'
+    reviewers:
+      - 'genzouw'
     labels:
       - 'dependencies'
       - 'docker'
@@ -173,6 +181,8 @@ updates:
       timezone: 'Asia/Tokyo'
     open-pull-requests-limit: 3
     target-branch: 'main'
+    reviewers:
+      - 'genzouw'
     labels:
       - 'dependencies'
       - 'docker'
