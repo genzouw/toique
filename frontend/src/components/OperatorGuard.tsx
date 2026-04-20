@@ -30,8 +30,7 @@ export default function OperatorGuard({
         await api.getAdminMe();
         setState('operator');
       } catch {
-
-      setState('not-operator');
+        setState('not-operator');
       }
     })();
   }, []);

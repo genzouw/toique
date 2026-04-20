@@ -35,8 +35,7 @@ export default function AuthGuard({
         const s = await api.getOnboardingStatus();
         setStatus(s);
       } finally {
-
-      setLoading(false);
+        setLoading(false);
       }
     })();
   }, [isPending, session?.user, requireTenant, redirectIfTenantExists]);
