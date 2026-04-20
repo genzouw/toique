@@ -1,7 +1,7 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import Channels from '../Channels';
-import { api, type LineChannel } from '../../lib/api';
+import { api } from '../../lib/api';
 
 vi.mock('../../lib/api', () => ({
   api: {
@@ -32,19 +32,18 @@ describe('Channels Page', () => {
   });
 
   it('loads and displays channels successfully', async () => {
-    const mockChannels: LineChannel[] = [
+    vi.mocked(api.listChannels).mockResolvedValue([
       {
         id: '1',
-        tenantId: 'tenant-1',
         channelId: 'channel-1',
         displayName: 'Test Channel 1',
         channelSecret: 'secret-1',
         channelAccessToken: 'token-1',
-        isActive: true,
-        createdAt: new Date().toISOString(),
+        userId: 'user-1',
+        createdAt: new Date(),
+        updatedAt: new Date(),
       },
-    ];
-    vi.mocked(api.listChannels).mockResolvedValue(mockChannels);
+    ]);
 
     render(<Channels />);
 
