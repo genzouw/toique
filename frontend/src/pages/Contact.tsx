@@ -28,6 +28,7 @@ export default function Contact() {
   // ログインユーザーの情報を自動入力
   useEffect(() => {
     if (session?.user) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setName((prev) => prev || session.user.name || '');
       setEmail((prev) => prev || session.user.email || '');
     }
