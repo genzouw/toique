@@ -24,10 +24,10 @@ jobs:
           node-version: 24
       - name: Check backend lockfile sync
         working-directory: backend
-        run: npm install --package-lock-only && git diff --exit-code package-lock.json
+        run: npm ci --ignore-scripts
       - name: Check frontend lockfile sync
         working-directory: frontend
-        run: npm install --package-lock-only && git diff --exit-code package-lock.json
+        run: npm ci --ignore-scripts
 
   frontend:
     name: Frontend (lint / typecheck / format / build)
