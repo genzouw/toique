@@ -24,20 +24,22 @@ const RATE_LIMIT_WINDOW_MS = 60 * 60 * 1000;
 const RATE_LIMIT_MAX = 5;
 const rateBuckets = new Map<string, number[]>();
 
+// ソート済み配列の先頭から期限切れエントリ数をカウント
+function countExpired(timestamps: number[], windowStart: number): number {
+  let count = 0;
+  while (count < timestamps.length && timestamps[count] <= windowStart) {
+    count++;
+  }
+  return count;
+}
+
 // 古いエントリを定期的にクリーンアップしてメモリリークを防止
 // ⚡ Bolt: Use while loop and splice for in-place array cleanup to avoid allocating a new array every time.
 setInterval(() => {
   const now = Date.now();
   const windowStart = now - RATE_LIMIT_WINDOW_MS;
   for (const [ip, timestamps] of rateBuckets) {
-    let expiredCount = 0;
-    // Arrays are sorted chronologically, so we just find the cutoff point
-    while (
-      expiredCount < timestamps.length &&
-      timestamps[expiredCount] <= windowStart
-    ) {
-      expiredCount++;
-    }
+    const expiredCount = countExpired(timestamps, windowStart);
 
     if (expiredCount === timestamps.length) {
       rateBuckets.delete(ip);
@@ -59,13 +61,7 @@ function rateLimited(ip: string): boolean {
     return false;
   }
 
-  let expiredCount = 0;
-  while (
-    expiredCount < history.length &&
-    history[expiredCount] <= windowStart
-  ) {
-    expiredCount++;
-  }
+  const expiredCount = countExpired(history, windowStart);
 
   if (expiredCount > 0) {
     history.splice(0, expiredCount);
