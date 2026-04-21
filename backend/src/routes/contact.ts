@@ -57,6 +57,7 @@ function rateLimited(ip: string): boolean {
   const history = rateBuckets.get(ip);
 
   if (!history) {
+    if (RATE_LIMIT_MAX <= 0) return true;
     rateBuckets.set(ip, [now]);
     return false;
   }
