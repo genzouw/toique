@@ -15,7 +15,7 @@ env:
 
 jobs:
   frontend:
-    name: Frontend (lint / typecheck / format)
+    name: Frontend (lint / typecheck / format / build)
     runs-on: ubuntu-latest
     env:
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
@@ -25,7 +25,7 @@ jobs:
         run: docker build --target ci-check -f frontend/Dockerfile .
 
   backend:
-    name: Backend (lint / typecheck / format / test)
+    name: Backend (lint / typecheck / format / build / test)
     runs-on: ubuntu-latest
     env:
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
