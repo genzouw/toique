@@ -14,6 +14,21 @@ env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
+  lockfile-sync:
+    name: Lockfile sync check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Check backend lockfile sync
+        working-directory: backend
+        run: npm ci --ignore-scripts
+      - name: Check frontend lockfile sync
+        working-directory: frontend
+        run: npm ci --ignore-scripts
+
   frontend:
     name: Frontend (lint / typecheck / format / build)
     runs-on: ubuntu-latest
