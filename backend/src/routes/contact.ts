@@ -25,29 +25,57 @@ const RATE_LIMIT_MAX = 5;
 const rateBuckets = new Map<string, number[]>();
 
 // 古いエントリを定期的にクリーンアップしてメモリリークを防止
+// ⚡ Bolt: Use while loop and splice for in-place array cleanup to avoid allocating a new array every time.
 setInterval(() => {
   const now = Date.now();
   const windowStart = now - RATE_LIMIT_WINDOW_MS;
   for (const [ip, timestamps] of rateBuckets) {
-    const valid = timestamps.filter((t) => t > windowStart);
-    if (valid.length === 0) {
+    let expiredCount = 0;
+    // Arrays are sorted chronologically, so we just find the cutoff point
+    while (
+      expiredCount < timestamps.length &&
+      timestamps[expiredCount] <= windowStart
+    ) {
+      expiredCount++;
+    }
+
+    if (expiredCount === timestamps.length) {
       rateBuckets.delete(ip);
-    } else {
-      rateBuckets.set(ip, valid);
+    } else if (expiredCount > 0) {
+      timestamps.splice(0, expiredCount);
     }
   }
 }, RATE_LIMIT_WINDOW_MS).unref();
 
+// ⚡ Bolt: Replace `.filter()` with in-place mutation to minimize garbage collection pauses.
+// Only calls `Map.set()` when initializing a new array.
 function rateLimited(ip: string): boolean {
   const now = Date.now();
   const windowStart = now - RATE_LIMIT_WINDOW_MS;
-  const history = (rateBuckets.get(ip) ?? []).filter((t) => t > windowStart);
+  const history = rateBuckets.get(ip);
+
+  if (!history) {
+    rateBuckets.set(ip, [now]);
+    return false;
+  }
+
+  let expiredCount = 0;
+  while (
+    expiredCount < history.length &&
+    history[expiredCount] <= windowStart
+  ) {
+    expiredCount++;
+  }
+
+  if (expiredCount > 0) {
+    history.splice(0, expiredCount);
+  }
+
   if (history.length >= RATE_LIMIT_MAX) {
-    rateBuckets.set(ip, history);
     return true;
   }
+
   history.push(now);
-  rateBuckets.set(ip, history);
   return false;
 }
 
