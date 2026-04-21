@@ -1,0 +1,3 @@
+## 2024-05-24 - Rate Limiting Array Pruning Optimization
+**Learning:** The in-memory rate limiting implementation in `contact.ts` frequently allocated new arrays and made redundant Map updates on every request due to `Array.prototype.filter()`. Since incoming request timestamps are naturally appended chronologically, the array is strictly sorted. This specific architecture allows for O(1) space complexity by using a `while` loop to find the expiration cutoff point and `Array.prototype.splice()` to remove old elements in-place.
+**Action:** When pruning time-series data or logs stored in memory arrays that are strictly ordered, prefer index-based scanning and in-place `splice()` over `filter()` to drastically reduce garbage collection overhead in hot paths.
