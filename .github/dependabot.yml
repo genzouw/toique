@@ -149,6 +149,9 @@ updates:
       include: 'scope'
     pull-request-branch-name:
       separator: '/'
+    ignore:
+      - dependency-name: 'node'
+        versions: ['23.x', '25.x', '27.x', '29.x']
 
   # Docker base image (frontend)
   - package-ecosystem: 'docker'
@@ -170,6 +173,9 @@ updates:
       include: 'scope'
     pull-request-branch-name:
       separator: '/'
+    ignore:
+      - dependency-name: 'node'
+        versions: ['23.x', '25.x', '27.x', '29.x']
 
   # Docker base image (backup)
   - package-ecosystem: 'docker'
