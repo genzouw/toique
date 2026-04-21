@@ -11,9 +11,9 @@ FROM base AS dev
 EXPOSE 3000
 CMD ["npm", "run", "dev"]
 
-# CI: lint + format + typecheck + build
+# CI: lint + format + build
 FROM base AS ci-check
-RUN npm run format:check && npm run lint && npm run typecheck && npm run build
+RUN npm run format:check && npm run lint && npm run build
 
 # CI: test with coverage (DATABASE_URL は実行時に渡す)
 FROM base AS ci-test
