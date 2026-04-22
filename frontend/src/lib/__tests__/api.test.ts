@@ -156,7 +156,7 @@ describe('API client library', () => {
         expect.stringContaining(
           '/api/v1/submissions/export?formId=id%20with%20spaces',
         ),
-        expect.anything(),
+        expect.objectContaining({ credentials: 'include' }),
       );
       expect(mockAnchor.download).toBe('report_20260101.csv');
     });
