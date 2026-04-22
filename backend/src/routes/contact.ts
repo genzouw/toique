@@ -4,6 +4,7 @@ import db from '../db.js';
 import { contacts, tenantMembers, tenants } from '../schema.js';
 import { auth } from '../auth/better-auth.js';
 import { notifyContact } from '../lib/notify-contact.js';
+import { clientIp } from '../lib/client-ip.js';
 
 const app = new Hono();
 
@@ -74,12 +75,6 @@ function rateLimited(ip: string): boolean {
 
   history.push(now);
   return false;
-}
-
-function clientIp(headers: Headers): string {
-  const xff = headers.get('x-forwarded-for');
-  if (xff) return xff.split(',')[0]!.trim();
-  return headers.get('x-real-ip') ?? 'unknown';
 }
 
 /**
