@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Plus, Trash2, GripVertical, ChevronDown } from 'lucide-react';
+import { Plus, Trash2, ChevronUp, ChevronDown } from 'lucide-react';
 
 type StepType = 'choice' | 'text' | 'end';
 
@@ -135,7 +135,18 @@ export default function FormSchemaBuilder({
                   title="上へ"
                   aria-label="ステップを上へ移動"
                 >
-                  <GripVertical size={14} />
+                  <ChevronUp size={14} />
+                </button>
+                <button
+                  onClick={() => moveStep(idx, 1)}
+                  disabled={
+                    idx >= steps.length - 1 || steps[idx + 1]?.type === 'end'
+                  }
+                  className="text-slate-400 hover:text-slate-700 disabled:opacity-30"
+                  title="下へ"
+                  aria-label="ステップを下へ移動"
+                >
+                  <ChevronDown size={14} />
                 </button>
               </div>
             )}
