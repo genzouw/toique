@@ -8,3 +8,7 @@
 
 **Learning:** Found that async operations like refreshing lists in `Messages` and `Submissions` pages lacked visual feedback during loading, leading to potential duplicate clicks. By utilizing existing Tailwind classes (`animate-spin`, `disabled:opacity-50`, `disabled:cursor-not-allowed`) and component state (`loading`), we can provide immediate, standard feedback.
 **Action:** Always verify if async buttons properly bind to the component's `loading` or `submitting` state to ensure proper disabling and visual feedback.
+
+## 2026-04-22 - Established reusable empty state pattern
+**Learning:** Empty states consisting of just a gray icon and text felt too bare and unhelpful. Replacing them with a consistent pattern (a light-gray circular background for the icon, a dark heading, a supportive secondary text explaining the next step, and optionally a CTA button) significantly improves the empty page experience.
+**Action:** When implementing lists or data tables that can be empty, proactively use the established empty state structure (`flex-col items-center p-12`, circular icon background, title, description, and CTA) instead of just generic text.

@@ -139,9 +139,17 @@ export default function Submissions() {
         {loading ? (
           <div className="p-5 text-sm text-slate-500">読み込み中…</div>
         ) : items.length === 0 ? (
-          <div className="p-8 text-center text-sm text-slate-500">
-            <Inbox className="mx-auto mb-2 text-slate-300" size={32} />
-            まだ回答はありません
+          <div className="flex flex-col items-center justify-center p-12 text-center">
+            <div className="w-12 h-12 bg-slate-100 rounded-full flex items-center justify-center mb-4">
+              <Inbox className="text-slate-400" size={24} />
+            </div>
+            <h3 className="text-sm font-medium text-slate-900 mb-1">
+              まだ回答はありません
+            </h3>
+            <p className="text-sm text-slate-500 max-w-sm">
+              フォームを公開し、LINE上でトリガーキーワードを送信して、
+              実際の回答フローをテストしてみましょう。
+            </p>
           </div>
         ) : (
           <table className="w-full text-sm">

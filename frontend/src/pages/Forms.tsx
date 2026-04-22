@@ -60,9 +60,23 @@ export default function Forms() {
         {loading ? (
           <div className="p-5 text-sm text-slate-500">読み込み中…</div>
         ) : items.length === 0 ? (
-          <div className="p-8 text-center text-sm text-slate-500">
-            <FileText className="mx-auto mb-2 text-slate-300" size={32} />
-            フォームはまだありません
+          <div className="flex flex-col items-center justify-center p-12 text-center">
+            <div className="w-12 h-12 bg-slate-100 rounded-full flex items-center justify-center mb-4">
+              <FileText className="text-slate-400" size={24} />
+            </div>
+            <h3 className="text-sm font-medium text-slate-900 mb-1">
+              フォームはまだありません
+            </h3>
+            <p className="text-sm text-slate-500 mb-6 max-w-sm">
+              LINE上で動作する対話型フォームを作成して、問い合わせや予約の受付を自動化しましょう。
+            </p>
+            <Link
+              to="/forms/new"
+              className="inline-flex items-center gap-2 px-4 py-2 bg-slate-900 text-white text-sm font-medium rounded-md hover:bg-slate-800 transition-colors"
+            >
+              <Plus size={16} />
+              最初のフォームを作成
+            </Link>
           </div>
         ) : (
           <ul className="divide-y divide-slate-200">
