@@ -81,6 +81,9 @@ fi
 
 echo "Verification: ${TABLE_COUNT} tables found."
 
+# 統計情報を最新化（n_live_tupの精度向上のため）
+psql -h "${POSTGRES_HOST}" -p "${POSTGRES_PORT}" -U "${POSTGRES_USER}" -d "${POSTGRES_DB}" -c "ANALYZE;"
+
 # 整合性チェック: 各テーブルのレコード数
 echo ""
 echo "=== Table record counts ==="
