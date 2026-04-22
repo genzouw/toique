@@ -80,11 +80,11 @@ describe('API client library', () => {
         remove: vi.fn(),
       };
       vi.spyOn(document, 'createElement').mockReturnValue(
-        mockAnchor as unknown as HTMLElement,
+        mockAnchor as unknown as HTMLAnchorElement,
       );
       appendChildSpy = vi
         .spyOn(document.body, 'appendChild')
-        .mockReturnValue(mockAnchor as unknown as HTMLElement);
+        .mockReturnValue(mockAnchor as unknown as HTMLAnchorElement);
       createObjectURLSpy = vi
         .spyOn(global.URL, 'createObjectURL')
         .mockReturnValue('blob:http://localhost/fake-blob-url');
