@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { clientIp } from './contact.js';
+import { clientIp } from './client-ip.js';
 
 describe('clientIp', () => {
   function headers(init: Record<string, string>): Headers {
