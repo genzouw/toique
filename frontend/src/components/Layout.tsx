@@ -1,4 +1,4 @@
-import { NavLink, Outlet, useNavigate, Link, useLocation } from 'react-router';
+import { NavLink, Outlet, useNavigate, Link } from 'react-router';
 import { useEffect, useState } from 'react';
 import {
   MessageSquare,
@@ -11,11 +11,12 @@ import {
   ExternalLink,
   X,
   Shield,
-  Menu,
 } from 'lucide-react';
 import { cn } from '../lib/utils';
 import { signOut, useSession } from '../lib/auth-client';
 import { api, type UsageResponse } from '../lib/api';
+import { useMobileSidebar } from '../hooks/useMobileSidebar';
+import { MobileHeader, SidebarOverlay, SidebarPanel } from './MobileSidebar';
 
 const navItems = [
   { to: '/dashboard', label: 'ダッシュボード', icon: LayoutDashboard },
@@ -43,27 +44,10 @@ function evaluateBanner(usage: UsageResponse | null): BannerLevel {
 export default function Layout() {
   const { data: session } = useSession();
   const navigate = useNavigate();
-  const location = useLocation();
   const [bannerLevel, setBannerLevel] = useState<BannerLevel>('none');
   const [dismissed, setDismissed] = useState(false);
   const [isOperator, setIsOperator] = useState(false);
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setIsSidebarOpen(false);
-  }, [location.pathname]);
-
-  useEffect(() => {
-    if (isSidebarOpen) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = 'unset';
-    }
-    return () => {
-      document.body.style.overflow = 'unset';
-    };
-  }, [isSidebarOpen]);
+  const { isSidebarOpen, openSidebar, closeSidebar } = useMobileSidebar();
 
   useEffect(() => {
     api
@@ -86,49 +70,33 @@ export default function Layout() {
 
   return (
     <div className="flex flex-col md:flex-row h-full bg-slate-50">
-      {/* Mobile Header */}
-      <div className="md:hidden flex items-center justify-between px-4 py-3 bg-white border-b border-slate-200">
-        <div className="flex items-center gap-2">
-          <div className="text-lg font-bold text-slate-900">Toique</div>
-          <div className="text-xs text-slate-500 mt-1">管理画面</div>
-        </div>
-        <button
-          onClick={() => setIsSidebarOpen(true)}
-          aria-label="メニューを開く"
-          className="p-1.5 text-slate-600 hover:bg-slate-100 rounded-md"
-        >
-          <Menu size={20} />
-        </button>
-      </div>
+      <MobileHeader
+        onOpen={openSidebar}
+        headerClassName="bg-white border-b border-slate-200"
+        menuButtonClassName="text-slate-600 hover:bg-slate-100"
+        header={
+          <div className="flex items-center gap-2">
+            <div className="text-lg font-bold text-slate-900">Toique</div>
+            <div className="text-xs text-slate-500 mt-1">管理画面</div>
+          </div>
+        }
+      />
 
-      {/* Overlay */}
-      {isSidebarOpen && (
-        <div
-          className="fixed inset-0 bg-black/50 z-40 md:hidden"
-          onClick={() => setIsSidebarOpen(false)}
-        />
-      )}
+      <SidebarOverlay isOpen={isSidebarOpen} onClose={closeSidebar} />
 
-      {/* Sidebar */}
-      <aside
-        className={cn(
-          'fixed inset-y-0 left-0 z-50 w-60 bg-white border-r border-slate-200 flex flex-col transition-transform duration-200 ease-in-out md:static md:translate-x-0',
-          isSidebarOpen ? 'translate-x-0' : '-translate-x-full',
-        )}
-      >
-        <div className="px-5 py-4 border-b border-slate-200 flex items-center justify-between">
+      <SidebarPanel
+        isOpen={isSidebarOpen}
+        onClose={closeSidebar}
+        sidebarClassName="bg-white border-r border-slate-200"
+        sidebarHeaderClassName="border-slate-200"
+        closeButtonClassName="text-slate-500 hover:bg-slate-100"
+        sidebarHeader={
           <div>
             <div className="text-xl font-bold text-slate-900">Toique</div>
             <div className="text-xs text-slate-500 mt-0.5">管理画面</div>
           </div>
-          <button
-            onClick={() => setIsSidebarOpen(false)}
-            aria-label="メニューを閉じる"
-            className="md:hidden p-1 text-slate-500 hover:bg-slate-100 rounded-md"
-          >
-            <X size={20} />
-          </button>
-        </div>
+        }
+      >
         <nav className="flex-1 px-2 py-4 space-y-1">
           {navItems.map((item) => {
             const Icon = item.icon;
@@ -186,7 +154,7 @@ export default function Layout() {
             </>
           )}
         </div>
-      </aside>
+      </SidebarPanel>
       <main className="flex-1 overflow-auto p-4 md:p-8">
         {showBanner && (
           <div

@@ -1,0 +1,105 @@
+import type { ReactNode } from 'react';
+import { Menu, X } from 'lucide-react';
+import { cn } from '../lib/utils';
+
+interface MobileSidebarProps {
+  isSidebarOpen: boolean;
+  onOpen: () => void;
+  onClose: () => void;
+  header: ReactNode;
+  sidebarHeader: ReactNode;
+  children: ReactNode;
+  headerClassName?: string;
+  sidebarClassName?: string;
+  sidebarHeaderClassName?: string;
+  menuButtonClassName?: string;
+  closeButtonClassName?: string;
+}
+
+export function MobileHeader({
+  header,
+  onOpen,
+  headerClassName,
+  menuButtonClassName,
+}: Pick<
+  MobileSidebarProps,
+  'header' | 'onOpen' | 'headerClassName' | 'menuButtonClassName'
+>) {
+  return (
+    <div
+      className={cn(
+        'md:hidden flex items-center justify-between px-4 py-3',
+        headerClassName,
+      )}
+    >
+      {header}
+      <button
+        onClick={onOpen}
+        aria-label="メニューを開く"
+        className={cn('p-1.5 rounded-md', menuButtonClassName)}
+      >
+        <Menu size={20} />
+      </button>
+    </div>
+  );
+}
+
+export function SidebarOverlay({
+  isOpen,
+  onClose,
+}: {
+  isOpen: boolean;
+  onClose: () => void;
+}) {
+  if (!isOpen) return null;
+  return (
+    <div
+      className="fixed inset-0 bg-black/50 z-40 md:hidden"
+      onClick={onClose}
+    />
+  );
+}
+
+export function SidebarPanel({
+  isOpen,
+  onClose,
+  sidebarHeader,
+  children,
+  sidebarClassName,
+  sidebarHeaderClassName,
+  closeButtonClassName,
+}: Pick<
+  MobileSidebarProps,
+  | 'sidebarHeader'
+  | 'children'
+  | 'sidebarClassName'
+  | 'sidebarHeaderClassName'
+  | 'closeButtonClassName'
+> & { isOpen: boolean; onClose: () => void }) {
+  return (
+    <aside
+      className={cn(
+        'fixed inset-y-0 left-0 z-50 w-60 flex flex-col transition-transform duration-200 ease-in-out md:static md:translate-x-0',
+        isOpen ? 'translate-x-0' : '-translate-x-full',
+        sidebarClassName,
+      )}
+    >
+      <div
+        className={cn(
+          'px-5 py-4 border-b flex items-center justify-between',
+          sidebarHeaderClassName,
+        )}
+      >
+        {sidebarHeader}
+        <button
+          onClick={onClose}
+          aria-label="メニューを閉じる"
+          className={cn('md:hidden p-1 rounded-md', closeButtonClassName)}
+        >
+          <X size={20} />
+        </button>
+      </div>
+      {children}
+    </aside>
+  );
+}
