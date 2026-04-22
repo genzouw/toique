@@ -68,8 +68,8 @@ describe('API client library', () => {
       click: ReturnType<typeof vi.fn>;
       remove: ReturnType<typeof vi.fn>;
     };
-    let createObjectURLSpy: ReturnType<typeof vi.fn>;
-    let revokeObjectURLSpy: ReturnType<typeof vi.fn>;
+    let createObjectURLSpy: ReturnType<typeof vi.spyOn>;
+    let revokeObjectURLSpy: ReturnType<typeof vi.spyOn>;
     let appendChildSpy: ReturnType<typeof vi.spyOn>;
 
     beforeEach(() => {
@@ -86,15 +86,11 @@ describe('API client library', () => {
         .spyOn(document.body, 'appendChild')
         .mockReturnValue(mockAnchor as unknown as HTMLElement);
       createObjectURLSpy = vi
-        .fn()
+        .spyOn(global.URL, 'createObjectURL')
         .mockReturnValue('blob:http://localhost/fake-blob-url');
-      revokeObjectURLSpy = vi.fn();
-      vi.spyOn(global.URL, 'createObjectURL').mockImplementation(
-        createObjectURLSpy,
-      );
-      vi.spyOn(global.URL, 'revokeObjectURL').mockImplementation(
-        revokeObjectURLSpy,
-      );
+      revokeObjectURLSpy = vi
+        .spyOn(global.URL, 'revokeObjectURL')
+        .mockImplementation(() => {});
     });
 
     afterEach(() => {
