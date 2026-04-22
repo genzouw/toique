@@ -100,6 +100,42 @@ jobs:
             --project=${{ env.GCP_PROJECT_ID }} \
             --update-env-vars "BETTER_AUTH_URL=${{ steps.deploy.outputs.url }}"
 
+  deploy-backup:
+    name: Backup Job (Cloud Run Jobs)
+    runs-on: ubuntu-latest
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+    if: github.event.workflow_run.conclusion == 'success'
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: google-github-actions/auth@v3
+        with:
+          workload_identity_provider: projects/800954033936/locations/global/workloadIdentityPools/github-pool/providers/github-provider
+          service_account: github-deployer@toique-app-prod.iam.gserviceaccount.com
+
+      - uses: google-github-actions/setup-gcloud@v3
+
+      - name: Configure Docker for Artifact Registry
+        run: gcloud auth configure-docker ${{ env.GCP_REGION }}-docker.pkg.dev --quiet
+
+      - name: Build and push backup image
+        run: |
+          IMAGE="${{ env.GCP_REGION }}-docker.pkg.dev/${{ env.GCP_PROJECT_ID }}/${{ env.ARTIFACT_REPO }}/backup:${{ github.sha }}"
+          docker build -f backup/Dockerfile -t "$IMAGE" ./backup
+          docker push "$IMAGE"
+          echo "IMAGE=$IMAGE" >> "$GITHUB_ENV"
+
+      - name: Update Cloud Run Job with new image
+        run: |
+          gcloud run jobs update db-backup \
+            --region=${{ env.GCP_REGION }} \
+            --project=${{ env.GCP_PROJECT_ID }} \
+            --image="$IMAGE"
+
   deploy-frontend:
     name: Frontend (Cloudflare Pages)
     needs: deploy-backend
