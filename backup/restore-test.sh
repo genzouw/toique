@@ -26,7 +26,7 @@ fi
 
 # 最新のバックアップファイルを特定
 echo "Searching for latest backup in gs://${GCS_BUCKET}/..."
-LATEST_BACKUP=$(gcloud storage ls "gs://${GCS_BUCKET}/" 2>/dev/null | grep '\.sql\.gz$' | sort | tail -n 1)
+LATEST_BACKUP=$(gcloud storage ls "gs://${GCS_BUCKET}/" 2>/dev/null | grep '\.sql\.gz$' | sort | tail -n 1 || true)
 
 if [ -z "${LATEST_BACKUP}" ]; then
   echo "Warning: No backup files found in gs://${GCS_BUCKET}/. Skipping restore test."
