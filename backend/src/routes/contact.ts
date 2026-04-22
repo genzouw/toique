@@ -81,8 +81,8 @@ function rateLimited(ip: string): boolean {
 export function clientIp(headers: Headers): string {
   const xff = headers.get('x-forwarded-for');
   if (xff) {
-    const ips = xff.split(',');
-    return ips[ips.length - 1]!.trim();
+    const ip = xff.split(',').at(-1)?.trim();
+    if (ip) return ip;
   }
   return headers.get('x-real-ip') ?? 'unknown';
 }
