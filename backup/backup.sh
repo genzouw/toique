@@ -13,7 +13,9 @@ if [ -z "$POSTGRES_DB" ] || [ -z "$POSTGRES_USER" ] || [ -z "$POSTGRES_PASSWORD"
   exit 1
 fi
 
-if [ -n "$GOOGLE_APPLICATION_CREDENTIALS" ] && [ -f "$GOOGLE_APPLICATION_CREDENTIALS" ]; then
+# Cloud Run Jobs では Workload Identity (ADC) で自動認証される。
+# ローカル開発用に GOOGLE_APPLICATION_CREDENTIALS によるフォールバックも維持。
+if [ -n "${GOOGLE_APPLICATION_CREDENTIALS:-}" ] && [ -f "${GOOGLE_APPLICATION_CREDENTIALS:-}" ]; then
     gcloud auth activate-service-account --key-file="$GOOGLE_APPLICATION_CREDENTIALS"
 fi
 
