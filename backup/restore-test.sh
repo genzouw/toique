@@ -59,7 +59,7 @@ gunzip -f "${DOWNLOAD_PATH}"
 
 # リストア前にDBを初期化（冪等性の確保）
 echo "Cleaning target database ${POSTGRES_DB}..."
-psql -h "${POSTGRES_HOST}" -p "${POSTGRES_PORT}" -U "${POSTGRES_USER}" -d "${POSTGRES_DB}" -c "DROP OWNED BY ${POSTGRES_USER};" 2>/dev/null || true
+psql -h "${POSTGRES_HOST}" -p "${POSTGRES_PORT}" -U "${POSTGRES_USER}" -d "${POSTGRES_DB}" -c "DROP SCHEMA public CASCADE; CREATE SCHEMA public;" 2>/dev/null || true
 
 # リストア実行
 echo "Restoring backup to ${POSTGRES_DB}..."
