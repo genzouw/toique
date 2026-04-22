@@ -2,18 +2,11 @@ import type { ReactNode } from 'react';
 import { Menu, X } from 'lucide-react';
 import { cn } from '../lib/utils';
 
-interface MobileSidebarProps {
-  isSidebarOpen: boolean;
-  onOpen: () => void;
-  onClose: () => void;
+interface MobileHeaderProps {
   header: ReactNode;
-  sidebarHeader: ReactNode;
-  children: ReactNode;
+  onOpen: () => void;
   headerClassName?: string;
-  sidebarClassName?: string;
-  sidebarHeaderClassName?: string;
   menuButtonClassName?: string;
-  closeButtonClassName?: string;
 }
 
 export function MobileHeader({
@@ -21,10 +14,7 @@ export function MobileHeader({
   onOpen,
   headerClassName,
   menuButtonClassName,
-}: Pick<
-  MobileSidebarProps,
-  'header' | 'onOpen' | 'headerClassName' | 'menuButtonClassName'
->) {
+}: MobileHeaderProps) {
   return (
     <div
       className={cn(
@@ -60,6 +50,16 @@ export function SidebarOverlay({
   );
 }
 
+interface SidebarPanelProps {
+  isOpen: boolean;
+  onClose: () => void;
+  sidebarHeader: ReactNode;
+  children: ReactNode;
+  sidebarClassName?: string;
+  sidebarHeaderClassName?: string;
+  closeButtonClassName?: string;
+}
+
 export function SidebarPanel({
   isOpen,
   onClose,
@@ -68,14 +68,7 @@ export function SidebarPanel({
   sidebarClassName,
   sidebarHeaderClassName,
   closeButtonClassName,
-}: Pick<
-  MobileSidebarProps,
-  | 'sidebarHeader'
-  | 'children'
-  | 'sidebarClassName'
-  | 'sidebarHeaderClassName'
-  | 'closeButtonClassName'
-> & { isOpen: boolean; onClose: () => void }) {
+}: SidebarPanelProps) {
   return (
     <aside
       className={cn(
