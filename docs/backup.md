@@ -85,6 +85,41 @@ docker compose logs -f backup
    psql -h <host> -p <port> -U <user> -d <db> -f <filename>.sql
    ```
 
+## 月次リストアテスト
+
+バックアップの信頼性を担保するため、毎月1日にGCSから最新バックアップをダウンロードし、テスト用データベースへのリストアを自動検証しています。
+
+### 自動実行
+
+GitHub Actions の `restore-test.yml` ワークフローが毎月1日 午前4時 (JST) に自動実行されます。
+
+テスト内容:
+
+1. GCSバケットから最新の `.sql.gz` ファイルを特定・ダウンロード
+2. gzip整合性チェック
+3. テスト用PostgreSQLデータベースへリストア
+4. テーブル数・レコード数の整合性チェック
+
+### 手動実行
+
+GitHub Actions の「Restore Test」ワークフローから `Run workflow` で手動実行できます。
+
+ローカルで実行する場合:
+
+```bash
+# テスト用DBを起動
+docker compose up -d db
+
+# 環境変数を設定してスクリプトを実行
+GCS_BUCKET=toique-app-prod-db-backups \
+POSTGRES_HOST=localhost \
+POSTGRES_PORT=5433 \
+POSTGRES_USER=toique \
+POSTGRES_PASSWORD=toique \
+POSTGRES_DB=toique \
+bash backup/restore-test.sh
+```
+
 ## 本番環境への展開
 
 > **注意**: この仕組みはローカル/検証環境向けです。本番環境では Cloud Run Jobs + Cloud Scheduler での定期実行、または Cloud SQL の自動バックアップ/PITR の利用を推奨します。
