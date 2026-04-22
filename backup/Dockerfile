@@ -7,8 +7,7 @@ ENV TZ=Asia/Tokyo
 WORKDIR /app
 
 COPY backup.sh .
-COPY entrypoint.sh .
 
-RUN chmod +x backup.sh entrypoint.sh
+RUN chmod +x backup.sh
 
-CMD ["./entrypoint.sh"]
+CMD ["./backup.sh"]
