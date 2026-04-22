@@ -54,7 +54,7 @@ class MyStack extends TerraformStack {
     // Cloud Run Job 実行権限 (Cloud Scheduler が使用)
     new ProjectIamMember(this, 'backup-sa-run-invoker', {
       project: projectId,
-      role: 'roles/run.invoker',
+      role: 'roles/run.developer',
       member: `serviceAccount:${backupSa.email}`,
     });
 
