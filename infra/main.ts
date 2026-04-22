@@ -51,6 +51,13 @@ class MyStack extends TerraformStack {
       member: `serviceAccount:${backupSa.email}`,
     });
 
+    // Cloud Run Job 実行権限 (Cloud Scheduler が使用)
+    new ProjectIamMember(this, 'backup-sa-run-invoker', {
+      project: projectId,
+      role: 'roles/run.invoker',
+      member: `serviceAccount:${backupSa.email}`,
+    });
+
     // Secret Manager 読み取り権限
     new ProjectIamMember(this, 'backup-sa-secrets', {
       project: projectId,
