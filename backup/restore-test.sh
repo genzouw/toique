@@ -19,10 +19,8 @@ fi
 POSTGRES_PORT="${POSTGRES_PORT:-5432}"
 export PGPASSWORD="${POSTGRES_PASSWORD}"
 
-# GCS認証（キーファイルがある場合）
-if [ -n "${GOOGLE_APPLICATION_CREDENTIALS:-}" ] && [ -f "${GOOGLE_APPLICATION_CREDENTIALS}" ]; then
-  gcloud auth activate-service-account --key-file="${GOOGLE_APPLICATION_CREDENTIALS}"
-fi
+# Cloud Run Jobs では Workload Identity (ADC) で自動認証される。
+# ローカル開発では gcloud auth application-default login の ADC を利用。
 
 # 最新のバックアップファイルを特定
 echo "Searching for latest backup in gs://${GCS_BUCKET}/..."
