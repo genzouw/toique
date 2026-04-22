@@ -89,8 +89,12 @@ describe('API client library', () => {
         .fn()
         .mockReturnValue('blob:http://localhost/fake-blob-url');
       revokeObjectURLSpy = vi.fn();
-      global.URL.createObjectURL = createObjectURLSpy;
-      global.URL.revokeObjectURL = revokeObjectURLSpy;
+      vi.spyOn(global.URL, 'createObjectURL').mockImplementation(
+        createObjectURLSpy,
+      );
+      vi.spyOn(global.URL, 'revokeObjectURL').mockImplementation(
+        revokeObjectURLSpy,
+      );
     });
 
     it('should throw an error when fetch response is not ok', async () => {
