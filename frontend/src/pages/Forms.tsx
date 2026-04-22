@@ -64,9 +64,9 @@ export default function Forms() {
             <div className="w-12 h-12 bg-slate-100 rounded-full flex items-center justify-center mb-4">
               <FileText className="text-slate-400" size={24} />
             </div>
-            <h3 className="text-sm font-medium text-slate-900 mb-1">
+            <h2 className="text-sm font-medium text-slate-900 mb-1">
               フォームはまだありません
-            </h3>
+            </h2>
             <p className="text-sm text-slate-500 mb-6 max-w-sm">
               LINE上で動作する対話型フォームを作成して、問い合わせや予約の受付を自動化しましょう。
             </p>
