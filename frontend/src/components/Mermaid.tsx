@@ -1,10 +1,11 @@
 import { useEffect, useId, useRef, useState } from 'react';
 import mermaid from 'mermaid';
+import DOMPurify from 'dompurify';
 
 mermaid.initialize({
   startOnLoad: false,
   theme: 'default',
-  securityLevel: 'loose',
+  securityLevel: 'strict',
 });
 
 interface MermaidProps {
@@ -20,7 +21,7 @@ export default function Mermaid({ chart }: MermaidProps) {
     const renderChart = async () => {
       try {
         const { svg: svgContent } = await mermaid.render(id.current, chart);
-        setSvg(svgContent);
+        setSvg(DOMPurify.sanitize(svgContent));
       } catch (err) {
         console.error('Mermaid rendering failed', err);
       }
