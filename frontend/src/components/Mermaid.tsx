@@ -23,7 +23,12 @@ export default function Mermaid({ chart }: MermaidProps) {
       try {
         const { svg: svgContent } = await mermaid.render(id.current, chart);
         if (!ignore) {
-          setSvg(DOMPurify.sanitize(svgContent));
+          setSvg(
+            DOMPurify.sanitize(svgContent, {
+              USE_PROFILES: { svg: true },
+              ADD_TAGS: ['style'],
+            }),
+          );
         }
       } catch (err) {
         if (!ignore) {
