@@ -75,10 +75,22 @@ gcloud run jobs execute db-backup --region=asia-northeast1 --project=toique-app-
 
 ローカル環境でバックアップをテストする場合は、`docker compose` の `backup` プロファイルを使用します。
 
+### 前提条件
+
+`gcloud` CLI がインストールされていること。ADC（Application Default Credentials）でGCSへの認証を行います。
+
+```bash
+# 初回のみ: ADC を取得（ブラウザでGoogleアカウント認証）
+gcloud auth application-default login
+```
+
+> **注意**: GCSバケットへのアクセスには、利用するGoogleアカウントに `roles/storage.objectCreator`（書き込み）または `roles/storage.objectViewer`（読み取り）が付与されている必要があります。
+
+### 実行
+
 ```bash
 # GCS にアップロードする場合
-GCS_BUCKET=<bucket> GOOGLE_APPLICATION_CREDENTIALS=<path-to-key.json> \
-  docker compose run --rm backup
+GCS_BUCKET=<bucket> docker compose run --rm backup
 
 # ローカルにダンプのみ（GCS 不使用）
 docker compose exec db pg_dump -U toique toique | gzip > backup.sql.gz
