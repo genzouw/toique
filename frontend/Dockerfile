@@ -13,4 +13,4 @@ CMD ["npm", "run", "dev"]
 
 # CI: lint + format + build
 FROM base AS ci-check
-RUN npm run format:check && npm run lint && npm run build
+RUN npm run format:check && npm run lint && npm run test && npm run build
