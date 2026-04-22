@@ -38,6 +38,13 @@ echo "Latest backup: ${LATEST_BACKUP}"
 # バックアップファイルをダウンロード
 BACKUP_FILENAME=$(basename "${LATEST_BACKUP}")
 DOWNLOAD_PATH="/tmp/${BACKUP_FILENAME}"
+SQL_PATH="/tmp/${BACKUP_FILENAME%.gz}"
+
+# 一時ファイルのクリーンアップ（正常終了・エラー時の両方で実行）
+cleanup() {
+  rm -f "${DOWNLOAD_PATH}" "${SQL_PATH}"
+}
+trap cleanup EXIT
 
 echo "Downloading ${BACKUP_FILENAME}..."
 gcloud storage cp "${LATEST_BACKUP}" "${DOWNLOAD_PATH}"
@@ -48,7 +55,6 @@ gzip -t "${DOWNLOAD_PATH}"
 echo "Integrity check passed."
 
 # 解凍
-SQL_PATH="/tmp/${BACKUP_FILENAME%.gz}"
 gunzip -f "${DOWNLOAD_PATH}"
 
 # リストア前にDBを初期化（冪等性の確保）
@@ -62,7 +68,6 @@ RESTORE_EXIT=$?
 
 if [ "${RESTORE_EXIT}" -ne 0 ]; then
   echo "Error: Restore failed with exit code ${RESTORE_EXIT}"
-  rm -f "${SQL_PATH}"
   exit 1
 fi
 
@@ -75,7 +80,6 @@ TABLE_COUNT=$(echo "${TABLE_COUNT}" | tr -d ' ')
 
 if [ "${TABLE_COUNT}" -eq 0 ]; then
   echo "Error: No tables found after restore."
-  rm -f "${SQL_PATH}"
   exit 1
 fi
 
@@ -95,9 +99,6 @@ psql -h "${POSTGRES_HOST}" -p "${POSTGRES_PORT}" -U "${POSTGRES_USER}" -d "${POS
   fi
 done
 echo "==========================="
-
-# 一時ファイルの削除
-rm -f "${SQL_PATH}"
 
 echo ""
 echo "Restore test completed successfully."
