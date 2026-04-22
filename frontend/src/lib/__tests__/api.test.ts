@@ -97,6 +97,10 @@ describe('API client library', () => {
       );
     });
 
+    afterEach(() => {
+      vi.useRealTimers();
+    });
+
     it('should throw an error when fetch response is not ok', async () => {
       fetchSpy.mockResolvedValue({
         ok: false,
@@ -134,8 +138,6 @@ describe('API client library', () => {
       expect(revokeObjectURLSpy).toHaveBeenCalledWith(
         'blob:http://localhost/fake-blob-url',
       );
-
-      vi.useRealTimers();
     });
 
     it('should encode formId in the export URL', async () => {
@@ -157,8 +159,6 @@ describe('API client library', () => {
         expect.anything(),
       );
       expect(mockAnchor.download).toBe('report_20260101.csv');
-
-      vi.useRealTimers();
     });
   });
 });
