@@ -76,9 +76,14 @@ function rateLimited(ip: string): boolean {
   return false;
 }
 
-function clientIp(headers: Headers): string {
+// Cloud Run の内部プロキシが実クライアントIPを右端に追記するため、
+// 右端の値を採用する（左端はクライアントが偽装可能）
+export function clientIp(headers: Headers): string {
   const xff = headers.get('x-forwarded-for');
-  if (xff) return xff.split(',')[0]!.trim();
+  if (xff) {
+    const ips = xff.split(',');
+    return ips[ips.length - 1]!.trim();
+  }
   return headers.get('x-real-ip') ?? 'unknown';
 }
 
