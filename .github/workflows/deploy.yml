@@ -129,9 +129,9 @@ jobs:
           docker push "$IMAGE"
           echo "IMAGE=$IMAGE" >> "$GITHUB_ENV"
 
-      - name: Update Cloud Run Job with new image
+      - name: Deploy Cloud Run Job with new image
         run: |
-          gcloud run jobs update db-backup \
+          gcloud run jobs deploy db-backup \
             --region=${{ env.GCP_REGION }} \
             --project=${{ env.GCP_PROJECT_ID }} \
             --image="$IMAGE"
