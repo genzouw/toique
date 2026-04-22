@@ -18,15 +18,23 @@ export default function Mermaid({ chart }: MermaidProps) {
   const id = useRef(`mermaid-${uniqueId.replace(/:/g, '')}`);
 
   useEffect(() => {
+    let ignore = false;
     const renderChart = async () => {
       try {
         const { svg: svgContent } = await mermaid.render(id.current, chart);
-        setSvg(DOMPurify.sanitize(svgContent));
+        if (!ignore) {
+          setSvg(DOMPurify.sanitize(svgContent));
+        }
       } catch (err) {
-        console.error('Mermaid rendering failed', err);
+        if (!ignore) {
+          console.error('Mermaid rendering failed', err);
+        }
       }
     };
     renderChart();
+    return () => {
+      ignore = true;
+    };
   }, [chart]);
 
   return <div dangerouslySetInnerHTML={{ __html: svg }} />;
