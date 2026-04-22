@@ -8,7 +8,7 @@
 
 - **Cloud Run Jobs**: `backup/backup.sh` を実行するコンテナジョブ
 - **Cloud Scheduler**: ジョブの定期実行トリガー（cron: `0 3 * * *`）
-- **Workload Identity**: サービスアカウント (`backup-job@toique-app-prod.iam.gserviceaccount.com`) による ADC 認証
+- **Workload Identity**: サービスアカウント (`backup-job@{PROJECT_ID}.iam.gserviceaccount.com`) による ADC 認証
 - **Secret Manager**: DB 接続情報の安全な管理
 
 ```
