@@ -7,6 +7,7 @@ import {
   timestamp,
   jsonb,
   unique,
+  index,
 } from 'drizzle-orm/pg-core';
 
 // -----------------------------
@@ -153,22 +154,32 @@ export const lineUsers = pgTable(
   (t) => [unique().on(t.lineChannelId, t.lineUserId)],
 );
 
-export const inboundMessages = pgTable('inbound_messages', {
-  id: uuid('id').primaryKey().defaultRandom(),
-  lineChannelId: uuid('line_channel_id')
-    .notNull()
-    .references(() => lineChannels.id, { onDelete: 'cascade' }),
-  lineUserId: uuid('line_user_id').references(() => lineUsers.id, {
-    onDelete: 'set null',
-  }),
-  eventType: text('event_type').notNull(),
-  messageType: text('message_type'),
-  text: text('text'),
-  rawEvent: jsonb('raw_event').notNull(),
-  receivedAt: timestamp('received_at', { withTimezone: true })
-    .notNull()
-    .defaultNow(),
-});
+export const inboundMessages = pgTable(
+  'inbound_messages',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    lineChannelId: uuid('line_channel_id')
+      .notNull()
+      .references(() => lineChannels.id, { onDelete: 'cascade' }),
+    lineUserId: uuid('line_user_id').references(() => lineUsers.id, {
+      onDelete: 'set null',
+    }),
+    eventType: text('event_type').notNull(),
+    messageType: text('message_type'),
+    text: text('text'),
+    rawEvent: jsonb('raw_event').notNull(),
+    receivedAt: timestamp('received_at', { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (t) => [
+    // ⚡ Bolt: Added composite index on lineChannelId and receivedAt to prevent sequential scans when fetching recent messages per channel.
+    index('inbound_messages_channel_id_received_at_idx').on(
+      t.lineChannelId,
+      t.receivedAt,
+    ),
+  ],
+);
 
 // -----------------------------
 // Forms (Phase 3)
@@ -218,23 +229,35 @@ export const lineSessions = pgTable(
   (t) => [unique('line_sessions_user_form_key').on(t.lineUserId, t.formId)],
 );
 
-export const submissions = pgTable('submissions', {
-  id: uuid('id').primaryKey().defaultRandom(),
-  tenantId: uuid('tenant_id')
-    .notNull()
-    .references(() => tenants.id, { onDelete: 'cascade' }),
-  formId: uuid('form_id')
-    .notNull()
-    .references(() => forms.id, { onDelete: 'cascade' }),
-  lineUserId: uuid('line_user_id')
-    .notNull()
-    .references(() => lineUsers.id, { onDelete: 'cascade' }),
-  answers: jsonb('answers').notNull(),
-  status: text('status').notNull().default('new'), // new / in_review / done
-  submittedAt: timestamp('submitted_at', { withTimezone: true })
-    .notNull()
-    .defaultNow(),
-});
+export const submissions = pgTable(
+  'submissions',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    tenantId: uuid('tenant_id')
+      .notNull()
+      .references(() => tenants.id, { onDelete: 'cascade' }),
+    formId: uuid('form_id')
+      .notNull()
+      .references(() => forms.id, { onDelete: 'cascade' }),
+    lineUserId: uuid('line_user_id')
+      .notNull()
+      .references(() => lineUsers.id, { onDelete: 'cascade' }),
+    answers: jsonb('answers').notNull(),
+    status: text('status').notNull().default('new'), // new / in_review / done
+    submittedAt: timestamp('submitted_at', { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (t) => [
+    // ⚡ Bolt: Added composite index on tenantId and submittedAt to speed up quota counting and dashboard queries without sequential scans.
+    index('submissions_tenant_id_submitted_at_idx').on(
+      t.tenantId,
+      t.submittedAt,
+    ),
+    // ⚡ Bolt: Added composite index on formId and submittedAt to optimize fetching and CSV exporting of submissions for a specific form.
+    index('submissions_form_id_submitted_at_idx').on(t.formId, t.submittedAt),
+  ],
+);
 
 // -----------------------------
 // Contacts (Toique 運営者向け問い合わせ)
