@@ -21,7 +21,8 @@ export interface SEOOptions {
   noIndex?: boolean;
 }
 
-const SITE_ORIGIN = 'https://toique.pages.dev';
+const SITE_ORIGIN =
+  import.meta.env.VITE_SITE_ORIGIN ?? 'https://toique.pages.dev';
 
 type MetaSelector =
   | { kind: 'name'; value: string }
