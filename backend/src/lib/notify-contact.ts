@@ -1,4 +1,5 @@
 import { Resend } from 'resend';
+import { logger } from './logger.js';
 
 /**
  * 問い合わせ受信時に運営者宛に通知メールを送る。
@@ -29,7 +30,7 @@ export async function notifyContact(input: {
     .filter(Boolean);
 
   if (!apiKey || !from || to.length === 0) {
-    console.warn(
+    logger.warn(
       '[notify-contact] skipped: RESEND_API_KEY / CONTACT_FROM / OPERATOR_EMAILS いずれかが未設定',
     );
     return;
@@ -60,6 +61,6 @@ export async function notifyContact(input: {
       text,
     });
   } catch (err) {
-    console.error('[notify-contact] failed to send', err);
+    logger.error('[notify-contact] failed to send', err);
   }
 }
