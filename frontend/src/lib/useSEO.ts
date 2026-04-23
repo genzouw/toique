@@ -88,10 +88,7 @@ export function useSEO(options: SEOOptions): void {
     }
 
     const canonicalUrl =
-      canonical ??
-      (typeof window !== 'undefined'
-        ? `${SITE_ORIGIN}${window.location.pathname}`
-        : undefined);
+      canonical ?? `${SITE_ORIGIN}${window.location.pathname}`;
     if (canonicalUrl) {
       upsertLink('canonical', canonicalUrl);
       upsertMeta({ kind: 'property', value: 'og:url' }, canonicalUrl);
