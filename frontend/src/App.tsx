@@ -18,6 +18,7 @@ import Submissions from './pages/Submissions';
 import Help from './pages/Help';
 import Pricing from './pages/Pricing';
 import Contact from './pages/Contact';
+import IndustryLanding from './pages/IndustryLanding';
 import AdminHome from './pages/admin/AdminHome';
 import AdminContacts from './pages/admin/AdminContacts';
 import AdminContactDetail from './pages/admin/AdminContactDetail';
@@ -46,6 +47,7 @@ function AppRoutes() {
       <Route path="/help" element={<Help />} />
       <Route path="/pricing" element={<Pricing />} />
       <Route path="/contact" element={<Contact />} />
+      <Route path="/for/:slug" element={<IndustryLanding />} />
       <Route
         path="/login"
         element={
