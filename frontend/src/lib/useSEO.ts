@@ -36,6 +36,9 @@ function upsertMeta(selector: MetaSelector, content: string): void {
     el.setAttribute(attr, selector.value);
     el.setAttribute('data-seo', 'true');
     document.head.appendChild(el);
+  } else if (!el.hasAttribute('data-seo')) {
+    el.setAttribute('data-seo', 'true');
+    el.setAttribute('data-seo-original', el.getAttribute('content') ?? '');
   }
   el.setAttribute('content', content);
 }
@@ -47,6 +50,9 @@ function upsertLink(rel: string, href: string): void {
     el.setAttribute('rel', rel);
     el.setAttribute('data-seo', 'true');
     document.head.appendChild(el);
+  } else if (!el.hasAttribute('data-seo')) {
+    el.setAttribute('data-seo', 'true');
+    el.setAttribute('data-seo-original', el.getAttribute('href') ?? '');
   }
   el.setAttribute('href', href);
 }
@@ -103,9 +109,17 @@ export function useSEO(options: SEOOptions): void {
 
     return () => {
       document.title = prevTitle;
-      document.head
-        .querySelectorAll('[data-seo="true"]')
-        .forEach((el) => el.remove());
+      document.head.querySelectorAll('[data-seo="true"]').forEach((el) => {
+        const original = el.getAttribute('data-seo-original');
+        if (original !== null) {
+          const attrName = el.tagName === 'LINK' ? 'href' : 'content';
+          el.setAttribute(attrName, original);
+          el.removeAttribute('data-seo');
+          el.removeAttribute('data-seo-original');
+        } else {
+          el.remove();
+        }
+      });
     };
   }, [title, description, canonical, ogImage, noIndex]);
 }
