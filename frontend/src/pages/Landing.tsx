@@ -1,4 +1,5 @@
 import { Link } from 'react-router';
+import type { LucideIcon } from 'lucide-react';
 import {
   MessageSquare,
   ListChecks,
@@ -9,16 +10,28 @@ import {
   Monitor,
   Activity,
   ChevronDown,
+  ArrowRight,
 } from 'lucide-react';
 import { useSEO } from '../lib/useSEO';
+import { INDUSTRIES } from '../lib/industries';
 
-const USE_CASES = [
+interface UseCaseCard {
+  icon: LucideIcon;
+  title: string;
+  category: string;
+  description: string;
+  /** 業界詳細ページへの導線（該当するユースケースにのみ付与） */
+  detailLink?: string;
+}
+
+const USE_CASES: UseCaseCard[] = [
   {
     icon: Calendar,
     title: '美容室・サロンの予約受付',
     category: '業務効率化',
     description:
       'LINEから希望日時やメニュー、担当者を選択。対話形式で予約を自動受付し、スタッフの電話対応の時間を削減します。',
+    detailLink: '/for/salon',
   },
   {
     icon: ShoppingBag,
@@ -26,6 +39,7 @@ const USE_CASES = [
     category: '業務効率化',
     description:
       'メニュー選択から個数、受取時間の指定までをLINEで完結。注文データは一覧で確認でき、スムーズな商品の提供が可能です。',
+    detailLink: '/for/restaurant',
   },
   {
     icon: Monitor,
@@ -239,7 +253,7 @@ export default function Landing() {
                 <div className="flex-shrink-0 w-12 h-12 bg-slate-50 text-slate-700 rounded-lg flex items-center justify-center">
                   <u.icon size={24} />
                 </div>
-                <div>
+                <div className="flex-1">
                   <div className="flex items-start gap-2 mb-2">
                     <span className="px-2 py-0.5 text-xs font-medium bg-slate-100 text-slate-600 rounded-full">
                       {u.category}
@@ -251,9 +265,38 @@ export default function Landing() {
                   <p className="text-sm text-slate-600 leading-relaxed">
                     {u.description}
                   </p>
+                  {u.detailLink && (
+                    <Link
+                      to={u.detailLink}
+                      className="mt-3 inline-flex items-center gap-1 text-xs font-medium text-slate-700 hover:text-slate-900"
+                    >
+                      詳しく見る
+                      <ArrowRight size={12} />
+                    </Link>
+                  )}
                 </div>
               </div>
             ))}
+          </div>
+
+          {/* Industry detail links */}
+          <div id="industries" className="mt-12">
+            <h3 className="text-base font-semibold text-slate-900 text-center">
+              業種別の活用例
+            </h3>
+            <ul className="mt-4 grid gap-2 sm:grid-cols-2 md:grid-cols-3">
+              {INDUSTRIES.map((i) => (
+                <li key={i.slug}>
+                  <Link
+                    to={`/for/${i.slug}`}
+                    className="flex items-center justify-between px-4 py-3 border border-slate-200 rounded-md text-sm text-slate-700 hover:bg-slate-50"
+                  >
+                    <span>{i.metaTitle.replace(' | Toique', '')}</span>
+                    <ArrowRight size={14} className="text-slate-400" />
+                  </Link>
+                </li>
+              ))}
+            </ul>
           </div>
         </div>
       </section>
