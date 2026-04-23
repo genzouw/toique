@@ -63,6 +63,8 @@ export function useSEO(options: SEOOptions): void {
   const { title, description, canonical, ogImage, noIndex } = options;
 
   useEffect(() => {
+    const prevTitle = document.title;
+
     if (title) {
       document.title = title;
     }
@@ -98,5 +100,12 @@ export function useSEO(options: SEOOptions): void {
     } else {
       removeMeta({ kind: 'name', value: 'robots' });
     }
+
+    return () => {
+      document.title = prevTitle;
+      document.head
+        .querySelectorAll('[data-seo="true"]')
+        .forEach((el) => el.remove());
+    };
   }, [title, description, canonical, ogImage, noIndex]);
 }
