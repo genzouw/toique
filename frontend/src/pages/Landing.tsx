@@ -9,8 +9,10 @@ import {
   ShoppingBag,
   Monitor,
   Activity,
+  ChevronDown,
   ArrowRight,
 } from 'lucide-react';
+import { useSEO } from '../lib/useSEO';
 import { INDUSTRIES } from '../lib/industries';
 
 interface UseCaseCard {
@@ -82,7 +84,75 @@ const FEATURES = [
   },
 ];
 
+const FAQS: { question: string; answer: string }[] = [
+  {
+    question: 'LINE公式アカウントを持っていないと使えませんか？',
+    answer:
+      'まずLINE公式アカウントの作成（無料プランあり）が必要です。作成後、チャネルID・シークレット・アクセストークンを Toique に登録するだけで連携できます。',
+  },
+  {
+    question: '料金はかかりますか？',
+    answer:
+      'アカウント登録と基本機能は無料でご利用いただけます。詳細は料金プランページをご確認ください。',
+  },
+  {
+    question: 'プログラミング知識は必要ですか？',
+    answer:
+      '不要です。対話フォームは JSON スキーマで定義しますが、テンプレートが用意されているため、コピー＆ペースト感覚で作成できます。',
+  },
+  {
+    question: '複数のLINE公式アカウントを連携できますか？',
+    answer: 'はい、テナント単位で複数のLINEチャネルを登録・管理できます。',
+  },
+  {
+    question: '回答データはどのように取り出せますか？',
+    answer:
+      '管理画面の「問い合わせ」一覧から個別に確認できるほか、CSV形式でまとめてダウンロードすることも可能です（Excel対応のUTF-8出力）。',
+  },
+  {
+    question: '受信したメッセージはどのくらい保存されますか？',
+    answer:
+      '現時点で自動削除は行っていません。ユーザー自身で削除ボタンから削除することができます。',
+  },
+];
+
+const SOFTWARE_APP_JSONLD = {
+  '@context': 'https://schema.org',
+  '@type': 'SoftwareApplication',
+  name: 'Toique',
+  applicationCategory: 'BusinessApplication',
+  operatingSystem: 'Web',
+  description:
+    'ToiqueはLINE公式アカウントと連携し、対話形式のフォームでお客様の情報を自動で収集・管理するツールです。ノーコードでフォーム作成、回答データのCSVエクスポートに対応。',
+  offers: {
+    '@type': 'Offer',
+    price: 0,
+    priceCurrency: 'JPY',
+  },
+};
+
+const FAQ_JSONLD = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: FAQS.map((f) => ({
+    '@type': 'Question',
+    name: f.question,
+    acceptedAnswer: {
+      '@type': 'Answer',
+      text: f.answer,
+    },
+  })),
+};
+
 export default function Landing() {
+  useSEO({
+    title: 'Toique - LINEからの問い合わせを対話フォームで自動収集',
+    description:
+      'ToiqueはLINE公式アカウントと連携し、対話形式のフォームで問い合わせを自動収集・管理するSaaS。ノーコードでフォーム作成、自動応答、CSVエクスポートに対応。',
+    canonical: 'https://toique.pages.dev/',
+    ogImage: 'https://toique.pages.dev/ogp.png',
+  });
+
   return (
     <div className="min-h-full bg-white">
       {/* Header */}
@@ -121,8 +191,7 @@ export default function Landing() {
             対話フォームで自動収集
           </h1>
           <p className="mt-4 text-base sm:text-lg text-slate-600 leading-relaxed">
-            Toiqueは、LINE公式アカウントと連携し、対話形式のフォームでお客様の情報を自動で収集・管理するツールです。
-            問い合わせ対応の手間を減らし、回答データを一元管理できます。
+            ToiqueはLINE公式アカウントと連携する問い合わせフォームSaaSです。対話形式の自動応答でお客様の情報を漏れなく収集し、回答データを一元管理。電話やメール対応の負担を減らし、24時間365日の自動受付を実現します。
           </p>
           <div className="mt-8 flex items-center justify-center gap-4">
             <Link
@@ -145,7 +214,7 @@ export default function Landing() {
       <section className="py-16 px-6 bg-slate-50">
         <div className="max-w-5xl mx-auto">
           <h2 className="text-2xl font-bold text-slate-900 text-center">
-            主な機能
+            LINE公式アカウント連携と対話フォームの主要機能
           </h2>
           <div className="mt-10 grid gap-8 sm:grid-cols-2">
             {FEATURES.map((f) => (
@@ -170,7 +239,7 @@ export default function Landing() {
       <section className="py-16 px-6 bg-white">
         <div className="max-w-5xl mx-auto">
           <h2 className="text-2xl font-bold text-slate-900 text-center">
-            具体的な利用シーン
+            業種別の活用シーン（美容室・飲食店・ECなど）
           </h2>
           <p className="mt-4 text-center text-slate-600 max-w-2xl mx-auto">
             Toiqueは、様々な業種での業務効率化や、個人の生活の自動化・記録に活用できます。
@@ -277,6 +346,34 @@ export default function Landing() {
         </div>
       </section>
 
+      {/* FAQ */}
+      <section className="py-16 px-6 bg-white">
+        <div className="max-w-3xl mx-auto">
+          <h2 className="text-2xl font-bold text-slate-900 text-center">
+            よくある質問
+          </h2>
+          <div className="mt-10 space-y-3">
+            {FAQS.map((f) => (
+              <details
+                key={f.question}
+                className="group bg-white border border-slate-200 rounded-lg p-4 open:shadow-sm"
+              >
+                <summary className="flex items-center justify-between cursor-pointer list-none text-sm font-semibold text-slate-900">
+                  <span>{f.question}</span>
+                  <ChevronDown
+                    size={18}
+                    className="text-slate-500 transition-transform group-open:rotate-180"
+                  />
+                </summary>
+                <p className="mt-3 text-sm text-slate-600 leading-relaxed">
+                  {f.answer}
+                </p>
+              </details>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* CTA */}
       <section className="py-16 px-6 bg-slate-900">
         <div className="max-w-3xl mx-auto text-center">
@@ -315,6 +412,18 @@ export default function Landing() {
           </div>
         </div>
       </footer>
+
+      {/* Structured data (JSON-LD) */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(SOFTWARE_APP_JSONLD),
+        }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(FAQ_JSONLD) }}
+      />
     </div>
   );
 }
