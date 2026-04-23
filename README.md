@@ -213,6 +213,10 @@ curl -s http://localhost:3000/api/v1/messages | jq
 - Frontend: (Phase 2 で追加) React 19 + Vite + Tailwind 4
 - 参考リポジトリ: [genzouw/ptasuku](https://github.com/genzouw/ptasuku)
 
+## SEO TODO
+
+- `frontend/public/ogp.png` は未配置。現状は暫定で `ogp.svg`（1200×630）をコミットしているが、主要SNS（X/Facebook/LINE）はSVGを解釈しないため、PNGに差し替える必要あり。Figma等で作成した1200×630 PNGを同ファイル名で配置すれば `index.html` の `og:image` / `twitter:image` がそのまま機能する。
+
 ## Phase 1 の限界 (意図的に後回し)
 
 以下は Phase 2 以降で対応:
