@@ -173,8 +173,8 @@ export const inboundMessages = pgTable(
       .defaultNow(),
   },
   (t) => [
-    // ⚡ Bolt: Added composite index on lineChannelId and receivedAt to prevent sequential scans when fetching recent messages per channel.
-    index('inbound_messages_channel_id_received_at_idx').on(
+    // Added composite index on lineChannelId and receivedAt to prevent sequential scans when fetching recent messages per channel.
+    index('inbound_messages_line_channel_id_received_at_idx').on(
       t.lineChannelId,
       t.receivedAt,
     ),
