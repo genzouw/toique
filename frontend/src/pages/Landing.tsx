@@ -1,4 +1,5 @@
 import { Link } from 'react-router';
+import type { LucideIcon } from 'lucide-react';
 import {
   MessageSquare,
   ListChecks,
@@ -13,7 +14,7 @@ import {
 import { INDUSTRIES } from '../lib/industries';
 
 interface UseCaseCard {
-  icon: typeof Calendar;
+  icon: LucideIcon;
   title: string;
   category: string;
   description: string;
