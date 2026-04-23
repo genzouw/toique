@@ -10,8 +10,14 @@ import {
   ExternalLink,
 } from 'lucide-react';
 import Mermaid from '../components/Mermaid';
+import { useSEO } from '../lib/useSEO';
 
 export default function Help() {
+  useSEO({
+    title: 'ヘルプ・使い方ガイド | Toique',
+    description:
+      'Toiqueの使い方ガイド。LINE公式アカウント連携、対話フォームの作成、問い合わせ回答のCSVエクスポートまでの手順を分かりやすく解説します。',
+  });
   return (
     <div className="min-h-full bg-slate-50">
       <header className="bg-white border-b border-slate-200">

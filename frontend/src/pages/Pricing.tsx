@@ -3,6 +3,7 @@ import { Link } from 'react-router';
 import { Check } from 'lucide-react';
 import { api } from '../lib/api';
 import { useSession } from '../lib/auth-client';
+import { useSEO } from '../lib/useSEO';
 
 const PLANS = [
   {
@@ -40,6 +41,11 @@ const PLANS = [
 ];
 
 export default function Pricing() {
+  useSEO({
+    title: '料金プラン | Toique - LINE問い合わせ受付SaaS',
+    description:
+      'Toiqueの料金プラン。無料のFreeプランでLINE公式アカウント連携・対話フォーム作成・CSVエクスポートを利用可能。Proプランは複数チャネル・チーム運用向け。',
+  });
   const { data: session } = useSession();
   const [upgrading, setUpgrading] = useState(false);
 
