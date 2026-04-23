@@ -249,12 +249,12 @@ export const submissions = pgTable(
       .defaultNow(),
   },
   (t) => [
-    // ⚡ Bolt: Added composite index on tenantId and submittedAt to speed up quota counting and dashboard queries without sequential scans.
+    // Added composite index on tenantId and submittedAt to speed up quota counting and dashboard queries without sequential scans.
     index('submissions_tenant_id_submitted_at_idx').on(
       t.tenantId,
       t.submittedAt,
     ),
-    // ⚡ Bolt: Added composite index on formId and submittedAt to optimize fetching and CSV exporting of submissions for a specific form.
+    // Added composite index on formId and submittedAt to optimize fetching and CSV exporting of submissions for a specific form.
     index('submissions_form_id_submitted_at_idx').on(t.formId, t.submittedAt),
   ],
 );
