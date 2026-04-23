@@ -167,6 +167,12 @@ export default function Landing() {
               料金プラン
             </Link>
             <Link
+              to="/faq"
+              className="text-sm text-slate-700 hover:text-slate-900"
+            >
+              よくある質問
+            </Link>
+            <Link
               to="/login"
               className="text-sm text-slate-700 hover:text-slate-900"
             >
@@ -371,6 +377,15 @@ export default function Landing() {
               </details>
             ))}
           </div>
+          <div className="mt-6 text-center">
+            <Link
+              to="/faq"
+              className="inline-flex items-center gap-1 text-sm font-medium text-slate-700 hover:text-slate-900"
+            >
+              すべての質問を見る
+              <ArrowRight size={14} />
+            </Link>
+          </div>
         </div>
       </section>
 
@@ -402,6 +417,9 @@ export default function Landing() {
             </Link>
             <Link to="/help" className="hover:text-slate-900">
               ヘルプ
+            </Link>
+            <Link to="/faq" className="hover:text-slate-900">
+              よくある質問
             </Link>
             <Link to="/contact" className="hover:text-slate-900">
               お問い合わせ
