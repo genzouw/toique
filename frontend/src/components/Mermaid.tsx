@@ -38,20 +38,24 @@ export default function Mermaid({ chart, interactive = false }: MermaidProps) {
           id.current,
           chart,
         );
-        if (ignore || !containerRef.current) {
+        const container = containerRef.current;
+        if (ignore || !container) {
           return;
         }
         const sanitized = DOMPurify.sanitize(svgContent, {
           USE_PROFILES: { svg: true },
           ADD_TAGS: ['style'],
         });
-        containerRef.current.innerHTML = sanitized;
+        container.innerHTML = sanitized;
         if (interactive) {
-          bindFunctions?.(containerRef.current);
+          bindFunctions?.(container);
         }
       } catch (err) {
         if (!ignore) {
           console.error('Mermaid rendering failed', err);
+          if (containerRef.current) {
+            containerRef.current.innerHTML = '';
+          }
         }
       }
     };
