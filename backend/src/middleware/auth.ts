@@ -1,4 +1,4 @@
-import { timingSafeEqual } from 'node:crypto';
+import { createHash, timingSafeEqual } from 'node:crypto';
 import type { MiddlewareHandler } from 'hono';
 import { eq } from 'drizzle-orm';
 import db from '../db.js';
@@ -84,17 +84,13 @@ export const requireOperator: MiddlewareHandler = async (c, next) => {
   const expectedUsername = process.env.ADMIN_USERNAME || 'admin';
   const expectedPassword = process.env.ADMIN_PASSWORD || 'admin';
 
-  const usernameBuf = Buffer.from(username);
-  const expectedUsernameBuf = Buffer.from(expectedUsername);
-  const passwordBuf = Buffer.from(password);
-  const expectedPasswordBuf = Buffer.from(expectedPassword);
+  const usernameHash = createHash('sha256').update(username).digest();
+  const expectedUsernameHash = createHash('sha256').update(expectedUsername).digest();
+  const passwordHash = createHash('sha256').update(password).digest();
+  const expectedPasswordHash = createHash('sha256').update(expectedPassword).digest();
 
-  const usernameMatch =
-    usernameBuf.length === expectedUsernameBuf.length &&
-    timingSafeEqual(usernameBuf, expectedUsernameBuf);
-  const passwordMatch =
-    passwordBuf.length === expectedPasswordBuf.length &&
-    timingSafeEqual(passwordBuf, expectedPasswordBuf);
+  const usernameMatch = timingSafeEqual(usernameHash, expectedUsernameHash);
+  const passwordMatch = timingSafeEqual(passwordHash, expectedPasswordHash);
   if (!usernameMatch || !passwordMatch) {
     return c.json({ error: 'Unauthorized' }, 401);
   }
