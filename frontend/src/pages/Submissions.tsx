@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Inbox, Download } from 'lucide-react';
 import { api, type Submission, type Form } from '../lib/api';
 import LoadingButton from '../components/LoadingButton';
@@ -28,7 +28,7 @@ export default function Submissions() {
     [forms],
   );
 
-  async function refresh() {
+  const refresh = useCallback(async () => {
     setLoading(true);
     try {
       const [subs, fs] = await Promise.all([
@@ -37,22 +37,24 @@ export default function Submissions() {
       ]);
       setItems(subs);
       setForms(fs);
-      if (!exportFormId && fs.length > 0) {
-        setExportFormId(fs[0].id);
-      }
+      setExportFormId((prev) => {
+        if (!prev && fs.length > 0) {
+          return fs[0].id;
+        }
+        return prev;
+      });
       setError(null);
     } catch (e) {
       setError((e as Error).message);
     } finally {
       setLoading(false);
     }
-  }
+  }, []);
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     refresh();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [refresh]);
 
   async function handleDownload() {
     if (!exportFormId) return;
