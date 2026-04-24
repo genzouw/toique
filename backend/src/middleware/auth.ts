@@ -39,6 +39,13 @@ if (
   );
 }
 
+const expectedUsernameHash = createHash('sha256')
+  .update(process.env.ADMIN_USERNAME || 'admin')
+  .digest();
+const expectedPasswordHash = createHash('sha256')
+  .update(process.env.ADMIN_PASSWORD || 'admin')
+  .digest();
+
 export function isOperatorEmail(email: string | null | undefined): boolean {
   if (!email) return false;
   return OPERATOR_ALLOWLIST.includes(email.trim().toLowerCase());
@@ -81,13 +88,9 @@ export const requireOperator: MiddlewareHandler = async (c, next) => {
   }
   const username = decoded.slice(0, colonIndex);
   const password = decoded.slice(colonIndex + 1);
-  const expectedUsername = process.env.ADMIN_USERNAME || 'admin';
-  const expectedPassword = process.env.ADMIN_PASSWORD || 'admin';
 
   const usernameHash = createHash('sha256').update(username).digest();
-  const expectedUsernameHash = createHash('sha256').update(expectedUsername).digest();
   const passwordHash = createHash('sha256').update(password).digest();
-  const expectedPasswordHash = createHash('sha256').update(expectedPassword).digest();
 
   const usernameMatch = timingSafeEqual(usernameHash, expectedUsernameHash);
   const passwordMatch = timingSafeEqual(passwordHash, expectedPasswordHash);
