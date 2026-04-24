@@ -17,6 +17,7 @@ import usage from './routes/usage.js';
 import contact from './routes/contact.js';
 import adminContacts from './routes/admin/contacts.js';
 import adminMe from './routes/admin/me.js';
+import { logger as appLogger } from './lib/logger.js';
 
 const app = new Hono({ strict: false });
 
@@ -75,7 +76,7 @@ app.route('/api/v1/admin/contacts', adminContacts);
 
 const port = Number(process.env.PORT) || 3000;
 serve({ fetch: app.fetch, port }, () => {
-  console.log(`Toique backend listening on :${port}`);
+  appLogger.info(`Toique backend listening on :${port}`);
 });
 
 export default app;

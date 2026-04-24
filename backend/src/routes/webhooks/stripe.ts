@@ -3,6 +3,7 @@ import { eq } from 'drizzle-orm';
 import db from '../../db.js';
 import { tenants } from '../../schema.js';
 import { stripe } from '../../lib/stripe.js';
+import { logger } from '../../lib/logger.js';
 import type Stripe from 'stripe';
 
 const app = new Hono();
@@ -39,7 +40,7 @@ app.post('/', async (c) => {
             stripeSubscriptionId: session.subscription as string,
           })
           .where(eq(tenants.id, tenantId));
-        console.log(`Tenant ${tenantId} upgraded to pro`);
+        logger.info(`Tenant ${tenantId} upgraded to pro`);
       }
       break;
     }
@@ -60,7 +61,7 @@ app.post('/', async (c) => {
             stripeSubscriptionId: null,
           })
           .where(eq(tenants.id, t.id));
-        console.log(`Tenant ${t.id} downgraded to free`);
+        logger.info(`Tenant ${t.id} downgraded to free`);
       }
       break;
     }

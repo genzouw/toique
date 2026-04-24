@@ -1,6 +1,7 @@
 import { Hono } from 'hono';
 import { lineSignature } from '../../middleware/line-signature.js';
 import { handleLineEvent } from '../../lib/line/event-handler.js';
+import { logger } from '../../lib/logger.js';
 import type { LineWebhookPayload } from '../../lib/line/types.js';
 import type { lineChannels } from '../../schema.js';
 
@@ -26,7 +27,7 @@ app.post('/:channelId', lineSignature, async (c) => {
         try {
           await handleLineEvent(channel, event);
         } catch (err) {
-          console.error('[line-webhook] event handling failed', err);
+          logger.error('[line-webhook] event handling failed', err);
         }
       }),
     );
