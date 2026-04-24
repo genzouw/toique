@@ -166,6 +166,12 @@ export default function Pricing() {
             <Link to="/help" className="hover:text-slate-900">
               ヘルプ
             </Link>
+            <Link
+              to="/specified-commercial-transactions"
+              className="hover:text-slate-900"
+            >
+              特定商取引法に基づく表記
+            </Link>
             <Link to="/login" className="hover:text-slate-900">
               ログイン
             </Link>
