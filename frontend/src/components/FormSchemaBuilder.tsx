@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Plus, Trash2, ChevronUp, ChevronDown } from 'lucide-react';
+import { ICON_SIZE } from '../lib/icon-size';
 
 type StepType = 'choice' | 'text' | 'end';
 
@@ -135,7 +136,7 @@ export default function FormSchemaBuilder({
                   title="上へ"
                   aria-label="ステップを上へ移動"
                 >
-                  <ChevronUp size={14} />
+                  <ChevronUp size={ICON_SIZE.sm} />
                 </button>
                 <button
                   onClick={() => moveStep(idx, 1)}
@@ -146,7 +147,7 @@ export default function FormSchemaBuilder({
                   title="下へ"
                   aria-label="ステップを下へ移動"
                 >
-                  <ChevronDown size={14} />
+                  <ChevronDown size={ICON_SIZE.sm} />
                 </button>
               </div>
             )}
@@ -181,7 +182,7 @@ export default function FormSchemaBuilder({
                     <option value="choice">選択肢</option>
                   </select>
                   <ChevronDown
-                    size={12}
+                    size={ICON_SIZE.xs}
                     className="absolute right-1.5 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400"
                   />
                 </div>
@@ -191,7 +192,7 @@ export default function FormSchemaBuilder({
                   title="削除"
                   aria-label="ステップを削除"
                 >
-                  <Trash2 size={14} />
+                  <Trash2 size={ICON_SIZE.sm} />
                 </button>
               </>
             )}
@@ -237,7 +238,7 @@ export default function FormSchemaBuilder({
                         title="削除"
                         aria-label="選択肢を削除"
                       >
-                        <Trash2 size={12} />
+                        <Trash2 size={ICON_SIZE.xs} />
                       </button>
                     </div>
                   ))}
@@ -245,7 +246,7 @@ export default function FormSchemaBuilder({
                     onClick={() => addChoice(idx)}
                     className="text-xs text-slate-600 hover:text-slate-900 flex items-center gap-1"
                   >
-                    <Plus size={12} /> 選択肢を追加
+                    <Plus size={ICON_SIZE.xs} /> 選択肢を追加
                   </button>
                 </div>
               )}
@@ -258,7 +259,7 @@ export default function FormSchemaBuilder({
         onClick={addStep}
         className="w-full py-2 border-2 border-dashed border-slate-300 rounded-lg text-sm text-slate-600 hover:border-slate-400 hover:text-slate-900 flex items-center justify-center gap-1"
       >
-        <Plus size={14} /> ステップを追加
+        <Plus size={ICON_SIZE.sm} /> ステップを追加
       </button>
     </div>
   );

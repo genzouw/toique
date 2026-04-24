@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import { useSEO } from '../lib/useSEO';
 import { INDUSTRIES } from '../lib/industries';
+import { ICON_SIZE } from '../lib/icon-size';
 
 interface UseCaseCard {
   icon: LucideIcon;
@@ -228,7 +229,7 @@ export default function Landing() {
                 key={f.title}
                 className="bg-white border border-slate-200 rounded-lg p-6"
               >
-                <f.icon className="text-slate-700" size={24} />
+                <f.icon className="text-slate-700" size={ICON_SIZE.xxl} />
                 <h3 className="mt-3 text-base font-semibold text-slate-900">
                   {f.title}
                 </h3>
@@ -257,7 +258,7 @@ export default function Landing() {
                 className="bg-white border border-slate-200 rounded-lg p-6 flex flex-col sm:flex-row gap-4"
               >
                 <div className="flex-shrink-0 w-12 h-12 bg-slate-50 text-slate-700 rounded-lg flex items-center justify-center">
-                  <u.icon size={24} />
+                  <u.icon size={ICON_SIZE.xxl} />
                 </div>
                 <div className="flex-1">
                   <div className="flex items-start gap-2 mb-2">
@@ -277,7 +278,7 @@ export default function Landing() {
                       className="mt-3 inline-flex items-center gap-1 text-xs font-medium text-slate-700 hover:text-slate-900"
                     >
                       詳しく見る
-                      <ArrowRight size={12} />
+                      <ArrowRight size={ICON_SIZE.xs} />
                     </Link>
                   )}
                 </div>
@@ -298,7 +299,10 @@ export default function Landing() {
                     className="flex items-center justify-between px-4 py-3 border border-slate-200 rounded-md text-sm text-slate-700 hover:bg-slate-50"
                   >
                     <span>{i.metaTitle.replace(' | Toique', '')}</span>
-                    <ArrowRight size={14} className="text-slate-400" />
+                    <ArrowRight
+                      size={ICON_SIZE.sm}
+                      className="text-slate-400"
+                    />
                   </Link>
                 </li>
               ))}
@@ -367,7 +371,7 @@ export default function Landing() {
                 <summary className="flex items-center justify-between cursor-pointer list-none text-sm font-semibold text-slate-900">
                   <span>{f.question}</span>
                   <ChevronDown
-                    size={18}
+                    size={ICON_SIZE.lg}
                     className="text-slate-500 transition-transform group-open:rotate-180"
                   />
                 </summary>
@@ -383,7 +387,7 @@ export default function Landing() {
               className="inline-flex items-center gap-1 text-sm font-medium text-slate-700 hover:text-slate-900"
             >
               すべての質問を見る
-              <ArrowRight size={14} />
+              <ArrowRight size={ICON_SIZE.sm} />
             </Link>
           </div>
         </div>

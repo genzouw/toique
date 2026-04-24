@@ -1,5 +1,6 @@
 import { Link } from 'react-router';
 import { Inbox, Users } from 'lucide-react';
+import { ICON_SIZE } from '../../lib/icon-size';
 
 /**
  * 運営者エリアのトップ。将来的にサマリーや他の運営機能の入口として拡張する。
@@ -22,7 +23,7 @@ export default function AdminHome() {
           className="block bg-white border border-slate-200 rounded-lg p-5 hover:border-slate-400 hover:shadow-sm transition"
         >
           <div className="flex items-center gap-2 text-slate-900 font-semibold">
-            <Inbox size={18} />
+            <Inbox size={ICON_SIZE.lg} />
             システム問い合わせ
           </div>
           <p className="text-sm text-slate-600 mt-1">
@@ -34,7 +35,7 @@ export default function AdminHome() {
           className="block bg-white border border-slate-200 rounded-lg p-5 hover:border-slate-400 hover:shadow-sm transition"
         >
           <div className="flex items-center gap-2 text-slate-900 font-semibold">
-            <Users size={18} />
+            <Users size={ICON_SIZE.lg} />
             ユーザー
           </div>
           <p className="text-sm text-slate-600 mt-1">
