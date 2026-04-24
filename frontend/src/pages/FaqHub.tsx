@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 import { Link } from 'react-router';
 import { HelpCircle, Search, ChevronRight, ArrowRight } from 'lucide-react';
 import { useSEO } from '../lib/useSEO';
+import { ICON_SIZE } from '../lib/icon-size';
 import {
   CATEGORIES,
   FAQS,
@@ -73,7 +74,7 @@ export default function FaqHub() {
       <section className="py-16 px-6">
         <div className="max-w-3xl mx-auto text-center">
           <div className="inline-flex items-center justify-center w-12 h-12 bg-slate-100 text-slate-700 rounded-lg mb-4">
-            <HelpCircle size={24} />
+            <HelpCircle size={ICON_SIZE.xxl} />
           </div>
           <h1 className="text-3xl sm:text-4xl font-bold text-slate-900">
             よくある質問 / ヘルプセンター
@@ -91,7 +92,7 @@ export default function FaqHub() {
           <label className="relative block">
             <span className="sr-only">FAQを検索</span>
             <Search
-              size={16}
+              size={ICON_SIZE.md}
               className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
               aria-hidden="true"
             />
@@ -132,7 +133,7 @@ export default function FaqHub() {
             className="mt-6 inline-flex items-center gap-2 px-6 py-2.5 bg-slate-900 text-white text-sm font-medium rounded-md hover:bg-slate-800"
           >
             お問い合わせはこちら
-            <ArrowRight size={14} />
+            <ArrowRight size={ICON_SIZE.sm} />
           </Link>
         </div>
       </section>
@@ -192,7 +193,7 @@ function CategoryGrid() {
                     className="flex items-start gap-2 text-sm text-slate-700 hover:text-slate-900"
                   >
                     <ChevronRight
-                      size={14}
+                      size={ICON_SIZE.sm}
                       className="mt-0.5 shrink-0 text-slate-400"
                       aria-hidden="true"
                     />
@@ -212,7 +213,7 @@ function CategoryGrid() {
                 className="mt-4 inline-flex items-center gap-1 text-sm font-medium text-slate-900 hover:text-slate-700"
               >
                 このカテゴリを見る
-                <ArrowRight size={14} />
+                <ArrowRight size={ICON_SIZE.sm} />
               </Link>
             )}
           </div>
@@ -265,7 +266,7 @@ function SearchResults({
                 {f.question}
               </span>
               <ChevronRight
-                size={16}
+                size={ICON_SIZE.md}
                 className="shrink-0 mt-0.5 text-slate-400"
                 aria-hidden="true"
               />

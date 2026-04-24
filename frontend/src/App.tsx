@@ -25,6 +25,8 @@ import FaqArticle from './pages/FaqArticle';
 import AdminHome from './pages/admin/AdminHome';
 import AdminContacts from './pages/admin/AdminContacts';
 import AdminContactDetail from './pages/admin/AdminContactDetail';
+import AdminUsers from './pages/admin/AdminUsers';
+import AdminUserDetail from './pages/admin/AdminUserDetail';
 import AdminLogin from './pages/admin/AdminLogin';
 
 /** SPA 内のルート遷移を gtag に送信する */
@@ -107,6 +109,8 @@ function AppRoutes() {
         <Route index element={<AdminHome />} />
         <Route path="contacts" element={<AdminContacts />} />
         <Route path="contacts/:id" element={<AdminContactDetail />} />
+        <Route path="users" element={<AdminUsers />} />
+        <Route path="users/:id" element={<AdminUserDetail />} />
       </Route>
     </Routes>
   );

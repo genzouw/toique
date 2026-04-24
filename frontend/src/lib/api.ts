@@ -113,6 +113,24 @@ export type ContactDetail = ContactListItem & {
   updatedAt: string;
 };
 
+export type AdminUserListItem = {
+  id: string;
+  name: string;
+  email: string;
+  emailVerified: boolean;
+  createdAt: string;
+  tenantId: string | null;
+  tenantName: string | null;
+  tenantPlan: string | null;
+  tenantRole: string | null;
+};
+
+export type AdminUserDetail = AdminUserListItem & {
+  image: string | null;
+  updatedAt: string;
+  tenantCreatedAt: string | null;
+};
+
 export type ContactSubmitInput = {
   name: string;
   email: string;
@@ -221,6 +239,9 @@ export const api = {
     request<{ user: { id: string; email: string; name: string } }>(
       '/api/v1/admin/me',
     ),
+  listAdminUsers: () => request<AdminUserListItem[]>('/api/v1/admin/users'),
+  getAdminUser: (id: string) =>
+    request<AdminUserDetail>(`/api/v1/admin/users/${id}`),
   listAdminContacts: () => request<ContactListItem[]>('/api/v1/admin/contacts'),
   getAdminContact: (id: string) =>
     request<ContactDetail>(`/api/v1/admin/contacts/${id}`),

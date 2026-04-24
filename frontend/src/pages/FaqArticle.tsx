@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router';
 import { ChevronRight, ThumbsUp, ThumbsDown, ArrowRight } from 'lucide-react';
 import { useSEO } from '../lib/useSEO';
+import { ICON_SIZE } from '../lib/icon-size';
 import {
   getFaq,
   getCategory,
@@ -119,7 +120,7 @@ function FaqArticleContent({ faq }: { faq: FaqArticleType }) {
               </Link>
             </li>
             <li aria-hidden="true">
-              <ChevronRight size={12} className="text-slate-400" />
+              <ChevronRight size={ICON_SIZE.xs} className="text-slate-400" />
             </li>
             <li>
               <Link to="/faq" className="hover:text-slate-900">
@@ -129,7 +130,10 @@ function FaqArticleContent({ faq }: { faq: FaqArticleType }) {
             {category && (
               <>
                 <li aria-hidden="true">
-                  <ChevronRight size={12} className="text-slate-400" />
+                  <ChevronRight
+                    size={ICON_SIZE.xs}
+                    className="text-slate-400"
+                  />
                 </li>
                 <li>
                   <span className="text-slate-500">{category.title}</span>
@@ -137,7 +141,7 @@ function FaqArticleContent({ faq }: { faq: FaqArticleType }) {
               </>
             )}
             <li aria-hidden="true">
-              <ChevronRight size={12} className="text-slate-400" />
+              <ChevronRight size={ICON_SIZE.xs} className="text-slate-400" />
             </li>
             <li className="text-slate-700 font-medium truncate max-w-[16rem]">
               {faq.question}
@@ -180,7 +184,7 @@ function FaqArticleContent({ faq }: { faq: FaqArticleType }) {
                   onClick={() => setFeedback('up')}
                   className="inline-flex items-center gap-2 px-4 py-2 border border-slate-300 text-sm text-slate-700 rounded-md hover:bg-slate-50"
                 >
-                  <ThumbsUp size={14} />
+                  <ThumbsUp size={ICON_SIZE.sm} />
                   役に立った
                 </button>
                 <button
@@ -190,7 +194,7 @@ function FaqArticleContent({ faq }: { faq: FaqArticleType }) {
                   onClick={() => setFeedback('down')}
                   className="inline-flex items-center gap-2 px-4 py-2 border border-slate-300 text-sm text-slate-700 rounded-md hover:bg-slate-50"
                 >
-                  <ThumbsDown size={14} />
+                  <ThumbsDown size={ICON_SIZE.sm} />
                   役に立たなかった
                 </button>
               </div>
@@ -247,7 +251,7 @@ function FaqArticleContent({ faq }: { faq: FaqArticleType }) {
             className="mt-4 inline-flex items-center gap-2 px-5 py-2 bg-slate-900 text-white text-sm font-medium rounded-md hover:bg-slate-800"
           >
             お問い合わせへ
-            <ArrowRight size={14} />
+            <ArrowRight size={ICON_SIZE.sm} />
           </Link>
         </section>
       </main>
