@@ -27,9 +27,10 @@
     <meta property="og:url" content="https://toique.pages.dev/" />
     <meta property="og:locale" content="ja_JP" />
     <meta property="og:site_name" content="Toique" />
+    <meta property="og:image" content="https://toique.pages.dev/ogp.png" />
 
     <!-- Twitter Card -->
-    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:card" content="summary_large_image" />
     <meta
       name="twitter:title"
       content="Toique - LINEからの問い合わせを対話フォームで自動収集"
@@ -38,18 +39,23 @@
       name="twitter:description"
       content="LINE公式アカウントと連携し、対話形式のフォームでお客様の情報を自動で収集・管理するツールです。"
     />
+    <meta name="twitter:image" content="https://toique.pages.dev/ogp.png" />
     <!-- Google tag (gtag.js) -->
-    <script
-      async
-      src="https://www.googletagmanager.com/gtag/js?id=G-ZTGBDFT2KX"
-    ></script>
     <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag() {
-        dataLayer.push(arguments);
+      const gaTrackingId = '%VITE_GA_TRACKING_ID%';
+      if (gaTrackingId && gaTrackingId !== '%VITE_GA_TRACKING_ID%') {
+        const script = document.createElement('script');
+        script.async = true;
+        script.src = `https://www.googletagmanager.com/gtag/js?id=${gaTrackingId}`;
+        document.head.appendChild(script);
+
+        window.dataLayer = window.dataLayer || [];
+        function gtag() {
+          dataLayer.push(arguments);
+        }
+        gtag('js', new Date());
+        gtag('config', gaTrackingId);
       }
-      gtag('js', new Date());
-      gtag('config', 'G-ZTGBDFT2KX');
     </script>
   </head>
   <body class="h-full">

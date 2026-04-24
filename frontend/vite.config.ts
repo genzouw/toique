@@ -1,5 +1,5 @@
 /// <reference types="vitest" />
-import { defineConfig } from "vitest/config";
+import { defineConfig } from 'vitest/config';
 import react from '@vitejs/plugin-react';
 import tailwindcss from '@tailwindcss/vite';
 import Sitemap from 'vite-plugin-sitemap';
@@ -10,7 +10,14 @@ export default defineConfig({
     tailwindcss(),
     Sitemap({
       hostname: 'https://toique.pages.dev',
-      dynamicRoutes: ['/help', '/pricing', '/contact', '/login', '/signup'],
+      dynamicRoutes: [
+        '/help',
+        '/pricing',
+        '/contact',
+        '/login',
+        '/signup',
+        '/specified-commercial-transactions',
+      ],
       exclude: [
         '/dashboard',
         '/channels',
@@ -32,10 +39,5 @@ export default defineConfig({
       '.ngrok.app',
       'localhost',
     ],
-  },
-  test: {
-    environment: 'jsdom',
-    globals: false,
-    setupFiles: ['./src/setupTests.ts', './vitest.setup.ts'],
   },
 });

@@ -18,6 +18,10 @@ import Submissions from './pages/Submissions';
 import Help from './pages/Help';
 import Pricing from './pages/Pricing';
 import Contact from './pages/Contact';
+import Tokushoho from './pages/Tokushoho';
+import IndustryLanding from './pages/IndustryLanding';
+import FaqHub from './pages/FaqHub';
+import FaqArticle from './pages/FaqArticle';
 import AdminHome from './pages/admin/AdminHome';
 import AdminContacts from './pages/admin/AdminContacts';
 import AdminContactDetail from './pages/admin/AdminContactDetail';
@@ -27,8 +31,11 @@ import AdminLogin from './pages/admin/AdminLogin';
 function usePageView() {
   const location = useLocation();
   useEffect(() => {
-    if (typeof window.gtag === 'function') {
-      window.gtag('config', 'G-ZTGBDFT2KX', {
+    if (
+      typeof window.gtag === 'function' &&
+      import.meta.env.VITE_GA_TRACKING_ID
+    ) {
+      window.gtag('config', import.meta.env.VITE_GA_TRACKING_ID, {
         page_path: location.pathname + location.search,
       });
     }
@@ -43,6 +50,13 @@ function AppRoutes() {
       <Route path="/help" element={<Help />} />
       <Route path="/pricing" element={<Pricing />} />
       <Route path="/contact" element={<Contact />} />
+      <Route
+        path="/specified-commercial-transactions"
+        element={<Tokushoho />}
+      />
+      <Route path="/for/:slug" element={<IndustryLanding />} />
+      <Route path="/faq" element={<FaqHub />} />
+      <Route path="/faq/:slug" element={<FaqArticle />} />
       <Route
         path="/login"
         element={

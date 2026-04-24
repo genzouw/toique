@@ -13,9 +13,8 @@ if [ -z "$POSTGRES_DB" ] || [ -z "$POSTGRES_USER" ] || [ -z "$POSTGRES_PASSWORD"
   exit 1
 fi
 
-if [ -n "$GOOGLE_APPLICATION_CREDENTIALS" ] && [ -f "$GOOGLE_APPLICATION_CREDENTIALS" ]; then
-    gcloud auth activate-service-account --key-file="$GOOGLE_APPLICATION_CREDENTIALS"
-fi
+# Cloud Run Jobs では Workload Identity (ADC) で自動認証される。
+# ローカル開発では gcloud auth application-default login の ADC を利用。
 
 TIMESTAMP=$(date +%Y%m%d_%H%M%S)
 BACKUP_FILENAME="${POSTGRES_DB}_backup_${TIMESTAMP}.sql.gz"

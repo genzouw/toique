@@ -1,8 +1,10 @@
 import { useState } from 'react';
 import { Link } from 'react-router';
-import { Check } from 'lucide-react';
+import { Check, ArrowRight } from 'lucide-react';
+import { getFaqsByCategory } from '../lib/faqs';
 import { api } from '../lib/api';
 import { useSession } from '../lib/auth-client';
+import { useSEO } from '../lib/useSEO';
 
 const PLANS = [
   {
@@ -40,6 +42,11 @@ const PLANS = [
 ];
 
 export default function Pricing() {
+  useSEO({
+    title: '料金プラン | Toique - LINE問い合わせ受付SaaS',
+    description:
+      'Toiqueの料金プラン。無料のFreeプランでLINE公式アカウント連携・対話フォーム作成・CSVエクスポートを利用可能。Proプランは複数チャネル・チーム運用向け。',
+  });
   const { data: session } = useSession();
   const [upgrading, setUpgrading] = useState(false);
 
@@ -152,13 +159,62 @@ export default function Pricing() {
         </div>
       </section>
 
+      {/* Pricing FAQ */}
+      <section className="py-16 px-6 bg-slate-50">
+        <div className="max-w-3xl mx-auto">
+          <h2 className="text-2xl font-bold text-slate-900 text-center">
+            料金に関するよくある質問
+          </h2>
+          <ul className="mt-8 space-y-2">
+            {getFaqsByCategory('pricing').map((f) => (
+              <li
+                key={f.slug}
+                className="bg-white border border-slate-200 rounded-lg"
+              >
+                <Link
+                  to={`/faq/${f.slug}`}
+                  className="flex items-center justify-between gap-3 px-4 py-3 hover:bg-slate-50 rounded-lg"
+                >
+                  <span className="text-sm font-medium text-slate-900">
+                    {f.question}
+                  </span>
+                  <ArrowRight
+                    size={14}
+                    className="shrink-0 text-slate-400"
+                    aria-hidden="true"
+                  />
+                </Link>
+              </li>
+            ))}
+          </ul>
+          <div className="mt-6 text-center">
+            <Link
+              to="/faq"
+              className="inline-flex items-center gap-1 text-sm font-medium text-slate-700 hover:text-slate-900"
+            >
+              すべての FAQ を見る
+              <ArrowRight size={14} />
+            </Link>
+          </div>
+        </div>
+      </section>
+
       {/* Footer */}
       <footer className="border-t border-slate-200 py-8 px-6">
         <div className="max-w-5xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500">
           <span>Toique</span>
           <div className="flex gap-4">
+            <Link to="/faq" className="hover:text-slate-900">
+              よくある質問
+            </Link>
             <Link to="/help" className="hover:text-slate-900">
               ヘルプ
+            </Link>
+            <Link
+              to="/specified-commercial-transactions"
+              className="hover:text-slate-900"
+            >
+              特定商取引法に基づく表記
             </Link>
             <Link to="/login" className="hover:text-slate-900">
               ログイン

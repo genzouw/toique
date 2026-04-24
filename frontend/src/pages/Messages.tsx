@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
-import { RefreshCw } from 'lucide-react';
 import { api, type InboundMessage } from '../lib/api';
+import LoadingButton from '../components/LoadingButton';
 
 export default function Messages() {
   const [items, setItems] = useState<InboundMessage[]>([]);
@@ -20,6 +20,7 @@ export default function Messages() {
   }
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     refresh();
   }, []);
 
@@ -32,13 +33,9 @@ export default function Messages() {
             LINEから受信した最新100件を表示します
           </p>
         </div>
-        <button
-          onClick={refresh}
-          className="inline-flex items-center gap-2 px-3 py-2 text-sm border border-slate-300 rounded-md hover:bg-slate-100"
-        >
-          <RefreshCw size={14} />
+        <LoadingButton onClick={refresh} loading={loading}>
           更新
-        </button>
+        </LoadingButton>
       </div>
 
       {error && (

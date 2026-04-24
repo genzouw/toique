@@ -2,6 +2,7 @@ import { Link } from 'react-router';
 import { useEffect, useState } from 'react';
 import { api, type ContactCategory } from '../lib/api';
 import { useSession } from '../lib/auth-client';
+import { useSEO } from '../lib/useSEO';
 
 const CATEGORY_OPTIONS: { value: ContactCategory; label: string }[] = [
   { value: 'bug', label: '不具合の報告' },
@@ -12,6 +13,11 @@ const CATEGORY_OPTIONS: { value: ContactCategory; label: string }[] = [
 ];
 
 export default function Contact() {
+  useSEO({
+    title: 'お問い合わせ | Toique',
+    description:
+      'Toiqueへのお問い合わせフォーム。導入相談、料金プランに関する質問、不具合の報告、機能要望などを受け付けています。',
+  });
   const { data: session } = useSession();
 
   const [name, setName] = useState('');
@@ -28,6 +34,7 @@ export default function Contact() {
   // ログインユーザーの情報を自動入力
   useEffect(() => {
     if (session?.user) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setName((prev) => prev || session.user.name || '');
       setEmail((prev) => prev || session.user.email || '');
     }
@@ -84,6 +91,20 @@ export default function Contact() {
           <p className="text-sm text-slate-600 leading-relaxed">
             ご質問・ご要望・不具合のご報告などは、以下のフォームからお送りください。担当者より順次ご連絡いたします。
           </p>
+        </section>
+
+        <section
+          className="bg-blue-50 border border-blue-200 rounded-md px-4 py-3 text-sm text-blue-900"
+          role="note"
+        >
+          まずは{' '}
+          <Link
+            to="/faq"
+            className="font-semibold underline hover:no-underline"
+          >
+            FAQ (よくある質問)
+          </Link>{' '}
+          をご確認ください。同じ質問の回答が掲載されている場合があります。
         </section>
 
         {done ? (

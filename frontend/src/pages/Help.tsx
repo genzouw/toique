@@ -10,8 +10,14 @@ import {
   ExternalLink,
 } from 'lucide-react';
 import Mermaid from '../components/Mermaid';
+import { useSEO } from '../lib/useSEO';
 
 export default function Help() {
+  useSEO({
+    title: 'ヘルプ・使い方ガイド | Toique',
+    description:
+      'Toiqueの使い方ガイド。LINE公式アカウント連携、対話フォームの作成、問い合わせ回答のCSVエクスポートまでの手順を分かりやすく解説します。',
+  });
   return (
     <div className="min-h-full bg-slate-50">
       <header className="bg-white border-b border-slate-200">
@@ -30,6 +36,16 @@ export default function Help() {
       </header>
 
       <main className="max-w-4xl mx-auto px-6 py-10 space-y-10">
+        <div className="bg-slate-100 border border-slate-200 rounded-md px-4 py-3 text-sm text-slate-700">
+          質問ベースで探す場合は →{' '}
+          <Link
+            to="/faq"
+            className="font-semibold text-slate-900 underline hover:no-underline"
+          >
+            FAQ (よくある質問)
+          </Link>
+        </div>
+
         <Section icon={BookOpen} title="Toique とは" id="about">
           <p>
             <strong>Toique（トイク）</strong>{' '}
@@ -434,6 +450,11 @@ graph TD
               <ExternalLink size={12} />
             </a>{' '}
             を参照してください。
+          </p>
+          <p>
+            <Link to="/specified-commercial-transactions" className="underline">
+              特定商取引法に基づく表記
+            </Link>
           </p>
         </footer>
       </main>

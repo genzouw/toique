@@ -136,6 +136,8 @@ export type UsageResponse = {
   };
 };
 
+let usagePromise: Promise<UsageResponse> | null = null;
+
 export const api = {
   getOnboardingStatus: () => request<OnboardingStatus>('/api/v1/onboarding/me'),
   createTenant: (tenantName: string) =>
@@ -188,7 +190,22 @@ export const api = {
   deleteForm: (id: string) =>
     request<void>(`/api/v1/forms/${id}`, { method: 'DELETE' }),
   listSubmissions: () => request<Submission[]>('/api/v1/submissions'),
-  getUsage: () => request<UsageResponse>('/api/v1/usage'),
+  getUsage: () => {
+    if (!usagePromise) {
+      usagePromise = request<UsageResponse>('/api/v1/usage');
+      // Clear the cached promise shortly after it resolves/rejects
+      // so subsequent intentional refreshes actually hit the API.
+      // 500ms is enough to deduplicate simultaneous mount calls.
+      usagePromise
+        .finally(() => {
+          setTimeout(() => {
+            usagePromise = null;
+          }, 500);
+        })
+        .catch(() => {}); // Suppress unhandled rejection on this background side-effect chain
+    }
+    return usagePromise;
+  },
   createCheckout: () =>
     request<{ url: string }>('/api/v1/billing/checkout', { method: 'POST' }),
   createPortalSession: () =>

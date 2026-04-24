@@ -17,25 +17,29 @@
     "db:migrate": "drizzle-kit migrate"
   },
   "dependencies": {
-    "@hono/node-server": "^1.14.0",
-    "better-auth": "^1.6.4",
+    "@hono/node-server": "^2.0.0",
+    "better-auth": "^1.6.5",
     "drizzle-orm": "^0.45.2",
     "hono": "^4.7.0",
     "postgres": "^3.4.0",
-    "resend": "^6.12.0",
+    "resend": "^6.12.2",
     "stripe": "^22.0.2",
-    "zod": "^3.25.76"
+    "zod": "^4.3.6"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
-    "@types/node": "^22.0.0",
+    "@types/node": "^25.6.0",
     "@vitest/coverage-v8": "^4.1.4",
     "drizzle-kit": "^0.31.10",
     "eslint": "^10.2.1",
     "prettier": "^3.8.3",
     "tsx": "^4.19.0",
-    "typescript": "^5.8.0",
-    "typescript-eslint": "^8.58.2",
-    "vitest": "^4.1.0"
+    "typescript": "^6.0.3",
+    "typescript-eslint": "^8.59.0",
+    "vitest": "^4.1.0",
+    "esbuild": "0.28.0"
+  },
+  "overrides": {
+    "esbuild": "$esbuild"
   }
 }

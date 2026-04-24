@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
-import { RefreshCw, Inbox, Download } from 'lucide-react';
+import { Inbox, Download } from 'lucide-react';
 import { api, type Submission, type Form } from '../lib/api';
+import LoadingButton from '../components/LoadingButton';
 
 const STATUS_LABEL: Record<Submission['status'], string> = {
   new: '新着',
@@ -48,6 +49,7 @@ export default function Submissions() {
   }
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     refresh();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -78,13 +80,9 @@ export default function Submissions() {
             フォーム完了時に記録された回答データです
           </p>
         </div>
-        <button
-          onClick={refresh}
-          className="inline-flex items-center gap-2 px-3 py-2 text-sm border border-slate-300 rounded-md hover:bg-slate-100"
-        >
-          <RefreshCw size={14} />
+        <LoadingButton onClick={refresh} loading={loading}>
           更新
-        </button>
+        </LoadingButton>
       </div>
 
       {error && (
@@ -137,9 +135,17 @@ export default function Submissions() {
         {loading ? (
           <div className="p-5 text-sm text-slate-500">読み込み中…</div>
         ) : items.length === 0 ? (
-          <div className="p-8 text-center text-sm text-slate-500">
-            <Inbox className="mx-auto mb-2 text-slate-300" size={32} />
-            まだ回答はありません
+          <div className="flex flex-col items-center justify-center p-12 text-center">
+            <div className="w-12 h-12 bg-slate-100 rounded-full flex items-center justify-center mb-4">
+              <Inbox className="text-slate-400" size={24} />
+            </div>
+            <h2 className="text-sm font-medium text-slate-900 mb-1">
+              まだ回答はありません
+            </h2>
+            <p className="text-sm text-slate-500 max-w-sm">
+              フォームを公開し、LINE上でトリガーキーワードを送信して、
+              実際の回答フローをテストしてみましょう。
+            </p>
           </div>
         ) : (
           <table className="w-full text-sm">

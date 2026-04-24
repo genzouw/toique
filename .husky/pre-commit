@@ -1,0 +1,19 @@
+npx lint-staged
+
+# Run typecheck for changed workspaces
+changed_backend=$(git diff --cached --name-only -- 'backend/src/')
+changed_frontend=$(git diff --cached --name-only -- 'frontend/src/')
+
+if [ -n "$changed_backend" ]; then
+  echo "🔍 Running backend typecheck..."
+  npm run typecheck --prefix backend
+  echo "🧪 Running backend tests..."
+  npm run test --prefix backend
+fi
+
+if [ -n "$changed_frontend" ]; then
+  echo "🔍 Running frontend typecheck..."
+  npm run typecheck --prefix frontend
+  echo "🧪 Running frontend tests..."
+  npm run test --prefix frontend
+fi
