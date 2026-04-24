@@ -1,5 +1,6 @@
 import type { ButtonHTMLAttributes, ElementType } from 'react';
 import { RefreshCw } from 'lucide-react';
+import { ICON_SIZE } from '../lib/icon-size';
 
 interface LoadingButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   loading: boolean;
@@ -16,7 +17,7 @@ export default function LoadingButton({
 }: LoadingButtonProps) {
   return (
     <button disabled={loading || disabled} className={className} {...rest}>
-      <Icon size={14} className={loading ? 'animate-spin' : ''} />
+      <Icon size={ICON_SIZE.sm} className={loading ? 'animate-spin' : ''} />
       {children}
     </button>
   );

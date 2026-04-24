@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Inbox, Download } from 'lucide-react';
 import { api, type Submission, type Form } from '../lib/api';
 import LoadingButton from '../components/LoadingButton';
+import { ICON_SIZE } from '../lib/icon-size';
 
 const STATUS_LABEL: Record<Submission['status'], string> = {
   new: '新着',
@@ -122,7 +123,7 @@ export default function Submissions() {
             disabled={!exportFormId || downloading}
             className="inline-flex items-center gap-2 px-4 py-2 bg-slate-900 text-white text-sm rounded-md disabled:opacity-50"
           >
-            <Download size={14} />
+            <Download size={ICON_SIZE.sm} />
             {downloading ? 'ダウンロード中…' : 'CSVダウンロード'}
           </button>
         </div>
@@ -139,7 +140,7 @@ export default function Submissions() {
         ) : items.length === 0 ? (
           <div className="flex flex-col items-center justify-center p-12 text-center">
             <div className="w-12 h-12 bg-slate-100 rounded-full flex items-center justify-center mb-4">
-              <Inbox className="text-slate-400" size={24} />
+              <Inbox className="text-slate-400" size={ICON_SIZE.xxl} />
             </div>
             <h2 className="text-sm font-medium text-slate-900 mb-1">
               まだ回答はありません

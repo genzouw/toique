@@ -7,6 +7,7 @@ import {
   type ContactDetail,
   type ContactStatus,
 } from '../../lib/api';
+import { ICON_SIZE } from '../../lib/icon-size';
 
 const CATEGORY_LABEL: Record<ContactCategory, string> = {
   bug: '不具合',
@@ -72,7 +73,7 @@ export default function AdminContactDetail() {
           to="/admin/contacts"
           className="inline-flex items-center gap-1 text-sm text-slate-600 hover:text-slate-900"
         >
-          <ArrowLeft size={14} />
+          <ArrowLeft size={ICON_SIZE.sm} />
           一覧へ戻る
         </Link>
       </div>

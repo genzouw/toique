@@ -13,6 +13,7 @@ import {
   Shield,
 } from 'lucide-react';
 import { cn } from '../lib/utils';
+import { ICON_SIZE } from '../lib/icon-size';
 import { signOut, useSession } from '../lib/auth-client';
 import { api, type UsageResponse } from '../lib/api';
 import { useMobileSidebar } from '../hooks/useMobileSidebar';
@@ -113,7 +114,7 @@ export default function Layout() {
                   )
                 }
               >
-                <Icon size={16} />
+                <Icon size={ICON_SIZE.md} />
                 {item.label}
               </NavLink>
             );
@@ -124,16 +125,19 @@ export default function Layout() {
             rel="noopener noreferrer"
             className="flex items-center gap-2 px-3 py-2 rounded-md text-sm text-slate-700 hover:bg-slate-100"
           >
-            <HelpCircle size={16} />
+            <HelpCircle size={ICON_SIZE.md} />
             ヘルプ
-            <ExternalLink size={12} className="ml-auto text-slate-400" />
+            <ExternalLink
+              size={ICON_SIZE.xs}
+              className="ml-auto text-slate-400"
+            />
           </a>
           {isOperator && (
             <Link
               to="/admin"
               className="flex items-center gap-2 px-3 py-2 rounded-md text-sm text-amber-700 hover:bg-amber-50 border border-dashed border-amber-300 mt-2"
             >
-              <Shield size={16} />
+              <Shield size={ICON_SIZE.md} />
               運営者エリア
             </Link>
           )}
@@ -148,7 +152,7 @@ export default function Layout() {
                 onClick={handleSignOut}
                 className="mt-2 w-full inline-flex items-center gap-2 px-2 py-1.5 text-xs text-slate-700 hover:bg-slate-100 rounded-md"
               >
-                <LogOut size={12} />
+                <LogOut size={ICON_SIZE.xs} />
                 ログアウト
               </button>
             </>
@@ -177,7 +181,7 @@ export default function Layout() {
               className="ml-4"
               aria-label="メッセージを閉じる"
             >
-              <X size={14} />
+              <X size={ICON_SIZE.sm} />
             </button>
           </div>
         )}

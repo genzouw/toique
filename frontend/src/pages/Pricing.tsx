@@ -5,6 +5,7 @@ import { getFaqsByCategory } from '../lib/faqs';
 import { api } from '../lib/api';
 import { useSession } from '../lib/auth-client';
 import { useSEO } from '../lib/useSEO';
+import { ICON_SIZE } from '../lib/icon-size';
 
 const PLANS = [
   {
@@ -126,7 +127,10 @@ export default function Pricing() {
                     key={f.label}
                     className="flex items-center gap-2 text-sm text-slate-700"
                   >
-                    <Check size={14} className="text-emerald-600 shrink-0" />
+                    <Check
+                      size={ICON_SIZE.sm}
+                      className="text-emerald-600 shrink-0"
+                    />
                     <span>
                       {f.label}: <span className="font-medium">{f.value}</span>
                     </span>
@@ -179,7 +183,7 @@ export default function Pricing() {
                     {f.question}
                   </span>
                   <ArrowRight
-                    size={14}
+                    size={ICON_SIZE.sm}
                     className="shrink-0 text-slate-400"
                     aria-hidden="true"
                   />
@@ -193,7 +197,7 @@ export default function Pricing() {
               className="inline-flex items-center gap-1 text-sm font-medium text-slate-700 hover:text-slate-900"
             >
               すべての FAQ を見る
-              <ArrowRight size={14} />
+              <ArrowRight size={ICON_SIZE.sm} />
             </Link>
           </div>
         </div>
