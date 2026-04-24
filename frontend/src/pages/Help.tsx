@@ -439,19 +439,6 @@ graph TD
             からご連絡ください。
           </p>
           <p>
-            このページは随時更新されます。最新版は{' '}
-            <a
-              href="https://github.com/genzouw/toique"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="underline inline-flex items-center gap-1"
-            >
-              GitHub リポジトリ
-              <ExternalLink size={12} />
-            </a>{' '}
-            を参照してください。
-          </p>
-          <p>
             <Link to="/specified-commercial-transactions" className="underline">
               特定商取引法に基づく表記
             </Link>
