@@ -19,27 +19,18 @@ async function upsertLineUser(
 ): Promise<LineUser | null> {
   if (!lineUserId) return null;
 
-  const existing = await db
-    .select()
-    .from(lineUsers)
-    .where(
-      and(
-        eq(lineUsers.lineChannelId, channelId),
-        eq(lineUsers.lineUserId, lineUserId),
-      ),
-    )
-    .limit(1);
-
-  if (existing.length > 0) return existing[0];
-
-  const [created] = await db
+  const [user] = await db
     .insert(lineUsers)
     .values({
       lineChannelId: channelId,
       lineUserId,
     })
+    .onConflictDoUpdate({
+      target: [lineUsers.lineChannelId, lineUsers.lineUserId],
+      set: { lineUserId: sql`excluded.line_user_id` },
+    })
     .returning();
-  return created;
+  return user;
 }
 
 export async function handleLineEvent(

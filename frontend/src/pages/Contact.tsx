@@ -2,6 +2,7 @@ import { Link } from 'react-router';
 import { useEffect, useState } from 'react';
 import { api, type ContactCategory } from '../lib/api';
 import { useSession } from '../lib/auth-client';
+import { useSEO } from '../lib/useSEO';
 
 const CATEGORY_OPTIONS: { value: ContactCategory; label: string }[] = [
   { value: 'bug', label: '不具合の報告' },
@@ -12,6 +13,11 @@ const CATEGORY_OPTIONS: { value: ContactCategory; label: string }[] = [
 ];
 
 export default function Contact() {
+  useSEO({
+    title: 'お問い合わせ | Toique',
+    description:
+      'Toiqueへのお問い合わせフォーム。導入相談、料金プランに関する質問、不具合の報告、機能要望などを受け付けています。',
+  });
   const { data: session } = useSession();
 
   const [name, setName] = useState('');
@@ -28,6 +34,7 @@ export default function Contact() {
   // ログインユーザーの情報を自動入力
   useEffect(() => {
     if (session?.user) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setName((prev) => prev || session.user.name || '');
       setEmail((prev) => prev || session.user.email || '');
     }

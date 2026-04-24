@@ -2,8 +2,14 @@ import { useState } from 'react';
 import { useNavigate, Link } from 'react-router';
 import { Loader2 } from 'lucide-react';
 import { signIn } from '../lib/auth-client';
+import { useSEO } from '../lib/useSEO';
 
 export default function Login() {
+  useSEO({
+    title: 'ログイン | Toique',
+    description:
+      'Toiqueへログイン。LINE公式アカウント連携の問い合わせフォームを管理できます。',
+  });
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');

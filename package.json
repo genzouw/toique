@@ -1,0 +1,26 @@
+{
+  "name": "toique",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "prepare": "husky",
+    "lint": "npm run lint --prefix backend && npm run lint --prefix frontend",
+    "format:check": "npm run format:check --prefix backend && npm run format:check --prefix frontend",
+    "typecheck": "npm run typecheck --prefix backend && npm run typecheck --prefix frontend",
+    "test": "npm run test --prefix backend && npm run test --prefix frontend"
+  },
+  "devDependencies": {
+    "husky": "^9.1.0",
+    "lint-staged": "^15.5.0"
+  },
+  "lint-staged": {
+    "backend/src/**/*.ts": [
+      "npm run lint --prefix backend -- --fix",
+      "npm run format --prefix backend"
+    ],
+    "frontend/src/**/*.{ts,tsx}": [
+      "npm run lint --prefix frontend -- --fix",
+      "npm run format --prefix frontend"
+    ]
+  }
+}

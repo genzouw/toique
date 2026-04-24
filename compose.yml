@@ -62,6 +62,8 @@ services:
     depends_on:
       - backend
 
+  # ローカル開発用バックアップ（手動実行: docker compose run --rm backup）
+  # 本番環境では Cloud Run Jobs + Cloud Scheduler で定期実行されます
   backup:
     build:
       context: ./backup
@@ -72,13 +74,15 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-toique}
       POSTGRES_DB: toique
       POSTGRES_PORT: 5432
-      GCP_PROJECT_ID: ${GCP_PROJECT_ID:-"toique-app-prod"}
       GCS_BUCKET: ${GCS_BUCKET:-""}
-      GOOGLE_APPLICATION_CREDENTIALS_JSON: ${GOOGLE_APPLICATION_CREDENTIALS_JSON:-""}
-      CRON_SCHEDULE: ${CRON_SCHEDULE:-"0 3 * * *"}
+      GOOGLE_APPLICATION_CREDENTIALS: /root/.config/gcloud/application_default_credentials.json
+    volumes:
+      - ${CLOUDSDK_CONFIG:-${HOME}/.config/gcloud}/application_default_credentials.json:/root/.config/gcloud/application_default_credentials.json:ro
     depends_on:
       db:
         condition: service_healthy
+    profiles:
+      - backup
 
 volumes:
   pgdata:

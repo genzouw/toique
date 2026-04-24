@@ -1,7 +1,8 @@
-import { NavLink, Outlet, Link, useNavigate, useLocation } from 'react-router';
-import { LogOut, Inbox, Shield, ArrowLeft, Menu, X } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import { NavLink, Outlet, Link, useNavigate } from 'react-router';
+import { LogOut, Inbox, Shield, ArrowLeft } from 'lucide-react';
 import { cn } from '../lib/utils';
+import { useMobileSidebar } from '../hooks/useMobileSidebar';
+import { MobileHeader, SidebarOverlay, SidebarPanel } from './MobileSidebar';
 
 const navItems = [
   { to: '/admin/contacts', label: 'システム問い合わせ', icon: Inbox },
@@ -13,23 +14,7 @@ const navItems = [
  */
 export default function AdminLayout() {
   const navigate = useNavigate();
-  const location = useLocation();
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-
-  useEffect(() => {
-    setIsSidebarOpen(false);
-  }, [location.pathname]);
-
-  useEffect(() => {
-    if (isSidebarOpen) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = 'unset';
-    }
-    return () => {
-      document.body.style.overflow = 'unset';
-    };
-  }, [isSidebarOpen]);
+  const { isSidebarOpen, openSidebar, closeSidebar } = useMobileSidebar();
 
   function handleSignOut() {
     localStorage.removeItem('adminAuth');
@@ -38,38 +23,28 @@ export default function AdminLayout() {
 
   return (
     <div className="flex flex-col md:flex-row h-full bg-slate-50">
-      {/* Mobile Header */}
-      <div className="md:hidden flex items-center justify-between px-4 py-3 bg-slate-900 text-slate-100 border-b border-slate-800">
-        <div className="flex items-center gap-2">
-          <Shield size={18} className="text-amber-400" />
-          <div className="text-lg font-bold">Toique</div>
-          <div className="text-xs text-amber-400 mt-1 ml-1">運営者エリア</div>
-        </div>
-        <button
-          onClick={() => setIsSidebarOpen(true)}
-          aria-label="メニューを開く"
-          className="p-1.5 text-slate-300 hover:bg-slate-800 rounded-md"
-        >
-          <Menu size={20} />
-        </button>
-      </div>
+      <MobileHeader
+        onOpen={openSidebar}
+        headerClassName="bg-slate-900 text-slate-100 border-b border-slate-800"
+        menuButtonClassName="text-slate-300 hover:bg-slate-800"
+        header={
+          <div className="flex items-center gap-2">
+            <Shield size={18} className="text-amber-400" />
+            <div className="text-lg font-bold">Toique</div>
+            <div className="text-xs text-amber-400 mt-1 ml-1">運営者エリア</div>
+          </div>
+        }
+      />
 
-      {/* Overlay */}
-      {isSidebarOpen && (
-        <div
-          className="fixed inset-0 bg-black/50 z-40 md:hidden"
-          onClick={() => setIsSidebarOpen(false)}
-        />
-      )}
+      <SidebarOverlay isOpen={isSidebarOpen} onClose={closeSidebar} />
 
-      {/* Sidebar */}
-      <aside
-        className={cn(
-          'fixed inset-y-0 left-0 z-50 w-60 border-r border-slate-800 bg-slate-900 text-slate-100 flex flex-col transition-transform duration-200 ease-in-out md:static md:translate-x-0',
-          isSidebarOpen ? 'translate-x-0' : '-translate-x-full',
-        )}
-      >
-        <div className="px-5 py-4 border-b border-slate-800 flex items-center justify-between">
+      <SidebarPanel
+        isOpen={isSidebarOpen}
+        onClose={closeSidebar}
+        sidebarClassName="border-r border-slate-800 bg-slate-900 text-slate-100"
+        sidebarHeaderClassName="border-slate-800"
+        closeButtonClassName="text-slate-400 hover:bg-slate-800"
+        sidebarHeader={
           <div>
             <div className="text-xl font-bold flex items-center gap-2">
               <Shield size={18} className="text-amber-400" />
@@ -77,14 +52,8 @@ export default function AdminLayout() {
             </div>
             <div className="text-xs text-amber-400 mt-0.5">運営者エリア</div>
           </div>
-          <button
-            onClick={() => setIsSidebarOpen(false)}
-            aria-label="メニューを閉じる"
-            className="md:hidden p-1 text-slate-400 hover:bg-slate-800 rounded-md"
-          >
-            <X size={20} />
-          </button>
-        </div>
+        }
+      >
         <nav className="flex-1 px-2 py-4 space-y-1">
           {navItems.map((item) => {
             const Icon = item.icon;
@@ -126,7 +95,7 @@ export default function AdminLayout() {
             ログアウト
           </button>
         </div>
-      </aside>
+      </SidebarPanel>
       <main className="flex-1 overflow-auto p-4 md:p-8">
         <Outlet />
       </main>

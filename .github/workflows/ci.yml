@@ -14,18 +14,33 @@ env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
+  lockfile-sync:
+    name: Lockfile sync check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Check backend lockfile sync
+        working-directory: backend
+        run: npm ci --ignore-scripts
+      - name: Check frontend lockfile sync
+        working-directory: frontend
+        run: npm ci --ignore-scripts
+
   frontend:
-    name: Frontend (lint / typecheck / format)
+    name: Frontend (lint / typecheck / format / test / build)
     runs-on: ubuntu-latest
     env:
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Build and run checks in Docker
         run: docker build --target ci-check -f frontend/Dockerfile .
 
   backend:
-    name: Backend (lint / typecheck / format / test)
+    name: Backend (lint / typecheck / format / build / test)
     runs-on: ubuntu-latest
     env:
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
@@ -44,7 +59,7 @@ jobs:
           --health-timeout 5s
           --health-retries 5
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Build and run checks in Docker
         run: docker build --target ci-check -f backend/Dockerfile .
       - name: Build test image

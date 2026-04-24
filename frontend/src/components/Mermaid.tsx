@@ -1,10 +1,11 @@
 import { useEffect, useId, useRef, useState } from 'react';
 import mermaid from 'mermaid';
+import DOMPurify from 'dompurify';
 
 mermaid.initialize({
   startOnLoad: false,
   theme: 'default',
-  securityLevel: 'loose',
+  securityLevel: 'strict',
 });
 
 interface MermaidProps {
@@ -17,15 +18,28 @@ export default function Mermaid({ chart }: MermaidProps) {
   const id = useRef(`mermaid-${uniqueId.replace(/:/g, '')}`);
 
   useEffect(() => {
+    let ignore = false;
     const renderChart = async () => {
       try {
         const { svg: svgContent } = await mermaid.render(id.current, chart);
-        setSvg(svgContent);
+        if (!ignore) {
+          setSvg(
+            DOMPurify.sanitize(svgContent, {
+              USE_PROFILES: { svg: true },
+              ADD_TAGS: ['style'],
+            }),
+          );
+        }
       } catch (err) {
-        console.error('Mermaid rendering failed', err);
+        if (!ignore) {
+          console.error('Mermaid rendering failed', err);
+        }
       }
     };
     renderChart();
+    return () => {
+      ignore = true;
+    };
   }, [chart]);
 
   return <div dangerouslySetInnerHTML={{ __html: svg }} />;
