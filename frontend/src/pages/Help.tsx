@@ -11,6 +11,7 @@ import {
 } from 'lucide-react';
 import Mermaid from '../components/Mermaid';
 import { useSEO } from '../lib/useSEO';
+import { ICON_SIZE } from '../lib/icon-size';
 
 export default function Help() {
   useSEO({
@@ -126,7 +127,7 @@ graph TD
                 className="underline inline-flex items-center gap-1"
               >
                 LINE Official Account Manager
-                <ExternalLink size={12} />
+                <ExternalLink size={ICON_SIZE.xs} />
               </a>{' '}
               にログイン
             </li>
@@ -153,7 +154,7 @@ graph TD
                 className="underline inline-flex items-center gap-1"
               >
                 LINE Developers Console
-                <ExternalLink size={12} />
+                <ExternalLink size={ICON_SIZE.xs} />
               </a>{' '}
               にログイン
             </li>
@@ -239,7 +240,7 @@ graph TD
               className="underline inline-flex items-center gap-1"
             >
               ngrok
-              <ExternalLink size={12} />
+              <ExternalLink size={ICON_SIZE.xs} />
             </a>{' '}
             で <code className="text-xs">ngrok http 3000</code>{' '}
             を実行し、払い出される HTTPS URL を Webhook URL に指定してください。
@@ -447,7 +448,7 @@ graph TD
               className="underline inline-flex items-center gap-1"
             >
               GitHub リポジトリ
-              <ExternalLink size={12} />
+              <ExternalLink size={ICON_SIZE.xs} />
             </a>{' '}
             を参照してください。
           </p>
@@ -476,7 +477,7 @@ function Section({
   return (
     <section id={id} className="scroll-mt-6">
       <h2 className="flex items-center gap-2 text-xl font-bold text-slate-900 mb-3">
-        {Icon && <Icon size={20} className="text-slate-600" />}
+        {Icon && <Icon size={ICON_SIZE.xl} className="text-slate-600" />}
         {title}
       </h2>
       <div className="text-slate-700 text-sm leading-relaxed space-y-3">

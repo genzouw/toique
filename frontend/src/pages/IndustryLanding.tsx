@@ -3,6 +3,7 @@ import { Link, useParams } from 'react-router';
 import { getIndustry, INDUSTRIES } from '../lib/industries';
 import type { IndustryContent } from '../lib/industries';
 import IndustryNotFound from './IndustryNotFound';
+import { ICON_SIZE } from '../lib/icon-size';
 
 const SITE_ORIGIN = 'https://toique.pages.dev';
 
@@ -206,7 +207,7 @@ function IndustryLandingView({ content }: { content: IndustryContent }) {
         <div className="max-w-3xl mx-auto text-center">
           <div className="flex justify-center">
             <div className="w-14 h-14 bg-slate-50 text-slate-700 rounded-lg flex items-center justify-center">
-              <HeroIcon size={28} />
+              <HeroIcon size={ICON_SIZE.hero} />
             </div>
           </div>
           <h1 className="mt-6 text-3xl sm:text-4xl font-bold text-slate-900 leading-tight">

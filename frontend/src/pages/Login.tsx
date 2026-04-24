@@ -3,6 +3,7 @@ import { useNavigate, Link } from 'react-router';
 import { Loader2 } from 'lucide-react';
 import { signIn } from '../lib/auth-client';
 import { useSEO } from '../lib/useSEO';
+import { ICON_SIZE } from '../lib/icon-size';
 
 export default function Login() {
   useSEO({
@@ -56,7 +57,11 @@ export default function Login() {
         >
           {submitting ? (
             <>
-              <Loader2 size={16} className="animate-spin" aria-hidden="true" />
+              <Loader2
+                size={ICON_SIZE.md}
+                className="animate-spin"
+                aria-hidden="true"
+              />
               ログイン中…
             </>
           ) : (
