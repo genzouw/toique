@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { eq, inArray } from 'drizzle-orm';
+import { inArray } from 'drizzle-orm';
 import { Hono } from 'hono';
 import db from '../../db.js';
 import { users, tenants, tenantMembers } from '../../schema.js';
@@ -161,10 +161,5 @@ describe('admin users route', () => {
     expect(res.status).toBe(200);
     const body = (await res.json()) as Array<{ id: string }>;
     expect(body.some((r) => r.id === u.id)).toBe(true);
-
-    // クリーンアップは afterEach で行う
-    // テスト DB 汚染を避けるため users から削除
-    await db.delete(users).where(eq(users.id, u.id));
-    createdUserIds.splice(createdUserIds.indexOf(u.id), 1);
   });
 });
