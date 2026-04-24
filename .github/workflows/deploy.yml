@@ -81,7 +81,7 @@ jobs:
           env_vars: |
             NODE_ENV=production
             CORS_ORIGIN=https://toique.pages.dev
-            STRIPE_PRO_PRICE_ID=price_1TNM1yIlm7LOZC27Pv95rexs
+            STRIPE_PRO_PRICE_ID=price_1TPYvGIlm7LOZC27c1gsQ7q7
             CONTACT_FROM=noreply@toique.pages.dev
             OPERATOR_EMAILS=genzouw@gmail.com
             ADMIN_USERNAME=admin

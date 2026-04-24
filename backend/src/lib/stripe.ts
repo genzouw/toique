@@ -8,7 +8,7 @@ export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY ?? '', {
   apiVersion: '2026-03-25.dahlia',
 });
 
-export const DEFAULT_STRIPE_PRO_PRICE_ID = 'price_1TNM1yIlm7LOZC27Pv95rexs';
+export const DEFAULT_STRIPE_PRO_PRICE_ID = 'price_1TPYvGIlm7LOZC27c1gsQ7q7';
 
 export const STRIPE_PRO_PRICE_ID =
   process.env.STRIPE_PRO_PRICE_ID ?? DEFAULT_STRIPE_PRO_PRICE_ID;
