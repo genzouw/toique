@@ -441,6 +441,11 @@ graph TD
             </a>{' '}
             を参照してください。
           </p>
+          <p>
+            <Link to="/specified-commercial-transactions" className="underline">
+              特定商取引法に基づく表記
+            </Link>
+          </p>
         </footer>
       </main>
     </div>

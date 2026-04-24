@@ -82,6 +82,12 @@ export default function IndustryNotFound() {
             <Link to="/contact" className="hover:text-slate-900">
               お問い合わせ
             </Link>
+            <Link
+              to="/specified-commercial-transactions"
+              className="hover:text-slate-900"
+            >
+              特定商取引法に基づく表記
+            </Link>
             <Link to="/login" className="hover:text-slate-900">
               ログイン
             </Link>
