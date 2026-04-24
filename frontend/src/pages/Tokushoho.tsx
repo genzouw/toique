@@ -119,7 +119,14 @@ export default function Tokushoho() {
             </Row>
             <Row term="返金について">
               本サービスはデジタルコンテンツ・SaaS
-              の提供であるため、役務の提供開始後の返金・返品はお受けできません。不具合等が発生した場合は上記メールアドレスまでご連絡ください。
+              の提供であるため、役務の提供開始後の返金・返品はお受けできません。不具合等が発生した場合は{' '}
+              <a
+                href="mailto:genzouw@gmail.com"
+                className="underline hover:text-slate-900"
+              >
+                genzouw@gmail.com
+              </a>{' '}
+              までご連絡ください。
             </Row>
             <Row term="動作環境">
               以下の最新版ブラウザでのご利用を推奨いたします。
