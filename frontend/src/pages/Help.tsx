@@ -11,6 +11,7 @@ import {
 } from 'lucide-react';
 import Mermaid from '../components/Mermaid';
 import { useSEO } from '../lib/useSEO';
+import { ICON_SIZE } from '../lib/icon-size';
 
 export default function Help() {
   useSEO({
@@ -90,7 +91,7 @@ export default function Help() {
             アカウントと紐付く組織名（会社名・屋号など）を入力します。この組織単位でチャネル・フォーム・問い合わせデータが分離されます。
           </p>
           <div className="p-3 rounded-md bg-amber-50 text-amber-800 text-sm">
-            Phase 2a 現在の仕様: <strong>1 ユーザー = 1 組織</strong>{' '}
+            現在の仕様: <strong>1 ユーザー = 1 組織</strong>
             です。複数組織所属・切り替えは今後の対応予定です。
           </div>
         </Section>
@@ -126,7 +127,7 @@ graph TD
                 className="underline inline-flex items-center gap-1"
               >
                 LINE Official Account Manager
-                <ExternalLink size={12} />
+                <ExternalLink size={ICON_SIZE.xs} />
               </a>{' '}
               にログイン
             </li>
@@ -153,7 +154,7 @@ graph TD
                 className="underline inline-flex items-center gap-1"
               >
                 LINE Developers Console
-                <ExternalLink size={12} />
+                <ExternalLink size={ICON_SIZE.xs} />
               </a>{' '}
               にログイン
             </li>
@@ -239,7 +240,7 @@ graph TD
               className="underline inline-flex items-center gap-1"
             >
               ngrok
-              <ExternalLink size={12} />
+              <ExternalLink size={ICON_SIZE.xs} />
             </a>{' '}
             で <code className="text-xs">ngrok http 3000</code>{' '}
             を実行し、払い出される HTTPS URL を Webhook URL に指定してください。
@@ -376,8 +377,7 @@ graph TD
             <li>
               ステータス: <code className="text-xs">new</code> /{' '}
               <code className="text-xs">in_review</code> /{' '}
-              <code className="text-xs">done</code>（変更UIは Phase 2.5
-              で追加予定）
+              <code className="text-xs">done</code>
             </li>
           </ul>
         </Section>
@@ -439,19 +439,6 @@ graph TD
             からご連絡ください。
           </p>
           <p>
-            このページは随時更新されます。最新版は{' '}
-            <a
-              href="https://github.com/genzouw/toique"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="underline inline-flex items-center gap-1"
-            >
-              GitHub リポジトリ
-              <ExternalLink size={12} />
-            </a>{' '}
-            を参照してください。
-          </p>
-          <p>
             <Link to="/specified-commercial-transactions" className="underline">
               特定商取引法に基づく表記
             </Link>
@@ -476,7 +463,7 @@ function Section({
   return (
     <section id={id} className="scroll-mt-6">
       <h2 className="flex items-center gap-2 text-xl font-bold text-slate-900 mb-3">
-        {Icon && <Icon size={20} className="text-slate-600" />}
+        {Icon && <Icon size={ICON_SIZE.xl} className="text-slate-600" />}
         {title}
       </h2>
       <div className="text-slate-700 text-sm leading-relaxed space-y-3">

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Trash2 } from 'lucide-react';
 import { api, type LineChannel } from '../lib/api';
+import { ICON_SIZE } from '../lib/icon-size';
 
 export default function Channels() {
   const [items, setItems] = useState<LineChannel[]>([]);
@@ -148,7 +149,7 @@ export default function Channels() {
                   className="p-2 text-red-600 hover:bg-red-50 rounded-md"
                   aria-label="削除"
                 >
-                  <Trash2 size={16} />
+                  <Trash2 size={ICON_SIZE.md} />
                 </button>
               </li>
             ))}

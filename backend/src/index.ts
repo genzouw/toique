@@ -17,6 +17,7 @@ import usage from './routes/usage.js';
 import contact from './routes/contact.js';
 import adminContacts from './routes/admin/contacts.js';
 import adminMe from './routes/admin/me.js';
+import adminUsers from './routes/admin/users.js';
 import { logger as appLogger } from './lib/logger.js';
 
 const app = new Hono({ strict: false });
@@ -73,6 +74,7 @@ app.route('/api/v1/contact', contact);
 app.use('/api/v1/admin/*', requireOperator);
 app.route('/api/v1/admin/me', adminMe);
 app.route('/api/v1/admin/contacts', adminContacts);
+app.route('/api/v1/admin/users', adminUsers);
 
 const port = Number(process.env.PORT) || 3000;
 serve({ fetch: app.fetch, port }, () => {

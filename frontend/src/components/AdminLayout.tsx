@@ -1,11 +1,13 @@
-import { NavLink, Outlet, Link, useNavigate } from 'react-router';
-import { LogOut, Inbox, Shield, ArrowLeft } from 'lucide-react';
+import { NavLink, Outlet, useNavigate } from 'react-router';
+import { LogOut, Inbox, Shield, Users } from 'lucide-react';
 import { cn } from '../lib/utils';
+import { ICON_SIZE } from '../lib/icon-size';
 import { useMobileSidebar } from '../hooks/useMobileSidebar';
 import { MobileHeader, SidebarOverlay, SidebarPanel } from './MobileSidebar';
 
 const navItems = [
   { to: '/admin/contacts', label: 'システム問い合わせ', icon: Inbox },
+  { to: '/admin/users', label: 'ユーザー', icon: Users },
 ];
 
 /**
@@ -29,7 +31,7 @@ export default function AdminLayout() {
         menuButtonClassName="text-slate-300 hover:bg-slate-800"
         header={
           <div className="flex items-center gap-2">
-            <Shield size={18} className="text-amber-400" />
+            <Shield size={ICON_SIZE.lg} className="text-amber-400" />
             <div className="text-lg font-bold">Toique</div>
             <div className="text-xs text-amber-400 mt-1 ml-1">運営者エリア</div>
           </div>
@@ -47,7 +49,7 @@ export default function AdminLayout() {
         sidebarHeader={
           <div>
             <div className="text-xl font-bold flex items-center gap-2">
-              <Shield size={18} className="text-amber-400" />
+              <Shield size={ICON_SIZE.lg} className="text-amber-400" />
               Toique
             </div>
             <div className="text-xs text-amber-400 mt-0.5">運営者エリア</div>
@@ -70,18 +72,11 @@ export default function AdminLayout() {
                   )
                 }
               >
-                <Icon size={16} />
+                <Icon size={ICON_SIZE.md} />
                 {item.label}
               </NavLink>
             );
           })}
-          <Link
-            to="/dashboard"
-            className="flex items-center gap-2 px-3 py-2 rounded-md text-sm text-slate-400 hover:bg-slate-800"
-          >
-            <ArrowLeft size={14} />
-            契約者向け画面へ
-          </Link>
         </nav>
         <div className="px-5 py-3 border-t border-slate-800">
           <div className="text-xs text-slate-400 truncate">
@@ -91,7 +86,7 @@ export default function AdminLayout() {
             onClick={handleSignOut}
             className="mt-2 w-full inline-flex items-center gap-2 px-2 py-1.5 text-xs text-slate-300 hover:bg-slate-800 rounded-md"
           >
-            <LogOut size={12} />
+            <LogOut size={ICON_SIZE.xs} />
             ログアウト
           </button>
         </div>

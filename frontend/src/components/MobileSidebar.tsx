@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import { Menu, X } from 'lucide-react';
 import { cn } from '../lib/utils';
+import { ICON_SIZE } from '../lib/icon-size';
 
 interface MobileHeaderProps {
   header: ReactNode;
@@ -28,7 +29,7 @@ export function MobileHeader({
         aria-label="メニューを開く"
         className={cn('p-1.5 rounded-md', menuButtonClassName)}
       >
-        <Menu size={20} />
+        <Menu size={ICON_SIZE.xl} />
       </button>
     </div>
   );
@@ -89,7 +90,7 @@ export function SidebarPanel({
           aria-label="メニューを閉じる"
           className={cn('md:hidden p-1 rounded-md', closeButtonClassName)}
         >
-          <X size={20} />
+          <X size={ICON_SIZE.xl} />
         </button>
       </div>
       {children}
