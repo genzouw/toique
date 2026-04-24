@@ -46,7 +46,6 @@ export type InboundMessage = {
   eventType: string;
   messageType: string | null;
   text: string | null;
-  // ⚡ Bolt: Excluded `rawEvent` (large JSON blob) to reduce memory overhead.
   receivedAt: string;
 };
 

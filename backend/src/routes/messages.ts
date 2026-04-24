@@ -15,7 +15,6 @@ app.get('/', async (c) => {
       eventType: inboundMessages.eventType,
       messageType: inboundMessages.messageType,
       text: inboundMessages.text,
-      // ⚡ Bolt: Excluded `rawEvent` (large JSON blob) to reduce DB I/O and network payload size.
       receivedAt: inboundMessages.receivedAt,
     })
     .from(inboundMessages)
