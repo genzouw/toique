@@ -91,7 +91,7 @@ export default function Help() {
             アカウントと紐付く組織名（会社名・屋号など）を入力します。この組織単位でチャネル・フォーム・問い合わせデータが分離されます。
           </p>
           <div className="p-3 rounded-md bg-amber-50 text-amber-800 text-sm">
-            Phase 2a 現在の仕様: <strong>1 ユーザー = 1 組織</strong>{' '}
+            現在の仕様: <strong>1 ユーザー = 1 組織</strong>
             です。複数組織所属・切り替えは今後の対応予定です。
           </div>
         </Section>
@@ -377,8 +377,7 @@ graph TD
             <li>
               ステータス: <code className="text-xs">new</code> /{' '}
               <code className="text-xs">in_review</code> /{' '}
-              <code className="text-xs">done</code>（変更UIは Phase 2.5
-              で追加予定）
+              <code className="text-xs">done</code>
             </li>
           </ul>
         </Section>
