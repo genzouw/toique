@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router';
 import { Shield } from 'lucide-react';
 import { api } from '../../lib/api';
+import { ICON_SIZE } from '../../lib/icon-size';
 
 export default function AdminLogin() {
   const navigate = useNavigate();
@@ -39,7 +40,7 @@ export default function AdminLogin() {
       <div className="max-w-md w-full space-y-8 bg-white p-8 rounded-xl shadow-sm border border-slate-200">
         <div className="text-center">
           <div className="mx-auto w-12 h-12 bg-slate-900 rounded-full flex items-center justify-center">
-            <Shield className="text-amber-400" size={24} />
+            <Shield className="text-amber-400" size={ICON_SIZE.xxl} />
           </div>
           <h2 className="mt-4 text-2xl font-bold text-slate-900">
             運営者ログイン

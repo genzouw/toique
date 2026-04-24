@@ -3,6 +3,7 @@ import { useNavigate, useParams, Link } from 'react-router';
 import { ChevronLeft, Trash2 } from 'lucide-react';
 import { api, type Form, type LineChannel } from '../lib/api';
 import FormSchemaBuilder from '../components/FormSchemaBuilder';
+import { ICON_SIZE } from '../lib/icon-size';
 
 const DEFAULT_SCHEMA = {
   startStep: 'カテゴリ',
@@ -251,7 +252,7 @@ export default function FormEdit() {
         to="/forms"
         className="inline-flex items-center gap-1 text-sm text-slate-600 hover:text-slate-900"
       >
-        <ChevronLeft size={14} />
+        <ChevronLeft size={ICON_SIZE.sm} />
         フォーム一覧に戻る
       </Link>
 
@@ -265,7 +266,7 @@ export default function FormEdit() {
             className="p-2 text-red-600 hover:bg-red-50 rounded-md"
             aria-label="削除"
           >
-            <Trash2 size={16} />
+            <Trash2 size={ICON_SIZE.md} />
           </button>
         )}
       </div>
