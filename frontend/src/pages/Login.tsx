@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router';
+import { Loader2 } from 'lucide-react';
 import { signIn } from '../lib/auth-client';
 import { useSEO } from '../lib/useSEO';
 
@@ -50,9 +51,17 @@ export default function Login() {
         <button
           type="submit"
           disabled={submitting}
-          className="w-full px-4 py-2 bg-slate-900 text-white rounded-md text-sm disabled:opacity-50"
+          aria-busy={submitting}
+          className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-slate-900 text-white rounded-md text-sm disabled:opacity-50"
         >
-          {submitting ? 'ログイン中…' : 'ログイン'}
+          {submitting ? (
+            <>
+              <Loader2 size={16} className="animate-spin" aria-hidden="true" />
+              ログイン中…
+            </>
+          ) : (
+            'ログイン'
+          )}
         </button>
       </form>
       <div className="mt-4 text-sm text-slate-600">
