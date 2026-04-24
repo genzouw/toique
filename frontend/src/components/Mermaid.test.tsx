@@ -83,7 +83,7 @@ describe('Mermaid', () => {
     });
 
     // Container should still be rendered (empty) and not have crashed
-    expect(container).toBeTruthy();
+    expect(container.querySelector('svg')).not.toBeInTheDocument();
     consoleErrorSpy.mockRestore();
   });
 
