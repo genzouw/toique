@@ -1,5 +1,5 @@
-import { NavLink, Outlet, Link, useNavigate } from 'react-router';
-import { LogOut, Inbox, Shield, ArrowLeft } from 'lucide-react';
+import { NavLink, Outlet, useNavigate } from 'react-router';
+import { LogOut, Inbox, Shield, Users } from 'lucide-react';
 import { cn } from '../lib/utils';
 import { ICON_SIZE } from '../lib/icon-size';
 import { useMobileSidebar } from '../hooks/useMobileSidebar';
@@ -7,6 +7,7 @@ import { MobileHeader, SidebarOverlay, SidebarPanel } from './MobileSidebar';
 
 const navItems = [
   { to: '/admin/contacts', label: 'システム問い合わせ', icon: Inbox },
+  { to: '/admin/users', label: 'ユーザー', icon: Users },
 ];
 
 /**
@@ -76,13 +77,6 @@ export default function AdminLayout() {
               </NavLink>
             );
           })}
-          <Link
-            to="/dashboard"
-            className="flex items-center gap-2 px-3 py-2 rounded-md text-sm text-slate-400 hover:bg-slate-800"
-          >
-            <ArrowLeft size={ICON_SIZE.sm} />
-            契約者向け画面へ
-          </Link>
         </nav>
         <div className="px-5 py-3 border-t border-slate-800">
           <div className="text-xs text-slate-400 truncate">
