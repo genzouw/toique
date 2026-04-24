@@ -46,9 +46,9 @@ export default function Mermaid({ chart, interactive = false }: MermaidProps) {
           USE_PROFILES: { svg: true },
           // Mermaid のフローチャートはノードラベルを <foreignObject> 内の HTML
           // (<div>/<span>/<p>/<br>) として描画する。`USE_PROFILES.svg` のみだと
-          // <foreignObject> 自体および中身の HTML が剥がされてラベル文字が消える
-          // ため、必要なタグを明示的に許可する。
-          ADD_TAGS: ['style', 'foreignObject'],
+          // <foreignObject> 自体および中身の HTML が剥がされてラベル文字や
+          // 明示的な改行 (<br>) が失われるため、必要なタグを明示的に許可する。
+          ADD_TAGS: ['style', 'foreignObject', 'div', 'span', 'p', 'br'],
         });
         container.innerHTML = sanitized;
         if (interactive) {
