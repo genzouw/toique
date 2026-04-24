@@ -45,6 +45,7 @@ export default function Login() {
         <button
           type="submit"
           disabled={submitting}
+          aria-busy={submitting}
           className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-slate-900 text-white rounded-md text-sm disabled:opacity-50"
         >
           {submitting ? (
