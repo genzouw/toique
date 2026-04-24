@@ -93,6 +93,20 @@ export default function Contact() {
           </p>
         </section>
 
+        <section
+          className="bg-blue-50 border border-blue-200 rounded-md px-4 py-3 text-sm text-blue-900"
+          role="note"
+        >
+          まずは{' '}
+          <Link
+            to="/faq"
+            className="font-semibold underline hover:no-underline"
+          >
+            FAQ (よくある質問)
+          </Link>{' '}
+          をご確認ください。同じ質問の回答が掲載されている場合があります。
+        </section>
+
         {done ? (
           <section className="bg-white border border-slate-200 rounded-lg p-6">
             <h2 className="text-lg font-semibold text-slate-900 mb-2">

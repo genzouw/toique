@@ -36,6 +36,16 @@ export default function Help() {
       </header>
 
       <main className="max-w-4xl mx-auto px-6 py-10 space-y-10">
+        <div className="bg-slate-100 border border-slate-200 rounded-md px-4 py-3 text-sm text-slate-700">
+          質問ベースで探す場合は →{' '}
+          <Link
+            to="/faq"
+            className="font-semibold text-slate-900 underline hover:no-underline"
+          >
+            FAQ (よくある質問)
+          </Link>
+        </div>
+
         <Section icon={BookOpen} title="Toique とは" id="about">
           <p>
             <strong>Toique（トイク）</strong>{' '}

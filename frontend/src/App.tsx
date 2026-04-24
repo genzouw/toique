@@ -20,6 +20,8 @@ import Pricing from './pages/Pricing';
 import Contact from './pages/Contact';
 import Tokushoho from './pages/Tokushoho';
 import IndustryLanding from './pages/IndustryLanding';
+import FaqHub from './pages/FaqHub';
+import FaqArticle from './pages/FaqArticle';
 import AdminHome from './pages/admin/AdminHome';
 import AdminContacts from './pages/admin/AdminContacts';
 import AdminContactDetail from './pages/admin/AdminContactDetail';
@@ -53,6 +55,8 @@ function AppRoutes() {
         element={<Tokushoho />}
       />
       <Route path="/for/:slug" element={<IndustryLanding />} />
+      <Route path="/faq" element={<FaqHub />} />
+      <Route path="/faq/:slug" element={<FaqArticle />} />
       <Route
         path="/login"
         element={
