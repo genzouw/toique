@@ -44,7 +44,11 @@ export default function Mermaid({ chart, interactive = false }: MermaidProps) {
         }
         const sanitized = DOMPurify.sanitize(svgContent, {
           USE_PROFILES: { svg: true },
-          ADD_TAGS: ['style'],
+          // Mermaid のフローチャートはノードラベルを <foreignObject> 内の HTML
+          // (<div>/<span>/<p>/<br>) として描画する。`USE_PROFILES.svg` のみだと
+          // <foreignObject> 自体および中身の HTML が剥がされてラベル文字が消える
+          // ため、必要なタグを明示的に許可する。
+          ADD_TAGS: ['style', 'foreignObject'],
         });
         container.innerHTML = sanitized;
         if (interactive) {

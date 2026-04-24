@@ -87,6 +87,27 @@ describe('Mermaid', () => {
     consoleErrorSpy.mockRestore();
   });
 
+  it('preserves <foreignObject> label HTML produced by Mermaid (regression for empty boxes)', async () => {
+    // Mermaid のフローチャートはノードラベルを <foreignObject> 内の HTML で描画する。
+    // DOMPurify の SVG プロファイルだけだと <foreignObject> ごと剥がされ、
+    // ボックス内の文字が表示されなくなる回帰を防ぐためのテスト。
+    renderSpy.mockResolvedValueOnce({
+      svg: '<svg><g><foreignObject width="100" height="40"><div xmlns="http://www.w3.org/1999/xhtml"><span class="nodeLabel"><p>Hello<br>World</p></span></div></foreignObject></g></svg>',
+      bindFunctions: bindFunctionsSpy,
+      diagramType: 'flowchart',
+    });
+
+    const { container } = render(
+      <Mermaid chart="graph TD; A[Hello<br>World]" />,
+    );
+
+    await waitFor(() => {
+      expect(container.querySelector('foreignObject')).not.toBeNull();
+    });
+    expect(container.textContent).toContain('Hello');
+    expect(container.textContent).toContain('World');
+  });
+
   it('skips bindFunctions when it is undefined in the render result', async () => {
     renderSpy.mockResolvedValueOnce({
       svg: '<svg><g /></svg>',
