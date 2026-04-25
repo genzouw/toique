@@ -30,7 +30,7 @@ FROM node:25-alpine AS production
 WORKDIR /app
 ENV NODE_ENV=production
 COPY --from=build /app/package.json /app/package-lock.json ./
-RUN --mount=type=cache,target=/root/.npm,sharing=locked npm ci --omit=dev
+RUN --mount=type=cache,target=/root/.npm,sharing=locked npm ci --omit=dev --prefer-offline
 COPY --from=build /app/dist ./dist
 COPY --from=build /app/src/schema.ts ./src/schema.ts
 COPY --from=build /app/drizzle.config.ts ./drizzle.config.ts
