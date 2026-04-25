@@ -2,7 +2,7 @@
 FROM node:25-alpine AS base
 WORKDIR /app
 COPY backend/package.json backend/package-lock.json ./
-RUN npm ci
+RUN --mount=type=cache,target=/root/.npm,sharing=locked npm ci
 COPY backend/ .
 COPY .prettierrc .
 
@@ -30,12 +30,12 @@ FROM node:25-alpine AS production
 WORKDIR /app
 ENV NODE_ENV=production
 COPY --from=build /app/package.json /app/package-lock.json ./
-RUN npm ci --omit=dev
+RUN --mount=type=cache,target=/root/.npm,sharing=locked npm ci --omit=dev
 COPY --from=build /app/dist ./dist
 COPY --from=build /app/src/schema.ts ./src/schema.ts
 COPY --from=build /app/drizzle.config.ts ./drizzle.config.ts
 COPY --from=build /app/tsconfig.json ./tsconfig.json
 COPY db/migrations ./db/migrations
-RUN npm install drizzle-kit
+RUN --mount=type=cache,target=/root/.npm,sharing=locked npm install drizzle-kit
 EXPOSE 8080
 CMD ["node", "dist/index.js"]
