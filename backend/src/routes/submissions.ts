@@ -112,13 +112,18 @@ app.get('/export', async (c) => {
 const CSV_ESCAPE_TEST = /[",\r\n]/;
 const CSV_ESCAPE_REPLACE = /"/g;
 
-function escapeCsv(value: string | number | null | undefined): string {
+export function escapeCsv(value: string | number | null | undefined): string {
   if (typeof value === 'number') return String(value);
   if (value == null) return '';
-  if (CSV_ESCAPE_TEST.test(value)) {
-    return '"' + value.replace(CSV_ESCAPE_REPLACE, '""') + '"';
+  let strValue = value;
+  // Prevent CSV formula injection by prefixing with a single quote
+  if (/^[=+\-@\t\r]/.test(strValue)) {
+    strValue = "'" + strValue;
   }
-  return value;
+  if (CSV_ESCAPE_TEST.test(strValue)) {
+    return '"' + strValue.replace(CSV_ESCAPE_REPLACE, '""') + '"';
+  }
+  return strValue;
 }
 
 function asciiFallback(name: string): string {
