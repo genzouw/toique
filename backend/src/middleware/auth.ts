@@ -4,6 +4,7 @@ import { eq } from 'drizzle-orm';
 import db from '../db.js';
 import { tenantMembers, tenants } from '../schema.js';
 import { auth } from '../auth/better-auth.js';
+import { isDogfoodingEmail } from '../lib/dogfooding.js';
 
 type AuthUser = {
   id: string;
@@ -16,6 +17,11 @@ type TenantContext = {
   name: string;
   plan: string;
   role: string;
+  /**
+   * true の場合、Stripe 課金なしで Pro 相当・全クォータ無制限として扱う。
+   * 運営ドッグフーディングアカウント (lib/dogfooding.ts) のみ true になる。
+   */
+  unlimited: boolean;
 };
 
 declare module 'hono' {
@@ -120,6 +126,8 @@ export const requireTenant: MiddlewareHandler = async (c, next) => {
 
   if (!member) return c.text('Tenant not provisioned', 403);
 
+  const unlimited = isDogfoodingEmail(session.user.email);
+
   c.set('authUser', {
     id: session.user.id,
     email: session.user.email,
@@ -128,8 +136,9 @@ export const requireTenant: MiddlewareHandler = async (c, next) => {
   c.set('tenant', {
     id: member.tenantId,
     name: member.tenantName,
-    plan: member.tenantPlan,
+    plan: unlimited ? 'pro' : member.tenantPlan,
     role: member.role,
+    unlimited,
   });
   await next();
 };
