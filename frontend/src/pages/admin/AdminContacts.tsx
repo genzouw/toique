@@ -1,11 +1,13 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router';
+import { Mail } from 'lucide-react';
 import {
   api,
   type ContactListItem,
   type ContactStatus,
   type ContactCategory,
 } from '../../lib/api';
+import { ICON_SIZE } from '../../lib/icon-size';
 
 const STATUS_LABEL: Record<ContactStatus, string> = {
   new: '新着',
@@ -71,8 +73,16 @@ export default function AdminContacts() {
       {rows === null ? (
         <div className="text-sm text-slate-500">読み込み中…</div>
       ) : filtered.length === 0 ? (
-        <div className="text-sm text-slate-500 bg-white border border-slate-200 rounded-md px-4 py-6 text-center">
-          システム問い合わせはありません。
+        <div className="flex flex-col items-center justify-center p-12 text-center bg-white border border-slate-200 rounded-lg">
+          <div className="w-12 h-12 bg-slate-100 rounded-full flex items-center justify-center mb-4">
+            <Mail className="text-slate-400" size={ICON_SIZE.xxl} />
+          </div>
+          <h2 className="text-sm font-medium text-slate-900 mb-1">
+            システム問い合わせはありません。
+          </h2>
+          <p className="text-sm text-slate-500 max-w-sm">
+            ユーザーからのシステムに関するお問い合わせがここに表示されます。
+          </p>
         </div>
       ) : (
         <div className="bg-white border border-slate-200 rounded-lg overflow-hidden">
