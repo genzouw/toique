@@ -269,20 +269,6 @@ graph TD
               <strong>応答メッセージ</strong> を オフ（Toique で制御するため）
             </li>
           </ol>
-          <div className="p-3 rounded-md bg-slate-100 text-slate-700 text-sm mt-3">
-            開発中は{' '}
-            <a
-              href="https://ngrok.com/"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="underline inline-flex items-center gap-1"
-            >
-              ngrok
-              <ExternalLink size={ICON_SIZE.xs} />
-            </a>{' '}
-            で <code className="text-xs">ngrok http 3000</code>{' '}
-            を実行し、払い出される HTTPS URL を Webhook URL に指定してください。
-          </div>
         </Section>
 
         <Section icon={FileText} title="4. フォームの作成" id="forms">
