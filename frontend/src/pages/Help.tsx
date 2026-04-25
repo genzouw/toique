@@ -109,10 +109,10 @@ export default function Help() {
 graph TD
     A[LINE Developers Console<br>にログイン] --> B[プロバイダーを作成]
     B --> C[チャネル（Messaging API）を作成]
-    C --> D[チャネル設定タブで<br>Messaging APIを利用するを有効化]
+    C --> D[「チャネル設定」タブで<br>Messaging API を有効化]
     D --> E[認証情報を取得]
     E --> F[Toiqueに<br>チャネル情報を登録]
-    F --> G[LINE Developers Console<br>にWebhook URL設定]
+    F --> G[LINE Developers Console<br>で Webhook URL を設定]
               `}
             />
           </div>
