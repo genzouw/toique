@@ -99,46 +99,67 @@ export default function Help() {
         <Section icon={Plug} title="3. LINE 公式アカウントの接続" id="channel">
           <p>
             Toique で受信するには、LINE 公式アカウントと Messaging API
-            のチャネルを接続する必要があります。2024年9月以降、LINE Developers
-            Console からの直接作成が非推奨になり、LINE Official Account Manager
-            からの作成が推奨されています。
+            のチャネルを接続する必要があります。プロバイダー・チャネルの作成や
+            Messaging API の有効化は、すべて{' '}
+            <strong>LINE Developers Console</strong> 上で行います。
           </p>
           <div className="mt-4 mb-6">
             <Mermaid
               chart={`
 graph TD
-    A[LINE Official Account Manager<br>でアカウント作成] --> B[Messaging APIを利用する設定]
-    B --> C[LINE Developers Console<br>で認証情報取得]
-    C --> D[Toiqueに<br>チャネル情報を登録]
-    D --> E[LINE Developers Console<br>にWebhook URL設定]
+    A[LINE Developers Console<br>にログイン] --> B[プロバイダーを作成]
+    B --> C[チャネル（Messaging API）を作成]
+    C --> D[チャネル設定タブで<br>Messaging APIを利用するを有効化]
+    D --> E[認証情報を取得]
+    E --> F[Toiqueに<br>チャネル情報を登録]
+    F --> G[LINE Developers Console<br>にWebhook URL設定]
               `}
             />
           </div>
 
           <h3 className="font-semibold text-slate-900 mt-4">
-            3.1 LINE 公式アカウントを作成・API 有効化
+            3.1 プロバイダーとチャネルを作成し Messaging API を有効化
           </h3>
-          <ol className="list-decimal pl-5 space-y-1">
+          <ol className="list-decimal pl-5 space-y-2">
             <li>
               <a
-                href="https://manager.line.biz/"
+                href="https://developers.line.biz/ja/"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="underline inline-flex items-center gap-1"
               >
-                LINE Official Account Manager
+                LINE Developers
                 <ExternalLink size={ICON_SIZE.xs} />
               </a>{' '}
-              にログイン
-            </li>
-            <li>LINE 公式アカウントを作成</li>
-            <li>
-              アカウント設定の <strong>Messaging API</strong> メニューから、「
-              <strong>Messaging APIを利用する</strong>」を有効にする
+              のトップページ右上にある「
+              <strong>コンソールにログイン</strong>」から{' '}
+              <strong>LINE Developers Console</strong> にログインします。
             </li>
             <li>
-              プロバイダーを選択または新規作成し、チャネル（Messaging
-              API）を作成
+              左メニューの「<strong>プロバイダー</strong>」を開き、「
+              <strong>作成</strong>
+              」ボタンから新しいプロバイダーを登録します（既存のプロバイダーを利用しても構いません）。
+              <figure className="mt-3">
+                <img
+                  src="/help/line-developers-console-providers.png"
+                  alt="LINE Developers Console のプロバイダー一覧画面で「作成」ボタンを押下する様子"
+                  className="rounded-md border border-slate-200 max-w-full"
+                  loading="lazy"
+                />
+                <figcaption className="text-xs text-slate-500 mt-1">
+                  LINE Developers Console
+                  のプロバイダー一覧画面。「作成」ボタンから新規登録します。
+                </figcaption>
+              </figure>
+            </li>
+            <li>
+              作成したプロバイダーを開き、「<strong>新規チャネル作成</strong>
+              」から <strong>Messaging API</strong> チャネルを作成します。
+            </li>
+            <li>
+              作成したチャネルを開き、「<strong>チャネル設定</strong>
+              」タブで「<strong>Messaging APIを利用する</strong>
+              」を有効にします。
             </li>
           </ol>
 
