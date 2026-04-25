@@ -36,6 +36,6 @@ COPY --from=build /app/src/schema.ts ./src/schema.ts
 COPY --from=build /app/drizzle.config.ts ./drizzle.config.ts
 COPY --from=build /app/tsconfig.json ./tsconfig.json
 COPY db/migrations ./db/migrations
-RUN --mount=type=cache,target=/root/.npm,sharing=locked npm install drizzle-kit
+RUN --mount=type=cache,target=/root/.npm,sharing=locked npm install drizzle-kit --prefer-offline --no-save
 EXPOSE 8080
 CMD ["node", "dist/index.js"]
