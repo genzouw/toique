@@ -5,3 +5,7 @@
 ## 2024-05-25 - Promise Deduplication and Unhandled Rejections
 **Learning:** When using Promise deduplication (e.g. caching a fetch request for a short time window like 500ms), applying a `.finally()` block to clear the cached variable creates a derivative promise that must be caught to prevent unhandled rejections if the original fetch fails.
 **Action:** When performing background side-effects (like cache clearing) on a cached Promise, always append `.catch(() => {})` to that side-effect chain to swallow the rejection in the background, otherwise it will crash Node SSR servers or pollute browser logs.
+
+## 2024-05-26 - Excluding Large JSON Columns in List Queries
+**Learning:** Selecting large JSON columns (such as `schema` in `forms` or `rawEvent` in `inboundMessages`) in list endpoints significantly increases database I/O, serialization overhead, and network payload sizes, leading to poor performance when rendering list views.
+**Action:** When writing Drizzle ORM queries for list endpoints, always explicitly select only the required scalar fields (e.g., `db.select({ id: table.id, name: table.name })`). Exclude large, unused JSON fields and ensure these fields are marked as optional in their corresponding frontend types.
