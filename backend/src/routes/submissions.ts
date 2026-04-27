@@ -117,7 +117,7 @@ export function escapeCsv(value: string | number | null | undefined): string {
   if (value == null) return '';
   let strValue = value;
   // Prevent CSV formula injection by prefixing with a single quote
-  if (/^[=+\-@\t\r]/.test(strValue)) {
+  if (/^[=+\-@\t\r\n]/.test(strValue)) {
     strValue = "'" + strValue;
   }
   if (CSV_ESCAPE_TEST.test(strValue)) {
