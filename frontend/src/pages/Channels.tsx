@@ -4,6 +4,8 @@ import { api, type LineChannel } from '../lib/api';
 import { ICON_SIZE } from '../lib/icon-size';
 import { buildWebhookUrl } from '../lib/webhook-url';
 
+const COPY_FEEDBACK_DURATION_MS = 2000;
+
 export default function Channels() {
   const [items, setItems] = useState<LineChannel[]>([]);
   const [loading, setLoading] = useState(true);
@@ -70,7 +72,7 @@ export default function Channels() {
       setCopiedId(itemId);
       window.setTimeout(() => {
         setCopiedId((current) => (current === itemId ? null : current));
-      }, 2000);
+      }, COPY_FEEDBACK_DURATION_MS);
     } catch {
       setError('クリップボードへのコピーに失敗しました');
     }
