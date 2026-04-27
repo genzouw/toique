@@ -128,7 +128,7 @@ graph TD
     B --> C[OAMで<br>Channel ID／Channel secret取得]
     C --> D[LINE Developers Consoleで<br>Channel access token発行]
     D --> E[Toiqueに<br>チャネル情報を登録]
-    E --> F[Webhook URLを設定]
+    E --> F[LINE Developers Consoleで<br>Webhook URLを設定]
               `}
             />
           </div>
