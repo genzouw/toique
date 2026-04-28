@@ -119,7 +119,7 @@ function escapeCsv(value: string | number | null | undefined): string {
   let sanitized = value;
   // 防御的対策: CSVインジェクション (式インジェクション) を防ぐため、
   // 特定の文字で始まる場合はシングルクォートを前置する
-  if (/^[=+\-@\t\r]/.test(sanitized)) {
+  if (/^[=+\-@\t\r\n]/.test(sanitized)) {
     sanitized = "'" + sanitized;
   }
 
