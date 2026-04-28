@@ -1,0 +1,13 @@
+--- frontend/src/pages/Messages.tsx
++++ frontend/src/pages/Messages.tsx
+@@ -1,9 +1,9 @@
+ import { useEffect, useState } from 'react';
+-import { api, type InboundMessage } from '../lib/api';
++import { api, type InboundMessageListItem } from '../lib/api';
+ import LoadingButton from '../components/LoadingButton';
+
+ export default function Messages() {
+-  const [items, setItems] = useState<InboundMessage[]>([]);
++  const [items, setItems] = useState<InboundMessageListItem[]>([]);
+   const [loading, setLoading] = useState(true);
+   const [error, setError] = useState<string | null>(null);

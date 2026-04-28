@@ -1,0 +1,31 @@
+--- frontend/src/lib/api.ts
++++ frontend/src/lib/api.ts
+@@ -37,6 +37,8 @@
+   receivedAt: string;
+ };
+
++export type InboundMessageListItem = Omit<InboundMessage, 'rawEvent'>;
++
+ export type OnboardingStatus = {
+   user: { id: string; email: string; name: string };
+   tenant: {
+@@ -58,6 +60,8 @@
+   updatedAt: string;
+ };
+
++export type FormListItem = Omit<Form, 'schema'>;
++
+ export type Submission = {
+   id: string;
+   tenantId: string;
+@@ -141,8 +145,8 @@
+     }),
+   deleteChannel: (id: string) =>
+     request<void>(`/api/v1/line-channels/${id}`, { method: 'DELETE' }),
+-  listMessages: () => request<InboundMessage[]>('/api/v1/messages'),
+-  listForms: () => request<Form[]>('/api/v1/forms'),
++  listMessages: () => request<InboundMessageListItem[]>('/api/v1/messages'),
++  listForms: () => request<FormListItem[]>('/api/v1/forms'),
+   getForm: (id: string) => request<Form>(`/api/v1/forms/${id}`),
+   createForm: (input: {
+     name: string;

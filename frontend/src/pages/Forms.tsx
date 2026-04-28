@@ -1,16 +1,16 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router';
 import { Plus, FileText } from 'lucide-react';
-import { api, type Form } from '../lib/api';
+import { api, type FormListItem } from '../lib/api';
 import { ICON_SIZE } from '../lib/icon-size';
 
-const STATUS_LABEL: Record<Form['status'], string> = {
+const STATUS_LABEL: Record<FormListItem['status'], string> = {
   draft: '下書き',
   published: '公開中',
   archived: 'アーカイブ',
 };
 
-const STATUS_COLOR: Record<Form['status'], string> = {
+const STATUS_COLOR: Record<FormListItem['status'], string> = {
   draft: 'bg-slate-100 text-slate-700',
   published: 'bg-emerald-100 text-emerald-700',
   archived: 'bg-slate-100 text-slate-500',

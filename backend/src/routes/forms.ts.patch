@@ -1,0 +1,22 @@
+--- backend/src/routes/forms.ts
++++ backend/src/routes/forms.ts
+@@ -21,7 +21,18 @@
+ app.get('/', async (c) => {
+   const tenant = c.get('tenant');
+   const rows = await db
+-    .select()
++    .select({
++      id: forms.id,
++      tenantId: forms.tenantId,
++      lineChannelId: forms.lineChannelId,
++      name: forms.name,
++      status: forms.status,
++      triggerKeyword: forms.triggerKeyword,
++      version: forms.version,
++      createdAt: forms.createdAt,
++      updatedAt: forms.updatedAt,
++      // Exclude 'schema' to optimize performance
++    })
+     .from(forms)
+     .where(eq(forms.tenantId, tenant.id));
+   return c.json(rows);

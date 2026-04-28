@@ -1,0 +1,3 @@
+## 2024-05-18 - [Exclude large JSON columns from list endpoints]
+**Learning:** Returning large unused JSON columns (e.g., `schema` in `forms`, `rawEvent` in `inboundMessages`) in list endpoints causes significant performance bottlenecks due to database I/O, serialization overhead, and network payload sizes.
+**Action:** When writing Drizzle ORM queries for list endpoints, explicitly select only required scalar fields (e.g., `db.select({ id: table.id })`). Correspondingly, create specific list types in the frontend using TypeScript's `Omit` utility (e.g., `export type FormListItem = Omit<Form, 'schema'>`) to maintain type safety.
