@@ -1,8 +1,11 @@
 ## 2025-04-22 - XSS Vulnerability in Mermaid Component
+
 **Vulnerability:** The `Mermaid.tsx` frontend component rendered chart SVGs directly into the DOM using `dangerouslySetInnerHTML` with `mermaid`'s `securityLevel` set to `'loose'`. This created an XSS vulnerability, as malicious or unescaped user-controlled chart strings could inject `<script>` tags or malicious attributes into the generated SVG and execute client-side code.
 **Learning:** Even though `mermaid` has internal security levels, when generating SVGs that are directly injected into React using `dangerouslySetInnerHTML`, the output cannot be implicitly trusted, particularly if user data flows into the chart definitions.
 **Prevention:** Always sanitize the output HTML/SVG of third-party rendering libraries before using `dangerouslySetInnerHTML`. Use `dompurify` (i.e. `DOMPurify.sanitize(svgContent)`) as a defense-in-depth measure. Additionally, ensure the underlying library's security configurations (e.g. `mermaid`'s `securityLevel`) are set as strictly as possible (`'strict'`).
+
 ## 2024-05-27 - CSV Formula Injection in Submissions Export
+
 **Vulnerability:** The CSV export functionality in `backend/src/routes/submissions.ts` did not sanitize user input correctly when exporting fields to CSV. If an attacker submits data starting with `=, +, -, @`, Excel will evaluate it as a formula, potentially leading to Remote Code Execution (CSV Injection/Formula Injection).
 **Learning:** Standard CSV escaping (wrapping in double quotes and escaping inner quotes) does not prevent spreadsheet programs from executing cells that begin with formula characters.
-**Prevention:** Explicitly check strings being written to CSV for dangerous starting characters (`/^[=+\-@\t\r]/`) and prepend a single quote (`'`) to force the spreadsheet to interpret the cell as literal text rather than executable formula code.
+**Prevention:** Explicitly check strings being written to CSV for dangerous starting characters (`/^[=+\-@\t\r\n]/`) and prepend a single quote (`'`) to force the spreadsheet to interpret the cell as literal text rather than executable formula code.
