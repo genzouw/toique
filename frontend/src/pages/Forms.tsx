@@ -17,7 +17,7 @@ const STATUS_COLOR: Record<FormListItem['status'], string> = {
 };
 
 export default function Forms() {
-  const [items, setItems] = useState<Form[]>([]);
+  const [items, setItems] = useState<FormListItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
