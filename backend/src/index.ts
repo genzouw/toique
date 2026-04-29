@@ -25,7 +25,7 @@ const app = new Hono({ strict: false });
 
 // 全リクエストをログ出力 (method / path / status / duration)
 app.use('*', logger());
-app.use('*', secureHeaders());
+app.use('*', secureHeaders({ crossOriginResourcePolicy: 'cross-origin' }));
 
 app.use(
   '/api/*',
