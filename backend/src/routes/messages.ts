@@ -15,7 +15,6 @@ app.get('/', async (c) => {
       eventType: inboundMessages.eventType,
       messageType: inboundMessages.messageType,
       text: inboundMessages.text,
-      // rawEvent: inboundMessages.rawEvent, // Exclude to optimize performance
       receivedAt: inboundMessages.receivedAt,
     })
     .from(inboundMessages)
