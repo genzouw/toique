@@ -1,9 +1,8 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router';
-import { Loader2 } from 'lucide-react';
 import { signIn } from '../lib/auth-client';
 import { useSEO } from '../lib/useSEO';
-import { ICON_SIZE } from '../lib/icon-size';
+import LoadingButton from '../components/LoadingButton';
 
 export default function Login() {
   useSEO({
@@ -49,25 +48,13 @@ export default function Login() {
           onChange={setPassword}
         />
         {error && <div className="text-red-600 text-sm">{error}</div>}
-        <button
+        <LoadingButton
           type="submit"
-          disabled={submitting}
-          aria-busy={submitting}
+          loading={submitting}
           className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-slate-900 text-white rounded-md text-sm disabled:opacity-50"
         >
-          {submitting ? (
-            <>
-              <Loader2
-                size={ICON_SIZE.md}
-                className="animate-spin"
-                aria-hidden="true"
-              />
-              ログイン中…
-            </>
-          ) : (
-            'ログイン'
-          )}
-        </button>
+          {submitting ? 'ログイン中…' : 'ログイン'}
+        </LoadingButton>
       </form>
       <div className="mt-4 text-sm text-slate-600">
         アカウントをお持ちでない方は{' '}
