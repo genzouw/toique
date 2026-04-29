@@ -1,6 +1,7 @@
 import { Hono } from 'hono';
 import { cors } from 'hono/cors';
 import { logger } from 'hono/logger';
+import { secureHeaders } from 'hono/secure-headers';
 import { serve } from '@hono/node-server';
 import { sql } from './db.js';
 import { auth } from './auth/better-auth.js';
@@ -21,6 +22,9 @@ import adminUsers from './routes/admin/users.js';
 import { logger as appLogger } from './lib/logger.js';
 
 const app = new Hono({ strict: false });
+
+// 🛡️ Security enhancement: Add standard security headers globally
+app.use('*', secureHeaders());
 
 // 全リクエストをログ出力 (method / path / status / duration)
 app.use('*', logger());
