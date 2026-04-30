@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Inbox, Download } from 'lucide-react';
+import { Inbox, Download, RefreshCw } from 'lucide-react';
 import { api, type Submission, type Form } from '../lib/api';
 import LoadingButton from '../components/LoadingButton';
 import { ICON_SIZE } from '../lib/icon-size';
@@ -83,7 +83,7 @@ export default function Submissions() {
             フォーム完了時に記録された回答データです
           </p>
         </div>
-        <LoadingButton onClick={refresh} loading={loading}>
+        <LoadingButton onClick={refresh} loading={loading} icon={RefreshCw}>
           更新
         </LoadingButton>
       </div>
