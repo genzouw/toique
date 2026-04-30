@@ -51,7 +51,7 @@ export default function Login() {
         <LoadingButton
           type="submit"
           loading={submitting}
-          className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-slate-900 text-white rounded-md text-sm disabled:opacity-50"
+          className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-slate-900 text-white rounded-md text-sm disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {submitting ? 'ログイン中…' : 'ログイン'}
         </LoadingButton>
