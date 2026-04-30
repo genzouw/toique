@@ -5,3 +5,11 @@
 ## 2024-05-25 - Promise Deduplication and Unhandled Rejections
 **Learning:** When using Promise deduplication (e.g. caching a fetch request for a short time window like 500ms), applying a `.finally()` block to clear the cached variable creates a derivative promise that must be caught to prevent unhandled rejections if the original fetch fails.
 **Action:** When performing background side-effects (like cache clearing) on a cached Promise, always append `.catch(() => {})` to that side-effect chain to swallow the rejection in the background, otherwise it will crash Node SSR servers or pollute browser logs.
+
+## 2024-05-26 - Drizzle ORM List Query Projection
+**Learning:** Returning entire rows in list endpoints (`SELECT *`) pulls down large JSON columns (like form schemas or raw webhook event logs). This causes unnecessary database I/O, heavy serialization overhead in the backend, and bloated network payloads to the frontend.
+**Action:** When writing Drizzle ORM queries for list endpoints, explicitly select only the required scalar fields (e.g., `db.select({ id: table.id })`) to exclude large unused JSON columns. Correspondingly, create lightweight list types in the frontend using TypeScript's `Omit` utility (e.g., `export type FormListItem = Omit<Form, 'schema'>`).
+
+## 2026-04-30 - Drizzle ORM List Query Projection
+**Learning:** Returning entire rows in list endpoints () pulls down large JSON columns (like form schemas or raw webhook event logs). This causes unnecessary database I/O, heavy serialization overhead in the backend, and bloated network payloads to the frontend.
+**Action:** When writing Drizzle ORM queries for list endpoints, explicitly select only the required scalar fields (e.g., `db.select({ id: table.id })`) to exclude large unused JSON columns. Correspondingly, create lightweight list types in the frontend using TypeScript's `Omit` utility (e.g., `export type FormListItem = Omit<Form, 'schema'>`).
