@@ -115,6 +115,12 @@ const CSV_ESCAPE_REPLACE = /"/g;
 function escapeCsv(value: string | number | null | undefined): string {
   if (typeof value === 'number') return String(value);
   if (value == null) return '';
+
+  // Prevent CSV Formula Injection
+  if (/^[=+\-@\t\r]/.test(value)) {
+    value = "'" + value;
+  }
+
   if (CSV_ESCAPE_TEST.test(value)) {
     return '"' + value.replace(CSV_ESCAPE_REPLACE, '""') + '"';
   }
