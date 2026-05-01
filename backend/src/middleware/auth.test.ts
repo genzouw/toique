@@ -1,7 +1,8 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { Hono } from 'hono';
-import { requireAuth } from './auth.js';
+import { requireAuth, requireTenant } from './auth.js';
 import { auth } from '../auth/better-auth.js';
+import db from '../db.js';
 
 type SessionResult = Awaited<ReturnType<typeof auth.api.getSession>>;
 
@@ -12,6 +13,31 @@ vi.mock('../auth/better-auth.js', () => ({
     },
   },
 }));
+
+vi.mock('../db.js', () => ({
+  default: {
+    select: vi.fn(),
+  },
+}));
+
+function mockTenantQuery(
+  row:
+    | {
+        tenantId: string;
+        role: string;
+        tenantName: string;
+        tenantPlan: string;
+      }
+    | undefined,
+) {
+  const limit = vi.fn().mockResolvedValue(row ? [row] : []);
+  const where = vi.fn().mockReturnValue({ limit });
+  const innerJoin = vi.fn().mockReturnValue({ where });
+  const from = vi.fn().mockReturnValue({ innerJoin });
+  vi.mocked(db.select).mockReturnValue({
+    from,
+  } as unknown as ReturnType<typeof db.select>);
+}
 
 describe('requireAuth middleware', () => {
   beforeEach(() => {
@@ -122,5 +148,86 @@ describe('isOperatorEmail', () => {
   it('handles empty OPERATOR_EMAILS gracefully', async () => {
     const isOperatorEmail = await loadIsOperatorEmail('');
     expect(isOperatorEmail('admin@example.com')).toBe(false);
+  });
+});
+
+describe('requireTenant middleware', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  function buildApp() {
+    const app = new Hono();
+    app.get('/test', requireTenant, (c) => {
+      return c.json(c.get('tenant'));
+    });
+    return app;
+  }
+
+  it('preserves the DB plan and sets unlimited=false for normal users', async () => {
+    vi.mocked(auth.api.getSession).mockResolvedValue({
+      user: {
+        id: 'user-1',
+        email: 'normal@example.com',
+        name: 'Normal',
+      },
+    } as unknown as SessionResult);
+    mockTenantQuery({
+      tenantId: 'tenant-1',
+      role: 'admin',
+      tenantName: 'Acme',
+      tenantPlan: 'free',
+    });
+
+    const res = await buildApp().request('/test');
+    expect(res.status).toBe(200);
+    expect(await res.json()).toEqual({
+      id: 'tenant-1',
+      name: 'Acme',
+      plan: 'free',
+      role: 'admin',
+      unlimited: false,
+    });
+  });
+
+  it('overrides plan to "pro" and sets unlimited=true for the dogfooding email', async () => {
+    vi.mocked(auth.api.getSession).mockResolvedValue({
+      user: {
+        id: 'user-2',
+        email: 'TOIQUE.OFFICIAL@gmail.com',
+        name: 'Toique Official',
+      },
+    } as unknown as SessionResult);
+    mockTenantQuery({
+      tenantId: 'tenant-2',
+      role: 'admin',
+      tenantName: 'Toique Internal',
+      tenantPlan: 'free',
+    });
+
+    const res = await buildApp().request('/test');
+    expect(res.status).toBe(200);
+    const body = await res.json();
+    expect(body).toEqual({
+      id: 'tenant-2',
+      name: 'Toique Internal',
+      plan: 'pro',
+      role: 'admin',
+      unlimited: true,
+    });
+  });
+
+  it('returns 403 when no tenant membership is found', async () => {
+    vi.mocked(auth.api.getSession).mockResolvedValue({
+      user: {
+        id: 'user-3',
+        email: 'orphan@example.com',
+        name: 'Orphan',
+      },
+    } as unknown as SessionResult);
+    mockTenantQuery(undefined);
+
+    const res = await buildApp().request('/test');
+    expect(res.status).toBe(403);
   });
 });
