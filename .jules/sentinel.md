@@ -9,3 +9,9 @@
 **Vulnerability:** The CSV export functionality in `backend/src/routes/submissions.ts` did not sanitize user input correctly when exporting fields to CSV. If an attacker submits data starting with `=, +, -, @`, Excel will evaluate it as a formula, potentially leading to Remote Code Execution (CSV Injection/Formula Injection).
 **Learning:** Standard CSV escaping (wrapping in double quotes and escaping inner quotes) does not prevent spreadsheet programs from executing cells that begin with formula characters.
 **Prevention:** Explicitly check strings being written to CSV for dangerous starting characters (`/^[=+\-@\t\r\n]/`) and prepend a single quote (`'`) to force the spreadsheet to interpret the cell as literal text rather than executable formula code.
+
+## 2026-04-24 - Prevent Timing Attack in Admin Authentication
+
+**Vulnerability:** The `requireOperator` middleware compared the admin credentials using `timingSafeEqual` after an initial length check that used `&&`. Since `&&` short-circuits, it immediately returned if lengths didn't match, failing to prevent timing attacks that leak the exact length of the expected secret.
+**Learning:** Checking lengths prior to using `timingSafeEqual` undermines its purpose if it allows an early exit. Furthermore, comparing strings of differing lengths with `timingSafeEqual` directly (without the check) throws an error, making simple strings difficult to compare securely in constant time without preprocessing.
+**Prevention:** When comparing secrets (like passwords or API keys) of variable or unknown length against an expected secret, first hash both the provided and expected strings using a strong cryptographic hash (like SHA-256) to normalize their lengths. Then, perform a `timingSafeEqual` on the resulting hashes.
