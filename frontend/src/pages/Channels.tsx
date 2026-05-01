@@ -126,7 +126,7 @@ export default function Channels() {
         {loading ? (
           <div className="mt-4 text-sm text-slate-500">読み込み中…</div>
         ) : items.length === 0 ? (
-          <div className="flex flex-col items-center justify-center p-12 text-center bg-white border border-slate-200 rounded-lg mt-4">
+          <div className="mt-4 flex flex-col items-center justify-center p-12 text-center bg-white border border-slate-200 rounded-lg">
             <div className="w-12 h-12 bg-slate-100 rounded-full flex items-center justify-center mb-4">
               <MessageCircle className="text-slate-400" size={ICON_SIZE.xxl} />
             </div>
