@@ -1,7 +1,10 @@
 import { useEffect, useState } from 'react';
-import { Trash2, MessageCircle } from 'lucide-react';
+import { Trash2, Copy, Check, MessageCircle } from 'lucide-react';
 import { api, type LineChannel } from '../lib/api';
 import { ICON_SIZE } from '../lib/icon-size';
+import { buildWebhookUrl } from '../lib/webhook-url';
+
+const COPY_FEEDBACK_DURATION_MS = 2000;
 
 export default function Channels() {
   const [items, setItems] = useState<LineChannel[]>([]);
@@ -14,6 +17,7 @@ export default function Channels() {
     displayName: '',
   });
   const [submitting, setSubmitting] = useState(false);
+  const [copiedId, setCopiedId] = useState<string | null>(null);
 
   async function refresh() {
     setLoading(true);
@@ -61,16 +65,22 @@ export default function Channels() {
     }
   }
 
+  async function handleCopy(channelId: string, itemId: string) {
+    const url = buildWebhookUrl(channelId);
+    try {
+      await navigator.clipboard.writeText(url);
+      setCopiedId(itemId);
+      window.setTimeout(() => {
+        setCopiedId((current) => (current === itemId ? null : current));
+      }, COPY_FEEDBACK_DURATION_MS);
+    } catch {
+      setError('クリップボードへのコピーに失敗しました');
+    }
+  }
+
   return (
     <div>
       <h1 className="text-2xl font-bold text-slate-900">LINEチャネル管理</h1>
-      <p className="text-sm text-slate-500 mt-1">
-        Webhook URL は{' '}
-        <code className="px-1 py-0.5 bg-slate-100 rounded text-xs">
-          /webhooks/line/&lt;Channel ID&gt;
-        </code>{' '}
-        になります
-      </p>
 
       {error && (
         <div className="mt-4 p-3 rounded-md bg-red-50 text-red-700 text-sm">
@@ -139,28 +149,62 @@ export default function Channels() {
           </div>
         ) : (
           <ul className="mt-4 divide-y divide-slate-200 bg-white border border-slate-200 rounded-lg">
-            {items.map((ch) => (
-              <li
-                key={ch.id}
-                className="px-5 py-3 flex items-center justify-between"
-              >
-                <div>
-                  <div className="font-medium text-slate-900">
-                    {ch.displayName}
+            {items.map((ch) => {
+              const webhookUrl = buildWebhookUrl(ch.channelId);
+              const isCopied = copiedId === ch.id;
+              return (
+                <li key={ch.id} className="px-5 py-4">
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="min-w-0 flex-1">
+                      <div className="font-medium text-slate-900">
+                        {ch.displayName}
+                      </div>
+                      <div className="text-xs text-slate-500 mt-0.5">
+                        Channel ID: {ch.channelId}
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => handleDelete(ch.id)}
+                      className="p-2 text-red-600 hover:bg-red-50 rounded-md shrink-0"
+                      aria-label="削除"
+                    >
+                      <Trash2 size={ICON_SIZE.md} />
+                    </button>
                   </div>
-                  <div className="text-xs text-slate-500 mt-0.5">
-                    Channel ID: {ch.channelId}
+                  <div className="mt-3">
+                    <div className="text-xs font-medium text-slate-700">
+                      Webhook URL
+                    </div>
+                    <div className="mt-1 flex items-stretch gap-2">
+                      <code
+                        className="flex-1 min-w-0 px-2 py-1.5 bg-slate-100 rounded text-xs text-slate-700 font-mono truncate"
+                        title={webhookUrl}
+                      >
+                        {webhookUrl}
+                      </code>
+                      <button
+                        type="button"
+                        onClick={() => handleCopy(ch.channelId, ch.id)}
+                        className="px-2 py-1.5 text-slate-700 hover:bg-slate-100 rounded-md flex items-center gap-1 text-xs border border-slate-300 shrink-0"
+                        aria-label={`Webhook URL をコピー: ${webhookUrl}`}
+                      >
+                        {isCopied ? (
+                          <>
+                            <Check size={ICON_SIZE.xs} />
+                            コピー済み
+                          </>
+                        ) : (
+                          <>
+                            <Copy size={ICON_SIZE.xs} />
+                            コピー
+                          </>
+                        )}
+                      </button>
+                    </div>
                   </div>
-                </div>
-                <button
-                  onClick={() => handleDelete(ch.id)}
-                  className="p-2 text-red-600 hover:bg-red-50 rounded-md"
-                  aria-label="削除"
-                >
-                  <Trash2 size={ICON_SIZE.md} />
-                </button>
-              </li>
-            ))}
+                </li>
+              );
+            })}
           </ul>
         )}
       </div>
