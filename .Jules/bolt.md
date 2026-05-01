@@ -12,3 +12,8 @@
 
 **Learning:** Selecting large JSON columns (such as `schema` in `forms` or `rawEvent` in `inboundMessages`) in list endpoints significantly increases database I/O, serialization overhead, and network payload sizes, leading to poor performance when rendering list views.
 **Action:** When writing Drizzle ORM queries for list endpoints, always explicitly select only the required scalar fields (e.g., `db.select({ id: table.id, name: table.name })`). Exclude large, unused JSON fields and ensure the corresponding frontend list types either omit these fields entirely (e.g., via `Omit<Form, 'schema'>` for stronger type safety) or mark them as optional.
+
+## 2025-04-24 - Avoiding Unused Large JSON Blob Fetches
+
+**Learning:** In APIs fetching list views of items, returning large nested JSON columns (e.g. raw webhook event logs) that aren't actually rendered on the frontend leads to significant unnecessary overhead. It causes larger DB disk I/O, slow JSON serialization, and balloons the network payload size and client-side memory footprint.
+**Action:** Always verify if large payload columns are actually needed by the UI, especially for list endpoints (like `GET /api/v1/messages`). If not, explicitly select only the required scalar fields using tools like Drizzle's `db.select({ ...fields })` instead of `db.select()`.

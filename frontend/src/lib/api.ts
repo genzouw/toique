@@ -46,7 +46,6 @@ export type InboundMessage = {
   eventType: string;
   messageType: string | null;
   text: string | null;
-  rawEvent: Record<string, unknown>;
   receivedAt: string;
 };
 
