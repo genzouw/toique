@@ -13,6 +13,10 @@ import Mermaid from '../components/Mermaid';
 import { useSEO } from '../lib/useSEO';
 import { ICON_SIZE } from '../lib/icon-size';
 
+const API_BASE_URL =
+  (import.meta.env.VITE_API_URL as string | undefined) ??
+  'http://localhost:3000';
+
 export default function Help() {
   useSEO({
     title: 'ヘルプ・使い方ガイド | Toique',
@@ -99,52 +103,122 @@ export default function Help() {
         <Section icon={Plug} title="3. LINE 公式アカウントの接続" id="channel">
           <p>
             Toique で受信するには、LINE 公式アカウントと Messaging API
-            のチャネルを接続する必要があります。2024年9月以降、LINE Developers
-            Console からの直接作成が非推奨になり、LINE Official Account Manager
-            からの作成が推奨されています。
+            のチャネルを接続する必要があります。プロバイダー・チャネルの作成や
+            Messaging API の有効化は、すべて{' '}
+            <strong>LINE Developers Console</strong> 上で行います。
+          </p>
+          <p>
+            アカウント作成・プロバイダー作成・Messaging API 利用開始・
+            <code className="px-1 py-0.5 bg-slate-100 rounded text-xs">
+              Channel ID
+            </code>{' '}
+            /{' '}
+            <code className="px-1 py-0.5 bg-slate-100 rounded text-xs">
+              Channel secret
+            </code>{' '}
+            の取得は、すべて LINE Official Account Manager 内で完結します。
+            <strong>Channel access token (long-lived) の発行のみ</strong> LINE
+            Developers Console での操作が必要です。
           </p>
           <div className="mt-4 mb-6">
             <Mermaid
               chart={`
 graph TD
-    A[LINE Official Account Manager<br>でアカウント作成] --> B[Messaging APIを利用する設定]
-    B --> C[LINE Developers Console<br>で認証情報取得]
-    C --> D[Toiqueに<br>チャネル情報を登録]
-    D --> E[LINE Developers Console<br>にWebhook URL設定]
+    A[LINE Official Account Manager<br>でアカウント作成] --> B[Messaging APIを利用する設定<br>＋プロバイダー／チャネル作成]
+    B --> C[OAMで<br>Channel ID／Channel secret取得]
+    C --> D[LINE Developers Consoleで<br>Channel access token発行]
+    D --> E[Toiqueに<br>チャネル情報を登録]
+    E --> F[LINE Developers Consoleで<br>Webhook URLを設定]
               `}
             />
           </div>
 
           <h3 className="font-semibold text-slate-900 mt-4">
-            3.1 LINE 公式アカウントを作成・API 有効化
+            3.1 プロバイダーとチャネルを作成し Messaging API を有効化
           </h3>
-          <ol className="list-decimal pl-5 space-y-1">
+          <ol className="list-decimal pl-5 space-y-2">
             <li>
               <a
-                href="https://manager.line.biz/"
+                href="https://developers.line.biz/ja/"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="underline inline-flex items-center gap-1"
               >
-                LINE Official Account Manager
+                LINE Developers
                 <ExternalLink size={ICON_SIZE.xs} />
               </a>{' '}
-              にログイン
-            </li>
-            <li>LINE 公式アカウントを作成</li>
-            <li>
-              アカウント設定の <strong>Messaging API</strong> メニューから、「
-              <strong>Messaging APIを利用する</strong>」を有効にする
+              のトップページ右上にある「
+              <strong>コンソールにログイン</strong>」から{' '}
+              <strong>LINE Developers Console</strong> にログインします。
             </li>
             <li>
-              プロバイダーを選択または新規作成し、チャネル（Messaging
-              API）を作成
+              左メニューの「<strong>プロバイダー</strong>」を開き、「
+              <strong>作成</strong>
+              」ボタンから新しいプロバイダーを登録します（既存のプロバイダーを利用しても構いません）。
+              <figure className="mt-3">
+                <img
+                  src="/help/line-developers-console-providers.png"
+                  alt="LINE Developers Console のプロバイダー一覧画面で「作成」ボタンを押下する様子"
+                  className="rounded-md border border-slate-200 max-w-full"
+                  loading="lazy"
+                />
+                <figcaption className="text-xs text-slate-500 mt-1">
+                  LINE Developers Console
+                  のプロバイダー一覧画面。「作成」ボタンから新規登録します。
+                </figcaption>
+              </figure>
+            </li>
+            <li>
+              作成したプロバイダーを開き、「<strong>新規チャネル作成</strong>
+              」から <strong>Messaging API</strong> チャネルを作成します。
+            </li>
+            <li>
+              作成したチャネルを開き、「<strong>チャネル設定</strong>
+              」タブで「<strong>Messaging APIを利用する</strong>
+              」を有効にします。
             </li>
           </ol>
 
           <h3 className="font-semibold text-slate-900 mt-4">
-            3.2 LINE Developers から認証情報を取得
+            3.2 OAM で Channel ID / Channel secret を取得
           </h3>
+          <ol className="list-decimal pl-5 space-y-1">
+            <li>
+              LINE Official Account Manager の{' '}
+              <strong>設定 → Messaging API</strong> 画面を開く
+            </li>
+            <li>
+              <strong>Channel情報</strong> セクションに表示される{' '}
+              <code className="px-1 py-0.5 bg-slate-100 rounded text-xs">
+                Channel ID
+              </code>{' '}
+              と{' '}
+              <code className="px-1 py-0.5 bg-slate-100 rounded text-xs">
+                Channel secret
+              </code>{' '}
+              を「コピー」ボタンで控える
+            </li>
+          </ol>
+          <figure className="mt-3">
+            <img
+              src="/help/line-oam-channel-info.png"
+              alt="LINE Official Account Manager の Messaging API 画面で Channel ID と Channel secret をコピーする様子"
+              className="w-full rounded-md border border-slate-200"
+              loading="lazy"
+            />
+            <figcaption className="text-xs text-slate-500 mt-1">
+              OAM の Messaging API 画面。Channel ID / Channel secret
+              はここから取得します。
+            </figcaption>
+          </figure>
+
+          <h3 className="font-semibold text-slate-900 mt-4">
+            3.3 LINE Developers Console で Channel access token を発行
+          </h3>
+          <p className="text-sm">
+            Channel access token (long-lived) のみは OAM では発行できないため、
+            LINE Developers Console での操作が必要です。
+          </p>
           <ol className="list-decimal pl-5 space-y-1">
             <li>
               <a
@@ -158,34 +232,18 @@ graph TD
               </a>{' '}
               にログイン
             </li>
-            <li>作成したチャネルを開く</li>
+            <li>該当のプロバイダー → 作成済みチャネルを開く</li>
             <li>
-              以下の値を控える:
-              <ul className="list-disc pl-5 mt-1">
-                <li>
-                  <code className="px-1 py-0.5 bg-slate-100 rounded text-xs">
-                    Channel ID
-                  </code>{' '}
-                  (Basic settings タブ)
-                </li>
-                <li>
-                  <code className="px-1 py-0.5 bg-slate-100 rounded text-xs">
-                    Channel secret
-                  </code>{' '}
-                  (Basic settings タブ)
-                </li>
-                <li>
-                  <code className="px-1 py-0.5 bg-slate-100 rounded text-xs">
-                    Channel access token (long-lived)
-                  </code>{' '}
-                  (Messaging API タブ → Issue)
-                </li>
-              </ul>
+              <strong>Messaging API</strong> タブを開き、
+              <code className="px-1 py-0.5 bg-slate-100 rounded text-xs">
+                Channel access token (long-lived)
+              </code>{' '}
+              の「発行 (Issue)」をクリックして取得
             </li>
           </ol>
 
           <h3 className="font-semibold text-slate-900 mt-4">
-            3.3 Toique にチャネルを登録
+            3.4 Toique にチャネルを登録
           </h3>
           <ol className="list-decimal pl-5 space-y-1">
             <li>
@@ -198,14 +256,13 @@ graph TD
           </ol>
 
           <h3 className="font-semibold text-slate-900 mt-4">
-            3.4 LINE Developers に Webhook URL を登録
+            3.5 LINE Developers に Webhook URL を登録
           </h3>
           <ol className="list-decimal pl-5 space-y-1">
             <li>
               Webhook URL:{' '}
-              <code className="px-1 py-0.5 bg-slate-100 rounded text-xs">
-                https://&lt;あなたのドメイン&gt;/webhooks/line/&lt;Channel
-                ID&gt;
+              <code className="px-1 py-0.5 bg-slate-100 rounded text-xs break-all">
+                {`${API_BASE_URL}/webhooks/line/`}&lt;Channel ID&gt;
               </code>
             </li>
             <li>
@@ -219,7 +276,7 @@ graph TD
           </ol>
 
           <h3 className="font-semibold text-slate-900 mt-4">
-            3.5 LINE Official Account Manager で応答設定を変更
+            3.6 LINE Official Account Manager で応答設定を変更
           </h3>
           <ol className="list-decimal pl-5 space-y-1">
             <li>LINE Official Account Manager の「応答設定」を開く</li>
@@ -231,20 +288,6 @@ graph TD
               <strong>応答メッセージ</strong> を オフ（Toique で制御するため）
             </li>
           </ol>
-          <div className="p-3 rounded-md bg-slate-100 text-slate-700 text-sm mt-3">
-            開発中は{' '}
-            <a
-              href="https://ngrok.com/"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="underline inline-flex items-center gap-1"
-            >
-              ngrok
-              <ExternalLink size={ICON_SIZE.xs} />
-            </a>{' '}
-            で <code className="text-xs">ngrok http 3000</code>{' '}
-            を実行し、払い出される HTTPS URL を Webhook URL に指定してください。
-          </div>
         </Section>
 
         <Section icon={FileText} title="4. フォームの作成" id="forms">
