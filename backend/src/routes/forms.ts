@@ -76,7 +76,9 @@ app.post('/', async (c) => {
     .limit(1);
   if (!channel) return c.text('lineChannelId not in this tenant', 400);
 
-  const quota = await checkQuota(tenant.id, tenant.plan, 'forms');
+  const quota = await checkQuota(tenant.id, tenant.plan, 'forms', {
+    unlimited: tenant.unlimited,
+  });
   if (!quota.allowed) {
     return c.json({ error: 'フォームの作成上限に達しています', ...quota }, 403);
   }
