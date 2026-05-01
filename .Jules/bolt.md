@@ -17,8 +17,3 @@
 
 **Learning:** In APIs fetching list views of items, returning large nested JSON columns (e.g. raw webhook event logs) that aren't actually rendered on the frontend leads to significant unnecessary overhead. It causes larger DB disk I/O, slow JSON serialization, and balloons the network payload size and client-side memory footprint.
 **Action:** Always verify if large payload columns are actually needed by the UI, especially for list endpoints (like `GET /api/v1/messages`). If not, explicitly select only the required scalar fields using tools like Drizzle's `db.select({ ...fields })` instead of `db.select()`.
-
-## 2026-04-30 - Drizzle ORM List Query Projection
-
-**Learning:** Returning entire rows in list endpoints () pulls down large JSON columns (like form schemas or raw webhook event logs). This causes unnecessary database I/O, heavy serialization overhead in the backend, and bloated network payloads to the frontend.
-**Action:** When writing Drizzle ORM queries for list endpoints, explicitly select only the required scalar fields (e.g., `db.select({ id: table.id })`) to exclude large unused JSON columns. Correspondingly, create lightweight list types in the frontend using TypeScript's `Omit` utility (e.g., `export type FormListItem = Omit<Form, 'schema'>`).
