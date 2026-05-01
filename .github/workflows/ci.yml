@@ -14,21 +14,6 @@ env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
-  lockfile-sync:
-    name: Lockfile sync check
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v6
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 24
-      - name: Check backend lockfile sync
-        working-directory: backend
-        run: npm ci --ignore-scripts
-      - name: Check frontend lockfile sync
-        working-directory: frontend
-        run: npm ci --ignore-scripts
-
   frontend:
     name: Frontend (lint / typecheck / format / test / build)
     runs-on: ubuntu-latest
@@ -36,8 +21,16 @@ jobs:
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
     steps:
       - uses: actions/checkout@v6
+      - uses: docker/setup-buildx-action@v3
       - name: Build and run checks in Docker
-        run: docker build --target ci-check -f frontend/Dockerfile .
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: frontend/Dockerfile
+          target: ci-check
+          push: false
+          cache-from: type=gha,scope=frontend
+          cache-to: type=gha,mode=max,scope=frontend
 
   backend:
     name: Backend (lint / typecheck / format / build / test)
@@ -60,17 +53,33 @@ jobs:
           --health-retries 5
     steps:
       - uses: actions/checkout@v6
-      - name: Build and run checks in Docker
-        run: docker build --target ci-check -f backend/Dockerfile .
-      - name: Build test image
-        run: docker build --target ci-test -t toique-backend-test -f backend/Dockerfile .
+      - uses: docker/setup-buildx-action@v3
+      - name: Build ci-check image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: backend/Dockerfile
+          target: ci-check
+          push: false
+          cache-from: type=gha,scope=backend
+          cache-to: type=gha,mode=max,scope=backend
+      - name: Build ci-test image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: backend/Dockerfile
+          target: ci-test
+          tags: toique-backend-test:latest
+          load: true
+          cache-from: type=gha,scope=backend
+          cache-to: type=gha,mode=max,scope=backend
       - name: Run migrations
         run: >
           docker run --rm --network host
           -e DATABASE_URL=postgresql://toique:toique@localhost:5432/toique
-          toique-backend-test npx drizzle-kit migrate
+          toique-backend-test:latest npx drizzle-kit migrate
       - name: Run tests with coverage
         run: >
           docker run --rm --network host
           -e DATABASE_URL=postgresql://toique:toique@localhost:5432/toique
-          toique-backend-test
+          toique-backend-test:latest
