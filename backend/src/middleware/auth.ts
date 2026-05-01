@@ -1,9 +1,10 @@
-import { timingSafeEqual } from 'node:crypto';
+import { createHash, timingSafeEqual } from 'node:crypto';
 import type { MiddlewareHandler } from 'hono';
 import { eq } from 'drizzle-orm';
 import db from '../db.js';
 import { tenantMembers, tenants } from '../schema.js';
 import { auth } from '../auth/better-auth.js';
+import { isDogfoodingEmail } from '../lib/dogfooding.js';
 
 type AuthUser = {
   id: string;
@@ -16,6 +17,11 @@ type TenantContext = {
   name: string;
   plan: string;
   role: string;
+  /**
+   * true の場合、Stripe 課金なしで Pro 相当・全クォータ無制限として扱う。
+   * 運営ドッグフーディングアカウント (lib/dogfooding.ts) のみ true になる。
+   */
+  unlimited: boolean;
 };
 
 declare module 'hono' {
@@ -38,6 +44,13 @@ if (
     'ADMIN_USERNAME and ADMIN_PASSWORD must be set in production',
   );
 }
+
+const expectedUsernameHash = createHash('sha256')
+  .update(process.env.ADMIN_USERNAME || 'admin')
+  .digest();
+const expectedPasswordHash = createHash('sha256')
+  .update(process.env.ADMIN_PASSWORD || 'admin')
+  .digest();
 
 export function isOperatorEmail(email: string | null | undefined): boolean {
   if (!email) return false;
@@ -81,20 +94,12 @@ export const requireOperator: MiddlewareHandler = async (c, next) => {
   }
   const username = decoded.slice(0, colonIndex);
   const password = decoded.slice(colonIndex + 1);
-  const expectedUsername = process.env.ADMIN_USERNAME || 'admin';
-  const expectedPassword = process.env.ADMIN_PASSWORD || 'admin';
 
-  const usernameBuf = Buffer.from(username);
-  const expectedUsernameBuf = Buffer.from(expectedUsername);
-  const passwordBuf = Buffer.from(password);
-  const expectedPasswordBuf = Buffer.from(expectedPassword);
+  const usernameHash = createHash('sha256').update(username).digest();
+  const passwordHash = createHash('sha256').update(password).digest();
 
-  const usernameMatch =
-    usernameBuf.length === expectedUsernameBuf.length &&
-    timingSafeEqual(usernameBuf, expectedUsernameBuf);
-  const passwordMatch =
-    passwordBuf.length === expectedPasswordBuf.length &&
-    timingSafeEqual(passwordBuf, expectedPasswordBuf);
+  const usernameMatch = timingSafeEqual(usernameHash, expectedUsernameHash);
+  const passwordMatch = timingSafeEqual(passwordHash, expectedPasswordHash);
   if (!usernameMatch || !passwordMatch) {
     return c.json({ error: 'Unauthorized' }, 401);
   }
@@ -120,6 +125,8 @@ export const requireTenant: MiddlewareHandler = async (c, next) => {
 
   if (!member) return c.text('Tenant not provisioned', 403);
 
+  const unlimited = isDogfoodingEmail(session.user.email);
+
   c.set('authUser', {
     id: session.user.id,
     email: session.user.email,
@@ -128,8 +135,9 @@ export const requireTenant: MiddlewareHandler = async (c, next) => {
   c.set('tenant', {
     id: member.tenantId,
     name: member.tenantName,
-    plan: member.tenantPlan,
+    plan: unlimited ? 'pro' : member.tenantPlan,
     role: member.role,
+    unlimited,
   });
   await next();
 };
