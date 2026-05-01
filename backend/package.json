@@ -18,7 +18,7 @@
   },
   "dependencies": {
     "@hono/node-server": "^2.0.0",
-    "better-auth": "^1.6.5",
+    "better-auth": "^1.6.9",
     "drizzle-orm": "^0.45.2",
     "hono": "^4.12.15",
     "postgres": "^3.4.0",
