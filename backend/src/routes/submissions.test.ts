@@ -242,8 +242,9 @@ describe('submissions route', () => {
     expect(buf[1]).toBe(0xbb);
     expect(buf[2]).toBe(0xbf);
 
+    // TextDecoder('utf-8') は ignoreBOM=false の挙動で BOM を消費するため slice 不要
     const text = new TextDecoder('utf-8').decode(buf);
-    const lines = text.slice(1).split('\r\n');
+    const lines = text.split('\r\n');
     // header + 2 行
     expect(lines).toHaveLength(3);
 
