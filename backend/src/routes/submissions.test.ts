@@ -236,10 +236,13 @@ describe('submissions route', () => {
     expect(disposition).toContain('attachment');
     expect(disposition).toMatch(/filename\*=UTF-8''/);
 
-    const text = await res.text();
-    // BOM 付き
-    expect(text.charCodeAt(0)).toBe(0xfeff);
+    const buf = new Uint8Array(await res.arrayBuffer());
+    // BOM 付き (UTF-8 BOM = EF BB BF)
+    expect(buf[0]).toBe(0xef);
+    expect(buf[1]).toBe(0xbb);
+    expect(buf[2]).toBe(0xbf);
 
+    const text = new TextDecoder('utf-8').decode(buf);
     const lines = text.slice(1).split('\r\n');
     // header + 2 行
     expect(lines).toHaveLength(3);
