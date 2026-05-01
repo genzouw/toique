@@ -73,6 +73,8 @@ export type Form = {
   updatedAt: string;
 };
 
+export type FormListItem = Omit<Form, 'schema'>;
+
 export type Submission = {
   id: string;
   tenantId: string;
@@ -179,7 +181,7 @@ export const api = {
   deleteChannel: (id: string) =>
     request<void>(`/api/v1/line-channels/${id}`, { method: 'DELETE' }),
   listMessages: () => request<InboundMessage[]>('/api/v1/messages'),
-  listForms: () => request<Form[]>('/api/v1/forms'),
+  listForms: () => request<FormListItem[]>('/api/v1/forms'),
   getForm: (id: string) => request<Form>(`/api/v1/forms/${id}`),
   createForm: (input: {
     name: string;
