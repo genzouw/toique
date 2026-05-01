@@ -112,13 +112,21 @@ app.get('/export', async (c) => {
 const CSV_ESCAPE_TEST = /[",\r\n]/;
 const CSV_ESCAPE_REPLACE = /"/g;
 
-function escapeCsv(value: string | number | null | undefined): string {
+export function escapeCsv(value: string | number | null | undefined): string {
   if (typeof value === 'number') return String(value);
   if (value == null) return '';
-  if (CSV_ESCAPE_TEST.test(value)) {
-    return '"' + value.replace(CSV_ESCAPE_REPLACE, '""') + '"';
+
+  let sanitized = value;
+  // 防御的対策: CSVインジェクション (式インジェクション) を防ぐため、
+  // 特定の文字で始まる場合はシングルクォートを前置する
+  if (/^[=+\-@\t\r\n]/.test(sanitized)) {
+    sanitized = "'" + sanitized;
   }
-  return value;
+
+  if (CSV_ESCAPE_TEST.test(sanitized)) {
+    return '"' + sanitized.replace(CSV_ESCAPE_REPLACE, '""') + '"';
+  }
+  return sanitized;
 }
 
 function asciiFallback(name: string): string {
