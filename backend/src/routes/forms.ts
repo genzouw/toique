@@ -1,5 +1,5 @@
 import { Hono } from 'hono';
-import { and, eq } from 'drizzle-orm';
+import { and, desc, eq } from 'drizzle-orm';
 import db from '../db.js';
 import { forms, lineChannels } from '../schema.js';
 import { checkQuota } from '../lib/quota.js';
@@ -32,7 +32,8 @@ app.get('/', async (c) => {
       updatedAt: forms.updatedAt,
     })
     .from(forms)
-    .where(eq(forms.tenantId, tenant.id));
+    .where(eq(forms.tenantId, tenant.id))
+    .orderBy(desc(forms.createdAt));
   return c.json(rows);
 });
 

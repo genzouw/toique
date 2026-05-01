@@ -53,7 +53,7 @@ export default function Messages() {
           <EmptyState
             icon={MessageSquare}
             title="まだメッセージを受信していません"
-            description="LINEアカウントと連携し、メッセージを受信するとここに表示されます。"
+            description="ユーザーがLINEで送信したメッセージやイベントがここに表示されます。"
           />
         ) : (
           <table className="w-full text-sm">
