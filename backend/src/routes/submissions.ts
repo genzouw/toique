@@ -115,15 +115,18 @@ const CSV_ESCAPE_REPLACE = /"/g;
 export function escapeCsv(value: string | number | null | undefined): string {
   if (typeof value === 'number') return String(value);
   if (value == null) return '';
-  let strValue = value;
-  // Prevent CSV formula injection by prefixing with a single quote
-  if (/^[=+\-@\t\r\n]/.test(strValue)) {
-    strValue = "'" + strValue;
+
+  let sanitized = value;
+  // 防御的対策: CSVインジェクション (式インジェクション) を防ぐため、
+  // 特定の文字で始まる場合はシングルクォートを前置する
+  if (/^[=+\-@\t\r\n]/.test(sanitized)) {
+    sanitized = "'" + sanitized;
   }
-  if (CSV_ESCAPE_TEST.test(strValue)) {
-    return '"' + strValue.replace(CSV_ESCAPE_REPLACE, '""') + '"';
+
+  if (CSV_ESCAPE_TEST.test(sanitized)) {
+    return '"' + sanitized.replace(CSV_ESCAPE_REPLACE, '""') + '"';
   }
-  return strValue;
+  return sanitized;
 }
 
 function asciiFallback(name: string): string {
