@@ -32,7 +32,9 @@ app.post('/', async (c) => {
     return c.text('Missing required fields', 400);
   }
 
-  const quota = await checkQuota(tenant.id, tenant.plan, 'lineChannels');
+  const quota = await checkQuota(tenant.id, tenant.plan, 'lineChannels', {
+    unlimited: tenant.unlimited,
+  });
   if (!quota.allowed) {
     return c.json(
       { error: 'LINEチャネルの登録上限に達しています', ...quota },

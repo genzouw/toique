@@ -13,34 +13,57 @@ concurrency:
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
+permissions:
+  contents: read
+  pull-requests: read
+
 jobs:
-  lockfile-sync:
-    name: Lockfile sync check
+  changes:
+    name: Detect changed paths
     runs-on: ubuntu-latest
+    outputs:
+      frontend: ${{ steps.filter.outputs.frontend }}
+      backend: ${{ steps.filter.outputs.backend }}
     steps:
       - uses: actions/checkout@v6
-      - uses: actions/setup-node@v4
+      - uses: dorny/paths-filter@v3
+        id: filter
         with:
-          node-version: 24
-      - name: Check backend lockfile sync
-        working-directory: backend
-        run: npm ci --ignore-scripts
-      - name: Check frontend lockfile sync
-        working-directory: frontend
-        run: npm ci --ignore-scripts
+          filters: |
+            frontend:
+              - 'frontend/**'
+              - '.prettierrc'
+              - '.github/workflows/ci.yml'
+            backend:
+              - 'backend/**'
+              - 'db/**'
+              - '.prettierrc'
+              - '.github/workflows/ci.yml'
 
   frontend:
     name: Frontend (lint / typecheck / format / test / build)
+    needs: changes
+    if: needs.changes.result != 'success' || needs.changes.outputs.frontend == 'true'
     runs-on: ubuntu-latest
     env:
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
     steps:
       - uses: actions/checkout@v6
+      - uses: docker/setup-buildx-action@v3
       - name: Build and run checks in Docker
-        run: docker build --target ci-check -f frontend/Dockerfile .
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: frontend/Dockerfile
+          target: ci-check
+          push: false
+          cache-from: type=gha,scope=frontend
+          cache-to: type=gha,mode=max,scope=frontend,ignore-error=true
 
   backend:
     name: Backend (lint / typecheck / format / build / test)
+    needs: changes
+    if: needs.changes.result != 'success' || needs.changes.outputs.backend == 'true'
     runs-on: ubuntu-latest
     env:
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
@@ -60,17 +83,33 @@ jobs:
           --health-retries 5
     steps:
       - uses: actions/checkout@v6
-      - name: Build and run checks in Docker
-        run: docker build --target ci-check -f backend/Dockerfile .
-      - name: Build test image
-        run: docker build --target ci-test -t toique-backend-test -f backend/Dockerfile .
+      - uses: docker/setup-buildx-action@v3
+      - name: Build ci-check image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: backend/Dockerfile
+          target: ci-check
+          push: false
+          cache-from: type=gha,scope=backend
+          cache-to: type=gha,mode=max,scope=backend,ignore-error=true
+      - name: Build ci-test image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: backend/Dockerfile
+          target: ci-test
+          tags: toique-backend-test:latest
+          load: true
+          cache-from: type=gha,scope=backend
+          cache-to: type=gha,mode=max,scope=backend,ignore-error=true
       - name: Run migrations
         run: >
           docker run --rm --network host
           -e DATABASE_URL=postgresql://toique:toique@localhost:5432/toique
-          toique-backend-test npx drizzle-kit migrate
+          toique-backend-test:latest npx drizzle-kit migrate
       - name: Run tests with coverage
         run: >
           docker run --rm --network host
           -e DATABASE_URL=postgresql://toique:toique@localhost:5432/toique
-          toique-backend-test
+          toique-backend-test:latest

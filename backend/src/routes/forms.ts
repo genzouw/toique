@@ -1,5 +1,5 @@
 import { Hono } from 'hono';
-import { and, eq } from 'drizzle-orm';
+import { and, desc, eq } from 'drizzle-orm';
 import db from '../db.js';
 import { forms, lineChannels } from '../schema.js';
 import { checkQuota } from '../lib/quota.js';
@@ -19,10 +19,22 @@ function validateSchema(schema: unknown): string | null {
 
 app.get('/', async (c) => {
   const tenant = c.get('tenant');
+  // ⚡ Bolt: Select only scalar fields for list endpoints to avoid loading the large JSON 'schema' column, reducing db I/O and payload size.
   const rows = await db
-    .select()
+    .select({
+      id: forms.id,
+      tenantId: forms.tenantId,
+      lineChannelId: forms.lineChannelId,
+      name: forms.name,
+      status: forms.status,
+      triggerKeyword: forms.triggerKeyword,
+      version: forms.version,
+      createdAt: forms.createdAt,
+      updatedAt: forms.updatedAt,
+    })
     .from(forms)
-    .where(eq(forms.tenantId, tenant.id));
+    .where(eq(forms.tenantId, tenant.id))
+    .orderBy(desc(forms.createdAt));
   return c.json(rows);
 });
 
@@ -65,7 +77,9 @@ app.post('/', async (c) => {
     .limit(1);
   if (!channel) return c.text('lineChannelId not in this tenant', 400);
 
-  const quota = await checkQuota(tenant.id, tenant.plan, 'forms');
+  const quota = await checkQuota(tenant.id, tenant.plan, 'forms', {
+    unlimited: tenant.unlimited,
+  });
   if (!quota.allowed) {
     return c.json({ error: 'フォームの作成上限に達しています', ...quota }, 403);
   }
