@@ -3,7 +3,6 @@ import { cors } from 'hono/cors';
 import { logger } from 'hono/logger';
 import { secureHeaders } from 'hono/secure-headers';
 import { serve } from '@hono/node-server';
-import { secureHeaders } from 'hono/secure-headers';
 import { sql } from './db.js';
 import { auth } from './auth/better-auth.js';
 import { requireOperator, requireTenant } from './middleware/auth.js';
