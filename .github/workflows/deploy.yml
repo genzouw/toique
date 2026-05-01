@@ -43,12 +43,23 @@ jobs:
       - name: Configure Docker for Artifact Registry
         run: gcloud auth configure-docker ${{ env.GCP_REGION }}-docker.pkg.dev --quiet
 
-      - name: Build and push backend image
+      - uses: docker/setup-buildx-action@v3
+
+      - name: Resolve backend image tag
         run: |
-          IMAGE="${{ env.GCP_REGION }}-docker.pkg.dev/${{ env.GCP_PROJECT_ID }}/${{ env.ARTIFACT_REPO }}/backend:${{ github.sha }}"
-          docker build --target production -f backend/Dockerfile -t "$IMAGE" .
-          docker push "$IMAGE"
-          echo "IMAGE=$IMAGE" >> "$GITHUB_ENV"
+          echo "IMAGE=${{ env.GCP_REGION }}-docker.pkg.dev/${{ env.GCP_PROJECT_ID }}/${{ env.ARTIFACT_REPO }}/backend:${{ github.sha }}" >> "$GITHUB_ENV"
+
+      - name: Build and push backend image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: backend/Dockerfile
+          target: production
+          tags: ${{ env.IMAGE }}
+          push: true
+          provenance: false
+          cache-from: type=gha,scope=backend
+          cache-to: type=gha,mode=max,scope=backend,ignore-error=true
 
       - uses: actions/setup-node@v6
         with:
@@ -122,12 +133,22 @@ jobs:
       - name: Configure Docker for Artifact Registry
         run: gcloud auth configure-docker ${{ env.GCP_REGION }}-docker.pkg.dev --quiet
 
-      - name: Build and push backup image
+      - uses: docker/setup-buildx-action@v3
+
+      - name: Resolve backup image tag
         run: |
-          IMAGE="${{ env.GCP_REGION }}-docker.pkg.dev/${{ env.GCP_PROJECT_ID }}/${{ env.ARTIFACT_REPO }}/backup:${{ github.sha }}"
-          docker build -f backup/Dockerfile -t "$IMAGE" ./backup
-          docker push "$IMAGE"
-          echo "IMAGE=$IMAGE" >> "$GITHUB_ENV"
+          echo "IMAGE=${{ env.GCP_REGION }}-docker.pkg.dev/${{ env.GCP_PROJECT_ID }}/${{ env.ARTIFACT_REPO }}/backup:${{ github.sha }}" >> "$GITHUB_ENV"
+
+      - name: Build and push backup image
+        uses: docker/build-push-action@v6
+        with:
+          context: ./backup
+          file: backup/Dockerfile
+          tags: ${{ env.IMAGE }}
+          push: true
+          provenance: false
+          cache-from: type=gha,scope=backup
+          cache-to: type=gha,mode=max,scope=backup,ignore-error=true
 
       - name: Deploy Cloud Run Job with new image
         run: |

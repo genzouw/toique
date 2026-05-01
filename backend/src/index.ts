@@ -27,7 +27,7 @@ const app = new Hono({ strict: false });
 // ロガーを最外層に配置し、後続ミドルウェア（secureHeaders など）の処理時間も含めて計測する
 app.use('*', logger());
 
-// 🛡️ Security enhancement: Add standard security headers globally
+// セキュリティヘッダーを付与
 app.use('*', secureHeaders());
 
 app.use(
