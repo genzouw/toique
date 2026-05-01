@@ -8,6 +8,7 @@ import {
   tenants,
 } from '../../schema.js';
 import { checkQuota } from '../quota.js';
+import { isDogfoodingTenant } from '../dogfooding.js';
 import type { LineMessage } from '../line/client.js';
 import { buildStepMessages, parsePostbackData } from './messages.js';
 import { type FormStep, parseFormSchema } from './types.js';
@@ -183,10 +184,12 @@ async function finalize(
       .where(eq(tenants.id, form.tenantId))
       .limit(1);
     if (tenant) {
+      const unlimited = await isDogfoodingTenant(form.tenantId);
       const quota = await checkQuota(
         form.tenantId,
         tenant.plan,
         'submissionsPerMonth',
+        { unlimited },
       );
       if (!quota.allowed) {
         await db
