@@ -19,6 +19,7 @@ function validateSchema(schema: unknown): string | null {
 
 app.get('/', async (c) => {
   const tenant = c.get('tenant');
+  // ⚡ Bolt: Select only scalar fields for list endpoints to avoid loading the large JSON 'schema' column, reducing db I/O and payload size.
   const rows = await db
     .select({
       id: forms.id,

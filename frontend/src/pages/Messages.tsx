@@ -1,11 +1,11 @@
 import { useEffect, useState } from 'react';
 import { MessageSquare, RefreshCw } from 'lucide-react';
-import { api, type InboundMessage } from '../lib/api';
+import { api, type InboundMessageListItem } from '../lib/api';
 import LoadingButton from '../components/LoadingButton';
 import EmptyState from '../components/EmptyState';
 
 export default function Messages() {
-  const [items, setItems] = useState<InboundMessage[]>([]);
+  const [items, setItems] = useState<InboundMessageListItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 

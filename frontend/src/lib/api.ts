@@ -50,6 +50,8 @@ export type InboundMessage = {
   receivedAt: string;
 };
 
+export type InboundMessageListItem = Omit<InboundMessage, 'rawEvent'>;
+
 export type OnboardingStatus = {
   user: { id: string; email: string; name: string };
   tenant: {
@@ -180,7 +182,7 @@ export const api = {
     }),
   deleteChannel: (id: string) =>
     request<void>(`/api/v1/line-channels/${id}`, { method: 'DELETE' }),
-  listMessages: () => request<InboundMessage[]>('/api/v1/messages'),
+  listMessages: () => request<InboundMessageListItem[]>('/api/v1/messages'),
   listForms: () => request<FormListItem[]>('/api/v1/forms'),
   getForm: (id: string) => request<Form>(`/api/v1/forms/${id}`),
   createForm: (input: {

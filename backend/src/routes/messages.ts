@@ -7,6 +7,7 @@ const app = new Hono();
 
 app.get('/', async (c) => {
   const tenant = c.get('tenant');
+  // ⚡ Bolt: Exclude the large JSON 'rawEvent' column from list endpoints to reduce db I/O and payload size.
   const rows = await db
     .select({
       id: inboundMessages.id,
