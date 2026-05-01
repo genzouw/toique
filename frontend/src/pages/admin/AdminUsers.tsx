@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router';
+import { Users } from 'lucide-react';
 import { api, type AdminUserListItem } from '../../lib/api';
+import EmptyState from '../../components/EmptyState';
 
 export default function AdminUsers() {
   const [rows, setRows] = useState<AdminUserListItem[] | null>(null);
@@ -33,9 +35,12 @@ export default function AdminUsers() {
       {rows === null ? (
         <div className="text-sm text-slate-500">読み込み中…</div>
       ) : rows.length === 0 ? (
-        <div className="text-sm text-slate-500 bg-white border border-slate-200 rounded-md px-4 py-6 text-center">
-          登録ユーザーはまだいません。
-        </div>
+        <EmptyState
+          icon={Users}
+          title="登録ユーザーはまだいません。"
+          description="システムに登録されているユーザーがここに表示されます。"
+          className="bg-white border border-slate-200 rounded-lg"
+        />
       ) : (
         <div className="bg-white border border-slate-200 rounded-lg overflow-hidden">
           <table className="w-full text-sm">
