@@ -60,11 +60,19 @@ async function countResource(
   }
 }
 
+export type QuotaOptions = {
+  /** true の場合は計測をスキップしてすべて allowed として扱う (運営ドッグフーディング用) */
+  unlimited?: boolean;
+};
+
 export async function checkQuota(
   tenantId: string,
   plan: string,
   resource: ResourceKey,
+  options?: QuotaOptions,
 ): Promise<{ allowed: boolean; current: number; limit: number }> {
+  if (options?.unlimited) return { allowed: true, current: 0, limit: -1 };
+
   const limits = getPlanLimits(plan);
   const limit = limits[resource];
   if (limit === -1) return { allowed: true, current: 0, limit: -1 };
@@ -76,6 +84,7 @@ export async function checkQuota(
 export async function getTenantUsage(
   tenantId: string,
   plan: string,
+  options?: QuotaOptions,
 ): Promise<TenantUsage> {
   const limits = getPlanLimits(plan);
   const [channels, formCount, subs, members] = await Promise.all([
@@ -84,6 +93,14 @@ export async function getTenantUsage(
     countResource(tenantId, 'submissionsPerMonth'),
     countResource(tenantId, 'members'),
   ]);
+  if (options?.unlimited) {
+    return {
+      lineChannels: { current: channels, limit: -1 },
+      forms: { current: formCount, limit: -1 },
+      submissionsPerMonth: { current: subs, limit: -1 },
+      members: { current: members, limit: -1 },
+    };
+  }
   return {
     lineChannels: { current: channels, limit: limits.lineChannels },
     forms: { current: formCount, limit: limits.forms },
