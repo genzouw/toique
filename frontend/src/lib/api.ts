@@ -46,6 +46,7 @@ export type InboundMessage = {
   eventType: string;
   messageType: string | null;
   text: string | null;
+  rawEvent?: Record<string, unknown>; // Optional in list endpoints
   receivedAt: string;
 };
 
@@ -68,7 +69,7 @@ export type Form = {
   name: string;
   status: 'draft' | 'published' | 'archived';
   triggerKeyword: string | null;
-  schema: Record<string, unknown>;
+  schema?: Record<string, unknown>; // Optional in list endpoints
   version: number;
   createdAt: string;
   updatedAt: string;

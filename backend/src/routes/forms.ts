@@ -1,5 +1,5 @@
 import { Hono } from 'hono';
-import { and, eq } from 'drizzle-orm';
+import { and, desc, eq } from 'drizzle-orm';
 import db from '../db.js';
 import { forms, lineChannels } from '../schema.js';
 import { checkQuota } from '../lib/quota.js';
@@ -33,7 +33,8 @@ app.get('/', async (c) => {
       updatedAt: forms.updatedAt,
     })
     .from(forms)
-    .where(eq(forms.tenantId, tenant.id));
+    .where(eq(forms.tenantId, tenant.id))
+    .orderBy(desc(forms.createdAt));
   return c.json(rows);
 });
 
@@ -76,7 +77,9 @@ app.post('/', async (c) => {
     .limit(1);
   if (!channel) return c.text('lineChannelId not in this tenant', 400);
 
-  const quota = await checkQuota(tenant.id, tenant.plan, 'forms');
+  const quota = await checkQuota(tenant.id, tenant.plan, 'forms', {
+    unlimited: tenant.unlimited,
+  });
   if (!quota.allowed) {
     return c.json({ error: 'フォームの作成上限に達しています', ...quota }, 403);
   }
