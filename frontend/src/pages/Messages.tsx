@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
+import { MessageSquare } from 'lucide-react';
 import { api, type InboundMessage } from '../lib/api';
 import LoadingButton from '../components/LoadingButton';
+import EmptyState from '../components/EmptyState';
 
 export default function Messages() {
   const [items, setItems] = useState<InboundMessage[]>([]);
@@ -48,9 +50,11 @@ export default function Messages() {
         {loading ? (
           <div className="p-5 text-sm text-slate-500">読み込み中…</div>
         ) : items.length === 0 ? (
-          <div className="p-5 text-sm text-slate-500">
-            まだメッセージを受信していません
-          </div>
+          <EmptyState
+            icon={MessageSquare}
+            title="まだメッセージを受信していません"
+            description="ユーザーがLINEで送信したメッセージやイベントがここに表示されます。"
+          />
         ) : (
           <table className="w-full text-sm">
             <thead className="bg-slate-50 text-slate-600">
