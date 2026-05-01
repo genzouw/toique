@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Inbox, Download } from 'lucide-react';
-import { api, type Submission, type Form } from '../lib/api';
+import { Inbox, Download, RefreshCw } from 'lucide-react';
+import { api, type Submission, type FormListItem } from '../lib/api';
 import LoadingButton from '../components/LoadingButton';
 import { ICON_SIZE } from '../lib/icon-size';
 
@@ -18,7 +18,7 @@ const STATUS_COLOR: Record<Submission['status'], string> = {
 
 export default function Submissions() {
   const [items, setItems] = useState<Submission[]>([]);
-  const [forms, setForms] = useState<Form[]>([]);
+  const [forms, setForms] = useState<FormListItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [exportFormId, setExportFormId] = useState<string>('');
@@ -83,7 +83,7 @@ export default function Submissions() {
             フォーム完了時に記録された回答データです
           </p>
         </div>
-        <LoadingButton onClick={refresh} loading={loading}>
+        <LoadingButton onClick={refresh} loading={loading} icon={RefreshCw}>
           更新
         </LoadingButton>
       </div>
