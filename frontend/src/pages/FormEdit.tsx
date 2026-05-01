@@ -133,8 +133,10 @@ export default function FormEdit() {
           setLineChannelId(f.lineChannelId);
           setStatus(f.status);
           setTriggerKeyword(f.triggerKeyword ?? '');
-          setSchemaObj(f.schema);
-          setSchemaJson(JSON.stringify(f.schema, null, 2));
+          const schema =
+            f.schema ?? (DEFAULT_SCHEMA as Record<string, unknown>);
+          setSchemaObj(schema);
+          setSchemaJson(JSON.stringify(schema, null, 2));
         } else if (chs.length > 0) {
           setLineChannelId(chs[0].id);
         }
