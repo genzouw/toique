@@ -16,6 +16,12 @@
 **Learning:** Checking lengths prior to using `timingSafeEqual` undermines its purpose if it allows an early exit. Furthermore, comparing strings of differing lengths with `timingSafeEqual` directly (without the check) throws an error, making simple strings difficult to compare securely in constant time without preprocessing.
 **Prevention:** When comparing secrets (like passwords or API keys) of variable or unknown length against an expected secret, first hash both the provided and expected strings using a strong cryptographic hash (like SHA-256) to normalize their lengths. Then, perform a `timingSafeEqual` on the resulting hashes.
 
+## 2024-05-24 - [Add secureHeaders middleware]
+
+**Vulnerability:** Missing security headers (like Content-Security-Policy, X-Content-Type-Options, etc.) on responses.
+**Learning:** The Hono `secureHeaders` middleware was missing, leaving the application vulnerable to common web vulnerabilities like XSS and clickjacking.
+**Prevention:** Always apply the `secureHeaders` middleware globally to Hono applications early in the middleware stack.
+
 ## 2026-04-30 - CSV Formula Injection in Submissions Export
 
 **Vulnerability:** The backend application exported form submissions directly to CSV (`backend/src/routes/submissions.ts`). The export logic properly escaped quotes and commas but failed to sanitize cell contents starting with formula injection characters (`=`, `+`, `-`, `@`, `\t`, `\r`). If an attacker submitted form responses containing malicious spreadsheet formulas (e.g., `=cmd|' /C calc'!A0`), when the resulting CSV was opened in applications like Microsoft Excel, it could result in arbitrary code execution or data exfiltration on the administrator's computer.
