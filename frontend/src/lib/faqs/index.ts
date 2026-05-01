@@ -80,8 +80,8 @@ export const FAQS: FaqArticle[] = [
   ...security,
 ];
 
-// ⚡ Bolt: Implement O(1) lookup map to eliminate Array.prototype.find overhead during renders (~8.3x performance improvement for lookups)
-const FAQ_MAP: Record<string, FaqArticle> = {};
+// O(1) lookup map to eliminate Array.prototype.find overhead during renders
+const FAQ_MAP: Record<string, FaqArticle | undefined> = {};
 for (const faq of FAQS) {
   FAQ_MAP[faq.slug] = faq;
 }
