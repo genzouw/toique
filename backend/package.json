@@ -23,7 +23,7 @@
     "hono": "^4.12.15",
     "postgres": "^3.4.0",
     "resend": "^6.12.2",
-    "stripe": "^22.0.2",
+    "stripe": "^22.1.0",
     "zod": "^4.3.6"
   },
   "devDependencies": {
