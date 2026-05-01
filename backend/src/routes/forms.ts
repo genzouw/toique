@@ -20,7 +20,17 @@ function validateSchema(schema: unknown): string | null {
 app.get('/', async (c) => {
   const tenant = c.get('tenant');
   const rows = await db
-    .select()
+    .select({
+      id: forms.id,
+      tenantId: forms.tenantId,
+      lineChannelId: forms.lineChannelId,
+      name: forms.name,
+      status: forms.status,
+      triggerKeyword: forms.triggerKeyword,
+      version: forms.version,
+      createdAt: forms.createdAt,
+      updatedAt: forms.updatedAt,
+    })
     .from(forms)
     .where(eq(forms.tenantId, tenant.id));
   return c.json(rows);
@@ -65,7 +75,9 @@ app.post('/', async (c) => {
     .limit(1);
   if (!channel) return c.text('lineChannelId not in this tenant', 400);
 
-  const quota = await checkQuota(tenant.id, tenant.plan, 'forms');
+  const quota = await checkQuota(tenant.id, tenant.plan, 'forms', {
+    unlimited: tenant.unlimited,
+  });
   if (!quota.allowed) {
     return c.json({ error: 'フォームの作成上限に達しています', ...quota }, 403);
   }
