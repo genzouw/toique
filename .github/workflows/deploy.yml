@@ -57,8 +57,9 @@ jobs:
           target: production
           tags: ${{ env.IMAGE }}
           push: true
+          provenance: false
           cache-from: type=gha,scope=backend
-          cache-to: type=gha,mode=max,scope=backend
+          cache-to: type=gha,mode=max,scope=backend,ignore-error=true
 
       - uses: actions/setup-node@v6
         with:
@@ -145,8 +146,9 @@ jobs:
           file: backup/Dockerfile
           tags: ${{ env.IMAGE }}
           push: true
+          provenance: false
           cache-from: type=gha,scope=backup
-          cache-to: type=gha,mode=max,scope=backup
+          cache-to: type=gha,mode=max,scope=backup,ignore-error=true
 
       - name: Deploy Cloud Run Job with new image
         run: |
