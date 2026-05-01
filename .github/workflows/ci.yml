@@ -43,7 +43,7 @@ jobs:
   frontend:
     name: Frontend (lint / typecheck / format / test / build)
     needs: changes
-    if: needs.changes.outputs.frontend == 'true'
+    if: needs.changes.result != 'success' || needs.changes.outputs.frontend == 'true'
     runs-on: ubuntu-latest
     env:
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
@@ -63,7 +63,7 @@ jobs:
   backend:
     name: Backend (lint / typecheck / format / build / test)
     needs: changes
-    if: needs.changes.outputs.backend == 'true'
+    if: needs.changes.result != 'success' || needs.changes.outputs.backend == 'true'
     runs-on: ubuntu-latest
     env:
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
