@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
 import { MessageSquare } from 'lucide-react';
 import { api, type InboundMessage } from '../lib/api';
-import { ICON_SIZE } from '../lib/icon-size';
 import LoadingButton from '../components/LoadingButton';
+import EmptyState from '../components/EmptyState';
 
 export default function Messages() {
   const [items, setItems] = useState<InboundMessage[]>([]);
@@ -50,17 +50,11 @@ export default function Messages() {
         {loading ? (
           <div className="p-5 text-sm text-slate-500">読み込み中…</div>
         ) : items.length === 0 ? (
-          <div className="flex flex-col items-center justify-center p-12 text-center">
-            <div className="w-12 h-12 bg-slate-100 rounded-full flex items-center justify-center mb-4">
-              <MessageSquare className="text-slate-400" size={ICON_SIZE.xxl} />
-            </div>
-            <h2 className="text-sm font-medium text-slate-900 mb-1">
-              まだメッセージを受信していません
-            </h2>
-            <p className="text-sm text-slate-500 max-w-sm">
-              ユーザーがLINEで送信したメッセージやイベントがここに表示されます。
-            </p>
-          </div>
+          <EmptyState
+            icon={MessageSquare}
+            title="まだメッセージを受信していません"
+            description="ユーザーがLINEで送信したメッセージやイベントがここに表示されます。"
+          />
         ) : (
           <table className="w-full text-sm">
             <thead className="bg-slate-50 text-slate-600">
