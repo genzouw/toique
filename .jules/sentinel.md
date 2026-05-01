@@ -4,11 +4,11 @@
 **Learning:** Even though `mermaid` has internal security levels, when generating SVGs that are directly injected into React using `dangerouslySetInnerHTML`, the output cannot be implicitly trusted, particularly if user data flows into the chart definitions.
 **Prevention:** Always sanitize the output HTML/SVG of third-party rendering libraries before using `dangerouslySetInnerHTML`. Use `dompurify` (i.e. `DOMPurify.sanitize(svgContent)`) as a defense-in-depth measure. Additionally, ensure the underlying library's security configurations (e.g. `mermaid`'s `securityLevel`) are set as strictly as possible (`'strict'`).
 
-## 2024-05-27 - CSV Formula Injection in Submissions Export
+## 2025-02-28 - CSV Formula (Macro) Injection in Exports
 
-**Vulnerability:** The CSV export functionality in `backend/src/routes/submissions.ts` did not sanitize user input correctly when exporting fields to CSV. If an attacker submits data starting with `=, +, -, @`, Excel will evaluate it as a formula, potentially leading to Remote Code Execution (CSV Injection/Formula Injection).
-**Learning:** Standard CSV escaping (wrapping in double quotes and escaping inner quotes) does not prevent spreadsheet programs from executing cells that begin with formula characters.
-**Prevention:** Explicitly check strings being written to CSV for dangerous starting characters (`/^[=+\-@\t\r\n]/`) and prepend a single quote (`'`) to force the spreadsheet to interpret the cell as literal text rather than executable formula code.
+**Vulnerability:** The `/export` route in `backend/src/routes/submissions.ts` did not sanitize user input when exporting form submissions to CSV. If a user submitted a string starting with characters like `=`, `+`, `-`, `@`, `\t`, `\r`, or `\n`, opening the resulting CSV in Microsoft Excel or similar spreadsheet applications could execute the payload as a formula or macro.
+**Learning:** CSV formula injection can often be overlooked because the output appears safe as plain text. The application's existing `escapeCsv` function only handled escaping quotes and commas for CSV syntax correctness, but not prefix characters that trigger spreadsheet evaluation.
+**Prevention:** Always sanitize data intended for CSV export by prepending a single quote (`'`) to values that start with `=` `+` `-` `@` `\t` `\r` `\n` to neutralize formula execution in spreadsheet software while preserving the visible data. Ensure this logic is unit tested directly against the module.
 
 ## 2026-04-24 - Prevent Timing Attack in Admin Authentication
 

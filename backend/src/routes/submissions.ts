@@ -112,7 +112,7 @@ app.get('/export', async (c) => {
 const CSV_ESCAPE_TEST = /[",\r\n]/;
 const CSV_ESCAPE_REPLACE = /"/g;
 
-function escapeCsv(value: string | number | null | undefined): string {
+export function escapeCsv(value: string | number | null | undefined): string {
   if (typeof value === 'number') return String(value);
   if (value == null) return '';
 
