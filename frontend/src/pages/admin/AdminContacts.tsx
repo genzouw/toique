@@ -1,11 +1,13 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router';
+import { Mail } from 'lucide-react';
 import {
   api,
   type ContactListItem,
   type ContactStatus,
   type ContactCategory,
 } from '../../lib/api';
+import EmptyState from '../../components/EmptyState';
 
 const STATUS_LABEL: Record<ContactStatus, string> = {
   new: '新着',
@@ -71,9 +73,12 @@ export default function AdminContacts() {
       {rows === null ? (
         <div className="text-sm text-slate-500">読み込み中…</div>
       ) : filtered.length === 0 ? (
-        <div className="text-sm text-slate-500 bg-white border border-slate-200 rounded-md px-4 py-6 text-center">
-          システム問い合わせはありません。
-        </div>
+        <EmptyState
+          icon={Mail}
+          title="システム問い合わせはありません。"
+          description="ユーザーからのシステムに関するお問い合わせがここに表示されます。"
+          className="bg-white border border-slate-200 rounded-lg"
+        />
       ) : (
         <div className="bg-white border border-slate-200 rounded-lg overflow-hidden">
           <table className="w-full text-sm">

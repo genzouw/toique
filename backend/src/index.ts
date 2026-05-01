@@ -3,7 +3,6 @@ import { cors } from 'hono/cors';
 import { logger } from 'hono/logger';
 import { secureHeaders } from 'hono/secure-headers';
 import { serve } from '@hono/node-server';
-import { secureHeaders } from 'hono/secure-headers';
 import { sql } from './db.js';
 import { auth } from './auth/better-auth.js';
 import { requireOperator, requireTenant } from './middleware/auth.js';
@@ -25,11 +24,11 @@ import { logger as appLogger } from './lib/logger.js';
 const app = new Hono({ strict: false });
 
 // 全リクエストをログ出力 (method / path / status / duration)
+// ロガーを最外層に配置し、後続ミドルウェア（secureHeaders など）の処理時間も含めて計測する
 app.use('*', logger());
-app.use('*', secureHeaders({ crossOriginResourcePolicy: 'cross-origin' }));
 
 // セキュリティヘッダーを付与
-app.use('*', secureHeaders());
+app.use('*', secureHeaders({ crossOriginResourcePolicy: 'cross-origin' }));
 
 app.use(
   '/api/*',

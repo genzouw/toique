@@ -3,6 +3,7 @@ import { useNavigate, Link } from 'react-router';
 import { signUp } from '../lib/auth-client';
 import { AuthLayout, AuthField } from './Login';
 import { useSEO } from '../lib/useSEO';
+import LoadingButton from '../components/LoadingButton';
 
 export default function Signup() {
   useSEO({
@@ -51,13 +52,13 @@ export default function Signup() {
           onChange={setPassword}
         />
         {error && <div className="text-red-600 text-sm">{error}</div>}
-        <button
+        <LoadingButton
           type="submit"
-          disabled={submitting}
-          className="w-full px-4 py-2 bg-slate-900 text-white rounded-md text-sm disabled:opacity-50"
+          loading={submitting}
+          className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-slate-900 text-white rounded-md text-sm disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {submitting ? '登録中…' : 'アカウント登録'}
-        </button>
+        </LoadingButton>
       </form>
       <div className="mt-4 text-sm text-slate-600">
         既にアカウントをお持ちの方は{' '}
