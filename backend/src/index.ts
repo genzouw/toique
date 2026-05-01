@@ -26,6 +26,7 @@ const app = new Hono({ strict: false });
 // 全リクエストをログ出力 (method / path / status / duration)
 // ロガーを最外層に配置し、後続ミドルウェア（secureHeaders など）の処理時間も含めて計測する
 app.use('*', logger());
+app.use('*', secureHeaders({ crossOriginResourcePolicy: 'cross-origin' }));
 
 // セキュリティヘッダーを付与
 app.use('*', secureHeaders());
