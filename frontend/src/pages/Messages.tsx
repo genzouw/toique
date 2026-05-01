@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { MessageSquare } from 'lucide-react';
+import { MessageSquare, RefreshCw } from 'lucide-react';
 import { api, type InboundMessage } from '../lib/api';
 import LoadingButton from '../components/LoadingButton';
 import EmptyState from '../components/EmptyState';
@@ -35,7 +35,7 @@ export default function Messages() {
             LINEから受信した最新100件を表示します
           </p>
         </div>
-        <LoadingButton onClick={refresh} loading={loading}>
+        <LoadingButton onClick={refresh} loading={loading} icon={RefreshCw}>
           更新
         </LoadingButton>
       </div>
