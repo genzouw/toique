@@ -21,3 +21,9 @@
 **Vulnerability:** Missing security headers (like Content-Security-Policy, X-Content-Type-Options, etc.) on responses.
 **Learning:** The Hono `secureHeaders` middleware was missing, leaving the application vulnerable to common web vulnerabilities like XSS and clickjacking.
 **Prevention:** Always apply the `secureHeaders` middleware globally to Hono applications early in the middleware stack.
+
+## 2026-04-30 - CSV Formula Injection in Submissions Export
+
+**Vulnerability:** The backend application exported form submissions directly to CSV (`backend/src/routes/submissions.ts`). The export logic properly escaped quotes and commas but failed to sanitize cell contents starting with formula injection characters (`=`, `+`, `-`, `@`, `\t`, `\r`). If an attacker submitted form responses containing malicious spreadsheet formulas (e.g., `=cmd|' /C calc'!A0`), when the resulting CSV was opened in applications like Microsoft Excel, it could result in arbitrary code execution or data exfiltration on the administrator's computer.
+**Learning:** CSV escaping (handling quotes and delimiters) is insufficient for security when the target application is a spreadsheet program that evaluates formulas. The interaction between the exported data format and the common client applications used to consume it creates a secondary attack vector.
+**Prevention:** Always sanitize user-provided data when building CSV files. If a cell begins with risky characters (`=`, `+`, `-`, `@`, `\t`, `\r`), prepend a single quote (`'`) to force the spreadsheet application to interpret the cell as literal text rather than an executable formula.
