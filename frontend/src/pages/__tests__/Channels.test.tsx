@@ -1,7 +1,8 @@
-import { render, screen, waitFor } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import Channels from '../Channels';
 import { api, type LineChannel } from '../../lib/api';
+import { buildWebhookUrl } from '../../lib/webhook-url';
 
 vi.mock('../../lib/api', () => ({
   api: {
@@ -22,12 +23,10 @@ describe('Channels Page', () => {
 
     render(<Channels />);
 
-    // Initially loading, wait for the error message to be displayed
     await waitFor(() => {
       expect(screen.getByText(errorMessage)).toBeInTheDocument();
     });
 
-    // Check that loading is gone
     expect(screen.queryByText('読み込み中…')).not.toBeInTheDocument();
   });
 
@@ -52,5 +51,75 @@ describe('Channels Page', () => {
 
     expect(screen.queryByText('読み込み中…')).not.toBeInTheDocument();
     expect(screen.getByText('Channel ID: channel-1')).toBeInTheDocument();
+  });
+
+  it('renders the actual webhook URL with the registered channel ID', async () => {
+    const mockChannel: LineChannel = {
+      id: 'item-1',
+      tenantId: 'tenant-1',
+      channelId: '2001234567',
+      displayName: 'Channel A',
+      channelSecret: 'secret',
+      channelAccessToken: 'token',
+      isActive: true,
+      createdAt: '2024-01-01T00:00:00.000Z',
+    };
+    vi.mocked(api.listChannels).mockResolvedValue([mockChannel]);
+
+    render(<Channels />);
+
+    const expectedUrl = `${window.location.origin}/webhooks/line/2001234567`;
+    await waitFor(() => {
+      expect(screen.getByText(expectedUrl)).toBeInTheDocument();
+    });
+
+    expect(
+      screen.queryByText('/webhooks/line/<Channel ID>'),
+    ).not.toBeInTheDocument();
+  });
+
+  it('copies the webhook URL to clipboard and shows feedback', async () => {
+    const mockChannel: LineChannel = {
+      id: 'item-1',
+      tenantId: 'tenant-1',
+      channelId: '2001234567',
+      displayName: 'Channel A',
+      channelSecret: 'secret',
+      channelAccessToken: 'token',
+      isActive: true,
+      createdAt: '2024-01-01T00:00:00.000Z',
+    };
+    vi.mocked(api.listChannels).mockResolvedValue([mockChannel]);
+
+    const writeText = vi.fn().mockResolvedValue(undefined);
+    Object.defineProperty(navigator, 'clipboard', {
+      configurable: true,
+      value: { writeText },
+    });
+
+    render(<Channels />);
+
+    const copyButton = await screen.findByRole('button', {
+      name: /Webhook URL をコピー/,
+    });
+
+    fireEvent.click(copyButton);
+
+    await waitFor(() => {
+      expect(writeText).toHaveBeenCalledWith(
+        `${window.location.origin}/webhooks/line/2001234567`,
+      );
+    });
+    await waitFor(() => {
+      expect(screen.getByText('コピー済み')).toBeInTheDocument();
+    });
+  });
+});
+
+describe('buildWebhookUrl', () => {
+  it('prepends the current origin to the webhook path', () => {
+    expect(buildWebhookUrl('2001234567')).toBe(
+      `${window.location.origin}/webhooks/line/2001234567`,
+    );
   });
 });
