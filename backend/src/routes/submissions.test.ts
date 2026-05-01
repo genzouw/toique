@@ -83,6 +83,7 @@ function buildApp() {
       name: 'Sub Test',
       plan: 'free',
       role: 'admin',
+      unlimited: false,
     });
     c.set('authUser', {
       id: '00000000-0000-0000-0000-000000000000',
