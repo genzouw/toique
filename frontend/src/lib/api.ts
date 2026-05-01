@@ -46,6 +46,7 @@ export type InboundMessage = {
   eventType: string;
   messageType: string | null;
   text: string | null;
+  rawEvent?: Record<string, unknown>; // Optional in list endpoints
   receivedAt: string;
 };
 
@@ -66,11 +67,13 @@ export type Form = {
   name: string;
   status: 'draft' | 'published' | 'archived';
   triggerKeyword: string | null;
-  schema: Record<string, unknown>;
+  schema?: Record<string, unknown>; // Optional in list endpoints
   version: number;
   createdAt: string;
   updatedAt: string;
 };
+
+export type FormListItem = Omit<Form, 'schema'>;
 
 export type Submission = {
   id: string;
@@ -178,7 +181,7 @@ export const api = {
   deleteChannel: (id: string) =>
     request<void>(`/api/v1/line-channels/${id}`, { method: 'DELETE' }),
   listMessages: () => request<InboundMessage[]>('/api/v1/messages'),
-  listForms: () => request<Form[]>('/api/v1/forms'),
+  listForms: () => request<FormListItem[]>('/api/v1/forms'),
   getForm: (id: string) => request<Form>(`/api/v1/forms/${id}`),
   createForm: (input: {
     name: string;
