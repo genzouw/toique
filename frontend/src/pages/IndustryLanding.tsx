@@ -4,8 +4,7 @@ import { getIndustry, INDUSTRIES } from '../lib/industries';
 import type { IndustryContent } from '../lib/industries';
 import IndustryNotFound from './IndustryNotFound';
 import { ICON_SIZE } from '../lib/icon-size';
-
-const SITE_ORIGIN = 'https://toique.pages.dev';
+import { SITE_ORIGIN } from '../lib/useSEO';
 
 /**
  * 指定した属性を満たす <meta> タグを取得し、なければ生成する。

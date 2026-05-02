@@ -13,7 +13,7 @@ export interface SEOOptions {
   title?: string;
   /** meta description。 */
   description?: string;
-  /** 正規URL。未指定なら `https://toique.pages.dev${location.pathname}` を自動生成。 */
+  /** 正規URL。未指定なら `https://toique.genzouw.com${location.pathname}` を自動生成。 */
   canonical?: string;
   /** OGP画像。絶対URL。 */
   ogImage?: string;
@@ -21,8 +21,8 @@ export interface SEOOptions {
   noIndex?: boolean;
 }
 
-const SITE_ORIGIN =
-  import.meta.env.VITE_SITE_ORIGIN ?? 'https://toique.pages.dev';
+export const SITE_ORIGIN =
+  import.meta.env.VITE_SITE_ORIGIN ?? 'https://toique.genzouw.com';
 
 type MetaSelector =
   | { kind: 'name'; value: string }
