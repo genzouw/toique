@@ -18,12 +18,8 @@ export default function Dashboard() {
   useEffect(() => {
     (async () => {
       try {
-        const [c, m, u] = await Promise.all([
-          api.listChannels(),
-          api.listMessages(),
-          api.getUsage(),
-        ]);
-        setChannels(c.length);
+        const [m, u] = await Promise.all([api.listMessages(), api.getUsage()]);
+        setChannels(u.usage.lineChannels.current);
         setMessages(m.length);
         setUsageData(u);
       } catch (e) {
