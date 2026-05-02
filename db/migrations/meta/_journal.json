@@ -43,6 +43,13 @@
       "when": 1776983944369,
       "tag": "0005_quiet_puma",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1777763790137,
+      "tag": "0006_backfill_email_verified",
+      "breakpoints": true
     }
   ]
 }
