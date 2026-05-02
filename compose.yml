@@ -15,7 +15,39 @@ services:
       timeout: 3s
       retries: 5
 
+  # ローカル開発用 SMTP サーバ (受信専用) + Web UI でメール内容を確認
+  # Web UI: http://localhost:8025
+  mailpit:
+    image: axllent/mailpit:latest
+    ports:
+      - '8025:8025' # Web UI
+      - '1025:1025' # SMTP
+    environment:
+      MP_SMTP_AUTH_ACCEPT_ANY: 1
+      MP_SMTP_AUTH_ALLOW_INSECURE: 1
+
+  # 起動時に drizzle のマイグレーションを適用して終了するワンショットサービス。
+  # backend は service_completed_successfully を待つので初回起動でも users 等のテーブルが揃った状態で立ち上がる。
+  # 本番デプロイでは .github/workflows/deploy.yml が Cloud Run へのデプロイ前に migrate を流すため、このサービスはローカル限定。
+  migrate:
+    image: toique-backend:dev
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+      target: dev
+    command: ['npm', 'run', 'db:migrate']
+    environment:
+      DATABASE_URL: postgresql://toique:toique@db:5432/toique
+      DRIZZLE_MIGRATIONS_DIR: /migrations
+    volumes:
+      - ./db/migrations:/migrations
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: 'no'
+
   backend:
+    image: toique-backend:dev
     build:
       context: .
       dockerfile: backend/Dockerfile
@@ -37,8 +69,15 @@ services:
       # /admin 向け Basic 認証の固定 ID/パスワード (ローカル開発用)
       ADMIN_USERNAME: ${ADMIN_USERNAME:-admin}
       ADMIN_PASSWORD: ${ADMIN_PASSWORD:-admin}
-      # Resend で通知メールを送る場合のみ設定
+      # メール送信設定:
+      #   ローカル開発では Mailpit (SMTP) に流す。Web UI: http://localhost:8025
+      #   RESEND_API_KEY を渡すと Resend に切り替わる (本番想定)
+      MAIL_DRIVER: ${MAIL_DRIVER:-smtp}
+      MAIL_FROM: ${MAIL_FROM:-noreply@toique.local}
+      SMTP_HOST: ${SMTP_HOST:-mailpit}
+      SMTP_PORT: ${SMTP_PORT:-1025}
       RESEND_API_KEY: ${RESEND_API_KEY:-}
+      # 旧名 (notify-contact 用)。MAIL_FROM 未指定時のフォールバック
       CONTACT_FROM: ${CONTACT_FROM:-}
     volumes:
       - ./backend/src:/app/src
@@ -46,6 +85,10 @@ services:
     depends_on:
       db:
         condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+      mailpit:
+        condition: service_started
 
   frontend:
     build:
