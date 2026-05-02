@@ -32,7 +32,7 @@ export class SmtpAdapter implements MailAdapter {
     const from = message.from ?? this.defaultFrom;
     await this.transporter.sendMail({
       from,
-      to: message.to.join(', '),
+      to: message.to,
       replyTo: message.replyTo,
       subject: message.subject,
       text: message.text,

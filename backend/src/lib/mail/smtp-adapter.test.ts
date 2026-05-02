@@ -49,7 +49,7 @@ describe('SmtpAdapter', () => {
     );
   });
 
-  it('joins multiple recipients with comma when sending', async () => {
+  it('passes recipient array directly when sending', async () => {
     const adapter = new SmtpAdapter({
       host: 'mailpit',
       port: 1025,
@@ -65,7 +65,7 @@ describe('SmtpAdapter', () => {
     expect(sendMailMock).toHaveBeenCalledWith(
       expect.objectContaining({
         from: 'noreply@toique.dev',
-        to: 'a@example.com, b@example.com',
+        to: ['a@example.com', 'b@example.com'],
         subject: 'hello',
         text: 'body',
       }),
