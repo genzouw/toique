@@ -3,7 +3,6 @@
 -- Users created before that timestamp had no opportunity to verify their email and would
 -- otherwise be permanently locked out of login.
 UPDATE "users"
-SET "email_verified" = true,
-    "updated_at" = now()
+SET "email_verified" = true
 WHERE "email_verified" = false
   AND "created_at" < '2026-05-03 06:52:01+09';
