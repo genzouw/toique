@@ -18,8 +18,6 @@ export default function Dashboard() {
   useEffect(() => {
     (async () => {
       try {
-        // ⚡ Bolt: Removed redundant `api.listChannels()` call which fetches the entire collection
-        // just to get the count. We now use `u.usage.lineChannels.current` from the usage endpoint instead.
         const [m, u] = await Promise.all([api.listMessages(), api.getUsage()]);
         setChannels(u.usage.lineChannels.current);
         setMessages(m.length);
