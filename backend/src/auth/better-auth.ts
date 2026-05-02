@@ -37,6 +37,7 @@ async function sendAuthEmail(input: {
     });
   } catch (err) {
     logger.error('[auth-email] failed to send', err);
+    throw err;
   }
 }
 
