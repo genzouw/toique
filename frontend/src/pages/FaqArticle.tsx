@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router';
 import { ChevronRight, ThumbsUp, ThumbsDown, ArrowRight } from 'lucide-react';
-import { useSEO } from '../lib/useSEO';
+import { SITE_ORIGIN, useSEO } from '../lib/useSEO';
 import { ICON_SIZE } from '../lib/icon-size';
 import {
   getFaq,
@@ -9,8 +9,6 @@ import {
   getRelated,
   type FaqArticle as FaqArticleType,
 } from '../lib/faqs';
-
-const SITE_ORIGIN = 'https://toique.genzouw.com';
 
 function setJsonLd(id: string, data: unknown) {
   let el = document.head.querySelector<HTMLScriptElement>(`script#${id}`);
