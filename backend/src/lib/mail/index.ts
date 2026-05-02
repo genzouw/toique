@@ -55,7 +55,7 @@ export function createMailerFromEnv(): MailAdapter | null {
       );
       return null;
     }
-    const port = Number(process.env.SMTP_PORT ?? '1025');
+    const port = parseInt(process.env.SMTP_PORT || '1025', 10) || 1025;
     return new SmtpAdapter({
       host,
       port,
