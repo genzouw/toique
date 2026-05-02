@@ -15,7 +15,7 @@ export default function FaqHub() {
     title: 'よくある質問・ヘルプセンター | Toique',
     description:
       'Toique のよくある質問（FAQ）。料金、LINE 連携、フォーム作成、問い合わせ管理、セキュリティに関する質問をまとめたヘルプセンターです。',
-    canonical: 'https://toique.pages.dev/faq',
+    canonical: 'https://toique.genzouw.com/faq',
   });
 
   const [query, setQuery] = useState('');

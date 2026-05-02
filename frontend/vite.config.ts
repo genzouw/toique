@@ -9,7 +9,7 @@ export default defineConfig({
     react(),
     tailwindcss(),
     Sitemap({
-      hostname: 'https://toique.pages.dev',
+      hostname: 'https://toique.genzouw.com',
       dynamicRoutes: [
         '/help',
         '/pricing',

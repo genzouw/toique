@@ -8,4 +8,4 @@ Disallow: /forms
 Disallow: /submissions
 Disallow: /messages
 
-Sitemap: https://toique.pages.dev/sitemap.xml
+Sitemap: https://toique.genzouw.com/sitemap.xml

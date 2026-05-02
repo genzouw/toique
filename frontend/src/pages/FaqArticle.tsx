@@ -10,7 +10,7 @@ import {
   type FaqArticle as FaqArticleType,
 } from '../lib/faqs';
 
-const SITE_ORIGIN = 'https://toique.pages.dev';
+const SITE_ORIGIN = 'https://toique.genzouw.com';
 
 function setJsonLd(id: string, data: unknown) {
   let el = document.head.querySelector<HTMLScriptElement>(`script#${id}`);

@@ -69,10 +69,10 @@ export default function Tokushoho() {
             </Row>
             <Row term="販売URL">
               <a
-                href="https://toique.pages.dev/"
+                href="https://toique.genzouw.com/"
                 className="underline hover:text-slate-900"
               >
-                https://toique.pages.dev/
+                https://toique.genzouw.com/
               </a>
             </Row>
             <Row term="販売価格">
