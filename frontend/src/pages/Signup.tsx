@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate, Link } from 'react-router';
+import { Link, useNavigate } from 'react-router';
 import { signUp } from '../lib/auth-client';
 import { AuthLayout, AuthField } from './Login';
 import { useSEO } from '../lib/useSEO';
@@ -32,7 +32,10 @@ export default function Signup() {
       setSubmitting(false);
       return;
     }
-    navigate('/onboarding', { replace: true });
+    // 確認メール送信完了の案内ページに遷移する。
+    // Signup は RedirectIfAuthed 配下にあり、sign-up 成功後の session refetch で
+    // 一瞬アンマウントされるため、ここで state を保持せず別ルートに飛ばす。
+    navigate('/verify-email-sent', { state: { email }, replace: true });
   }
 
   return (

@@ -11,6 +11,10 @@ import Channels from './pages/Channels';
 import Messages from './pages/Messages';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
+import VerifyEmail from './pages/VerifyEmail';
+import VerifyEmailSent from './pages/VerifyEmailSent';
+import ForgotPassword from './pages/ForgotPassword';
+import ResetPassword from './pages/ResetPassword';
 import Onboarding from './pages/Onboarding';
 import Forms from './pages/Forms';
 import FormEdit from './pages/FormEdit';
@@ -75,6 +79,10 @@ function AppRoutes() {
           </RedirectIfAuthed>
         }
       />
+      <Route path="/verify-email" element={<VerifyEmail />} />
+      <Route path="/verify-email-sent" element={<VerifyEmailSent />} />
+      <Route path="/forgot-password" element={<ForgotPassword />} />
+      <Route path="/reset-password" element={<ResetPassword />} />
       <Route
         path="/onboarding"
         element={
