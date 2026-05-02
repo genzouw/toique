@@ -62,6 +62,11 @@ export default function Login() {
           新規登録
         </Link>
       </div>
+      <div className="mt-2 text-sm text-slate-600">
+        <Link to="/forgot-password" className="text-slate-900 underline">
+          パスワードを忘れた方
+        </Link>
+      </div>
     </AuthLayout>
   );
 }

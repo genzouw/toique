@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { notifyContact } from './notify-contact.js';
+import { resetMailerCache } from './mail/index.js';
 
 const sendMock = vi.fn().mockResolvedValue({ id: 'mock-email-id' });
 
@@ -25,64 +26,72 @@ describe('notifyContact', () => {
 
   beforeEach(() => {
     warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    sendMock.mockClear();
+    resetMailerCache();
   });
 
   afterEach(() => {
     vi.unstubAllEnvs();
     vi.restoreAllMocks();
-  });
-
-  it('skips and warns if RESEND_API_KEY is missing', async () => {
-    vi.stubEnv('RESEND_API_KEY', '');
-    vi.stubEnv('CONTACT_FROM', 'noreply@toique.dev');
-    vi.stubEnv('OPERATOR_EMAILS', 'op1@test.com,op2@test.com');
-
-    await notifyContact(dummyInput);
-
-    expect(warnSpy).toHaveBeenCalledWith(
-      '[notify-contact] skipped: RESEND_API_KEY / CONTACT_FROM / OPERATOR_EMAILS いずれかが未設定',
-    );
-  });
-
-  it('skips and warns if CONTACT_FROM is missing', async () => {
-    vi.stubEnv('RESEND_API_KEY', 'test-key');
-    vi.stubEnv('CONTACT_FROM', '');
-    vi.stubEnv('OPERATOR_EMAILS', 'op1@test.com,op2@test.com');
-
-    await notifyContact(dummyInput);
-
-    expect(warnSpy).toHaveBeenCalledWith(
-      '[notify-contact] skipped: RESEND_API_KEY / CONTACT_FROM / OPERATOR_EMAILS いずれかが未設定',
-    );
+    resetMailerCache();
   });
 
   it('skips and warns if OPERATOR_EMAILS is missing', async () => {
     vi.stubEnv('RESEND_API_KEY', 'test-key');
-    vi.stubEnv('CONTACT_FROM', 'noreply@toique.dev');
+    vi.stubEnv('MAIL_FROM', 'noreply@toique.dev');
     vi.stubEnv('OPERATOR_EMAILS', '');
 
     await notifyContact(dummyInput);
 
     expect(warnSpy).toHaveBeenCalledWith(
-      '[notify-contact] skipped: RESEND_API_KEY / CONTACT_FROM / OPERATOR_EMAILS いずれかが未設定',
+      '[notify-contact] skipped: OPERATOR_EMAILS is not set',
     );
+    expect(sendMock).not.toHaveBeenCalled();
   });
 
-  it('skips and warns if OPERATOR_EMAILS is empty or only whitespace/commas', async () => {
+  it('skips and warns if OPERATOR_EMAILS only contains whitespace/commas', async () => {
     vi.stubEnv('RESEND_API_KEY', 'test-key');
-    vi.stubEnv('CONTACT_FROM', 'noreply@toique.dev');
+    vi.stubEnv('MAIL_FROM', 'noreply@toique.dev');
     vi.stubEnv('OPERATOR_EMAILS', ' , ,  ');
 
     await notifyContact(dummyInput);
 
     expect(warnSpy).toHaveBeenCalledWith(
-      '[notify-contact] skipped: RESEND_API_KEY / CONTACT_FROM / OPERATOR_EMAILS いずれかが未設定',
+      '[notify-contact] skipped: OPERATOR_EMAILS is not set',
+    );
+    expect(sendMock).not.toHaveBeenCalled();
+  });
+
+  it('skips and warns if mailer is not configured', async () => {
+    vi.stubEnv('RESEND_API_KEY', '');
+    vi.stubEnv('SMTP_HOST', '');
+    vi.stubEnv('MAIL_FROM', '');
+    vi.stubEnv('OPERATOR_EMAILS', 'op1@test.com');
+
+    await notifyContact(dummyInput);
+
+    expect(warnSpy).toHaveBeenCalledWith(
+      '[notify-contact] skipped: mailer is not configured (set RESEND_API_KEY/SMTP_HOST and MAIL_FROM)',
+    );
+    expect(sendMock).not.toHaveBeenCalled();
+  });
+
+  it('falls back to CONTACT_FROM when MAIL_FROM is unset (backward compat)', async () => {
+    vi.stubEnv('RESEND_API_KEY', 'test-key');
+    vi.stubEnv('MAIL_FROM', '');
+    vi.stubEnv('CONTACT_FROM', 'legacy@toique.dev');
+    vi.stubEnv('OPERATOR_EMAILS', 'op1@test.com');
+
+    await notifyContact(dummyInput);
+
+    expect(sendMock).toHaveBeenCalledWith(
+      expect.objectContaining({ from: 'legacy@toique.dev' }),
     );
   });
 
-  it('sends email when all env vars are present', async () => {
+  it('sends via Resend when env is fully configured', async () => {
     vi.stubEnv('RESEND_API_KEY', 'test-key');
-    vi.stubEnv('CONTACT_FROM', 'noreply@toique.dev');
+    vi.stubEnv('MAIL_FROM', 'noreply@toique.dev');
     vi.stubEnv('OPERATOR_EMAILS', 'op1@test.com,op2@test.com');
 
     await notifyContact(dummyInput);
