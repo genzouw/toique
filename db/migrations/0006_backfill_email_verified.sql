@@ -5,4 +5,4 @@
 UPDATE "users"
 SET "email_verified" = true
 WHERE "email_verified" = false
-  AND "created_at" < '2026-05-03 06:52:01+09';
+  AND "created_at" < TIMESTAMPTZ '2026-05-03 06:52:01+09';
