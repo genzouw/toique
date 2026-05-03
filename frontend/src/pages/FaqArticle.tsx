@@ -9,6 +9,8 @@ import {
   getRelated,
   type FaqArticle as FaqArticleType,
 } from '../lib/faqs';
+import SiteHeader from '../components/SiteHeader';
+import SiteFooter from '../components/SiteFooter';
 
 function setJsonLd(id: string, data: unknown) {
   let el = document.head.querySelector<HTMLScriptElement>(`script#${id}`);
@@ -295,70 +297,5 @@ function FaqNotFound({ slug }: { slug: string | undefined }) {
       </main>
       <SiteFooter />
     </div>
-  );
-}
-
-function SiteHeader() {
-  return (
-    <header className="border-b border-slate-200">
-      <div className="max-w-5xl mx-auto px-6 h-14 flex items-center justify-between">
-        <Link to="/" className="text-lg font-bold text-slate-900">
-          Toique
-        </Link>
-        <div className="flex items-center gap-4">
-          <Link
-            to="/pricing"
-            className="text-sm text-slate-700 hover:text-slate-900"
-          >
-            料金プラン
-          </Link>
-          <Link
-            to="/faq"
-            className="text-sm text-slate-700 hover:text-slate-900"
-          >
-            よくある質問
-          </Link>
-          <Link
-            to="/login"
-            className="text-sm text-slate-700 hover:text-slate-900"
-          >
-            ログイン
-          </Link>
-          <Link
-            to="/signup"
-            className="text-sm px-4 py-1.5 bg-slate-900 text-white rounded-md hover:bg-slate-800"
-          >
-            無料で始める
-          </Link>
-        </div>
-      </div>
-    </header>
-  );
-}
-
-function SiteFooter() {
-  return (
-    <footer className="border-t border-slate-200 py-8 px-6">
-      <div className="max-w-5xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500">
-        <span>Toique</span>
-        <div className="flex gap-4">
-          <Link to="/pricing" className="hover:text-slate-900">
-            料金プラン
-          </Link>
-          <Link to="/faq" className="hover:text-slate-900">
-            よくある質問
-          </Link>
-          <Link to="/help" className="hover:text-slate-900">
-            ヘルプ
-          </Link>
-          <Link to="/contact" className="hover:text-slate-900">
-            お問い合わせ
-          </Link>
-          <Link to="/login" className="hover:text-slate-900">
-            ログイン
-          </Link>
-        </div>
-      </div>
-    </footer>
   );
 }
