@@ -25,8 +25,3 @@ export const FOOTER_NAV_ITEMS: NavItem[] = [
   },
   { to: '/login', label: 'ログイン' },
 ];
-
-export function isNavItemActive(pathname: string, to: string): boolean {
-  if (to === '/') return pathname === '/';
-  return pathname === to || pathname.startsWith(`${to}/`);
-}
