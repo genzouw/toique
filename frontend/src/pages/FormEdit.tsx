@@ -4,6 +4,7 @@ import { ChevronLeft, Trash2 } from 'lucide-react';
 import { api, type Form, type LineChannel } from '../lib/api';
 import FormSchemaBuilder from '../components/FormSchemaBuilder';
 import { ICON_SIZE } from '../lib/icon-size';
+import LoadingButton from '../components/LoadingButton';
 
 const DEFAULT_SCHEMA = {
   startStep: 'カテゴリ',
@@ -393,13 +394,14 @@ export default function FormEdit() {
         </div>
 
         <div className="flex justify-end">
-          <button
+          <LoadingButton
             onClick={handleSave}
-            disabled={saving || !name || !lineChannelId || !!jsonError}
-            className="px-4 py-2 bg-slate-900 text-white text-sm rounded-md disabled:opacity-50"
+            loading={saving}
+            disabled={!name || !lineChannelId || !!jsonError}
+            className="px-4 py-2 bg-slate-900 text-white text-sm rounded-md flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {saving ? '保存中…' : '保存'}
-          </button>
+          </LoadingButton>
         </div>
       </div>
     </div>

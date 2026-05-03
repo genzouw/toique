@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { api, type ContactCategory } from '../lib/api';
 import { useSession } from '../lib/auth-client';
 import { useSEO } from '../lib/useSEO';
+import LoadingButton from '../components/LoadingButton';
 
 const CATEGORY_OPTIONS: { value: ContactCategory; label: string }[] = [
   { value: 'bug', label: '不具合の報告' },
@@ -240,13 +241,13 @@ export default function Contact() {
             )}
 
             <div className="pt-2">
-              <button
+              <LoadingButton
                 type="submit"
-                disabled={submitting}
-                className="inline-flex items-center px-4 py-2 rounded-md bg-slate-900 text-white text-sm font-medium hover:bg-slate-800 disabled:opacity-50 disabled:cursor-not-allowed"
+                loading={submitting}
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-md bg-slate-900 text-white text-sm font-medium hover:bg-slate-800 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {submitting ? '送信中…' : '送信する'}
-              </button>
+              </LoadingButton>
             </div>
           </form>
         )}
