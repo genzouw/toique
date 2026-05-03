@@ -5,6 +5,7 @@ import userEvent from '@testing-library/user-event';
 import Contact from '../Contact';
 import * as authClient from '../../lib/auth-client';
 import { api } from '../../lib/api';
+import { mockAuthedSession, mockUnauthedSession } from '../../test/auth-mocks';
 
 // モック化
 vi.mock('../../lib/auth-client', () => ({
@@ -24,29 +25,16 @@ describe('Contact Page', () => {
   });
 
   it('ログインユーザーの情報を自動入力する', async () => {
-    const mockUser = {
-      id: 'user-1',
-      name: 'テスト太郎',
-      email: 'test@example.com',
-      emailVerified: true,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    };
-
-    const mockSession = {
-      id: 'session-1',
-      userId: 'user-1',
-      expiresAt: new Date(),
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    };
-
-    (authClient.useSession as Mock).mockReturnValue({
-      data: {
-        user: mockUser,
-        session: mockSession,
-      },
-    });
+    vi.mocked(authClient.useSession).mockReturnValue(
+      mockAuthedSession({
+        user: {
+          id: 'user-1',
+          name: 'テスト太郎',
+          email: 'test@example.com',
+        },
+        session: { id: 'session-1', userId: 'user-1' },
+      }),
+    );
 
     await act(async () => {
       render(
@@ -66,9 +54,7 @@ describe('Contact Page', () => {
   });
 
   it('未ログインの場合は空のままである', async () => {
-    (authClient.useSession as Mock).mockReturnValue({
-      data: null,
-    });
+    vi.mocked(authClient.useSession).mockReturnValue(mockUnauthedSession());
 
     await act(async () => {
       render(
@@ -88,9 +74,7 @@ describe('Contact Page', () => {
   });
 
   it('送信に失敗した場合、エラーメッセージが表示される', async () => {
-    (authClient.useSession as Mock).mockReturnValue({
-      data: null,
-    });
+    vi.mocked(authClient.useSession).mockReturnValue(mockUnauthedSession());
 
     const errorMessage = 'サーバーエラーが発生しました';
     (api.submitContact as Mock).mockRejectedValue(new Error(errorMessage));

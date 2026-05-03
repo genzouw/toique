@@ -3,6 +3,11 @@ import { MemoryRouter, Routes, Route, useLocation } from 'react-router';
 import { vi, describe, it, expect, beforeEach } from 'vitest';
 import RedirectIfAuthed from './RedirectIfAuthed';
 import { useSession } from '../lib/auth-client';
+import {
+  mockAuthedSession,
+  mockPendingSession,
+  mockUnauthedSession,
+} from '../test/auth-mocks';
 
 vi.mock('../lib/auth-client', () => ({
   useSession: vi.fn(),
@@ -27,12 +32,7 @@ describe('RedirectIfAuthed', () => {
   });
 
   it('renders loading state when session is pending', () => {
-    vi.mocked(useSession).mockReturnValue({
-      data: null,
-      isPending: true,
-      error: null,
-      refetch: vi.fn(),
-    } as unknown as ReturnType<typeof useSession>);
+    vi.mocked(useSession).mockReturnValue(mockPendingSession());
 
     render(
       <MemoryRouter initialEntries={['/login']}>
@@ -47,12 +47,9 @@ describe('RedirectIfAuthed', () => {
   });
 
   it('redirects to /dashboard when user is authenticated', () => {
-    vi.mocked(useSession).mockReturnValue({
-      data: { user: { id: '1', name: 'Test User' } },
-      isPending: false,
-      error: null,
-      refetch: vi.fn(),
-    } as unknown as ReturnType<typeof useSession>);
+    vi.mocked(useSession).mockReturnValue(
+      mockAuthedSession({ user: { id: '1', name: 'Test User' } }),
+    );
 
     render(
       <MemoryRouter initialEntries={['/login']}>
@@ -78,12 +75,7 @@ describe('RedirectIfAuthed', () => {
   });
 
   it('renders children when user is not authenticated and not pending', () => {
-    vi.mocked(useSession).mockReturnValue({
-      data: null,
-      isPending: false,
-      error: null,
-      refetch: vi.fn(),
-    } as unknown as ReturnType<typeof useSession>);
+    vi.mocked(useSession).mockReturnValue(mockUnauthedSession());
 
     render(
       <MemoryRouter initialEntries={['/login']}>
