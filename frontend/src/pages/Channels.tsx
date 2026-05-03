@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Trash2, Copy, Check, MessageCircle } from 'lucide-react';
 import { api, type LineChannel } from '../lib/api';
 import { ICON_SIZE } from '../lib/icon-size';
+import LoadingButton from '../components/LoadingButton';
 import { buildWebhookUrl } from '../lib/webhook-url';
 
 const COPY_FEEDBACK_DURATION_MS = 2000;
@@ -119,13 +120,13 @@ export default function Channels() {
           type="password"
         />
         <div className="md:col-span-2 flex justify-end">
-          <button
+          <LoadingButton
             type="submit"
-            disabled={submitting}
+            loading={submitting}
             className="px-4 py-2 bg-slate-900 text-white rounded-md text-sm disabled:opacity-50"
           >
             {submitting ? '登録中…' : 'チャネルを登録'}
-          </button>
+          </LoadingButton>
         </div>
       </form>
 
