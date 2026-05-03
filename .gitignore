@@ -49,5 +49,9 @@ drizzle/
 .claude/
 skills-lock.json
 
+# Jules
+.jules/
+.Jules/
+
 # Cloudflare Wrangler
 .wrangler/
