@@ -388,12 +388,14 @@ export default function Landing() {
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
-          __html: JSON.stringify(SOFTWARE_APP_JSONLD),
+          __html: JSON.stringify(SOFTWARE_APP_JSONLD).replace(/</g, '\\u003c'),
         }}
       />
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(FAQ_JSONLD) }}
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(FAQ_JSONLD).replace(/</g, '\\u003c'),
+        }}
       />
     </div>
   );
