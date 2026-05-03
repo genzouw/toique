@@ -39,7 +39,7 @@ app.get('/export', async (c) => {
 
   // スキーマから出現順に field を抽出 (重複除去)
   const schema = parseFormSchema(form.schema);
-  const fieldKeys: string[] = [];
+  const fieldKeySet = new Set<string>();
   const startStep = schema.startStep;
   const visited = new Set<string>();
   const visitOrder: string[] = [];
@@ -54,12 +54,10 @@ app.get('/export', async (c) => {
     const step = schema.steps?.[stepId] as FormStep | undefined;
     if (!step) continue;
     if (step.type === 'text') {
-      if (step.field && !fieldKeys.includes(step.field))
-        fieldKeys.push(step.field);
+      if (step.field) fieldKeySet.add(step.field);
       if (step.next) queue.push(step.next);
     } else if (step.type === 'choice') {
-      if (step.field && !fieldKeys.includes(step.field))
-        fieldKeys.push(step.field);
+      if (step.field) fieldKeySet.add(step.field);
       for (const ch of step.choices ?? []) {
         if (ch.next) queue.push(ch.next);
       }
@@ -71,10 +69,11 @@ app.get('/export', async (c) => {
   for (const [stepId, step] of Object.entries(schema.steps ?? {})) {
     if (visited.has(stepId)) continue;
     if (step.type === 'text' || step.type === 'choice') {
-      if (step.field && !fieldKeys.includes(step.field))
-        fieldKeys.push(step.field);
+      if (step.field) fieldKeySet.add(step.field);
     }
   }
+
+  const fieldKeys = Array.from(fieldKeySet);
 
   // submissions 取得
   const rows = await db
