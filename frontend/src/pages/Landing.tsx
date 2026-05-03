@@ -119,6 +119,9 @@ const FAQS: { question: string; answer: string }[] = [
   },
 ];
 
+const safeJsonLdStringify = (data: unknown): string =>
+  JSON.stringify(data).replace(/</g, '\\u003c');
+
 const SOFTWARE_APP_JSONLD = {
   '@context': 'https://schema.org',
   '@type': 'SoftwareApplication',
@@ -388,13 +391,13 @@ export default function Landing() {
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
-          __html: JSON.stringify(SOFTWARE_APP_JSONLD).replace(/</g, '\\u003c'),
+          __html: safeJsonLdStringify(SOFTWARE_APP_JSONLD),
         }}
       />
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
-          __html: JSON.stringify(FAQ_JSONLD).replace(/</g, '\\u003c'),
+          __html: safeJsonLdStringify(FAQ_JSONLD),
         }}
       />
     </div>
