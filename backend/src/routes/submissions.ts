@@ -37,7 +37,6 @@ app.get('/export', async (c) => {
     .limit(1);
   if (!form) return c.text('Form not found', 404);
 
-  // ⚡ Bolt: Use Set for O(1) membership checks instead of O(N) Array.includes() inside loops
   // スキーマから出現順に field を抽出 (重複除去)
   const schema = parseFormSchema(form.schema);
   const fieldKeySet = new Set<string>();
