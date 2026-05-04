@@ -3,6 +3,7 @@ import { MemoryRouter } from 'react-router';
 import { vi, describe, it, expect, beforeEach } from 'vitest';
 import AuthGuard from './AuthGuard';
 import { useSession } from '../lib/auth-client';
+import { mockPendingSession } from '../test/auth-mocks';
 
 vi.mock('../lib/auth-client', () => ({
   useSession: vi.fn(),
@@ -25,12 +26,7 @@ describe('AuthGuard', () => {
   });
 
   it('renders loading state when session is pending', () => {
-    vi.mocked(useSession).mockReturnValue({
-      data: null,
-      isPending: true,
-      error: null,
-      refetch: vi.fn(),
-    } as unknown as ReturnType<typeof useSession>);
+    vi.mocked(useSession).mockReturnValue(mockPendingSession());
 
     render(
       <MemoryRouter initialEntries={['/']}>
