@@ -51,7 +51,7 @@ jobs:
       - uses: actions/checkout@v6
       - uses: docker/setup-buildx-action@v3
       - name: Build and run checks in Docker
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         with:
           context: .
           file: frontend/Dockerfile
@@ -85,7 +85,7 @@ jobs:
       - uses: actions/checkout@v6
       - uses: docker/setup-buildx-action@v3
       - name: Build ci-check image
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         with:
           context: .
           file: backend/Dockerfile
@@ -94,7 +94,7 @@ jobs:
           cache-from: type=gha,scope=backend
           cache-to: type=gha,mode=max,scope=backend,ignore-error=true
       - name: Build ci-test image
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         with:
           context: .
           file: backend/Dockerfile
