@@ -55,6 +55,11 @@ export const INDUSTRIES: IndustryContent[] = [
   ec,
 ];
 
+const INDUSTRY_MAP: Record<string, IndustryContent | undefined> = {};
+for (const industry of INDUSTRIES) {
+  INDUSTRY_MAP[industry.slug] = industry;
+}
+
 export function getIndustry(slug: string): IndustryContent | undefined {
-  return INDUSTRIES.find((i) => i.slug === slug);
+  return INDUSTRY_MAP[slug];
 }

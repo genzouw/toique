@@ -10,13 +10,13 @@ export const DOGFOODING_EMAILS: readonly string[] = [
   'toique.official@gmail.com',
 ];
 
-const NORMALIZED_DOGFOODING_EMAILS = DOGFOODING_EMAILS.map((e) =>
-  e.trim().toLowerCase(),
+const NORMALIZED_DOGFOODING_EMAILS: ReadonlySet<string> = new Set(
+  DOGFOODING_EMAILS.map((e) => e.trim().toLowerCase()),
 );
 
 export function isDogfoodingEmail(email: string | null | undefined): boolean {
   if (!email) return false;
-  return NORMALIZED_DOGFOODING_EMAILS.includes(email.trim().toLowerCase());
+  return NORMALIZED_DOGFOODING_EMAILS.has(email.trim().toLowerCase());
 }
 
 /**
