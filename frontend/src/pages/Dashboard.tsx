@@ -96,7 +96,7 @@ export default function Dashboard() {
                     setManaging(false);
                   }
                 }}
-                className="text-sm text-slate-600 hover:text-slate-900 underline disabled:opacity-50"
+                className="inline-flex items-center gap-1 text-sm text-slate-600 hover:text-slate-900 underline disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 サブスクリプション管理
               </LoadingButton>
