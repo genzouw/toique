@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router';
 import { api, type UsageResponse, type ResourceUsage } from '../lib/api';
+import LoadingButton from '../components/LoadingButton';
 
 const RESOURCE_LABELS: Record<string, string> = {
   lineChannels: 'LINEチャネル',
@@ -14,6 +15,7 @@ export default function Dashboard() {
   const [messages, setMessages] = useState<number | null>(null);
   const [usageData, setUsageData] = useState<UsageResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [managing, setManaging] = useState(false);
 
   useEffect(() => {
     (async () => {
@@ -81,19 +83,23 @@ export default function Dashboard() {
                 Pro プランにアップグレード
               </Link>
             ) : (
-              <button
+              <LoadingButton
+                loading={managing}
                 onClick={async () => {
+                  setManaging(true);
                   try {
                     const { url } = await api.createPortalSession();
                     if (url) window.location.href = url;
                   } catch {
                     setError('ポータルの表示に失敗しました');
+                  } finally {
+                    setManaging(false);
                   }
                 }}
-                className="text-sm text-slate-600 hover:text-slate-900 underline"
+                className="text-sm text-slate-600 hover:text-slate-900 underline disabled:opacity-50"
               >
                 サブスクリプション管理
-              </button>
+              </LoadingButton>
             )}
           </div>
         </div>
