@@ -90,8 +90,13 @@ export function getFaq(slug: string): FaqArticle | undefined {
   return FAQ_MAP[slug];
 }
 
+const CATEGORY_MAP: Record<string, FaqCategory | undefined> = {};
+for (const cat of CATEGORIES) {
+  CATEGORY_MAP[cat.slug] = cat;
+}
+
 export function getCategory(slug: string): FaqCategory | undefined {
-  return CATEGORIES.find((c) => c.slug === slug);
+  return CATEGORY_MAP[slug];
 }
 
 export function getFaqsByCategory(categorySlug: FaqCategorySlug): FaqArticle[] {
