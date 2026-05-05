@@ -31,11 +31,11 @@ declare module 'hono' {
   }
 }
 
-const OPERATOR_ALLOWLIST = new Set(
+const OPERATOR_ALLOWLIST: ReadonlySet<string> = new Set(
   (process.env.OPERATOR_EMAILS ?? '')
     .split(',')
     .map((s) => s.trim().toLowerCase())
-    .filter(Boolean)
+    .filter(Boolean),
 );
 
 if (
