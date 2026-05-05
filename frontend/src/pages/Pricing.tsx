@@ -6,6 +6,7 @@ import { api } from '../lib/api';
 import { useSession } from '../lib/auth-client';
 import { useSEO } from '../lib/useSEO';
 import { ICON_SIZE } from '../lib/icon-size';
+import LoadingButton from '../components/LoadingButton';
 
 const PLANS = [
   {
@@ -139,13 +140,13 @@ export default function Pricing() {
               </ul>
 
               {plan.highlight && session?.user ? (
-                <button
+                <LoadingButton
                   onClick={handleUpgrade}
-                  disabled={upgrading}
-                  className="mt-6 block w-full text-center px-4 py-2.5 text-sm font-medium rounded-md bg-slate-900 text-white hover:bg-slate-800 disabled:opacity-50"
+                  loading={upgrading}
+                  className="mt-6 flex w-full items-center justify-center gap-2 px-4 py-2.5 text-sm font-medium rounded-md bg-slate-900 text-white hover:bg-slate-800 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {upgrading ? '処理中…' : plan.cta}
-                </button>
+                </LoadingButton>
               ) : (
                 <Link
                   to={plan.ctaTo}
