@@ -16,7 +16,7 @@
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true,
     "verbatimModuleSyntax": false,
-    "types": ["vitest/globals", "vite/client", "node"]
+    "types": ["vite/client", "node"]
   },
   "include": ["src"]
 }
