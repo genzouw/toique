@@ -12,7 +12,8 @@ import {
   ChevronDown,
   ArrowRight,
 } from 'lucide-react';
-import { SITE_ORIGIN, useSEO } from '../lib/useSEO';
+import { SITE_ORIGIN } from '../lib/site';
+import { useSEO } from '../lib/useSEO';
 import { safeJsonLdStringify } from '../lib/json-ld';
 import { INDUSTRIES } from '../lib/industries';
 import { ICON_SIZE } from '../lib/icon-size';
