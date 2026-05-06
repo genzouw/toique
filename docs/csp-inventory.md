@@ -26,12 +26,12 @@ CSP は document（HTML）の取得時にブラウザが評価する。Cloudflar
 
 ### `connect-src`
 
-| 用途             | 接続先                                          | 備考                                     |
-| ---------------- | ----------------------------------------------- | ---------------------------------------- |
-| 自社 API         | `'self'` または `VITE_API_URL`（Cloud Run URL） | Better Auth `/api/auth/*` も同じオリジン |
-| Google Analytics | `https://*.google-analytics.com`                | GA4 のイベント送信                       |
-|                  | `https://*.analytics.google.com`                | （GA4 のリージョナル送信用）             |
-|                  | `https://*.googletagmanager.com`                | gtag 設定取得                            |
+| 用途             | 接続先                                                                                                | 備考                                                                                         |
+| ---------------- | ----------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
+| 自社 API         | `https://toique-backend-mbe63yj5aq-an.a.run.app`（`VITE_API_URL` の本番値、Cloud Run のサービス URL） | Better Auth `/api/auth/*` も同じオリジン。SPA とは別オリジンなので `'self'` では到達できない |
+| Google Analytics | `https://*.google-analytics.com`                                                                      | GA4 のイベント送信                                                                           |
+|                  | `https://*.analytics.google.com`                                                                      | （GA4 のリージョナル送信用）                                                                 |
+|                  | `https://*.googletagmanager.com`                                                                      | gtag 設定取得                                                                                |
 
 ### `img-src`
 
@@ -103,7 +103,7 @@ frame-ancestors 'none';
 ```
 default-src 'self';
 script-src 'self' https://www.googletagmanager.com;
-connect-src 'self' https://*.google-analytics.com https://*.analytics.google.com https://*.googletagmanager.com;
+connect-src 'self' https://toique-backend-mbe63yj5aq-an.a.run.app https://*.google-analytics.com https://*.analytics.google.com https://*.googletagmanager.com;
 img-src 'self' data: https://*.google-analytics.com;
 style-src 'self' 'unsafe-inline';
 font-src 'self';
