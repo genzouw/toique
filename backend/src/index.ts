@@ -20,6 +20,7 @@ import adminContacts from './routes/admin/contacts.js';
 import adminMe from './routes/admin/me.js';
 import adminUsers from './routes/admin/users.js';
 import { logger as appLogger } from './lib/logger.js';
+import { securityHeadersConfig } from './lib/security-headers.js';
 
 const app = new Hono({ strict: false });
 
@@ -28,7 +29,7 @@ const app = new Hono({ strict: false });
 app.use('*', logger());
 
 // セキュリティヘッダーを付与
-app.use('*', secureHeaders({ crossOriginResourcePolicy: 'cross-origin' }));
+app.use('*', secureHeaders(securityHeadersConfig));
 
 app.use(
   '/api/*',

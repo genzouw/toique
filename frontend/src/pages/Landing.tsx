@@ -13,6 +13,7 @@ import {
   ArrowRight,
 } from 'lucide-react';
 import { useSEO } from '../lib/useSEO';
+import { safeJsonLdStringify } from '../lib/json-ld';
 import { INDUSTRIES } from '../lib/industries';
 import { ICON_SIZE } from '../lib/icon-size';
 import SiteHeader from '../components/SiteHeader';
@@ -118,9 +119,6 @@ const FAQS: { question: string; answer: string }[] = [
       '現時点で自動削除は行っていません。ユーザー自身で削除ボタンから削除することができます。',
   },
 ];
-
-const safeJsonLdStringify = (data: unknown): string =>
-  JSON.stringify(data).replace(/</g, '\\u003c');
 
 const SOFTWARE_APP_JSONLD = {
   '@context': 'https://schema.org',
