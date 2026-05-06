@@ -1,8 +1,6 @@
 import { useEffect } from 'react';
 import { SITE_ORIGIN } from './site';
 
-export { SITE_ORIGIN };
-
 /**
  * ページ別のメタタグを切り替えるためのフック。
  *

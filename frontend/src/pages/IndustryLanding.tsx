@@ -6,7 +6,7 @@ import IndustryNotFound from './IndustryNotFound';
 import { ICON_SIZE } from '../lib/icon-size';
 import SiteHeader from '../components/SiteHeader';
 import SiteFooter from '../components/SiteFooter';
-import { SITE_ORIGIN } from '../lib/useSEO';
+import { SITE_ORIGIN } from '../lib/site';
 
 /**
  * 指定した属性を満たす <meta> タグを取得し、なければ生成する。
