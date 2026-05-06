@@ -22,11 +22,9 @@ describe('EmptyState', () => {
   });
 
   it('does not render action wrapper when action prop is omitted', () => {
-    const { container } = render(
-      <EmptyState icon={Inbox} title="title" description="description" />,
-    );
+    render(<EmptyState icon={Inbox} title="title" description="description" />);
 
-    expect(container.querySelector('.mt-6')).toBeNull();
+    expect(screen.queryByRole('button')).toBeNull();
   });
 
   it('renders action when provided', () => {
