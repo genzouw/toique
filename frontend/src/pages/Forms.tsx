@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router';
 import { Plus, FileText } from 'lucide-react';
 import { api, type FormListItem } from '../lib/api';
+import EmptyState from '../components/EmptyState';
 import { ICON_SIZE } from '../lib/icon-size';
 
 const STATUS_LABEL: Record<FormListItem['status'], string> = {
@@ -61,24 +62,20 @@ export default function Forms() {
         {loading ? (
           <div className="p-5 text-sm text-slate-500">読み込み中…</div>
         ) : items.length === 0 ? (
-          <div className="flex flex-col items-center justify-center p-12 text-center">
-            <div className="w-12 h-12 bg-slate-100 rounded-full flex items-center justify-center mb-4">
-              <FileText className="text-slate-400" size={ICON_SIZE.xxl} />
-            </div>
-            <h2 className="text-sm font-medium text-slate-900 mb-1">
-              フォームはまだありません
-            </h2>
-            <p className="text-sm text-slate-500 mb-6 max-w-sm">
-              LINE上で動作する対話型フォームを作成して、問い合わせや予約の受付を自動化しましょう。
-            </p>
-            <Link
-              to="/forms/new"
-              className="inline-flex items-center gap-2 px-4 py-2 bg-slate-900 text-white text-sm font-medium rounded-md hover:bg-slate-800 transition-colors"
-            >
-              <Plus size={ICON_SIZE.md} />
-              最初のフォームを作成
-            </Link>
-          </div>
+          <EmptyState
+            icon={FileText}
+            title="フォームはまだありません"
+            description="LINE上で動作する対話型フォームを作成して、問い合わせや予約の受付を自動化しましょう。"
+            action={
+              <Link
+                to="/forms/new"
+                className="inline-flex items-center gap-2 px-4 py-2 bg-slate-900 text-white text-sm font-medium rounded-md hover:bg-slate-800 transition-colors"
+              >
+                <Plus size={ICON_SIZE.md} />
+                最初のフォームを作成
+              </Link>
+            }
+          />
         ) : (
           <ul className="divide-y divide-slate-200">
             {items.map((form) => (

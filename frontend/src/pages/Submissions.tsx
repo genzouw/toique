@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Inbox, Download, RefreshCw } from 'lucide-react';
 import { api, type Submission, type FormListItem } from '../lib/api';
+import EmptyState from '../components/EmptyState';
 import LoadingButton from '../components/LoadingButton';
 import { ICON_SIZE } from '../lib/icon-size';
 
@@ -138,18 +139,11 @@ export default function Submissions() {
         {loading ? (
           <div className="p-5 text-sm text-slate-500">読み込み中…</div>
         ) : items.length === 0 ? (
-          <div className="flex flex-col items-center justify-center p-12 text-center">
-            <div className="w-12 h-12 bg-slate-100 rounded-full flex items-center justify-center mb-4">
-              <Inbox className="text-slate-400" size={ICON_SIZE.xxl} />
-            </div>
-            <h2 className="text-sm font-medium text-slate-900 mb-1">
-              まだ回答はありません
-            </h2>
-            <p className="text-sm text-slate-500 max-w-sm">
-              フォームを公開し、LINE上でトリガーキーワードを送信して、
-              実際の回答フローをテストしてみましょう。
-            </p>
-          </div>
+          <EmptyState
+            icon={Inbox}
+            title="まだ回答はありません"
+            description="フォームを公開し、LINE上でトリガーキーワードを送信して、実際の回答フローをテストしてみましょう。"
+          />
         ) : (
           <table className="w-full text-sm">
             <thead className="bg-slate-50 text-slate-600">
