@@ -89,10 +89,10 @@ app.get('/export', async (c) => {
   const lines: string[] = [header.map(escapeCsv).join(',')];
   for (const row of rows) {
     const answers = (row.answers ?? {}) as Record<string, unknown>;
-    const values = [
+    const values: CsvExportableValue[] = [
       new Date(row.submittedAt).toISOString(),
       row.status,
-      ...fieldKeys.map((k) => String(answers[k] ?? '')),
+      ...fieldKeys.map((k) => answers[k] as CsvExportableValue),
     ];
     lines.push(values.map(escapeCsv).join(','));
   }
@@ -111,8 +111,15 @@ app.get('/export', async (c) => {
 const CSV_ESCAPE_TEST = /[",\r\n]/;
 const CSV_ESCAPE_REPLACE = /"/g;
 
-export function escapeCsv(value: string | number | null | undefined): string {
-  if (typeof value === 'number') return String(value);
+// 現スキーマ (forms/types.ts) では answers 値は実質的に string のみだが、
+// 将来 number/boolean 型 step を追加した際に escapeCsv が型を保持したまま
+// 受け取れるよう契約を明示する
+export type CsvExportableValue = string | number | boolean | null | undefined;
+
+export function escapeCsv(value: CsvExportableValue): string {
+  if (typeof value === 'number')
+    return Number.isFinite(value) ? String(value) : '';
+  if (typeof value === 'boolean') return String(value);
   if (value == null) return '';
 
   let sanitized = value;
