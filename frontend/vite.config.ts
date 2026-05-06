@@ -6,7 +6,7 @@ import tailwindcss from '@tailwindcss/vite';
 import Sitemap from 'vite-plugin-sitemap';
 
 // VITE_SITE_ORIGIN の真実の源は .env(.local) → process.env → ここのフォールバック。
-// 値は src/lib/site.ts および scripts/generate-robots.mjs と一致させること。
+// 値は src/lib/site.ts と一致させること。
 const SITE_ORIGIN_FALLBACK = 'https://toique.genzouw.com';
 
 export default defineConfig(({ mode }) => {
