@@ -40,4 +40,9 @@ describe('securityHeadersConfig', () => {
     const res = await buildTestApp().request('/ping');
     expect(res.headers.get('x-content-type-options')).toBe('nosniff');
   });
+
+  it('X-Frame-Options が DENY に設定されている', async () => {
+    const res = await buildTestApp().request('/ping');
+    expect(res.headers.get('x-frame-options')).toBe('DENY');
+  });
 });
