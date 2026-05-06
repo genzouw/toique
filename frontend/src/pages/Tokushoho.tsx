@@ -1,5 +1,6 @@
 import { Link } from 'react-router';
-import { SITE_ORIGIN, useSEO } from '../lib/useSEO';
+import { SITE_ORIGIN } from '../lib/site';
+import { useSEO } from '../lib/useSEO';
 
 /**
  * 特定商取引法に基づく表記
