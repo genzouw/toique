@@ -2,15 +2,10 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router';
 import { signUp } from '../lib/auth-client';
 import { AuthLayout, AuthField } from './Login';
-import { useSEO } from '../lib/useSEO';
+import SEOMetadata from '../components/SEOMetadata';
 import LoadingButton from '../components/LoadingButton';
 
 export default function Signup() {
-  useSEO({
-    title: '無料でアカウント登録 | Toique',
-    description:
-      'Toiqueの無料アカウント登録ページ。LINE公式アカウント連携と対話フォームによる問い合わせ自動受付を今すぐ始められます。',
-  });
   const navigate = useNavigate();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -40,6 +35,10 @@ export default function Signup() {
 
   return (
     <AuthLayout title="新規登録">
+      <SEOMetadata
+        title="無料でアカウント登録 | Toique"
+        description="Toiqueの無料アカウント登録ページ。LINE公式アカウント連携と対話フォームによる問い合わせ自動受付を今すぐ始められます。"
+      />
       <form onSubmit={handleSubmit} className="space-y-4">
         <AuthField label="お名前" value={name} onChange={setName} />
         <AuthField

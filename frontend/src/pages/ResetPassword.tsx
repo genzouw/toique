@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link, useSearchParams } from 'react-router';
 import { AuthLayout, AuthField } from './Login';
-import { useSEO } from '../lib/useSEO';
+import SEOMetadata from '../components/SEOMetadata';
 import LoadingButton from '../components/LoadingButton';
 
 const API_URL =
@@ -9,11 +9,6 @@ const API_URL =
   'http://localhost:3000';
 
 export default function ResetPassword() {
-  useSEO({
-    title: 'パスワード再設定 | Toique',
-    description: '新しいパスワードを設定します。',
-  });
-
   const [params] = useSearchParams();
   const token = params.get('token') ?? '';
   const errorParam = params.get('error');
@@ -26,9 +21,17 @@ export default function ResetPassword() {
     errorParam ? formatTokenError(errorParam) : null,
   );
 
+  const seo = (
+    <SEOMetadata
+      title="パスワード再設定 | Toique"
+      description="新しいパスワードを設定します。"
+    />
+  );
+
   if (!token && !errorParam) {
     return (
       <AuthLayout title="パスワード再設定">
+        {seo}
         <div className="space-y-4 text-sm text-red-600">
           <p>
             再設定用トークンが見つかりません。メールのリンクからアクセスしてください。
@@ -89,6 +92,7 @@ export default function ResetPassword() {
   if (submitted) {
     return (
       <AuthLayout title="パスワードを再設定しました">
+        {seo}
         <div className="space-y-4 text-sm text-slate-700">
           <p>新しいパスワードでログインしてください。</p>
           <Link
@@ -104,6 +108,7 @@ export default function ResetPassword() {
 
   return (
     <AuthLayout title="新しいパスワードの設定">
+      {seo}
       <form onSubmit={handleSubmit} className="space-y-4">
         <AuthField
           label="新しいパスワード (8文字以上)"

@@ -1,8 +1,9 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Link, useParams } from 'react-router';
 import { ChevronRight, ThumbsUp, ThumbsDown, ArrowRight } from 'lucide-react';
 import { SITE_ORIGIN } from '../lib/site';
-import { useSEO } from '../lib/useSEO';
+import SEOMetadata from '../components/SEOMetadata';
+import JsonLd from '../components/JsonLd';
 import { ICON_SIZE } from '../lib/icon-size';
 import {
   getFaq,
@@ -12,22 +13,6 @@ import {
 } from '../lib/faqs';
 import SiteHeader from '../components/SiteHeader';
 import SiteFooter from '../components/SiteFooter';
-
-function setJsonLd(id: string, data: unknown) {
-  let el = document.head.querySelector<HTMLScriptElement>(`script#${id}`);
-  if (!el) {
-    el = document.createElement('script');
-    el.type = 'application/ld+json';
-    el.id = id;
-    document.head.appendChild(el);
-  }
-  el.textContent = JSON.stringify(data);
-}
-
-function removeJsonLd(id: string) {
-  const el = document.head.querySelector(`script#${id}`);
-  if (el) el.remove();
-}
 
 export default function FaqArticle() {
   const { slug } = useParams<{ slug: string }>();
@@ -46,69 +31,62 @@ function FaqArticleContent({ faq }: { faq: FaqArticleType }) {
   const firstParagraph = faq.answerParagraphs[0] ?? '';
   const descriptionBase = firstParagraph.slice(0, 100);
 
-  useSEO({
-    title: `${faq.question} | Toique ヘルプ`,
-    description: descriptionBase,
-    canonical: `${SITE_ORIGIN}/faq/${faq.slug}`,
-  });
-
-  useEffect(() => {
-    const faqJsonLd = {
-      '@context': 'https://schema.org',
-      '@type': 'FAQPage',
-      mainEntity: [
-        {
-          '@type': 'Question',
-          name: faq.question,
-          acceptedAnswer: {
-            '@type': 'Answer',
-            text: faq.answerParagraphs.join('\n\n'),
-          },
+  const faqJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: [
+      {
+        '@type': 'Question',
+        name: faq.question,
+        acceptedAnswer: {
+          '@type': 'Answer',
+          text: faq.answerParagraphs.join('\n\n'),
         },
-      ],
-    };
-    const breadcrumbJsonLd = {
-      '@context': 'https://schema.org',
-      '@type': 'BreadcrumbList',
-      itemListElement: [
-        {
-          '@type': 'ListItem',
-          position: 1,
-          name: 'ホーム',
-          item: `${SITE_ORIGIN}/`,
-        },
-        {
-          '@type': 'ListItem',
-          position: 2,
-          name: 'よくある質問',
-          item: `${SITE_ORIGIN}/faq`,
-        },
-        {
-          '@type': 'ListItem',
-          position: 3,
-          name: category?.title ?? faq.category,
-          item: `${SITE_ORIGIN}/faq`,
-        },
-        {
-          '@type': 'ListItem',
-          position: 4,
-          name: faq.question,
-          item: `${SITE_ORIGIN}/faq/${faq.slug}`,
-        },
-      ],
-    };
-    setJsonLd('faq-article-jsonld', faqJsonLd);
-    setJsonLd('faq-breadcrumb-jsonld', breadcrumbJsonLd);
-    return () => {
-      removeJsonLd('faq-article-jsonld');
-      removeJsonLd('faq-breadcrumb-jsonld');
-    };
-  }, [faq, category]);
+      },
+    ],
+  };
+  const breadcrumbJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      {
+        '@type': 'ListItem',
+        position: 1,
+        name: 'ホーム',
+        item: `${SITE_ORIGIN}/`,
+      },
+      {
+        '@type': 'ListItem',
+        position: 2,
+        name: 'よくある質問',
+        item: `${SITE_ORIGIN}/faq`,
+      },
+      {
+        '@type': 'ListItem',
+        position: 3,
+        name: category?.title ?? faq.category,
+        item: `${SITE_ORIGIN}/faq`,
+      },
+      {
+        '@type': 'ListItem',
+        position: 4,
+        name: faq.question,
+        item: `${SITE_ORIGIN}/faq/${faq.slug}`,
+      },
+    ],
+  };
 
   const [feedback, setFeedback] = useState<'up' | 'down' | null>(null);
 
   return (
     <div className="min-h-full bg-white">
+      <SEOMetadata
+        title={`${faq.question} | Toique ヘルプ`}
+        description={descriptionBase}
+        canonical={`${SITE_ORIGIN}/faq/${faq.slug}`}
+      />
+      <JsonLd data={faqJsonLd} />
+      <JsonLd data={breadcrumbJsonLd} />
       <SiteHeader />
 
       <main className="max-w-3xl mx-auto px-6 py-10">
@@ -263,15 +241,13 @@ function FaqArticleContent({ faq }: { faq: FaqArticleType }) {
 }
 
 function FaqNotFound({ slug }: { slug: string | undefined }) {
-  useSEO({
-    title: '記事が見つかりません | Toique ヘルプ',
-    description:
-      'ご指定の FAQ 記事は存在しないか、削除された可能性があります。FAQ トップから再度お探しください。',
-    noIndex: true,
-  });
-
   return (
     <div className="min-h-full bg-white">
+      <SEOMetadata
+        title="記事が見つかりません | Toique ヘルプ"
+        description="ご指定の FAQ 記事は存在しないか、削除された可能性があります。FAQ トップから再度お探しください。"
+        noIndex
+      />
       <SiteHeader />
       <main className="max-w-3xl mx-auto px-6 py-20 text-center">
         <h1 className="text-2xl font-bold text-slate-900">

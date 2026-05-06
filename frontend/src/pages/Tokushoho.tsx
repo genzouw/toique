@@ -1,6 +1,6 @@
 import { Link } from 'react-router';
 import { SITE_ORIGIN } from '../lib/site';
-import { useSEO } from '../lib/useSEO';
+import SEOMetadata from '../components/SEOMetadata';
 
 /**
  * 特定商取引法に基づく表記
@@ -9,14 +9,12 @@ import { useSEO } from '../lib/useSEO';
  * 消費者からの請求があった場合に遅滞なく開示する方式を採用。
  */
 export default function Tokushoho() {
-  useSEO({
-    title: '特定商取引法に基づく表記 | Toique',
-    description:
-      'Toique（運営: flumen）の特定商取引法に基づく表記。販売事業者、所在地、連絡先、販売価格、支払方法、解約方法などを記載しています。',
-  });
-
   return (
     <div className="min-h-full bg-slate-50">
+      <SEOMetadata
+        title="特定商取引法に基づく表記 | Toique"
+        description="Toique（運営: flumen）の特定商取引法に基づく表記。販売事業者、所在地、連絡先、販売価格、支払方法、解約方法などを記載しています。"
+      />
       <header className="bg-white border-b border-slate-200">
         <div className="max-w-4xl mx-auto px-6 py-5 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-2">

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link, useSearchParams } from 'react-router';
 import { AuthLayout } from './Login';
-import { useSEO } from '../lib/useSEO';
+import SEOMetadata from '../components/SEOMetadata';
 
 const API_URL =
   (import.meta.env.VITE_API_URL as string | undefined) ??
@@ -20,11 +20,6 @@ type Status = 'pending' | 'success' | 'error';
  *   3. 戻ってきたページが `verified=1` を見て成功表示、`error` を見て失敗表示する。
  */
 export default function VerifyEmail() {
-  useSEO({
-    title: 'メールアドレスの確認 | Toique',
-    description: 'メールアドレスの確認',
-  });
-
   const [params] = useSearchParams();
   const [status, setStatus] = useState<Status>('pending');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -63,6 +58,10 @@ export default function VerifyEmail() {
 
   return (
     <AuthLayout title="メールアドレスの確認">
+      <SEOMetadata
+        title="メールアドレスの確認 | Toique"
+        description="メールアドレスの確認"
+      />
       {status === 'pending' && (
         <div className="text-sm text-slate-700">確認中…</div>
       )}

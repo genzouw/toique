@@ -1,4 +1,3 @@
-import { useEffect } from 'react';
 import { Link, useParams } from 'react-router';
 import { getIndustry, INDUSTRIES } from '../lib/industries';
 import type { IndustryContent } from '../lib/industries';
@@ -6,59 +5,9 @@ import IndustryNotFound from './IndustryNotFound';
 import { ICON_SIZE } from '../lib/icon-size';
 import SiteHeader from '../components/SiteHeader';
 import SiteFooter from '../components/SiteFooter';
+import SEOMetadata from '../components/SEOMetadata';
+import JsonLd from '../components/JsonLd';
 import { SITE_ORIGIN } from '../lib/site';
-
-/**
- * 指定した属性を満たす <meta> タグを取得し、なければ生成する。
- */
-function getOrCreateMeta(
-  selector: string,
-  createAttrs: Record<string, string>,
-): HTMLMetaElement {
-  let el = document.head.querySelector<HTMLMetaElement>(selector);
-  if (!el) {
-    el = document.createElement('meta');
-    for (const [k, v] of Object.entries(createAttrs)) {
-      el.setAttribute(k, v);
-    }
-    document.head.appendChild(el);
-  }
-  return el;
-}
-
-/**
- * rel="canonical" のリンクタグを取得または生成する。
- */
-function getOrCreateCanonical(): HTMLLinkElement {
-  let el = document.head.querySelector<HTMLLinkElement>(
-    'link[rel="canonical"]',
-  );
-  if (!el) {
-    el = document.createElement('link');
-    el.setAttribute('rel', 'canonical');
-    document.head.appendChild(el);
-  }
-  return el;
-}
-
-/**
- * 構造化データ (JSON-LD) 用の <script> を id 指定で管理する。
- */
-function setJsonLd(id: string, data: unknown) {
-  let el = document.head.querySelector<HTMLScriptElement>(`script#${id}`);
-  if (!el) {
-    el = document.createElement('script');
-    el.type = 'application/ld+json';
-    el.id = id;
-    document.head.appendChild(el);
-  }
-  el.textContent = JSON.stringify(data);
-}
-
-function removeJsonLd(id: string) {
-  const el = document.head.querySelector(`script#${id}`);
-  if (el) el.remove();
-}
 
 function buildBreadcrumbJsonLd(content: IndustryContent) {
   return {
@@ -102,60 +51,6 @@ function buildFaqJsonLd(content: IndustryContent) {
   };
 }
 
-/**
- * ページ遷移時にタイトル・メタディスクリプション・OGP・canonical・JSON-LD を更新。
- * unmount 時は JSON-LD のみ除去（タイトル等は次ページで上書きされる想定）。
- */
-function useIndustrySEO(content: IndustryContent) {
-  useEffect(() => {
-    const url = `${SITE_ORIGIN}/for/${content.slug}`;
-
-    document.title = content.metaTitle;
-
-    const descMeta = getOrCreateMeta('meta[name="description"]', {
-      name: 'description',
-    });
-    descMeta.setAttribute('content', content.metaDescription);
-
-    const canonical = getOrCreateCanonical();
-    canonical.setAttribute('href', url);
-
-    const ogTitle = getOrCreateMeta('meta[property="og:title"]', {
-      property: 'og:title',
-    });
-    ogTitle.setAttribute('content', content.metaTitle);
-
-    const ogDesc = getOrCreateMeta('meta[property="og:description"]', {
-      property: 'og:description',
-    });
-    ogDesc.setAttribute('content', content.metaDescription);
-
-    const ogUrl = getOrCreateMeta('meta[property="og:url"]', {
-      property: 'og:url',
-    });
-    ogUrl.setAttribute('content', url);
-
-    const twTitle = getOrCreateMeta('meta[name="twitter:title"]', {
-      name: 'twitter:title',
-    });
-    twTitle.setAttribute('content', content.metaTitle);
-
-    const twDesc = getOrCreateMeta('meta[name="twitter:description"]', {
-      name: 'twitter:description',
-    });
-    twDesc.setAttribute('content', content.metaDescription);
-
-    setJsonLd('ld-breadcrumb', buildBreadcrumbJsonLd(content));
-    setJsonLd('ld-faq', buildFaqJsonLd(content));
-
-    return () => {
-      // JSON-LD はページ離脱時に取り除く（他ページで FAQ/Breadcrumb が誤って残らないように）。
-      removeJsonLd('ld-breadcrumb');
-      removeJsonLd('ld-faq');
-    };
-  }, [content]);
-}
-
 export default function IndustryLanding() {
   const { slug } = useParams<{ slug: string }>();
   const content = slug ? getIndustry(slug) : undefined;
@@ -168,12 +63,18 @@ export default function IndustryLanding() {
 }
 
 function IndustryLandingView({ content }: { content: IndustryContent }) {
-  useIndustrySEO(content);
   const HeroIcon = content.heroIcon;
   const relatedIndustries = INDUSTRIES.filter((i) => i.slug !== content.slug);
 
   return (
     <div className="min-h-full bg-white">
+      <SEOMetadata
+        title={content.metaTitle}
+        description={content.metaDescription}
+        canonical={`${SITE_ORIGIN}/for/${content.slug}`}
+      />
+      <JsonLd data={buildBreadcrumbJsonLd(content)} />
+      <JsonLd data={buildFaqJsonLd(content)} />
       <SiteHeader />
 
       {/* Hero */}

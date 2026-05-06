@@ -4,7 +4,7 @@ import { Check, ArrowRight } from 'lucide-react';
 import { getFaqsByCategory } from '../lib/faqs';
 import { api } from '../lib/api';
 import { useSession } from '../lib/auth-client';
-import { useSEO } from '../lib/useSEO';
+import SEOMetadata from '../components/SEOMetadata';
 import { ICON_SIZE } from '../lib/icon-size';
 import LoadingButton from '../components/LoadingButton';
 import SiteFooter from '../components/SiteFooter';
@@ -45,11 +45,6 @@ const PLANS = [
 ];
 
 export default function Pricing() {
-  useSEO({
-    title: '料金プラン | Toique - LINE問い合わせ受付SaaS',
-    description:
-      'Toiqueの料金プラン。無料のFreeプランでLINE公式アカウント連携・対話フォーム作成・CSVエクスポートを利用可能。Proプランは複数チャネル・チーム運用向け。',
-  });
   const { data: session } = useSession();
   const [upgrading, setUpgrading] = useState(false);
 
@@ -67,6 +62,10 @@ export default function Pricing() {
 
   return (
     <div className="min-h-full bg-white">
+      <SEOMetadata
+        title="料金プラン | Toique - LINE問い合わせ受付SaaS"
+        description="Toiqueの料金プラン。無料のFreeプランでLINE公式アカウント連携・対話フォーム作成・CSVエクスポートを利用可能。Proプランは複数チャネル・チーム運用向け。"
+      />
       {/* Header */}
       <header className="border-b border-slate-200">
         <div className="max-w-5xl mx-auto px-6 h-14 flex items-center justify-between">

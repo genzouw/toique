@@ -17,7 +17,12 @@
     <link rel="icon" type="image/png" href="/favicon.png" />
     <link rel="apple-touch-icon" href="/favicon.png" />
 
-    <!-- Open Graph -->
+    <!--
+      JS を実行しないクローラー (Twitter Card / Facebook OG / LINE / Slack 等) 向けのフォールバック。
+      CSR-only のため、これらのクローラーは React 19 が動的に挿入する meta を見られない。
+      個別ページの正しい OGP は React 側 <SEOMetadata> が JSX で出力し、JS 実行可能なクローラー
+      (Google bot 等) およびブラウザ表示はそちらが採用される。SSG/SSR を導入するまでの暫定対応。
+    -->
     <meta
       property="og:title"
       content="Toique - LINEからの問い合わせを対話フォームで自動収集"
@@ -32,7 +37,6 @@
     <meta property="og:site_name" content="Toique" />
     <meta property="og:image" content="https://toique.genzouw.com/ogp.png" />
 
-    <!-- Twitter Card -->
     <meta name="twitter:card" content="summary_large_image" />
     <meta
       name="twitter:title"
