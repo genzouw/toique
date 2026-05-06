@@ -9,7 +9,7 @@ import {
   forms,
   submissions,
 } from '../schema.js';
-import submissionsRoute, { escapeCsv } from './submissions.js';
+import submissionsRoute, { escapeCsv, toCsvValue } from './submissions.js';
 import type { FormSchema } from '../lib/forms/types.js';
 
 test('escapeCsv prevents formula injection', () => {
@@ -29,6 +29,36 @@ test('escapeCsv handles primitives and quotes', () => {
   expect(escapeCsv('hello')).toBe('hello');
   expect(escapeCsv('a,b')).toBe('"a,b"');
   expect(escapeCsv('he said "hi"')).toBe('"he said ""hi"""');
+});
+
+test('escapeCsv preserves numeric types without formula-injection escape', () => {
+  // 負の数値は number 型のまま渡れば '-' エスケープを受けない (Excel で数値計算可能)
+  expect(escapeCsv(-100)).toBe('-100');
+  expect(escapeCsv(0)).toBe('0');
+  expect(escapeCsv(3.14)).toBe('3.14');
+  // NaN / Infinity は CSV で意味のある表現ができないため空文字列にフォールバック
+  expect(escapeCsv(Number.NaN)).toBe('');
+  expect(escapeCsv(Number.POSITIVE_INFINITY)).toBe('');
+  expect(escapeCsv(Number.NEGATIVE_INFINITY)).toBe('');
+});
+
+test('escapeCsv handles boolean values', () => {
+  expect(escapeCsv(true)).toBe('true');
+  expect(escapeCsv(false)).toBe('false');
+});
+
+test('toCsvValue normalizes unknown values to CsvExportableValue', () => {
+  // プリミティブはそのまま型を保持
+  expect(toCsvValue('hello')).toBe('hello');
+  expect(toCsvValue(42)).toBe(42);
+  expect(toCsvValue(true)).toBe(true);
+  expect(toCsvValue(false)).toBe(false);
+  // null / undefined は undefined に正規化 (escapeCsv 側で空文字列扱い)
+  expect(toCsvValue(null)).toBeUndefined();
+  expect(toCsvValue(undefined)).toBeUndefined();
+  // 想定外の object / array は JSON 文字列化してフォールバック
+  expect(toCsvValue({ a: 1 })).toBe('{"a":1}');
+  expect(toCsvValue([1, 2, 3])).toBe('[1,2,3]');
 });
 
 const sampleSchema: FormSchema = {
@@ -257,5 +287,37 @@ describe('submissions route', () => {
 
     // 2 行目 — 欠落 note は空文字列、orphan も空
     expect(lines[2].endsWith(',,')).toBe(true);
+  });
+
+  it('GET /export preserves numeric values without formula-injection escape', async () => {
+    // 将来 number 型 step が追加された場合に備えた回帰テスト
+    // answers は jsonb なので数値型はそのまま保持される
+    await db.insert(submissions).values([
+      {
+        tenantId,
+        formId,
+        lineUserId: lineUserRowId,
+        answers: {
+          category: 'watch',
+          brand: 'Rolex',
+          note: -100, // 負の数値: '-' エスケープされず "-100" のまま出力されるべき
+        },
+        status: 'new',
+        submittedAt: new Date('2026-04-17T10:00:00Z'),
+      },
+    ]);
+
+    const app = buildApp();
+    const res = await app.request(
+      `/api/v1/submissions/export?formId=${formId}`,
+    );
+    expect(res.status).toBe(200);
+    const text = new TextDecoder('utf-8').decode(
+      new Uint8Array(await res.arrayBuffer()),
+    );
+    const lines = text.split('\r\n');
+    // 値の行に "-100" がそのまま含まれ、"'-100" にエスケープされていないこと
+    expect(lines[1]).toContain(',-100,');
+    expect(lines[1]).not.toContain("'-100");
   });
 });
