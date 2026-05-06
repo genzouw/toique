@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { Link } from 'react-router';
 import { HelpCircle, Search, ChevronRight, ArrowRight } from 'lucide-react';
-import { useSEO } from '../lib/useSEO';
+import { SITE_ORIGIN, useSEO } from '../lib/useSEO';
 import { ICON_SIZE } from '../lib/icon-size';
 import {
   CATEGORIES,
@@ -17,7 +17,7 @@ export default function FaqHub() {
     title: 'よくある質問・ヘルプセンター | Toique',
     description:
       'Toique のよくある質問（FAQ）。料金、LINE 連携、フォーム作成、問い合わせ管理、セキュリティに関する質問をまとめたヘルプセンターです。',
-    canonical: 'https://toique.genzouw.com/faq',
+    canonical: `${SITE_ORIGIN}/faq`,
   });
 
   const [query, setQuery] = useState('');

@@ -12,7 +12,7 @@ import {
   ChevronDown,
   ArrowRight,
 } from 'lucide-react';
-import { useSEO } from '../lib/useSEO';
+import { SITE_ORIGIN, useSEO } from '../lib/useSEO';
 import { safeJsonLdStringify } from '../lib/json-ld';
 import { INDUSTRIES } from '../lib/industries';
 import { ICON_SIZE } from '../lib/icon-size';
@@ -153,8 +153,8 @@ export default function Landing() {
     title: 'Toique - LINEからの問い合わせを対話フォームで自動収集',
     description:
       'ToiqueはLINE公式アカウントと連携し、対話形式のフォームで問い合わせを自動収集・管理するSaaS。ノーコードでフォーム作成、自動応答、CSVエクスポートに対応。',
-    canonical: 'https://toique.genzouw.com/',
-    ogImage: 'https://toique.genzouw.com/ogp.png',
+    canonical: `${SITE_ORIGIN}/`,
+    ogImage: `${SITE_ORIGIN}/ogp.png`,
   });
 
   return (

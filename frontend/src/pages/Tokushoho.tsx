@@ -1,5 +1,5 @@
 import { Link } from 'react-router';
-import { useSEO } from '../lib/useSEO';
+import { SITE_ORIGIN, useSEO } from '../lib/useSEO';
 
 /**
  * 特定商取引法に基づく表記
@@ -69,10 +69,10 @@ export default function Tokushoho() {
             </Row>
             <Row term="販売URL">
               <a
-                href="https://toique.genzouw.com/"
+                href={`${SITE_ORIGIN}/`}
                 className="underline hover:text-slate-900"
               >
-                https://toique.genzouw.com/
+                {`${SITE_ORIGIN}/`}
               </a>
             </Row>
             <Row term="販売価格">
