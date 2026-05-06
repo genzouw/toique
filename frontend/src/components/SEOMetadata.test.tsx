@@ -75,6 +75,30 @@ describe('SEOMetadata', () => {
     expect(getMeta('robots')).toBe('noindex');
   });
 
+  it('noIndex 指定時は canonical / og:url を出力しない', () => {
+    render(
+      <MemoryRouter initialEntries={['/for/unknown-slug']}>
+        <SEOMetadata title="t" description="d" noIndex />
+      </MemoryRouter>,
+    );
+    expect(getCanonical()).toBeNull();
+    expect(getOgMeta('og:url')).toBeNull();
+  });
+
+  it('noIndex 指定時は canonical を明示指定しても出力しない', () => {
+    render(
+      <MemoryRouter initialEntries={['/private']}>
+        <SEOMetadata
+          title="t"
+          canonical="https://example.com/explicit"
+          noIndex
+        />
+      </MemoryRouter>,
+    );
+    expect(getCanonical()).toBeNull();
+    expect(getOgMeta('og:url')).toBeNull();
+  });
+
   it('unmount 時に動的に追加されたタグがクリーンアップされる', () => {
     const { unmount } = render(
       <MemoryRouter initialEntries={['/foo']}>

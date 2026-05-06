@@ -8,6 +8,7 @@ import { SITE_ORIGIN } from '../lib/site';
  * - title が指定されると og:title / twitter:title も同時に出力する
  * - description も同様に og:description / twitter:description を生成する
  * - canonical 未指定時は SITE_ORIGIN + 現在のパスから自動生成する
+ * - noIndex 指定時は canonical / og:url を出力しない（noindex × self-canonical の競合シグナルを避ける）
  * - unmount 時のクリーンアップは React が自動で行う
  *
  * 注意: index.html には動的に変わる title / description / canonical / og:* /
@@ -41,8 +42,8 @@ export default function SEOMetadata({
     <>
       {title && <title>{title}</title>}
       {description && <meta name="description" content={description} />}
-      <link rel="canonical" href={canonicalUrl} />
-      <meta property="og:url" content={canonicalUrl} />
+      {!noIndex && <link rel="canonical" href={canonicalUrl} />}
+      {!noIndex && <meta property="og:url" content={canonicalUrl} />}
       {title && <meta property="og:title" content={title} />}
       {description && <meta property="og:description" content={description} />}
       {title && <meta name="twitter:title" content={title} />}
