@@ -7,6 +7,7 @@ import { useSession } from '../lib/auth-client';
 import { useSEO } from '../lib/useSEO';
 import { ICON_SIZE } from '../lib/icon-size';
 import LoadingButton from '../components/LoadingButton';
+import SiteFooter from '../components/SiteFooter';
 
 const PLANS = [
   {
@@ -204,29 +205,7 @@ export default function Pricing() {
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="border-t border-slate-200 py-8 px-6">
-        <div className="max-w-5xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500">
-          <span>Toique</span>
-          <div className="flex gap-4">
-            <Link to="/faq" className="hover:text-slate-900">
-              よくある質問
-            </Link>
-            <Link to="/help" className="hover:text-slate-900">
-              ヘルプ
-            </Link>
-            <Link
-              to="/specified-commercial-transactions"
-              className="hover:text-slate-900"
-            >
-              特定商取引法に基づく表記
-            </Link>
-            <Link to="/login" className="hover:text-slate-900">
-              ログイン
-            </Link>
-          </div>
-        </div>
-      </footer>
+      <SiteFooter />
     </div>
   );
 }

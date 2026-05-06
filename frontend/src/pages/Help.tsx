@@ -10,6 +10,7 @@ import {
   ExternalLink,
 } from 'lucide-react';
 import Mermaid from '../components/Mermaid';
+import SiteFooter from '../components/SiteFooter';
 import { useSEO } from '../lib/useSEO';
 import { ICON_SIZE } from '../lib/icon-size';
 
@@ -473,7 +474,7 @@ graph TD
           </dl>
         </Section>
 
-        <footer className="pt-6 border-t border-slate-200 text-sm text-slate-500 space-y-2">
+        <div className="pt-6 border-t border-slate-200 text-sm text-slate-500">
           <p>
             解決しない場合は{' '}
             <Link to="/contact" className="underline">
@@ -481,13 +482,10 @@ graph TD
             </Link>{' '}
             からご連絡ください。
           </p>
-          <p>
-            <Link to="/specified-commercial-transactions" className="underline">
-              特定商取引法に基づく表記
-            </Link>
-          </p>
-        </footer>
+        </div>
       </main>
+
+      <SiteFooter />
     </div>
   );
 }
