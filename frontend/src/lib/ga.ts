@@ -8,7 +8,7 @@ export function initGA(): void {
   document.head.appendChild(script);
 
   window.dataLayer = window.dataLayer || [];
-  window.gtag = function gtag(...args: unknown[]) {
+  window.gtag = (...args: unknown[]) => {
     window.dataLayer.push(args);
   };
   window.gtag('js', new Date());
