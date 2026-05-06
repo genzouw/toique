@@ -92,7 +92,7 @@ app.get('/export', async (c) => {
     const values: CsvExportableValue[] = [
       new Date(row.submittedAt).toISOString(),
       row.status,
-      ...fieldKeys.map((k) => answers[k] as CsvExportableValue),
+      ...fieldKeys.map((k) => toCsvValue(answers[k])),
     ];
     lines.push(values.map(escapeCsv).join(','));
   }
@@ -115,6 +115,21 @@ const CSV_ESCAPE_REPLACE = /"/g;
 // 将来 number/boolean 型 step を追加した際に escapeCsv が型を保持したまま
 // 受け取れるよう契約を明示する
 export type CsvExportableValue = string | number | boolean | null | undefined;
+
+// answers は jsonb (unknown) のため、型アサーションではなく実行時の型ガードで
+// CsvExportableValue に正規化する。想定外の object / array は JSON 文字列化
+// してフォールバック (CSV 上で値が失われないようにする)。
+export function toCsvValue(value: unknown): CsvExportableValue {
+  if (value == null) return undefined;
+  if (
+    typeof value === 'string' ||
+    typeof value === 'number' ||
+    typeof value === 'boolean'
+  ) {
+    return value;
+  }
+  return JSON.stringify(value);
+}
 
 export function escapeCsv(value: CsvExportableValue): string {
   if (typeof value === 'number')

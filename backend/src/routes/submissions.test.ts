@@ -9,7 +9,7 @@ import {
   forms,
   submissions,
 } from '../schema.js';
-import submissionsRoute, { escapeCsv } from './submissions.js';
+import submissionsRoute, { escapeCsv, toCsvValue } from './submissions.js';
 import type { FormSchema } from '../lib/forms/types.js';
 
 test('escapeCsv prevents formula injection', () => {
@@ -45,6 +45,20 @@ test('escapeCsv preserves numeric types without formula-injection escape', () =>
 test('escapeCsv handles boolean values', () => {
   expect(escapeCsv(true)).toBe('true');
   expect(escapeCsv(false)).toBe('false');
+});
+
+test('toCsvValue normalizes unknown values to CsvExportableValue', () => {
+  // プリミティブはそのまま型を保持
+  expect(toCsvValue('hello')).toBe('hello');
+  expect(toCsvValue(42)).toBe(42);
+  expect(toCsvValue(true)).toBe(true);
+  expect(toCsvValue(false)).toBe(false);
+  // null / undefined は undefined に正規化 (escapeCsv 側で空文字列扱い)
+  expect(toCsvValue(null)).toBeUndefined();
+  expect(toCsvValue(undefined)).toBeUndefined();
+  // 想定外の object / array は JSON 文字列化してフォールバック
+  expect(toCsvValue({ a: 1 })).toBe('{"a":1}');
+  expect(toCsvValue([1, 2, 3])).toBe('[1,2,3]');
 });
 
 const sampleSchema: FormSchema = {
