@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link } from 'react-router';
 import { AuthLayout, AuthField } from './Login';
-import { useSEO } from '../lib/useSEO';
+import SEOMetadata from '../components/SEOMetadata';
 import LoadingButton from '../components/LoadingButton';
 
 const API_URL =
@@ -9,15 +9,17 @@ const API_URL =
   'http://localhost:3000';
 
 export default function ForgotPassword() {
-  useSEO({
-    title: 'パスワード再設定 | Toique',
-    description: 'パスワード再設定の案内メールを送信します。',
-  });
-
   const [email, setEmail] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const seo = (
+    <SEOMetadata
+      title="パスワード再設定 | Toique"
+      description="パスワード再設定の案内メールを送信します。"
+    />
+  );
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -50,6 +52,7 @@ export default function ForgotPassword() {
   if (submitted) {
     return (
       <AuthLayout title="メールを送信しました">
+        {seo}
         <div className="space-y-4 text-sm text-slate-700">
           <p>
             ご入力いただいたメールアドレスが登録されている場合、パスワード再設定用のリンクを送信しました。
@@ -71,6 +74,7 @@ export default function ForgotPassword() {
 
   return (
     <AuthLayout title="パスワード再設定">
+      {seo}
       <form onSubmit={handleSubmit} className="space-y-4">
         <p className="text-sm text-slate-600">
           ご登録のメールアドレス宛に、パスワード再設定用のリンクをお送りします。

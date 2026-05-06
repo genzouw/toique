@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link, useLocation } from 'react-router';
 import { AuthLayout } from './Login';
-import { useSEO } from '../lib/useSEO';
+import SEOMetadata from '../components/SEOMetadata';
 import LoadingButton from '../components/LoadingButton';
 
 const API_URL =
@@ -22,16 +22,19 @@ interface LocationState {
  *   一瞬アンマウントされ state が破棄されるため、専用ルートに切り出している。
  */
 export default function VerifyEmailSent() {
-  useSEO({
-    title: '確認メールを送信しました | Toique',
-    description: '確認メールを送信しました',
-  });
   const location = useLocation();
   const email = (location.state as LocationState | null)?.email;
 
   const [resending, setResending] = useState(false);
   const [resent, setResent] = useState(false);
   const [resendError, setResendError] = useState<string | null>(null);
+
+  const seo = (
+    <SEOMetadata
+      title="確認メールを送信しました | Toique"
+      description="確認メールを送信しました"
+    />
+  );
 
   async function handleResend() {
     if (!email) return;
@@ -64,6 +67,7 @@ export default function VerifyEmailSent() {
   if (!email) {
     return (
       <AuthLayout title="確認メールを送信しました">
+        {seo}
         <div className="space-y-4 text-sm text-slate-700">
           <p>
             確認メールを送信した後の案内ページです。新規登録を行うとここに案内が表示されます。
@@ -81,6 +85,7 @@ export default function VerifyEmailSent() {
 
   return (
     <AuthLayout title="確認メールを送信しました">
+      {seo}
       <div className="space-y-4 text-sm text-slate-700">
         <p>
           <span className="font-medium">{email}</span>{' '}

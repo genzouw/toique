@@ -2,7 +2,7 @@ import { Link } from 'react-router';
 import { useEffect, useState } from 'react';
 import { api, type ContactCategory } from '../lib/api';
 import { useSession } from '../lib/auth-client';
-import { useSEO } from '../lib/useSEO';
+import SEOMetadata from '../components/SEOMetadata';
 import LoadingButton from '../components/LoadingButton';
 
 const CATEGORY_OPTIONS: { value: ContactCategory; label: string }[] = [
@@ -14,11 +14,6 @@ const CATEGORY_OPTIONS: { value: ContactCategory; label: string }[] = [
 ];
 
 export default function Contact() {
-  useSEO({
-    title: 'お問い合わせ | Toique',
-    description:
-      'Toiqueへのお問い合わせフォーム。導入相談、料金プランに関する質問、不具合の報告、機能要望などを受け付けています。',
-  });
   const { data: session } = useSession();
 
   const [name, setName] = useState('');
@@ -69,6 +64,10 @@ export default function Contact() {
 
   return (
     <div className="min-h-full bg-slate-50">
+      <SEOMetadata
+        title="お問い合わせ | Toique"
+        description="Toiqueへのお問い合わせフォーム。導入相談、料金プランに関する質問、不具合の報告、機能要望などを受け付けています。"
+      />
       <header className="bg-white border-b border-slate-200">
         <div className="max-w-3xl mx-auto px-6 py-5 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-2">

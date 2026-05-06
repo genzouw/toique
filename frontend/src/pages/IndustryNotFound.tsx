@@ -1,10 +1,16 @@
 import { Link } from 'react-router';
 import { INDUSTRIES } from '../lib/industries';
 import SiteFooter from '../components/SiteFooter';
+import SEOMetadata from '../components/SEOMetadata';
 
 export default function IndustryNotFound() {
   return (
     <div className="min-h-full bg-white">
+      <SEOMetadata
+        title="ページが見つかりません | Toique"
+        description="お探しの業界ページは存在しません。Toique の業種別ページ一覧から目的のページをお探しください。"
+        noIndex
+      />
       <header className="border-b border-slate-200">
         <div className="max-w-5xl mx-auto px-6 h-14 flex items-center justify-between">
           <Link to="/" className="text-lg font-bold text-slate-900">

@@ -13,8 +13,8 @@ import {
   ArrowRight,
 } from 'lucide-react';
 import { SITE_ORIGIN } from '../lib/site';
-import { useSEO } from '../lib/useSEO';
-import { safeJsonLdStringify } from '../lib/json-ld';
+import SEOMetadata from '../components/SEOMetadata';
+import JsonLd from '../components/JsonLd';
 import { INDUSTRIES } from '../lib/industries';
 import { ICON_SIZE } from '../lib/icon-size';
 import SiteHeader from '../components/SiteHeader';
@@ -150,16 +150,14 @@ const FAQ_JSONLD = {
 };
 
 export default function Landing() {
-  useSEO({
-    title: 'Toique - LINEからの問い合わせを対話フォームで自動収集',
-    description:
-      'ToiqueはLINE公式アカウントと連携し、対話形式のフォームで問い合わせを自動収集・管理するSaaS。ノーコードでフォーム作成、自動応答、CSVエクスポートに対応。',
-    canonical: `${SITE_ORIGIN}/`,
-    ogImage: `${SITE_ORIGIN}/ogp.png`,
-  });
-
   return (
     <div className="min-h-full bg-white">
+      <SEOMetadata
+        title="Toique - LINEからの問い合わせを対話フォームで自動収集"
+        description="ToiqueはLINE公式アカウントと連携し、対話形式のフォームで問い合わせを自動収集・管理するSaaS。ノーコードでフォーム作成、自動応答、CSVエクスポートに対応。"
+        canonical={`${SITE_ORIGIN}/`}
+        ogImage={`${SITE_ORIGIN}/ogp.png`}
+      />
       <SiteHeader />
 
       {/* Hero */}
@@ -387,18 +385,8 @@ export default function Landing() {
       <SiteFooter />
 
       {/* Structured data (JSON-LD) */}
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{
-          __html: safeJsonLdStringify(SOFTWARE_APP_JSONLD),
-        }}
-      />
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{
-          __html: safeJsonLdStringify(FAQ_JSONLD),
-        }}
-      />
+      <JsonLd data={SOFTWARE_APP_JSONLD} />
+      <JsonLd data={FAQ_JSONLD} />
     </div>
   );
 }

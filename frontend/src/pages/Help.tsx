@@ -11,7 +11,7 @@ import {
 } from 'lucide-react';
 import Mermaid from '../components/Mermaid';
 import SiteFooter from '../components/SiteFooter';
-import { useSEO } from '../lib/useSEO';
+import SEOMetadata from '../components/SEOMetadata';
 import { ICON_SIZE } from '../lib/icon-size';
 
 const API_BASE_URL =
@@ -19,13 +19,12 @@ const API_BASE_URL =
   'http://localhost:3000';
 
 export default function Help() {
-  useSEO({
-    title: 'ヘルプ・使い方ガイド | Toique',
-    description:
-      'Toiqueの使い方ガイド。LINE公式アカウント連携、対話フォームの作成、問い合わせ回答のCSVエクスポートまでの手順を分かりやすく解説します。',
-  });
   return (
     <div className="min-h-full bg-slate-50">
+      <SEOMetadata
+        title="ヘルプ・使い方ガイド | Toique"
+        description="Toiqueの使い方ガイド。LINE公式アカウント連携、対話フォームの作成、問い合わせ回答のCSVエクスポートまでの手順を分かりやすく解説します。"
+      />
       <header className="bg-white border-b border-slate-200">
         <div className="max-w-4xl mx-auto px-6 py-5 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-2">

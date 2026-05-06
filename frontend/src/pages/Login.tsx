@@ -1,15 +1,10 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router';
 import { signIn } from '../lib/auth-client';
-import { useSEO } from '../lib/useSEO';
+import SEOMetadata from '../components/SEOMetadata';
 import LoadingButton from '../components/LoadingButton';
 
 export default function Login() {
-  useSEO({
-    title: 'ログイン | Toique',
-    description:
-      'Toiqueへログイン。LINE公式アカウント連携の問い合わせフォームを管理できます。',
-  });
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -34,6 +29,10 @@ export default function Login() {
 
   return (
     <AuthLayout title="ログイン">
+      <SEOMetadata
+        title="ログイン | Toique"
+        description="Toiqueへログイン。LINE公式アカウント連携の問い合わせフォームを管理できます。"
+      />
       <form onSubmit={handleSubmit} className="space-y-4">
         <AuthField
           label="メールアドレス"

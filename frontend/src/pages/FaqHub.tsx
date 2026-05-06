@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react';
 import { Link } from 'react-router';
 import { HelpCircle, Search, ChevronRight, ArrowRight } from 'lucide-react';
 import { SITE_ORIGIN } from '../lib/site';
-import { useSEO } from '../lib/useSEO';
+import SEOMetadata from '../components/SEOMetadata';
 import { ICON_SIZE } from '../lib/icon-size';
 import {
   CATEGORIES,
@@ -14,13 +14,6 @@ import SiteHeader from '../components/SiteHeader';
 import SiteFooter from '../components/SiteFooter';
 
 export default function FaqHub() {
-  useSEO({
-    title: 'よくある質問・ヘルプセンター | Toique',
-    description:
-      'Toique のよくある質問（FAQ）。料金、LINE 連携、フォーム作成、問い合わせ管理、セキュリティに関する質問をまとめたヘルプセンターです。',
-    canonical: `${SITE_ORIGIN}/faq`,
-  });
-
   const [query, setQuery] = useState('');
   const normalizedQuery = query.trim().toLowerCase();
 
@@ -37,6 +30,11 @@ export default function FaqHub() {
 
   return (
     <div className="min-h-full bg-white">
+      <SEOMetadata
+        title="よくある質問・ヘルプセンター | Toique"
+        description="Toique のよくある質問（FAQ）。料金、LINE 連携、フォーム作成、問い合わせ管理、セキュリティに関する質問をまとめたヘルプセンターです。"
+        canonical={`${SITE_ORIGIN}/faq`}
+      />
       <SiteHeader />
 
       {/* Title */}
