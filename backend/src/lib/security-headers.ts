@@ -7,6 +7,8 @@ type SecureHeadersOptions = Parameters<typeof secureHeaders>[0];
 // HTML 配信側 (Cloudflare Pages) の CSP は frontend/public/_headers を参照。
 export const securityHeadersConfig: SecureHeadersOptions = {
   crossOriginResourcePolicy: 'cross-origin',
+  // CSP frame-ancestors を解釈しない古いブラウザ向けの defense-in-depth
+  xFrameOptions: 'DENY',
   contentSecurityPolicy: {
     defaultSrc: ["'none'"],
     frameAncestors: ["'none'"],
