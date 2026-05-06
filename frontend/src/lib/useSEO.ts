@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { SITE_ORIGIN } from './site';
 
 /**
  * ページ別のメタタグを切り替えるためのフック。
@@ -13,16 +14,13 @@ export interface SEOOptions {
   title?: string;
   /** meta description。 */
   description?: string;
-  /** 正規URL。未指定なら `https://toique.genzouw.com${location.pathname}` を自動生成。 */
+  /** 正規URL。未指定なら `${SITE_ORIGIN}${location.pathname}` を自動生成。 */
   canonical?: string;
   /** OGP画像。絶対URL。 */
   ogImage?: string;
   /** true なら <meta name="robots" content="noindex"> を付与。 */
   noIndex?: boolean;
 }
-
-export const SITE_ORIGIN =
-  import.meta.env.VITE_SITE_ORIGIN ?? 'https://toique.genzouw.com';
 
 type MetaSelector =
   | { kind: 'name'; value: string }

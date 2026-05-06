@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router';
 import { ChevronRight, ThumbsUp, ThumbsDown, ArrowRight } from 'lucide-react';
-import { SITE_ORIGIN, useSEO } from '../lib/useSEO';
+import { SITE_ORIGIN } from '../lib/site';
+import { useSEO } from '../lib/useSEO';
 import { ICON_SIZE } from '../lib/icon-size';
 import {
   getFaq,
