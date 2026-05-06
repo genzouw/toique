@@ -1,5 +1,6 @@
 import { Link } from 'react-router';
 import { INDUSTRIES } from '../lib/industries';
+import SiteFooter from '../components/SiteFooter';
 
 export default function IndustryNotFound() {
   return (
@@ -69,31 +70,7 @@ export default function IndustryNotFound() {
         </section>
       </main>
 
-      <footer className="border-t border-slate-200 py-8 px-6">
-        <div className="max-w-5xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500">
-          <span>Toique</span>
-          <div className="flex gap-4">
-            <Link to="/pricing" className="hover:text-slate-900">
-              料金プラン
-            </Link>
-            <Link to="/help" className="hover:text-slate-900">
-              ヘルプ
-            </Link>
-            <Link to="/contact" className="hover:text-slate-900">
-              お問い合わせ
-            </Link>
-            <Link
-              to="/specified-commercial-transactions"
-              className="hover:text-slate-900"
-            >
-              特定商取引法に基づく表記
-            </Link>
-            <Link to="/login" className="hover:text-slate-900">
-              ログイン
-            </Link>
-          </div>
-        </div>
-      </footer>
+      <SiteFooter />
     </div>
   );
 }
