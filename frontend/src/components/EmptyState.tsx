@@ -1,10 +1,11 @@
-import type { ElementType } from 'react';
+import type { ElementType, ReactNode } from 'react';
 import { ICON_SIZE } from '../lib/icon-size';
 
 interface EmptyStateProps {
   icon: ElementType;
   title: string;
   description: string;
+  action?: ReactNode;
   className?: string;
 }
 
@@ -12,6 +13,7 @@ export default function EmptyState({
   icon: Icon,
   title,
   description,
+  action,
   className = '',
 }: EmptyStateProps) {
   return (
@@ -23,6 +25,7 @@ export default function EmptyState({
       </div>
       <h2 className="text-sm font-medium text-slate-900 mb-1">{title}</h2>
       <p className="text-sm text-slate-500 max-w-sm">{description}</p>
+      {action && <div className="mt-6">{action}</div>}
     </div>
   );
 }
