@@ -26,12 +26,13 @@ CSP は document（HTML）の取得時にブラウザが評価する。Cloudflar
 
 ### `connect-src`
 
-| 用途             | 接続先                                                                                                | 備考                                                                                         |
-| ---------------- | ----------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
-| 自社 API         | `https://toique-backend-mbe63yj5aq-an.a.run.app`（`VITE_API_URL` の本番値、Cloud Run のサービス URL） | Better Auth `/api/auth/*` も同じオリジン。SPA とは別オリジンなので `'self'` では到達できない |
-| Google Analytics | `https://*.google-analytics.com`                                                                      | GA4 のイベント送信                                                                           |
-|                  | `https://*.analytics.google.com`                                                                      | （GA4 のリージョナル送信用）                                                                 |
-|                  | `https://*.googletagmanager.com`                                                                      | gtag 設定取得                                                                                |
+| 用途              | 接続先                                                                                                | 備考                                                                                          |
+| ----------------- | ----------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------- |
+| 自社 SPA オリジン | `'self'`                                                                                              | SPA から自オリジンへの fetch（同一ホスト配信の静的アセット、将来の Pages Functions 等）の保険 |
+| 自社 API          | `https://toique-backend-mbe63yj5aq-an.a.run.app`（`VITE_API_URL` の本番値、Cloud Run のサービス URL） | Better Auth `/api/auth/*` を含む。SPA とは別オリジンなので `'self'` では到達できず明示が必要  |
+| Google Analytics  | `https://*.google-analytics.com`                                                                      | GA4 のイベント送信                                                                            |
+|                   | `https://*.analytics.google.com`                                                                      | （GA4 のリージョナル送信用）                                                                  |
+|                   | `https://*.googletagmanager.com`                                                                      | gtag 設定取得                                                                                 |
 
 ### `img-src`
 
