@@ -21,7 +21,7 @@ CSP は document（HTML）の取得時にブラウザが評価する。Cloudflar
 | ---------------- | --------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
 | 自前 JS          | Vite ビルド成果物 (`/assets/*.js`)                        | `'self'` で許可                                                                                                                                |
 | Google Analytics | `https://www.googletagmanager.com/gtag/js`                | `frontend/index.html` から動的に `<script src>` 注入                                                                                           |
-| インライン       | （旧）GA 初期化スクリプト                                 | タスク #2 で外部 JS 化、CSP 上は不要にする                                                                                                     |
+| インライン       | （旧）GA 初期化スクリプト                                 | 本 PR で外部 JS 化済み、CSP 上は不要                                                                                                           |
 | JSON-LD          | `<script type="application/ld+json">`（`Landing.tsx` 他） | データブロックなので `script-src` の影響を受けない（modern browsers）。escape は `frontend/src/lib/json-ld.ts` の `safeJsonLdStringify` を使用 |
 
 ### `connect-src`
