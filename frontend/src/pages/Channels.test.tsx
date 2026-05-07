@@ -51,9 +51,9 @@ describe('Channels Page', () => {
 
       render(<Channels />);
 
-      await waitFor(() => {
-        expect(screen.getByText('まだ登録されていません')).toBeInTheDocument();
-      });
+      expect(
+        await screen.findByText('まだ登録されていません'),
+      ).toBeInTheDocument();
 
       expect(
         screen.getByText(
