@@ -40,16 +40,32 @@ export default function SEOMetadata({
 
   return (
     <>
-      {title && <title>{title}</title>}
-      {description && <meta name="description" content={description} />}
-      {!noIndex && <link rel="canonical" href={canonicalUrl} />}
-      {!noIndex && <meta property="og:url" content={canonicalUrl} />}
-      {title && <meta property="og:title" content={title} />}
-      {description && <meta property="og:description" content={description} />}
-      {title && <meta name="twitter:title" content={title} />}
-      {description && <meta name="twitter:description" content={description} />}
-      {ogImage && <meta property="og:image" content={ogImage} />}
-      {ogImage && <meta name="twitter:image" content={ogImage} />}
+      {title && (
+        <>
+          <title>{title}</title>
+          <meta property="og:title" content={title} />
+          <meta name="twitter:title" content={title} />
+        </>
+      )}
+      {description && (
+        <>
+          <meta name="description" content={description} />
+          <meta property="og:description" content={description} />
+          <meta name="twitter:description" content={description} />
+        </>
+      )}
+      {!noIndex && (
+        <>
+          <link rel="canonical" href={canonicalUrl} />
+          <meta property="og:url" content={canonicalUrl} />
+        </>
+      )}
+      {ogImage && (
+        <>
+          <meta property="og:image" content={ogImage} />
+          <meta name="twitter:image" content={ogImage} />
+        </>
+      )}
       {noIndex && <meta name="robots" content="noindex" />}
     </>
   );
