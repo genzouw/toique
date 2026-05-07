@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Trash2, Copy, Check, MessageCircle } from 'lucide-react';
 import { api, type LineChannel } from '../lib/api';
 import { ICON_SIZE } from '../lib/icon-size';
+import EmptyState from '../components/EmptyState';
 import LoadingButton from '../components/LoadingButton';
 import { buildWebhookUrl } from '../lib/webhook-url';
 
@@ -137,17 +138,12 @@ export default function Channels() {
         {loading ? (
           <div className="mt-4 text-sm text-slate-500">読み込み中…</div>
         ) : items.length === 0 ? (
-          <div className="mt-4 flex flex-col items-center justify-center p-12 text-center bg-white border border-slate-200 rounded-lg">
-            <div className="w-12 h-12 bg-slate-100 rounded-full flex items-center justify-center mb-4">
-              <MessageCircle className="text-slate-400" size={ICON_SIZE.xxl} />
-            </div>
-            <h2 className="text-sm font-medium text-slate-900 mb-1">
-              まだ登録されていません
-            </h2>
-            <p className="text-sm text-slate-500 max-w-sm">
-              上のフォームから新しいLINEチャネルを登録してください。
-            </p>
-          </div>
+          <EmptyState
+            icon={MessageCircle}
+            title="まだ登録されていません"
+            description="上のフォームから新しいLINEチャネルを登録してください。"
+            className="mt-4 bg-white border border-slate-200 rounded-lg"
+          />
         ) : (
           <ul className="mt-4 divide-y divide-slate-200 bg-white border border-slate-200 rounded-lg">
             {items.map((ch) => {
