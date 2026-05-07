@@ -1,6 +1,4 @@
-const BASE_URL =
-  (import.meta.env.VITE_API_URL as string | undefined) ??
-  'http://localhost:3000';
+import { API_BASE_URL } from './api-base-url';
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const headers: Record<string, string> = {
@@ -15,7 +13,7 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
     }
   }
 
-  const res = await fetch(`${BASE_URL}${path}`, {
+  const res = await fetch(`${API_BASE_URL}${path}`, {
     ...init,
     credentials: 'include',
     headers,
@@ -233,7 +231,7 @@ export const api = {
   createPortalSession: () =>
     request<{ url: string }>('/api/v1/billing/portal', { method: 'POST' }),
   exportSubmissionsUrl: (formId: string) =>
-    `${BASE_URL}/api/v1/submissions/export?formId=${encodeURIComponent(formId)}`,
+    `${API_BASE_URL}/api/v1/submissions/export?formId=${encodeURIComponent(formId)}`,
   submitContact: (input: ContactSubmitInput) =>
     request<{ ok: true; id: string }>('/api/v1/contact', {
       method: 'POST',
