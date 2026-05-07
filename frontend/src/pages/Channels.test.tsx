@@ -45,6 +45,24 @@ describe('Channels Page', () => {
     vi.restoreAllMocks();
   });
 
+  describe('empty state', () => {
+    it('renders the empty state when no channels are registered', async () => {
+      vi.mocked(api.listChannels).mockResolvedValue([]);
+
+      render(<Channels />);
+
+      expect(
+        await screen.findByText('まだ登録されていません'),
+      ).toBeInTheDocument();
+
+      expect(
+        screen.getByText(
+          '上のフォームから新しいLINEチャネルを登録してください。',
+        ),
+      ).toBeInTheDocument();
+    });
+  });
+
   describe('delete flow', () => {
     it('deletes a channel when the user confirms', async () => {
       vi.mocked(api.deleteChannel).mockResolvedValue(undefined);
