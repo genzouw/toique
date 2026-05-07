@@ -66,7 +66,11 @@ export default function SEOMetadata({
           <meta name="twitter:image" content={ogImage} />
         </>
       )}
-      {noIndex && <meta name="robots" content="noindex" />}
+      {noIndex && (
+        <>
+          <meta name="robots" content="noindex" />
+        </>
+      )}
     </>
   );
 }
