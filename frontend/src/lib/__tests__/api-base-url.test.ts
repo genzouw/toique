@@ -12,9 +12,16 @@ describe('resolveApiBaseUrl', () => {
     );
   });
 
-  it('末尾スラッシュ付き URL は末尾スラッシュを削除する', () => {
+  it('末尾スラッシュ付き URL は末尾スラッシュをすべて削除する', () => {
     expect(resolveApiBaseUrl('https://api.example.com/')).toBe(
       'https://api.example.com',
     );
+    expect(resolveApiBaseUrl('https://api.example.com//')).toBe(
+      'https://api.example.com',
+    );
+  });
+
+  it('空文字列の場合はデフォルト値を返す', () => {
+    expect(resolveApiBaseUrl('')).toBe('http://localhost:3000');
   });
 });
