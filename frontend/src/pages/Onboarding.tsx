@@ -34,7 +34,7 @@ export default function Onboarding() {
         <LoadingButton
           type="submit"
           loading={submitting}
-          className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-slate-900 text-white rounded-md text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white rounded-md text-sm disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {submitting ? '作成中…' : '組織を作成して開始'}
         </LoadingButton>
