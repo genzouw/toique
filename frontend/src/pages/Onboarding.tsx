@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router';
 import { api } from '../lib/api';
 import { AuthLayout, AuthField } from './Login';
+import LoadingButton from '../components/LoadingButton';
 
 export default function Onboarding() {
   const navigate = useNavigate();
@@ -30,13 +31,13 @@ export default function Onboarding() {
       <form onSubmit={handleSubmit} className="space-y-4">
         <AuthField label="組織名" value={tenantName} onChange={setTenantName} />
         {error && <div className="text-red-600 text-sm">{error}</div>}
-        <button
+        <LoadingButton
           type="submit"
-          disabled={submitting}
-          className="w-full px-4 py-2 bg-slate-900 text-white rounded-md text-sm disabled:opacity-50"
+          loading={submitting}
+          className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-slate-900 text-white rounded-md text-sm disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {submitting ? '作成中…' : '組織を作成して開始'}
-        </button>
+        </LoadingButton>
       </form>
     </AuthLayout>
   );
