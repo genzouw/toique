@@ -47,12 +47,12 @@ if (
   );
 }
 
-const expectedUsernameHash = createHash('sha256')
-  .update(process.env.ADMIN_USERNAME || 'admin')
-  .digest();
-const expectedPasswordHash = createHash('sha256')
-  .update(process.env.ADMIN_PASSWORD || 'admin')
-  .digest();
+const expectedUsernameHash = process.env.ADMIN_USERNAME
+  ? createHash('sha256').update(process.env.ADMIN_USERNAME).digest()
+  : null;
+const expectedPasswordHash = process.env.ADMIN_PASSWORD
+  ? createHash('sha256').update(process.env.ADMIN_PASSWORD).digest()
+  : null;
 
 export function isOperatorEmail(email: string | null | undefined): boolean {
   if (!email) return false;
@@ -77,6 +77,10 @@ export const requireAuth: MiddlewareHandler = async (c, next) => {
  * 該当しない場合は 401 を返す。
  */
 export const requireOperator: MiddlewareHandler = async (c, next) => {
+  if (!expectedUsernameHash || !expectedPasswordHash) {
+    return c.json({ error: 'Unauthorized' }, 401);
+  }
+
   const authHeader = c.req.header('Authorization');
   if (!authHeader || !authHeader.startsWith('Basic ')) {
     return c.json({ error: 'Unauthorized' }, 401);
