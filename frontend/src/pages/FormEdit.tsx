@@ -340,8 +340,16 @@ export default function FormEdit() {
             <span className="text-sm font-medium text-slate-700">
               フォーム設計
             </span>
-            <div className="flex bg-slate-100 rounded-md p-0.5">
+            <div
+              role="tablist"
+              aria-label="フォーム設計の編集モード"
+              className="flex bg-slate-100 rounded-md p-0.5"
+            >
               <button
+                role="tab"
+                aria-selected={tab === 'visual'}
+                aria-controls="panel-visual"
+                id="tab-visual"
                 onClick={() => switchTab('visual')}
                 className={`px-3 py-1 text-xs rounded ${
                   tab === 'visual'
@@ -352,6 +360,10 @@ export default function FormEdit() {
                 ビジュアル
               </button>
               <button
+                role="tab"
+                aria-selected={tab === 'json'}
+                aria-controls="panel-json"
+                id="tab-json"
                 onClick={() => switchTab('json')}
                 className={`px-3 py-1 text-xs rounded ${
                   tab === 'json'
@@ -365,17 +377,19 @@ export default function FormEdit() {
           </div>
 
           {tab === 'visual' ? (
-            <FormSchemaBuilder
-              schema={
-                schemaObj as {
-                  startStep: string;
-                  steps: Record<string, unknown>;
+            <div role="tabpanel" id="panel-visual" aria-labelledby="tab-visual">
+              <FormSchemaBuilder
+                schema={
+                  schemaObj as {
+                    startStep: string;
+                    steps: Record<string, unknown>;
+                  }
                 }
-              }
-              onChange={handleBuilderChange}
-            />
+                onChange={handleBuilderChange}
+              />
+            </div>
           ) : (
-            <>
+            <div role="tabpanel" id="panel-json" aria-labelledby="tab-json">
               <textarea
                 aria-label="JSON schema editor"
                 value={schemaJson}
@@ -389,7 +403,7 @@ export default function FormEdit() {
               {jsonError && (
                 <div className="text-xs text-red-600 mt-1">{jsonError}</div>
               )}
-            </>
+            </div>
           )}
         </div>
 

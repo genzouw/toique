@@ -22,7 +22,7 @@ describe('FormEdit', () => {
     await screen.findByText('新規フォーム');
 
     // Switch to JSON tab
-    const jsonTab = screen.getByRole('button', { name: 'JSON' });
+    const jsonTab = screen.getByRole('tab', { name: 'JSON' });
     fireEvent.click(jsonTab);
 
     // Find the textarea for JSON edit by aria-label
@@ -52,13 +52,13 @@ describe('FormEdit', () => {
     );
     await screen.findByText('新規フォーム');
 
-    fireEvent.click(screen.getByRole('button', { name: 'JSON' }));
+    fireEvent.click(screen.getByRole('tab', { name: 'JSON' }));
     const textarea = screen.getByRole('textbox', {
       name: 'JSON schema editor',
     });
 
     fireEvent.change(textarea, { target: { value: '{' } });
-    fireEvent.click(screen.getByRole('button', { name: 'ビジュアル' }));
+    fireEvent.click(screen.getByRole('tab', { name: 'ビジュアル' }));
 
     expect(
       screen.getByText(
