@@ -100,16 +100,13 @@ export function getCategory(slug: string): FaqCategory | undefined {
 }
 
 // ⚡ Bolt: Replace O(N) array filtering with O(1) map lookup
-const CATEGORY_FAQS_MAP: Record<string, FaqArticle[]> = {};
+const CATEGORY_FAQS_MAP: Record<string, FaqArticle[] | undefined> = {};
 for (const faq of FAQS) {
-  if (!CATEGORY_FAQS_MAP[faq.category]) {
-    CATEGORY_FAQS_MAP[faq.category] = [];
-  }
-  CATEGORY_FAQS_MAP[faq.category].push(faq);
+  (CATEGORY_FAQS_MAP[faq.category] ??= []).push(faq);
 }
 
 export function getFaqsByCategory(categorySlug: FaqCategorySlug): FaqArticle[] {
-  return CATEGORY_FAQS_MAP[categorySlug] || [];
+  return CATEGORY_FAQS_MAP[categorySlug] ?? [];
 }
 
 export function getRelated(faq: FaqArticle): FaqArticle[] {
