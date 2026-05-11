@@ -47,12 +47,11 @@ if (
   );
 }
 
-const expectedUsernameHash = process.env.ADMIN_USERNAME
-  ? createHash('sha256').update(process.env.ADMIN_USERNAME).digest()
-  : null;
-const expectedPasswordHash = process.env.ADMIN_PASSWORD
-  ? createHash('sha256').update(process.env.ADMIN_PASSWORD).digest()
-  : null;
+const getExpectedHash = (val: string | undefined) =>
+  val ? createHash('sha256').update(val).digest() : null;
+
+const expectedUsernameHash = getExpectedHash(process.env.ADMIN_USERNAME);
+const expectedPasswordHash = getExpectedHash(process.env.ADMIN_PASSWORD);
 
 export function isOperatorEmail(email: string | null | undefined): boolean {
   if (!email) return false;
