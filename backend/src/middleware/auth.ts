@@ -47,12 +47,11 @@ if (
   );
 }
 
-const expectedUsernameHash = createHash('sha256')
-  .update(process.env.ADMIN_USERNAME || 'admin')
-  .digest();
-const expectedPasswordHash = createHash('sha256')
-  .update(process.env.ADMIN_PASSWORD || 'admin')
-  .digest();
+const getExpectedHash = (val: string | undefined) =>
+  val ? createHash('sha256').update(val).digest() : null;
+
+const expectedUsernameHash = getExpectedHash(process.env.ADMIN_USERNAME);
+const expectedPasswordHash = getExpectedHash(process.env.ADMIN_PASSWORD);
 
 export function isOperatorEmail(email: string | null | undefined): boolean {
   if (!email) return false;
@@ -77,9 +76,13 @@ export const requireAuth: MiddlewareHandler = async (c, next) => {
  * 該当しない場合は 401 を返す。
  */
 export const requireOperator: MiddlewareHandler = async (c, next) => {
+  if (!expectedUsernameHash || !expectedPasswordHash) {
+    return c.text('Unauthorized', 401);
+  }
+
   const authHeader = c.req.header('Authorization');
   if (!authHeader || !authHeader.startsWith('Basic ')) {
-    return c.json({ error: 'Unauthorized' }, 401);
+    return c.text('Unauthorized', 401);
   }
 
   const base64Credentials = authHeader.split(' ')[1];
@@ -87,12 +90,12 @@ export const requireOperator: MiddlewareHandler = async (c, next) => {
   try {
     decoded = Buffer.from(base64Credentials, 'base64').toString('utf-8');
   } catch {
-    return c.json({ error: 'Unauthorized' }, 401);
+    return c.text('Unauthorized', 401);
   }
 
   const colonIndex = decoded.indexOf(':');
   if (colonIndex === -1) {
-    return c.json({ error: 'Unauthorized' }, 401);
+    return c.text('Unauthorized', 401);
   }
   const username = decoded.slice(0, colonIndex);
   const password = decoded.slice(colonIndex + 1);
@@ -103,7 +106,7 @@ export const requireOperator: MiddlewareHandler = async (c, next) => {
   const usernameMatch = timingSafeEqual(usernameHash, expectedUsernameHash);
   const passwordMatch = timingSafeEqual(passwordHash, expectedPasswordHash);
   if (!usernameMatch || !passwordMatch) {
-    return c.json({ error: 'Unauthorized' }, 401);
+    return c.text('Unauthorized', 401);
   }
 
   await next();
