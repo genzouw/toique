@@ -22,6 +22,9 @@ describe('faqs', () => {
   it('getRelated returns related faqs', () => {
     const faq = getFaq('pricing-overview')!;
     const related = getRelated(faq);
-    expect(Array.isArray(related)).toBe(true);
+    expect(related.map((f) => f.slug)).toEqual([
+      'pricing-free-limits',
+      'pricing-payment-method',
+    ]);
   });
 });
