@@ -77,12 +77,12 @@ export const requireAuth: MiddlewareHandler = async (c, next) => {
  */
 export const requireOperator: MiddlewareHandler = async (c, next) => {
   if (!expectedUsernameHash || !expectedPasswordHash) {
-    return c.json({ error: 'Unauthorized' }, 401);
+    return c.text('Unauthorized', 401);
   }
 
   const authHeader = c.req.header('Authorization');
   if (!authHeader || !authHeader.startsWith('Basic ')) {
-    return c.json({ error: 'Unauthorized' }, 401);
+    return c.text('Unauthorized', 401);
   }
 
   const base64Credentials = authHeader.split(' ')[1];
@@ -90,12 +90,12 @@ export const requireOperator: MiddlewareHandler = async (c, next) => {
   try {
     decoded = Buffer.from(base64Credentials, 'base64').toString('utf-8');
   } catch {
-    return c.json({ error: 'Unauthorized' }, 401);
+    return c.text('Unauthorized', 401);
   }
 
   const colonIndex = decoded.indexOf(':');
   if (colonIndex === -1) {
-    return c.json({ error: 'Unauthorized' }, 401);
+    return c.text('Unauthorized', 401);
   }
   const username = decoded.slice(0, colonIndex);
   const password = decoded.slice(colonIndex + 1);
@@ -106,7 +106,7 @@ export const requireOperator: MiddlewareHandler = async (c, next) => {
   const usernameMatch = timingSafeEqual(usernameHash, expectedUsernameHash);
   const passwordMatch = timingSafeEqual(passwordHash, expectedPasswordHash);
   if (!usernameMatch || !passwordMatch) {
-    return c.json({ error: 'Unauthorized' }, 401);
+    return c.text('Unauthorized', 401);
   }
 
   await next();
