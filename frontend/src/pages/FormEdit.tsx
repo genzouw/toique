@@ -376,35 +376,42 @@ export default function FormEdit() {
             </div>
           </div>
 
-          {tab === 'visual' ? (
-            <div role="tabpanel" id="panel-visual" aria-labelledby="tab-visual">
-              <FormSchemaBuilder
-                schema={
-                  schemaObj as {
-                    startStep: string;
-                    steps: Record<string, unknown>;
-                  }
+          <div
+            role="tabpanel"
+            id="panel-visual"
+            aria-labelledby="tab-visual"
+            hidden={tab !== 'visual'}
+          >
+            <FormSchemaBuilder
+              schema={
+                schemaObj as {
+                  startStep: string;
+                  steps: Record<string, unknown>;
                 }
-                onChange={handleBuilderChange}
-              />
-            </div>
-          ) : (
-            <div role="tabpanel" id="panel-json" aria-labelledby="tab-json">
-              <textarea
-                aria-label="JSON schema editor"
-                value={schemaJson}
-                onChange={(e) => handleJsonChange(e.target.value)}
-                rows={20}
-                spellCheck={false}
-                className={`w-full px-3 py-2 border rounded-md text-xs font-mono bg-slate-50 ${
-                  jsonError ? 'border-red-400' : 'border-slate-300'
-                }`}
-              />
-              {jsonError && (
-                <div className="text-xs text-red-600 mt-1">{jsonError}</div>
-              )}
-            </div>
-          )}
+              }
+              onChange={handleBuilderChange}
+            />
+          </div>
+          <div
+            role="tabpanel"
+            id="panel-json"
+            aria-labelledby="tab-json"
+            hidden={tab !== 'json'}
+          >
+            <textarea
+              aria-label="JSON schema editor"
+              value={schemaJson}
+              onChange={(e) => handleJsonChange(e.target.value)}
+              rows={20}
+              spellCheck={false}
+              className={`w-full px-3 py-2 border rounded-md text-xs font-mono bg-slate-50 ${
+                jsonError ? 'border-red-400' : 'border-slate-300'
+              }`}
+            />
+            {jsonError && (
+              <div className="text-xs text-red-600 mt-1">{jsonError}</div>
+            )}
+          </div>
         </div>
 
         <div className="flex justify-end">
