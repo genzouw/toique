@@ -1,5 +1,5 @@
 # ビルドコンテキスト: リポジトリルート
-FROM node:22-alpine AS base
+FROM node:26-alpine AS base
 WORKDIR /app
 COPY frontend/package.json frontend/package-lock.json ./
 RUN --mount=type=cache,target=/root/.npm,sharing=locked npm ci --prefer-offline
