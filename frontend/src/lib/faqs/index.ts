@@ -99,8 +99,14 @@ export function getCategory(slug: string): FaqCategory | undefined {
   return CATEGORY_MAP[slug];
 }
 
+// ⚡ Bolt: Replace O(N) array filtering with O(1) map lookup
+const CATEGORY_FAQS_MAP: Record<string, FaqArticle[] | undefined> = {};
+for (const faq of FAQS) {
+  (CATEGORY_FAQS_MAP[faq.category] ??= []).push(faq);
+}
+
 export function getFaqsByCategory(categorySlug: FaqCategorySlug): FaqArticle[] {
-  return FAQS.filter((f) => f.category === categorySlug);
+  return CATEGORY_FAQS_MAP[categorySlug] ?? [];
 }
 
 export function getRelated(faq: FaqArticle): FaqArticle[] {
