@@ -1,5 +1,5 @@
 # ビルドコンテキスト: リポジトリルート
-FROM node:25-alpine AS base
+FROM node:26-alpine AS base
 WORKDIR /app
 COPY backend/package.json backend/package-lock.json ./
 RUN --mount=type=cache,target=/root/.npm,sharing=locked npm ci --prefer-offline
@@ -26,7 +26,7 @@ FROM base AS build
 RUN npm run build
 
 # 本番実行用
-FROM node:25-alpine AS production
+FROM node:26-alpine AS production
 WORKDIR /app
 ENV NODE_ENV=production
 COPY --from=build /app/package.json /app/package-lock.json ./
