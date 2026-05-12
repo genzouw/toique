@@ -1,0 +1,126 @@
+#!/usr/bin/env bash
+#
+# toique infra: CDKTF 実行ラッパースクリプト
+#
+# 手動でも GitHub Actions でも同一のインタフェースで cdktf を呼び出すための
+# 単一エントリポイント。実行方法・必須環境はヘルプ (`./bin/cdktf help`) を参照。
+
+set -euo pipefail
+
+# infra/ を作業ディレクトリに固定（どこから呼ばれても同じ挙動にする）
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+INFRA_DIR="$(dirname "${SCRIPT_DIR}")"
+cd "${INFRA_DIR}"
+
+# cdktf-cli のバージョンは @cdktf/provider-google が要求する cdktf ^0.21 系に合わせる。
+# 環境変数で上書き可能にして将来のメジャー更新時の検証を簡単にする。
+readonly CDKTF_CLI_VERSION="${CDKTF_CLI_VERSION:-0.21}"
+
+usage() {
+  cat <<'USAGE'
+toique infra: CDKTF 実行ラッパースクリプト
+
+Usage:
+  ./bin/cdktf <subcommand> [cdktf options...]
+
+Subcommands:
+  synth                          Terraform JSON を生成 (GCP 認証不要)
+  diff                           適用前の差分プレビュー
+  deploy [--auto-approve]        変更を適用 (CI では --auto-approve を付与)
+  destroy [--auto-approve]       リソースを削除
+  help                           このヘルプを表示
+
+必須環境:
+  - Node.js >= 20
+  - infra/ で 'npm ci' 済み (node_modules が存在すること)
+  - GCP 認証 (synth 以外で必須):
+      * gcloud auth application-default login          ローカル開発
+      * GOOGLE_APPLICATION_CREDENTIALS=/path/to/sa.json サービスアカウントキー
+      * Workload Identity Federation                    GitHub Actions
+
+環境変数:
+  CDKTF_CLI_VERSION   使用する cdktf-cli のバージョン (default: 0.21)
+
+注意:
+  - Terraform state は現状ローカル管理 (infra/terraform.toique-infra.tfstate)。
+    実行マシン上の state ファイルを失わないよう退避してください。
+  - Cloud Scheduler の定期実行時刻 (03:00 JST) を避けて deploy してください。
+USAGE
+}
+
+abort() {
+  echo "[error] $*" >&2
+  exit 1
+}
+
+require_npx() {
+  command -v npx >/dev/null 2>&1 \
+    || abort "npx が見つかりません。Node.js >= 20 をインストールしてください。"
+}
+
+require_node_modules() {
+  [ -d node_modules ] \
+    || abort "node_modules がありません。infra/ で 'npm ci' を実行してください。"
+}
+
+require_gcp_auth() {
+  if [ -n "${GOOGLE_APPLICATION_CREDENTIALS:-}" ]; then
+    [ -f "${GOOGLE_APPLICATION_CREDENTIALS}" ] \
+      || abort "GOOGLE_APPLICATION_CREDENTIALS のパス '${GOOGLE_APPLICATION_CREDENTIALS}' が存在しません。"
+    return
+  fi
+  if command -v gcloud >/dev/null 2>&1 \
+     && gcloud auth application-default print-access-token >/dev/null 2>&1; then
+    return
+  fi
+  abort "GCP 認証が見つかりません。次のいずれかで認証してください:
+  - gcloud auth application-default login
+  - export GOOGLE_APPLICATION_CREDENTIALS=/path/to/sa-key.json
+  - Workload Identity Federation (GitHub Actions)"
+}
+
+cdktf_run() {
+  npx --yes -p "cdktf-cli@${CDKTF_CLI_VERSION}" cdktf "$@"
+}
+
+main() {
+  local subcommand="${1:-help}"
+  shift || true
+
+  case "${subcommand}" in
+    synth)
+      require_npx
+      require_node_modules
+      cdktf_run synth "$@"
+      ;;
+    diff)
+      require_npx
+      require_node_modules
+      require_gcp_auth
+      cdktf_run diff "$@"
+      ;;
+    deploy)
+      require_npx
+      require_node_modules
+      require_gcp_auth
+      cdktf_run deploy "$@"
+      ;;
+    destroy)
+      require_npx
+      require_node_modules
+      require_gcp_auth
+      cdktf_run destroy "$@"
+      ;;
+    help|-h|--help)
+      usage
+      ;;
+    *)
+      echo "[error] 未対応のサブコマンド: ${subcommand}" >&2
+      echo >&2
+      usage >&2
+      exit 1
+      ;;
+  esac
+}
+
+main "$@"
