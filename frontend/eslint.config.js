@@ -24,7 +24,7 @@ export default tseslint.config(
         'error',
         {
           selector:
-            "MemberExpression[property.name='VITE_API_URL'][object.type='MemberExpression'][object.property.name='env']",
+            "MemberExpression[object.type='MemberExpression'][object.property.name='env']:matches([property.name='VITE_API_URL'], [property.value='VITE_API_URL'])",
           message:
             'VITE_API_URL を直接参照せず、src/lib/api-base-url.ts の API_BASE_URL を利用してください。',
         },
