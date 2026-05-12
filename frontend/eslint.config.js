@@ -20,6 +20,21 @@ export default tseslint.config(
         'warn',
         { allowConstantExport: true },
       ],
+      'no-restricted-syntax': [
+        'error',
+        {
+          selector:
+            "MemberExpression[property.name='VITE_API_URL'][object.type='MemberExpression'][object.property.name='env']",
+          message:
+            'VITE_API_URL を直接参照せず、src/lib/api-base-url.ts の API_BASE_URL を利用してください。',
+        },
+      ],
+    },
+  },
+  {
+    files: ['src/lib/api-base-url.ts'],
+    rules: {
+      'no-restricted-syntax': 'off',
     },
   },
 );

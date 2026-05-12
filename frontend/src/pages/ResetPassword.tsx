@@ -3,10 +3,7 @@ import { Link, useSearchParams } from 'react-router';
 import { AuthLayout, AuthField } from './Login';
 import SEOMetadata from '../components/SEOMetadata';
 import LoadingButton from '../components/LoadingButton';
-
-const API_URL =
-  (import.meta.env.VITE_API_URL as string | undefined) ??
-  'http://localhost:3000';
+import { API_BASE_URL } from '../lib/api-base-url';
 
 export default function ResetPassword() {
   const [params] = useSearchParams();
@@ -62,7 +59,7 @@ export default function ResetPassword() {
 
     setSubmitting(true);
     try {
-      const res = await fetch(`${API_URL}/api/auth/reset-password`, {
+      const res = await fetch(`${API_BASE_URL}/api/auth/reset-password`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',

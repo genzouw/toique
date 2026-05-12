@@ -13,10 +13,7 @@ import Mermaid from '../components/Mermaid';
 import SiteFooter from '../components/SiteFooter';
 import SEOMetadata from '../components/SEOMetadata';
 import { ICON_SIZE } from '../lib/icon-size';
-
-const API_BASE_URL =
-  (import.meta.env.VITE_API_URL as string | undefined) ??
-  'http://localhost:3000';
+import { API_BASE_URL } from '../lib/api-base-url';
 
 export default function Help() {
   return (

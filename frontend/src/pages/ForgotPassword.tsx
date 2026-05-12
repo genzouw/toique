@@ -3,10 +3,7 @@ import { Link } from 'react-router';
 import { AuthLayout, AuthField } from './Login';
 import SEOMetadata from '../components/SEOMetadata';
 import LoadingButton from '../components/LoadingButton';
-
-const API_URL =
-  (import.meta.env.VITE_API_URL as string | undefined) ??
-  'http://localhost:3000';
+import { API_BASE_URL } from '../lib/api-base-url';
 
 export default function ForgotPassword() {
   const [email, setEmail] = useState('');
@@ -27,12 +24,15 @@ export default function ForgotPassword() {
     setError(null);
 
     try {
-      const res = await fetch(`${API_URL}/api/auth/request-password-reset`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({ email }),
-      });
+      const res = await fetch(
+        `${API_BASE_URL}/api/auth/request-password-reset`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({ email }),
+        },
+      );
       if (!res.ok) {
         setError(
           'リクエストの受付に失敗しました。時間をおいて再度お試しください。',
