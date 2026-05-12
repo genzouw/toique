@@ -88,31 +88,14 @@ main() {
   shift || true
 
   case "${subcommand}" in
-    synth)
-      require_npx
-      require_node_modules
-      cdktf_run synth "$@"
-      ;;
-    diff)
-      require_npx
-      require_node_modules
-      require_gcp_auth
-      cdktf_run diff "$@"
-      ;;
-    deploy)
-      require_npx
-      require_node_modules
-      require_gcp_auth
-      cdktf_run deploy "$@"
-      ;;
-    destroy)
-      require_npx
-      require_node_modules
-      require_gcp_auth
-      cdktf_run destroy "$@"
-      ;;
     help|-h|--help)
       usage
+      ;;
+    synth|diff|deploy|destroy)
+      require_npx
+      require_node_modules
+      [[ "${subcommand}" != "synth" ]] && require_gcp_auth
+      cdktf_run "${subcommand}" "$@"
       ;;
     *)
       echo "[error] 未対応のサブコマンド: ${subcommand}" >&2
