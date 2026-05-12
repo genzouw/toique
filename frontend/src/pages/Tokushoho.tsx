@@ -1,5 +1,6 @@
 import { Link } from 'react-router';
 import { SITE_ORIGIN } from '../lib/site';
+import { PLAN_PRICES, formatPriceWithUnit } from '../lib/pricing';
 import SEOMetadata from '../components/SEOMetadata';
 
 /**
@@ -84,8 +85,14 @@ export default function Tokushoho() {
               </Link>
               に表示しています。
               <ul className="list-disc pl-5 mt-2 space-y-1">
-                <li>Free プラン: 月額 0円（税込）</li>
-                <li>Pro プラン: 月額 2,980円（税込）</li>
+                <li>
+                  Free プラン: 月額 {formatPriceWithUnit(PLAN_PRICES.free)}
+                  （税込）
+                </li>
+                <li>
+                  Pro プラン: 月額 {formatPriceWithUnit(PLAN_PRICES.pro)}
+                  （税込）
+                </li>
               </ul>
             </Row>
             <Row term="商品代金以外の必要料金">
