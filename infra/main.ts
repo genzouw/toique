@@ -22,7 +22,7 @@ class MyStack extends TerraformStack {
       { envName: 'POSTGRES_USER', secretName: 'BACKUP_POSTGRES_USER' },
       { envName: 'POSTGRES_PASSWORD', secretName: 'BACKUP_POSTGRES_PASSWORD' },
       { envName: 'POSTGRES_HOST', secretName: 'BACKUP_POSTGRES_HOST' },
-    ];
+    ] as const;
 
     new GoogleProvider(this, 'Google', {
       project: projectId,
