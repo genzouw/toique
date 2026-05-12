@@ -3,10 +3,7 @@ import { Link, useLocation } from 'react-router';
 import { AuthLayout } from './Login';
 import SEOMetadata from '../components/SEOMetadata';
 import LoadingButton from '../components/LoadingButton';
-
-const API_URL =
-  (import.meta.env.VITE_API_URL as string | undefined) ??
-  'http://localhost:3000';
+import { API_BASE_URL } from '../lib/api-base-url';
 
 interface LocationState {
   email?: string;
@@ -42,15 +39,18 @@ export default function VerifyEmailSent() {
     setResendError(null);
     setResent(false);
     try {
-      const res = await fetch(`${API_URL}/api/auth/send-verification-email`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({
-          email,
-          callbackURL: `${window.location.origin}/verify-email?verified=1`,
-        }),
-      });
+      const res = await fetch(
+        `${API_BASE_URL}/api/auth/send-verification-email`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({
+            email,
+            callbackURL: `${window.location.origin}/verify-email?verified=1`,
+          }),
+        },
+      );
       if (!res.ok) {
         setResendError('再送に失敗しました。時間をおいて再度お試しください。');
         return;

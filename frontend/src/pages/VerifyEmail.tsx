@@ -2,10 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link, useSearchParams } from 'react-router';
 import { AuthLayout } from './Login';
 import SEOMetadata from '../components/SEOMetadata';
-
-const API_URL =
-  (import.meta.env.VITE_API_URL as string | undefined) ??
-  'http://localhost:3000';
+import { API_BASE_URL } from '../lib/api-base-url';
 
 type Status = 'pending' | 'success' | 'error';
 
@@ -50,7 +47,7 @@ export default function VerifyEmail() {
     // 検証後は callbackURL (このページ + ?verified=1) に戻ってくる。
     const callbackURL = `${window.location.origin}/verify-email?verified=1`;
     window.location.replace(
-      `${API_URL}/api/auth/verify-email?token=${encodeURIComponent(
+      `${API_BASE_URL}/api/auth/verify-email?token=${encodeURIComponent(
         token,
       )}&callbackURL=${encodeURIComponent(callbackURL)}`,
     );
