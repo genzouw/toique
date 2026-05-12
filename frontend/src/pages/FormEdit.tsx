@@ -196,7 +196,7 @@ export default function FormEdit() {
 
   function handleTabKeyDown(e: React.KeyboardEvent<HTMLButtonElement>) {
     const currentIndex = TAB_ORDER.indexOf(tab);
-    let nextIndex = currentIndex;
+    let nextIndex: number;
     switch (e.key) {
       case 'ArrowLeft':
         nextIndex = (currentIndex - 1 + TAB_ORDER.length) % TAB_ORDER.length;
