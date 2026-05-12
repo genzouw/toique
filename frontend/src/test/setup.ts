@@ -14,7 +14,7 @@ if (
   const storage: Storage = {
     getItem: (k) => (k in store ? store[k] : null),
     setItem: (k, v) => {
-      store[k] = String(v);
+      store[k] = v;
     },
     removeItem: (k) => {
       delete store[k];
