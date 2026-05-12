@@ -8,11 +8,12 @@ import SEOMetadata from '../components/SEOMetadata';
 import { ICON_SIZE } from '../lib/icon-size';
 import LoadingButton from '../components/LoadingButton';
 import SiteFooter from '../components/SiteFooter';
+import { PLAN_PRICES, formatPriceWithSymbol } from '../lib/pricing';
 
 const PLANS = [
   {
     name: 'Free',
-    price: '¥0',
+    price: formatPriceWithSymbol(PLAN_PRICES.free),
     period: '',
     description: '個人・小規模事業者の方に',
     cta: '無料で始める',
@@ -28,7 +29,7 @@ const PLANS = [
   },
   {
     name: 'Pro',
-    price: '¥2,980',
+    price: formatPriceWithSymbol(PLAN_PRICES.pro),
     period: '/ 月',
     description: '複数店舗・チームで運用する方に',
     cta: 'Pro プランを始める',
