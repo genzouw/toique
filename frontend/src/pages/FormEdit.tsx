@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useNavigate, useParams, Link } from 'react-router';
 import { ChevronLeft, Trash2 } from 'lucide-react';
 import { api, type Form, type LineChannel } from '../lib/api';
@@ -45,6 +45,8 @@ const DEFAULT_SCHEMA = {
 };
 
 type TabId = 'visual' | 'json';
+
+const TAB_ORDER: TabId[] = ['visual', 'json'];
 
 /** JSON スキーマのバリデーション */
 function validateSchema(schema: Record<string, unknown>): string | null {
@@ -116,6 +118,10 @@ export default function FormEdit() {
   );
   const [jsonError, setJsonError] = useState<string | null>(null);
   const [tab, setTab] = useState<TabId>('visual');
+  const tabRefs = useRef<Record<TabId, HTMLButtonElement | null>>({
+    visual: null,
+    json: null,
+  });
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -186,6 +192,32 @@ export default function FormEdit() {
       setSchemaJson(JSON.stringify(schemaObj, null, 2));
     }
     setTab(newTab);
+  }
+
+  function handleTabKeyDown(e: React.KeyboardEvent<HTMLButtonElement>) {
+    const currentIndex = TAB_ORDER.indexOf(tab);
+    let nextIndex: number;
+    switch (e.key) {
+      case 'ArrowLeft':
+        nextIndex = (currentIndex - 1 + TAB_ORDER.length) % TAB_ORDER.length;
+        break;
+      case 'ArrowRight':
+        nextIndex = (currentIndex + 1) % TAB_ORDER.length;
+        break;
+      case 'Home':
+        nextIndex = 0;
+        break;
+      case 'End':
+        nextIndex = TAB_ORDER.length - 1;
+        break;
+      default:
+        return;
+    }
+    if (nextIndex === currentIndex) return;
+    e.preventDefault();
+    const nextTab = TAB_ORDER[nextIndex];
+    switchTab(nextTab);
+    tabRefs.current[nextTab]?.focus();
   }
 
   async function handleSave() {
@@ -340,9 +372,22 @@ export default function FormEdit() {
             <span className="text-sm font-medium text-slate-700">
               フォーム設計
             </span>
-            <div className="flex bg-slate-100 rounded-md p-0.5">
+            <div
+              role="tablist"
+              aria-label="フォーム設計の編集モード"
+              className="flex bg-slate-100 rounded-md p-0.5"
+            >
               <button
+                ref={(el) => {
+                  tabRefs.current.visual = el;
+                }}
+                role="tab"
+                aria-selected={tab === 'visual'}
+                aria-controls="panel-visual"
+                id="tab-visual"
+                tabIndex={tab === 'visual' ? 0 : -1}
                 onClick={() => switchTab('visual')}
+                onKeyDown={handleTabKeyDown}
                 className={`px-3 py-1 text-xs rounded ${
                   tab === 'visual'
                     ? 'bg-white text-slate-900 shadow-sm'
@@ -352,7 +397,16 @@ export default function FormEdit() {
                 ビジュアル
               </button>
               <button
+                ref={(el) => {
+                  tabRefs.current.json = el;
+                }}
+                role="tab"
+                aria-selected={tab === 'json'}
+                aria-controls="panel-json"
+                id="tab-json"
+                tabIndex={tab === 'json' ? 0 : -1}
                 onClick={() => switchTab('json')}
+                onKeyDown={handleTabKeyDown}
                 className={`px-3 py-1 text-xs rounded ${
                   tab === 'json'
                     ? 'bg-white text-slate-900 shadow-sm'
@@ -364,7 +418,12 @@ export default function FormEdit() {
             </div>
           </div>
 
-          {tab === 'visual' ? (
+          <div
+            role="tabpanel"
+            id="panel-visual"
+            aria-labelledby="tab-visual"
+            hidden={tab !== 'visual'}
+          >
             <FormSchemaBuilder
               schema={
                 schemaObj as {
@@ -374,23 +433,27 @@ export default function FormEdit() {
               }
               onChange={handleBuilderChange}
             />
-          ) : (
-            <>
-              <textarea
-                aria-label="JSON schema editor"
-                value={schemaJson}
-                onChange={(e) => handleJsonChange(e.target.value)}
-                rows={20}
-                spellCheck={false}
-                className={`w-full px-3 py-2 border rounded-md text-xs font-mono bg-slate-50 ${
-                  jsonError ? 'border-red-400' : 'border-slate-300'
-                }`}
-              />
-              {jsonError && (
-                <div className="text-xs text-red-600 mt-1">{jsonError}</div>
-              )}
-            </>
-          )}
+          </div>
+          <div
+            role="tabpanel"
+            id="panel-json"
+            aria-labelledby="tab-json"
+            hidden={tab !== 'json'}
+          >
+            <textarea
+              aria-label="JSON schema editor"
+              value={schemaJson}
+              onChange={(e) => handleJsonChange(e.target.value)}
+              rows={20}
+              spellCheck={false}
+              className={`w-full px-3 py-2 border rounded-md text-xs font-mono bg-slate-50 ${
+                jsonError ? 'border-red-400' : 'border-slate-300'
+              }`}
+            />
+            {jsonError && (
+              <div className="text-xs text-red-600 mt-1">{jsonError}</div>
+            )}
+          </div>
         </div>
 
         <div className="flex justify-end">
