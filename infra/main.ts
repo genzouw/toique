@@ -2,8 +2,10 @@ import { Construct } from 'constructs';
 import { App, TerraformStack } from 'cdktf';
 import { GoogleProvider } from '@cdktf/provider-google/lib/provider';
 import { StorageBucket } from '@cdktf/provider-google/lib/storage-bucket';
+import { StorageBucketIamMember } from '@cdktf/provider-google/lib/storage-bucket-iam-member';
 import { ServiceAccount } from '@cdktf/provider-google/lib/service-account';
 import { ProjectIamMember } from '@cdktf/provider-google/lib/project-iam-member';
+import { SecretManagerSecretIamMember } from '@cdktf/provider-google/lib/secret-manager-secret-iam-member';
 import { CloudRunV2Job } from '@cdktf/provider-google/lib/cloud-run-v2-job';
 import { CloudSchedulerJob } from '@cdktf/provider-google/lib/cloud-scheduler-job';
 
@@ -14,13 +16,21 @@ class MyStack extends TerraformStack {
     const projectId = 'toique-app-prod';
     const region = 'asia-northeast1';
 
+    // バックアップジョブが参照するシークレット定義（env 名と Secret Manager 上の名前のマッピング）
+    const backupSecrets = [
+      { envName: 'POSTGRES_DB', secretName: 'BACKUP_POSTGRES_DB' },
+      { envName: 'POSTGRES_USER', secretName: 'BACKUP_POSTGRES_USER' },
+      { envName: 'POSTGRES_PASSWORD', secretName: 'BACKUP_POSTGRES_PASSWORD' },
+      { envName: 'POSTGRES_HOST', secretName: 'BACKUP_POSTGRES_HOST' },
+    ] as const;
+
     new GoogleProvider(this, 'Google', {
       project: projectId,
       region: region,
     });
 
     // --- GCS バケット ---
-    new StorageBucket(this, 'backup-bucket', {
+    const backupBucket = new StorageBucket(this, 'backup-bucket', {
       name: `${projectId}-db-backups`,
       location: region,
       storageClass: 'STANDARD',
@@ -37,16 +47,16 @@ class MyStack extends TerraformStack {
       forceDestroy: false,
     });
 
-    // --- バックアップ用サービスア���ウント ---
+    // --- バックアップ用サービスアカウント ---
     const backupSa = new ServiceAccount(this, 'backup-sa', {
       accountId: 'backup-job',
       displayName: 'DB Backup Cloud Run Job',
       project: projectId,
     });
 
-    // GCS 書き込み権限
-    new ProjectIamMember(this, 'backup-sa-gcs', {
-      project: projectId,
+    // GCS 書き込み権限（バックアップ用バケット限定）
+    new StorageBucketIamMember(this, 'backup-sa-bucket-writer', {
+      bucket: backupBucket.name,
       role: 'roles/storage.objectCreator',
       member: `serviceAccount:${backupSa.email}`,
     });
@@ -58,11 +68,14 @@ class MyStack extends TerraformStack {
       member: `serviceAccount:${backupSa.email}`,
     });
 
-    // Secret Manager 読み取り権限
-    new ProjectIamMember(this, 'backup-sa-secrets', {
-      project: projectId,
-      role: 'roles/secretmanager.secretAccessor',
-      member: `serviceAccount:${backupSa.email}`,
+    // Secret Manager 読み取り権限（バックアップ用シークレット限定）
+    backupSecrets.forEach(({ secretName }) => {
+      new SecretManagerSecretIamMember(this, `backup-sa-secret-${secretName}`, {
+        project: projectId,
+        secretId: secretName,
+        role: 'roles/secretmanager.secretAccessor',
+        member: `serviceAccount:${backupSa.email}`,
+      });
     });
 
     // --- Cloud Run Jobs ---
@@ -88,42 +101,15 @@ class MyStack extends TerraformStack {
                   name: 'GCS_BUCKET',
                   value: `${projectId}-db-backups`,
                 },
-                {
-                  name: 'POSTGRES_DB',
+                ...backupSecrets.map(({ envName, secretName }) => ({
+                  name: envName,
                   valueSource: {
                     secretKeyRef: {
-                      secret: 'BACKUP_POSTGRES_DB',
+                      secret: secretName,
                       version: 'latest',
                     },
                   },
-                },
-                {
-                  name: 'POSTGRES_USER',
-                  valueSource: {
-                    secretKeyRef: {
-                      secret: 'BACKUP_POSTGRES_USER',
-                      version: 'latest',
-                    },
-                  },
-                },
-                {
-                  name: 'POSTGRES_PASSWORD',
-                  valueSource: {
-                    secretKeyRef: {
-                      secret: 'BACKUP_POSTGRES_PASSWORD',
-                      version: 'latest',
-                    },
-                  },
-                },
-                {
-                  name: 'POSTGRES_HOST',
-                  valueSource: {
-                    secretKeyRef: {
-                      secret: 'BACKUP_POSTGRES_HOST',
-                      version: 'latest',
-                    },
-                  },
-                },
+                })),
               ],
             },
           ],
