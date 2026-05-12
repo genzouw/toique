@@ -23,7 +23,7 @@ vi.mock('react-router', async (importOriginal) => {
 describe('AdminLogin', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    localStorage.clear();
+    window.localStorage.clear();
   });
 
   it('renders correctly', () => {
@@ -59,7 +59,7 @@ describe('AdminLogin', () => {
     expect(
       screen.queryByText('IDまたはパスワードが正しくありません。'),
     ).not.toBeInTheDocument();
-    expect(localStorage.getItem('adminAuth')).toBeNull();
+    expect(window.localStorage.getItem('adminAuth')).toBeNull();
 
     // Fill in credentials
     const usernameInput = screen.getByLabelText('ユーザーID');
@@ -85,7 +85,7 @@ describe('AdminLogin', () => {
     });
 
     // Check localStorage was cleared
-    expect(localStorage.getItem('adminAuth')).toBeNull();
+    expect(window.localStorage.getItem('adminAuth')).toBeNull();
 
     // Check navigation didn't happen
     expect(mockNavigate).not.toHaveBeenCalled();
@@ -118,7 +118,7 @@ describe('AdminLogin', () => {
 
     await waitFor(() => {
       // Check localStorage was set
-      expect(localStorage.getItem('adminAuth')).toBe(
+      expect(window.localStorage.getItem('adminAuth')).toBe(
         'YWRtaW46Y29ycmVjdHBhc3N3b3Jk',
       );
 
