@@ -53,6 +53,15 @@ export const onRequestPost = async (
     return new Response(null, { status: 413 });
   }
 
+  // body はオブジェクトとして格納し、ログ上でフィールド単位の検索を可能にする。
+  // パース失敗時は文字列のままフォールバックし、不正な JSON でも観測経路を断たない。
+  let parsedBody: unknown;
+  try {
+    parsedBody = JSON.parse(body);
+  } catch {
+    parsedBody = body;
+  }
+
   // 構造化ログとして 1 行 JSON で出力する。Cloudflare のログ閲覧 (Dashboard / Logpush)
   // で grep しやすいよう type フィールドを固定値にしている。
   // 永続化 (KV / D1 / R2) はまずは導入せず、必要になった段階で Logpush 経由で集約する。
@@ -62,7 +71,7 @@ export const onRequestPost = async (
     contentType,
     userAgent: request.headers.get('user-agent') ?? '',
     referer: request.headers.get('referer') ?? '',
-    body,
+    body: parsedBody,
   };
 
   console.log(JSON.stringify(logEntry));
