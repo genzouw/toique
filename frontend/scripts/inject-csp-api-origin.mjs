@@ -1,15 +1,9 @@
-// Cloudflare Pages にデプロイする dist/_headers の CSP プレースホルダを、
-// 実行時の VITE_API_URL のオリジンで置換する post-build スクリプト。
+// 目的: dist/_headers の CSP connect-src を VITE_API_URL のオリジンと同期させる。
+// GCP プロジェクト移管・サービス名変更・リージョン移転で接続先が乖離するのを防ぐため、
+// ハードコードせず deploy.yml が注入する VITE_API_URL を CSP 側でも参照する。
 //
-// 経緯: PR #233 (Issue #235) で _headers の connect-src にバックエンド Cloud Run URL を
-// ハードコードしていた。GCP プロジェクト移管・サービス名変更・リージョン移転で乖離する
-// リスクがあるため、deploy.yml が既に動的注入している VITE_API_URL を CSP 側でも参照する。
-//
-// 動作:
-//   - VITE_API_URL が設定されていれば new URL().origin で抽出して置換
-//   - 未設定 (例: CI test build / ローカルビルド) は http://localhost:3000 にフォールバック
-//     (frontend/src/lib/api-base-url.ts の DEFAULT_API_URL と一致)
-//   - 不正な URL / プレースホルダ未検出は exit 1
+// 未設定時のフォールバック http://localhost:3000 は frontend/src/lib/api-base-url.ts の
+// DEFAULT_API_URL と一致させている。
 
 import { readFile, writeFile } from 'node:fs/promises';
 import { resolve, dirname } from 'node:path';
