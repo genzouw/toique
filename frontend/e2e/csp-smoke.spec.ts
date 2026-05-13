@@ -26,9 +26,10 @@ const PUBLIC_ROUTES = [
 
 // Chromium が CSP 違反時に出力するコンソールメッセージのパターン。
 // 例: "Refused to load the script 'https://...' because it violates the following Content Security Policy directive: ..."
+// Report-Only モードの場合は "[Report Only] " プレフィックスが付くため、^ アンカーは付けない。
 const CSP_VIOLATION_PATTERNS: RegExp[] = [
   /Content Security Policy/i,
-  /^Refused to /i,
+  /Refused to .* because it violates the following Content Security Policy directive/i,
 ];
 
 const isCspViolationMessage = (msg: ConsoleMessage): boolean => {
