@@ -30,10 +30,10 @@ export const onRequestPost = async (
 ): Promise<Response> => {
   const { request } = context;
   const contentType = (request.headers.get('content-type') ?? '').toLowerCase();
-
-  const accepted = ACCEPTED_CONTENT_TYPES.some((type) =>
-    contentType.includes(type),
-  );
+  // `application/json; charset=utf-8` のようにパラメータが付くため、メディアタイプ部分のみを取り出し、
+  // `application/json-patch+json` 等への誤マッチを避けるため完全一致で比較する。
+  const mediaType = contentType.split(';')[0].trim();
+  const accepted = ACCEPTED_CONTENT_TYPES.includes(mediaType);
   if (!accepted) {
     return new Response(null, { status: 415 });
   }
