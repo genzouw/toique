@@ -26,13 +26,13 @@ CSP は document（HTML）の取得時にブラウザが評価する。Cloudflar
 
 ### `connect-src`
 
-| 用途              | 接続先                                                                                                | 備考                                                                                          |
-| ----------------- | ----------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------- |
-| 自社 SPA オリジン | `'self'`                                                                                              | SPA から自オリジンへの fetch（同一ホスト配信の静的アセット、将来の Pages Functions 等）の保険 |
-| 自社 API          | `https://toique-backend-mbe63yj5aq-an.a.run.app`（`VITE_API_URL` の本番値、Cloud Run のサービス URL） | Better Auth `/api/auth/*` を含む。SPA とは別オリジンなので `'self'` では到達できず明示が必要  |
-| Google Analytics  | `https://*.google-analytics.com`                                                                      | GA4 のイベント送信                                                                            |
-|                   | `https://*.analytics.google.com`                                                                      | （GA4 のリージョナル送信用）                                                                  |
-|                   | `https://*.googletagmanager.com`                                                                      | gtag 設定取得                                                                                 |
+| 用途              | 接続先                                                      | 備考                                                                                                                                                                                                                                                                                   |
+| ----------------- | ----------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 自社 SPA オリジン | `'self'`                                                    | SPA から自オリジンへの fetch（同一ホスト配信の静的アセット、将来の Pages Functions 等）の保険                                                                                                                                                                                          |
+| 自社 API          | `VITE_API_URL` の origin（本番は Cloud Run のサービス URL） | Better Auth `/api/auth/*` を含む。SPA とは別オリジンなので `'self'` では到達できず明示が必要。`_headers` ではプレースホルダ `__VITE_API_ORIGIN__` を使用し、`frontend/scripts/inject-csp-api-origin.mjs` が post-build で実値に置換する（後述「CSP の `connect-src` テンプレ化」参照） |
+| Google Analytics  | `https://*.google-analytics.com`                            | GA4 のイベント送信                                                                                                                                                                                                                                                                     |
+|                   | `https://*.analytics.google.com`                            | （GA4 のリージョナル送信用）                                                                                                                                                                                                                                                           |
+|                   | `https://*.googletagmanager.com`                            | gtag 設定取得                                                                                                                                                                                                                                                                          |
 
 ### `img-src`
 
@@ -104,7 +104,7 @@ frame-ancestors 'none';
 ```
 default-src 'self';
 script-src 'self' https://www.googletagmanager.com;
-connect-src 'self' https://toique-backend-mbe63yj5aq-an.a.run.app https://*.google-analytics.com https://*.analytics.google.com https://*.googletagmanager.com;
+connect-src 'self' __VITE_API_ORIGIN__ https://*.google-analytics.com https://*.analytics.google.com https://*.googletagmanager.com;
 img-src 'self' data: https://*.google-analytics.com;
 style-src 'self' 'unsafe-inline';
 font-src 'self';
@@ -116,7 +116,53 @@ base-uri 'self';
 
 > `style-src 'unsafe-inline'` は React の `style` 属性経由のスタイルを許可するため一旦許容。長期的には CSS-in-JS の見直しか `style-src-attr` 分離を検討。
 
-> `report-uri` / `report-to` は当面省略し、ブラウザ DevTools のコンソールと Cloudflare Pages のログで違反を観測する。Sentry 連携や Cloudflare Pages Functions による CSP レポート集約は後続 PR で検討する（バックエンド Cloud Run の URL が動的なため、安定した受信先を別途用意する必要があるため）。
+> `__VITE_API_ORIGIN__` は `frontend/scripts/inject-csp-api-origin.mjs` が post-build で `process.env.VITE_API_URL` のオリジンに置換するプレースホルダ（後述「CSP の `connect-src` テンプレ化」参照）。
+
+## CSP の `connect-src` テンプレ化（Issue #235）
+
+PR #233 緊急復旧時に `frontend/public/_headers` の `connect-src` へ Cloud Run URL を直書きしたが、GCP プロジェクト移管・サービス名変更・リージョン移転で乖離する余地があるため、`.github/workflows/deploy.yml` で既に動的注入されている `VITE_API_URL` を CSP 側でも参照する形に変更した。
+
+| 項目           | 値                                                                                       |
+| -------------- | ---------------------------------------------------------------------------------------- |
+| プレースホルダ | `__VITE_API_ORIGIN__`（`frontend/public/_headers`）                                      |
+| 置換スクリプト | `frontend/scripts/inject-csp-api-origin.mjs`（post-build で `dist/_headers` を書き換え） |
+| 置換ロジック   | `new URL(process.env.VITE_API_URL).origin`                                               |
+| フォールバック | `VITE_API_URL` 未設定時は `http://localhost:3000`（CI test build / ローカル用）          |
+| 異常時の挙動   | URL 不正 / プレースホルダ未検出は `exit 1`                                               |
+| 連結ポイント   | `frontend/package.json` の `build` スクリプト末尾                                        |
+
+中長期的にはバックエンドにカスタムドメイン（例: `api.toique.genzouw.com`）を割り当て、`_headers` をカスタムドメインで固定する案を別 Issue で追跡する。その時点で本スクリプトは撤去予定。
+
+## CSP レポート受信エンドポイント
+
+Issue [#234](https://github.com/genzouw/toique/issues/234) で観測経路を強化し、`report-uri` / `report-to` 双方を有効化した。受信先は Cloudflare Pages 同一オリジンに常設している（バックエンド Cloud Run の URL は動的でディレクティブから安定して指せないため、Pages Functions の固定パスに集約している）。
+
+| 項目              | 値 / パス                                                                                                           |
+| ----------------- | ------------------------------------------------------------------------------------------------------------------- |
+| エンドポイント    | `POST /api/csp-report`（Cloudflare Pages Functions、SPA と同一オリジン）                                            |
+| 実装              | `frontend/functions/api/csp-report.ts`                                                                              |
+| 受信 Content-Type | `application/csp-report` / `application/reports+json` / `application/json`                                          |
+| 上限              | body 8KB、超過時 `413`。未対応 Content-Type は `415`                                                                |
+| ストレージ        | 当面なし。`console.log` 経由で Cloudflare のログに 1 行 JSON で出力                                                 |
+| `_headers` 側設定 | `Reporting-Endpoints: csp-endpoint="/api/csp-report"` + CSP の `report-uri /api/csp-report; report-to csp-endpoint` |
+
+### ログ閲覧手順
+
+1. Cloudflare Dashboard → Pages → 対象プロジェクト → Functions → Real-time logs
+2. `type":"csp-report"` で grep（Logpush 導入時は R2 上のログでも同様に検索可能）
+
+### レポート集約のスケールアップ余地
+
+`console.log` ベースは閲覧頻度が低い前提の最小構成。違反の継続発生が確認できたら以下を段階的に検討する。
+
+- Cloudflare Logpush + R2（低コストの長期保管）
+- Cloudflare D1 への永続化（クエリで集計したい場合）
+- Sentry / 外部 SIEM への転送（アラート連携が必要になった場合）
+
+### 運用条項
+
+- enforce は維持したまま `report-to` のみ追加するカナリア観測を 1〜2 週間実施し、継続的に違反が出るオリジンが見つかった場合は本ファイルと `_headers` を併せて更新する。
+- 新しい外部サービス連携・インラインスクリプト・フォーム送信先を追加する PR では、本ファイルの更新を必須とする（後述の「更新トリガー」参照）。
 
 ## 更新トリガー
 
