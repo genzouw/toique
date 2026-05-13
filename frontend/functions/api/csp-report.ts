@@ -80,13 +80,9 @@ export const onRequestPost = async (
   return new Response(null, { status: 204 });
 };
 
-// CSP レポート受信は POST のみ。それ以外は 405 を返す。
-export const onRequest = async (
-  context: PagesFunctionContext,
-): Promise<Response> => {
-  if (context.request.method === 'POST') {
-    return onRequestPost(context);
-  }
+// CSP レポート受信は POST のみ。Pages Functions は onRequestPost を優先的にルーティングするため、
+// この onRequest には POST 以外のメソッドのみが到達する。
+export const onRequest = async (): Promise<Response> => {
   return new Response(null, {
     status: 405,
     headers: { Allow: 'POST' },
