@@ -299,8 +299,8 @@ export default function FormEdit() {
           <button
             onClick={handleDelete}
             className="p-2 text-red-600 hover:bg-red-50 rounded-md"
-            title="削除"
-            aria-label="削除"
+            title="フォームを削除"
+            aria-label="フォームを削除"
           >
             <Trash2 size={ICON_SIZE.md} />
           </button>
