@@ -74,6 +74,32 @@ describe('messages route', () => {
     await db.delete(tenants).where(eq(tenants.id, otherTenantId));
   });
 
+  it('GET /api/v1/messages/count returns total count', async () => {
+    await db.insert(inboundMessages).values([
+      {
+        lineChannelId: channelRowId,
+        eventType: 'message',
+        rawEvent: {},
+      },
+      {
+        lineChannelId: channelRowId,
+        eventType: 'message',
+        rawEvent: {},
+      },
+    ]);
+    await db.insert(inboundMessages).values({
+      lineChannelId: otherChannelRowId,
+      eventType: 'message',
+      rawEvent: {},
+    });
+
+    const app = buildApp();
+    const res = await app.request('/api/v1/messages/count');
+    expect(res.status).toBe(200);
+    const body = (await res.json()) as { count: number };
+    expect(body.count).toBe(2);
+  });
+
   it('GET /api/v1/messages returns rows for current tenant only, ordered desc', async () => {
     // current tenant messages
     await db.insert(inboundMessages).values([

@@ -181,6 +181,7 @@ export const api = {
   deleteChannel: (id: string) =>
     request<void>(`/api/v1/line-channels/${id}`, { method: 'DELETE' }),
   listMessages: () => request<InboundMessageListItem[]>('/api/v1/messages'),
+  countMessages: () => request<{ count: number }>('/api/v1/messages/count'),
   listForms: () => request<FormListItem[]>('/api/v1/forms'),
   getForm: (id: string) => request<Form>(`/api/v1/forms/${id}`),
   createForm: (input: {
