@@ -115,7 +115,7 @@ export function AuthField({
   const inputType = isPassword && showPassword ? 'text' : type;
 
   return (
-    <div className="block">
+    <div>
       <label htmlFor={id} className="block text-sm font-medium text-slate-700">
         {label}
       </label>
