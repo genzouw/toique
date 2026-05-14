@@ -43,7 +43,7 @@ describe('Signup Page', () => {
       screen.getByLabelText(/メールアドレス/),
       'test@example.com',
     );
-    await user.type(screen.getByLabelText(/パスワード/), 'password123');
+    await user.type(screen.getByLabelText(/パスワード \(8文字以上\)|パスワード$/), 'password123');
 
     // 送信ボタンをクリック
     await user.click(screen.getByRole('button', { name: /アカウント登録/ }));
