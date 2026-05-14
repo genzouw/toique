@@ -126,7 +126,7 @@ export function AuthField({
           value={value}
           onChange={(e) => onChange(e.target.value)}
           required
-          className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-slate-900"
+          className={`w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-slate-900 ${isPassword ? 'pr-10' : ''}`}
         />
         {isPassword && (
           <button
