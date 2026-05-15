@@ -41,6 +41,9 @@ pnpm-debug.log*
 # Drizzle
 drizzle/
 
+# jscpd duplication reports
+reports/
+
 # Misc
 .cache/
 .turbo/

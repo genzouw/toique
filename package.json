@@ -7,10 +7,12 @@
     "lint": "npm run lint --prefix backend && npm run lint --prefix frontend",
     "format:check": "npm run format:check --prefix backend && npm run format:check --prefix frontend",
     "typecheck": "npm run typecheck --prefix backend && npm run typecheck --prefix frontend",
-    "test": "npm run test --prefix backend && npm run test --prefix frontend"
+    "test": "npm run test --prefix backend && npm run test --prefix frontend",
+    "dup:check": "jscpd"
   },
   "devDependencies": {
     "husky": "^9.1.0",
+    "jscpd": "^4.2.2",
     "lint-staged": "^15.5.0"
   },
   "lint-staged": {

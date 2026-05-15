@@ -40,6 +40,29 @@ jobs:
               - '.prettierrc'
               - '.github/workflows/ci.yml'
 
+  duplication:
+    name: jscpd (duplication)
+    runs-on: ubuntu-latest
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+          cache: 'npm'
+      - name: Install dependencies (root only)
+        run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Run jscpd
+        run: npm run dup:check
+      - name: Upload duplication report
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: jscpd-report
+          path: reports/jscpd/
+          retention-days: 7
+
   frontend:
     name: Frontend (lint / typecheck / format / test / build)
     needs: changes
