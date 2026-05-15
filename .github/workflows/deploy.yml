@@ -61,19 +61,17 @@ jobs:
           cache-from: type=gha,scope=backend
           cache-to: type=gha,mode=max,scope=backend,ignore-error=true
 
-      - uses: actions/setup-node@v6
+      - uses: oven-sh/setup-bun@v2
         with:
-          node-version: 22
-          cache: npm
-          cache-dependency-path: backend/package-lock.json
+          bun-version: latest
 
       - name: Run database migrations
         working-directory: backend
         run: |
           DATABASE_URL="$(gcloud secrets versions access latest --secret=DATABASE_URL --project=${{ env.GCP_PROJECT_ID }})"
           export DATABASE_URL
-          npm ci
-          npx drizzle-kit migrate
+          bun install --frozen-lockfile
+          bunx drizzle-kit migrate
 
       - id: deploy
         uses: google-github-actions/deploy-cloudrun@v3
@@ -168,16 +166,14 @@ jobs:
     if: github.event.workflow_run.conclusion == 'success'
     steps:
       - uses: actions/checkout@v6
-      - uses: actions/setup-node@v6
+      - uses: oven-sh/setup-bun@v2
         with:
-          node-version: 22
-          cache: npm
-          cache-dependency-path: frontend/package-lock.json
+          bun-version: latest
       - name: Install and build
         working-directory: frontend
         run: |
-          npm ci
-          npm run build
+          bun install --frozen-lockfile
+          bun run build
         env:
           VITE_API_URL: ${{ needs.deploy-backend.outputs.service_url }}
           VITE_GA_TRACKING_ID: ${{ vars.VITE_GA_TRACKING_ID }}

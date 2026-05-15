@@ -1,16 +1,16 @@
 # ビルドコンテキスト: リポジトリルート
-FROM node:22-alpine AS base
+FROM oven/bun:alpine AS base
 WORKDIR /app
-COPY frontend/package.json frontend/package-lock.json ./
-RUN --mount=type=cache,target=/root/.npm,sharing=locked npm ci --prefer-offline
+COPY frontend/package.json frontend/bun.lock ./
+RUN --mount=type=cache,target=/root/.bun,sharing=locked bun install --frozen-lockfile
 COPY frontend/ .
 COPY .prettierrc .
 
 # ローカル開発用
 FROM base AS dev
 EXPOSE 5173
-CMD ["npm", "run", "dev"]
+CMD ["bun", "run", "dev"]
 
 # CI: lint + format + build
 FROM base AS ci-check
-RUN npm run format:check && npm run lint && npm run test && npm run build
+RUN bun run format:check && bun run lint && bun run test && bun run build

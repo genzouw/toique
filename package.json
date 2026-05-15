@@ -4,10 +4,10 @@
   "private": true,
   "scripts": {
     "prepare": "husky",
-    "lint": "npm run lint --prefix backend && npm run lint --prefix frontend",
-    "format:check": "npm run format:check --prefix backend && npm run format:check --prefix frontend",
-    "typecheck": "npm run typecheck --prefix backend && npm run typecheck --prefix frontend",
-    "test": "npm run test --prefix backend && npm run test --prefix frontend"
+    "lint": "cd backend && bun run lint && cd ../frontend && bun run lint",
+    "format:check": "cd backend && bun run format:check && cd ../frontend && bun run format:check",
+    "typecheck": "cd backend && bun run typecheck && cd ../frontend && bun run typecheck",
+    "test": "cd backend && bun run test && cd ../frontend && bun run test"
   },
   "devDependencies": {
     "husky": "^9.1.0",
@@ -15,12 +15,12 @@
   },
   "lint-staged": {
     "backend/src/**/*.ts": [
-      "npm run lint --prefix backend -- --fix",
-      "npm run format --prefix backend"
+      "cd backend && bun run lint -- --fix",
+      "cd backend && bun run format"
     ],
     "frontend/src/**/*.{ts,tsx}": [
-      "npm run lint --prefix frontend -- --fix",
-      "npm run format --prefix frontend"
+      "cd frontend && bun run lint -- --fix",
+      "cd frontend && bun run format"
     ]
   }
 }

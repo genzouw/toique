@@ -107,7 +107,7 @@ jobs:
         run: >
           docker run --rm --network host
           -e DATABASE_URL=postgresql://toique:toique@localhost:5432/toique
-          toique-backend-test:latest npx drizzle-kit migrate
+          toique-backend-test:latest bunx drizzle-kit migrate
       - name: Run tests with coverage
         run: >
           docker run --rm --network host
