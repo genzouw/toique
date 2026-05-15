@@ -300,6 +300,7 @@ export default function FormEdit() {
             onClick={handleDelete}
             className="p-2 text-red-600 hover:bg-red-50 rounded-md"
             aria-label="削除"
+            title="削除"
           >
             <Trash2 size={ICON_SIZE.md} />
           </button>
