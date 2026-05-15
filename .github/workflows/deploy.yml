@@ -12,9 +12,9 @@ concurrency:
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
-  GCP_PROJECT_ID: toique-app-prod
-  GCP_PROJECT_NUMBER: '800954033936'
-  GCP_REGION: asia-northeast1
+  GCP_PROJECT_ID: ${{ vars.GCP_PROJECT_ID }}
+  GCP_PROJECT_NUMBER: ${{ vars.GCP_PROJECT_NUMBER }}
+  GCP_REGION: ${{ vars.GCP_REGION || 'asia-northeast1' }}
   CLOUD_RUN_SERVICE: toique-backend
   ARTIFACT_REPO: toique
 
@@ -35,8 +35,8 @@ jobs:
 
       - uses: google-github-actions/auth@v3
         with:
-          workload_identity_provider: projects/800954033936/locations/global/workloadIdentityPools/github-pool/providers/github-provider
-          service_account: github-deployer@toique-app-prod.iam.gserviceaccount.com
+          workload_identity_provider: projects/${{ vars.GCP_PROJECT_NUMBER }}/locations/global/workloadIdentityPools/github-pool/providers/github-provider
+          service_account: ${{ vars.GCP_SERVICE_ACCOUNT }}
 
       - uses: google-github-actions/setup-gcloud@v3
 
@@ -91,13 +91,13 @@ jobs:
             --port=8080
           env_vars: |
             NODE_ENV=production
-            CORS_ORIGIN=https://toique.genzouw.com
-            STRIPE_PRO_PRICE_ID=price_1TPYvGIlm7LOZC27c1gsQ7q7
+            CORS_ORIGIN=${{ vars.CORS_ORIGIN }}
+            STRIPE_PRO_PRICE_ID=${{ vars.STRIPE_PRO_PRICE_ID }}
             MAIL_DRIVER=resend
-            MAIL_FROM=Toique <noreply@toique.genzouw.com>
-            CONTACT_FROM=Toique <noreply@toique.genzouw.com>
-            OPERATOR_EMAILS=genzouw@gmail.com
-            ADMIN_USERNAME=admin
+            MAIL_FROM=${{ vars.MAIL_FROM }}
+            CONTACT_FROM=${{ vars.CONTACT_FROM }}
+            OPERATOR_EMAILS=${{ vars.OPERATOR_EMAILS }}
+            ADMIN_USERNAME=${{ vars.ADMIN_USERNAME }}
           secrets: |
             DATABASE_URL=DATABASE_URL:latest
             BETTER_AUTH_SECRET=BETTER_AUTH_SECRET:latest
@@ -127,8 +127,8 @@ jobs:
 
       - uses: google-github-actions/auth@v3
         with:
-          workload_identity_provider: projects/800954033936/locations/global/workloadIdentityPools/github-pool/providers/github-provider
-          service_account: github-deployer@toique-app-prod.iam.gserviceaccount.com
+          workload_identity_provider: projects/${{ vars.GCP_PROJECT_NUMBER }}/locations/global/workloadIdentityPools/github-pool/providers/github-provider
+          service_account: ${{ vars.GCP_SERVICE_ACCOUNT }}
 
       - uses: google-github-actions/setup-gcloud@v3
 

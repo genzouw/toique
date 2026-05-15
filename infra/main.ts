@@ -13,8 +13,8 @@ class MyStack extends TerraformStack {
   constructor(scope: Construct, id: string) {
     super(scope, id);
 
-    const projectId = 'toique-app-prod';
-    const region = 'asia-northeast1';
+    const projectId = process.env.GCP_PROJECT_ID || 'example-project-id';
+    const region = process.env.GCP_REGION || 'asia-northeast1';
 
     // バックアップジョブが参照するシークレット定義（env 名と Secret Manager 上の名前のマッピング）
     const backupSecrets = [
