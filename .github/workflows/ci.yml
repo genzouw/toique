@@ -66,7 +66,9 @@ jobs:
     # Playwright (Chromium) で公開画面を巡回する。
     name: Frontend E2E (CSP smoke)
     needs: changes
-    if: needs.changes.result != 'success' || needs.changes.outputs.frontend == 'true'
+    # changes ジョブが failure になっても本ジョブは走らせる (フォールバックで全件実行)。
+    # always() を挟まないと needs 失敗時に GitHub Actions の暗黙ガードで SKIPPED になる。
+    if: always() && (needs.changes.result != 'success' || needs.changes.outputs.frontend == 'true')
     runs-on: ubuntu-latest
     env:
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
