@@ -132,6 +132,7 @@ export function AuthField({
           <button
             type="button"
             onClick={() => setShowPassword(!showPassword)}
+            aria-controls={id}
             className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-900 rounded-sm"
             aria-label={showPassword ? 'パスワードを隠す' : 'パスワードを表示'}
           >
