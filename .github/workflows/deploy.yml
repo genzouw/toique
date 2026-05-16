@@ -15,8 +15,10 @@ env:
   GCP_PROJECT_ID: ${{ vars.GCP_PROJECT_ID }}
   GCP_PROJECT_NUMBER: ${{ vars.GCP_PROJECT_NUMBER }}
   GCP_REGION: ${{ vars.GCP_REGION || 'asia-northeast1' }}
-  CLOUD_RUN_SERVICE: toique-backend
-  ARTIFACT_REPO: toique
+  CLOUD_RUN_SERVICE: ${{ vars.CLOUD_RUN_SERVICE || 'toique-backend' }}
+  ARTIFACT_REPO: ${{ vars.ARTIFACT_REPO || 'toique' }}
+  CLOUD_RUN_JOB_BACKUP: ${{ vars.CLOUD_RUN_JOB_BACKUP || 'db-backup' }}
+  CF_PAGES_PROJECT: ${{ vars.CF_PAGES_PROJECT || 'toique' }}
 
 jobs:
   deploy-backend:
@@ -38,9 +40,20 @@ jobs:
           GCP_PROJECT_ID: ${{ vars.GCP_PROJECT_ID }}
           GCP_PROJECT_NUMBER: ${{ vars.GCP_PROJECT_NUMBER }}
           GCP_SERVICE_ACCOUNT: ${{ vars.GCP_SERVICE_ACCOUNT }}
+          CORS_ORIGIN: ${{ vars.CORS_ORIGIN }}
+          STRIPE_PRO_PRICE_ID: ${{ vars.STRIPE_PRO_PRICE_ID }}
+          MAIL_FROM: ${{ vars.MAIL_FROM }}
+          CONTACT_FROM: ${{ vars.CONTACT_FROM }}
+          OPERATOR_EMAILS: ${{ vars.OPERATOR_EMAILS }}
+          ADMIN_USERNAME: ${{ vars.ADMIN_USERNAME }}
         run: |
           missing=0
-          for v in GCP_PROJECT_ID GCP_PROJECT_NUMBER GCP_SERVICE_ACCOUNT; do
+          # GCP インフラ系 + Cloud Run に渡すアプリケーション値の両方を validate する。
+          # 後者が空文字でデプロイされると、本番でランタイム挙動が壊れる (CORS 開放、
+          # Stripe 404、admin 永久 403 等) ため、デプロイ前に fail fast する。
+          for v in GCP_PROJECT_ID GCP_PROJECT_NUMBER GCP_SERVICE_ACCOUNT \
+                   CORS_ORIGIN STRIPE_PRO_PRICE_ID MAIL_FROM CONTACT_FROM \
+                   OPERATOR_EMAILS ADMIN_USERNAME; do
             if [ -z "${!v}" ]; then
               echo "::error::Repository variable '$v' is not set. Define it in Settings → Actions → Variables before running this workflow."
               missing=1
@@ -186,7 +199,7 @@ jobs:
 
       - name: Deploy Cloud Run Job with new image
         run: |
-          gcloud run jobs deploy db-backup \
+          gcloud run jobs deploy "${{ env.CLOUD_RUN_JOB_BACKUP }}" \
             --region=${{ env.GCP_REGION }} \
             --project=${{ env.GCP_PROJECT_ID }} \
             --image="$IMAGE"
@@ -231,4 +244,4 @@ jobs:
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          command: pages deploy frontend/dist --project-name toique --commit-dirty=true --commit-hash=${{ github.sha }} --commit-message="Deploy ${{ github.sha }}"
+          command: pages deploy frontend/dist --project-name ${{ env.CF_PAGES_PROJECT }} --commit-dirty=true --commit-hash=${{ github.sha }} --commit-message="Deploy ${{ github.sha }}"
