@@ -20,9 +20,9 @@ export default function Dashboard() {
   useEffect(() => {
     (async () => {
       try {
-        const [m, u] = await Promise.all([api.listMessages(), api.getUsage()]);
+        const [m, u] = await Promise.all([api.countMessages(), api.getUsage()]);
         setChannels(u.usage.lineChannels.current);
-        setMessages(m.length);
+        setMessages(m.count);
         setUsageData(u);
       } catch (e) {
         setError((e as Error).message);
@@ -52,7 +52,7 @@ export default function Dashboard() {
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-6">
         <StatCard label="登録済みチャネル" value={channels} unit="件" />
         <StatCard
-          label="受信メッセージ (最新100件)"
+          label="受信メッセージ (累計)"
           value={messages}
           unit="件"
         />
