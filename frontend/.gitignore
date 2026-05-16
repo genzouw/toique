@@ -1,3 +1,10 @@
 # vite-plugin-sitemap がビルド時に dist/robots.txt を生成する。
 # public/robots.txt を置くとビルド時に上書きされるため、誤コミット防止のため ignore。
 public/robots.txt
+
+# Playwright (e2e/) 実行成果物
+playwright-report/
+test-results/
+
+# wrangler pages dev のキャッシュ
+.wrangler/
