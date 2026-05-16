@@ -4,10 +4,10 @@
   "private": true,
   "scripts": {
     "prepare": "husky",
-    "lint": "cd backend && bun run lint && cd ../frontend && bun run lint",
-    "format:check": "cd backend && bun run format:check && cd ../frontend && bun run format:check",
-    "typecheck": "cd backend && bun run typecheck && cd ../frontend && bun run typecheck",
-    "test": "cd backend && bun run test && cd ../frontend && bun run test"
+    "lint": "bun --cwd backend run lint && bun --cwd frontend run lint",
+    "format:check": "bun --cwd backend run format:check && bun --cwd frontend run format:check",
+    "typecheck": "bun --cwd backend run typecheck && bun --cwd frontend run typecheck",
+    "test": "bun --cwd backend run test && bun --cwd frontend run test"
   },
   "devDependencies": {
     "husky": "^9.1.0",
@@ -15,12 +15,12 @@
   },
   "lint-staged": {
     "backend/src/**/*.ts": [
-      "cd backend && bun run lint -- --fix",
-      "cd backend && bun run format"
+      "bun --cwd backend run lint -- --fix",
+      "bun --cwd backend run format"
     ],
     "frontend/src/**/*.{ts,tsx}": [
-      "cd frontend && bun run lint -- --fix",
-      "cd frontend && bun run format"
+      "bun --cwd frontend run lint -- --fix",
+      "bun --cwd frontend run format"
     ]
   }
 }
