@@ -68,6 +68,11 @@ for (const path of PUBLIC_ROUTES) {
       }
     });
 
+    // `networkidle` は Playwright 公式で DISCOURAGED だが、CSP 違反は subresource
+    // 読み込み時に発生するため一定のネットワーク完了待ちが必要。flaky 化したり
+    // SSE/WebSocket 接続が増えてタイムアウトする場合は、`domcontentloaded` +
+    // 短い grace period か、CDP 経由 `Network.loadingFailed` (blockedReason: csp)
+    // 直接観測への置き換えを検討する。
     const response = await page.goto(path, { waitUntil: 'networkidle' });
     expect(response, `no response for ${path}`).not.toBeNull();
     expect(response!.status(), `HTTP status for ${path}`).toBeLessThan(400);
