@@ -1,5 +1,13 @@
 # ビルドコンテキスト: リポジトリルート
-FROM oven/bun:alpine AS base
+#
+# 用途: ローカル開発 (dev) と CI チェック (ci-check) のみ。
+# 本番配信は Cloudflare Pages を利用しており、Docker イメージとしてはデプロイしない
+# ため production ステージは設けていない。本番化が必要になった場合は backend/Dockerfile
+# 同様に production / USER bun ステージを追加する想定。
+#
+# Bun バージョンは backend/Dockerfile および `.github/workflows/deploy.yml` の
+# `setup-bun` と揃える。
+FROM oven/bun:1.3.14-alpine AS base
 WORKDIR /app
 COPY frontend/package.json frontend/bun.lock ./
 RUN --mount=type=cache,target=/root/.bun,sharing=locked bun install --frozen-lockfile
