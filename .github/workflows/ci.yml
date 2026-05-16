@@ -85,16 +85,14 @@ jobs:
       - name: Install Playwright browsers
         working-directory: frontend
         run: npx playwright install --with-deps chromium
-      - name: Build frontend
+      - name: Run E2E (CSP smoke)
         working-directory: frontend
         env:
           # ビルド時に CSP の __VITE_API_ORIGIN__ を解決する。テスト中はバックエンドへ
           # 接続しないため値は何でも良いが、CSP に乗ったプレースホルダ置換を確認する目的で
           # 本番デプロイ時と同じ形式 (https://) のダミーオリジンを与える。
+          # build は package.json の `pretest:e2e` フック経由で実行される。
           VITE_API_URL: https://api.test.invalid
-        run: npm run build
-      - name: Run E2E (CSP smoke)
-        working-directory: frontend
         run: npm run test:e2e
       - name: Upload Playwright report
         if: failure()
