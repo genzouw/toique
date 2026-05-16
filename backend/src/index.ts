@@ -83,6 +83,15 @@ app.route('/api/v1/admin/me', adminMe);
 app.route('/api/v1/admin/contacts', adminContacts);
 app.route('/api/v1/admin/users', adminUsers);
 
+app.notFound((c) => {
+  return c.json({ error: 'Not Found' }, 404);
+});
+
+app.onError((err, c) => {
+  appLogger.error('Unhandled exception', err);
+  return c.json({ error: 'Internal Server Error' }, 500);
+});
+
 const port = Number(process.env.PORT) || 3000;
 serve({ fetch: app.fetch, port }, () => {
   appLogger.info(`Toique backend listening on :${port}`);
