@@ -27,9 +27,18 @@ const PUBLIC_ROUTES = [
 // Chromium が CSP 違反時に出力するコンソールメッセージのパターン。
 // 例: "Refused to load the script 'https://...' because it violates the following Content Security Policy directive: ..."
 // Report-Only モードの場合は "[Report Only] " プレフィックスが付くため、^ アンカーは付けない。
+//
+// 完全な文言は Chromium のバージョンで微妙に変わりうるため、`Refused to ${verb}` の verb のみで
+// マッチする弱結合な形に保つ。verb の一覧は Chromium の CSP 違反メッセージ実装を参照:
+// - load: <script> / <link> / <img> / subresource 読み込み拒否
+// - execute: inline script / eval() 拒否
+// - apply: inline style 拒否
+// - connect: fetch / XHR / WebSocket / EventSource 拒否
+// - frame: <frame> / <iframe> の navigation 拒否
+// - create: Worker / SharedWorker / Trusted Types 拒否
 const CSP_VIOLATION_PATTERNS: RegExp[] = [
   /Content Security Policy/i,
-  /Refused to .* because it violates the following Content Security Policy directive/i,
+  /Refused to (load|execute|apply|connect|frame|create)/i,
 ];
 
 const isCspViolationMessage = (msg: ConsoleMessage): boolean => {
