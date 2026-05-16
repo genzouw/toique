@@ -35,8 +35,9 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
-      - name: Validate required repository variables
+      - name: Validate required repository variables and secrets
         env:
+          # 公開 OK な値は Variables、個人情報や管理 UI 識別子は Secrets に分けて格納。
           GCP_PROJECT_ID: ${{ vars.GCP_PROJECT_ID }}
           GCP_PROJECT_NUMBER: ${{ vars.GCP_PROJECT_NUMBER }}
           GCP_SERVICE_ACCOUNT: ${{ vars.GCP_SERVICE_ACCOUNT }}
@@ -44,8 +45,8 @@ jobs:
           STRIPE_PRO_PRICE_ID: ${{ vars.STRIPE_PRO_PRICE_ID }}
           MAIL_FROM: ${{ vars.MAIL_FROM }}
           CONTACT_FROM: ${{ vars.CONTACT_FROM }}
-          OPERATOR_EMAILS: ${{ vars.OPERATOR_EMAILS }}
-          ADMIN_USERNAME: ${{ vars.ADMIN_USERNAME }}
+          OPERATOR_EMAILS: ${{ secrets.OPERATOR_EMAILS }}
+          ADMIN_USERNAME: ${{ secrets.ADMIN_USERNAME }}
         run: |
           missing=0
           # GCP インフラ系 + Cloud Run に渡すアプリケーション値の両方を validate する。
@@ -55,7 +56,7 @@ jobs:
                    CORS_ORIGIN STRIPE_PRO_PRICE_ID MAIL_FROM CONTACT_FROM \
                    OPERATOR_EMAILS ADMIN_USERNAME; do
             if [ -z "${!v}" ]; then
-              echo "::error::Repository variable '$v' is not set. Define it in Settings → Actions → Variables before running this workflow."
+              echo "::error::Required variable/secret '$v' is not set. Define it in Settings → Secrets and variables → Actions before running this workflow."
               missing=1
             fi
           done
@@ -124,8 +125,8 @@ jobs:
             MAIL_DRIVER=resend
             MAIL_FROM=${{ vars.MAIL_FROM }}
             CONTACT_FROM=${{ vars.CONTACT_FROM }}
-            OPERATOR_EMAILS=${{ vars.OPERATOR_EMAILS }}
-            ADMIN_USERNAME=${{ vars.ADMIN_USERNAME }}
+            OPERATOR_EMAILS=${{ secrets.OPERATOR_EMAILS }}
+            ADMIN_USERNAME=${{ secrets.ADMIN_USERNAME }}
           secrets: |
             DATABASE_URL=DATABASE_URL:latest
             BETTER_AUTH_SECRET=BETTER_AUTH_SECRET:latest

@@ -23,8 +23,8 @@
 | `STRIPE_PRO_PRICE_ID` | Stripe Pro プラン価格 ID                        | `price_xxxxxxxxxxxx`                           |
 | `MAIL_FROM`           | 認証メールの送信元                              | `App <noreply@example.com>`                    |
 | `CONTACT_FROM`        | お問い合わせメールの送信元                      | `App <noreply@example.com>`                    |
-| `OPERATOR_EMAILS`     | 運営者扱いするアカウントの email (カンマ区切り) | `admin@example.com`                            |
-| `ADMIN_USERNAME`      | 管理 UI のベーシック認証ユーザー名              | `admin`                                        |
+
+`OPERATOR_EMAILS` と `ADMIN_USERNAME` は Secrets 側で管理する (個人情報・管理 UI 識別子のため。下記の Section 2 参照)。
 
 ### 任意 (フォールバック値あり)
 
@@ -50,6 +50,13 @@
 | ----------------------- | ------------------------------------------------------------ |
 | `CLOUDFLARE_API_TOKEN`  | Cloudflare Pages デプロイ用 API トークン (`Pages:Edit` 権限) |
 | `CLOUDFLARE_ACCOUNT_ID` | Cloudflare アカウント ID                                     |
+| `OPERATOR_EMAILS`       | 運営者扱いするアカウントの email (カンマ区切り)              |
+| `ADMIN_USERNAME`        | 管理 UI のベーシック認証ユーザー名                           |
+
+`OPERATOR_EMAILS` と `ADMIN_USERNAME` を Secrets として扱う理由:
+
+- `OPERATOR_EMAILS`: 個人 Gmail アドレス等が含まれることが多く、CI ログ等への意図せぬ漏出リスクを最小化するため
+- `ADMIN_USERNAME`: 管理 UI のベーシック認証情報の一部。攻撃面を狭めるため `ADMIN_PASSWORD` (Secret Manager) と対応する形で隠蔽
 
 ## 3. Google Cloud 側のセットアップ
 
