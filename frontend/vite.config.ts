@@ -74,5 +74,10 @@ export default defineConfig(({ mode }) => {
         'localhost',
       ],
     },
+    // Vitest はユニットテスト (src/ 配下) のみを対象とする。
+    // Playwright で動かす e2e/ は @playwright/test を直接呼ぶため vitest からは除外。
+    test: {
+      include: ['src/**/*.{test,spec}.{ts,tsx}'],
+    },
   };
 });

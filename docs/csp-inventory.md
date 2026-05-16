@@ -151,6 +151,21 @@ Issue [#234](https://github.com/genzouw/toique/issues/234) で観測経路を強
 1. Cloudflare Dashboard → Pages → 対象プロジェクト → Functions → Real-time logs
 2. `type":"csp-report"` で grep（Logpush 導入時は R2 上のログでも同様に検索可能）
 
+### CI 上の CSP 違反検知（公開ページ巡回）
+
+Issue #234 の対応方針 (2) として、Cloudflare Pages 配信下の本番同等環境を CI でも再現し、公開ページの主要画面を自動巡回することで違反を検知する。
+
+| 項目           | 値 / パス                                                                                                                                             |
+| -------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
+| ジョブ         | `.github/workflows/ci.yml` の `frontend-e2e`                                                                                                          |
+| ランナー       | `wrangler pages dev frontend/dist`（`_headers` と Pages Functions を本番同等で動作させるため）                                                        |
+| テストランナー | Playwright (Chromium 単体)                                                                                                                            |
+| テスト定義     | `frontend/e2e/csp-smoke.spec.ts`                                                                                                                      |
+| 対象 URL       | 未認証で到達可能な公開ページ（`/`, `/login`, `/signup`, `/pricing`, `/help`, `/faq`, `/contact`, `/specified-commercial-transactions`, `/for/salon`） |
+| 失敗条件       | (a) `Refused to ...` / `Content Security Policy` を含むコンソールメッセージ、(b) `/api/csp-report` への POST、(c) 未捕捉 JS 例外                      |
+| 意図的に許容   | バックエンド Cloud Run への接続失敗（CI 環境では到達できないため、CSP 関連エラーのみフィルタしている）                                                |
+| Scope OUT      | 認証必要画面（Dashboard 等）、Stripe Checkout への外部遷移、UI 操作テスト。Cloudflare Pages の実プレビューデプロイ後の巡回も別 PR で検討              |
+
 ### レポート集約のスケールアップ余地
 
 `console.log` ベースは閲覧頻度が低い前提の最小構成。違反の継続発生が確認できたら以下を段階的に検討する。
