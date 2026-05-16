@@ -128,6 +128,23 @@ updates:
       include: 'scope'
     pull-request-branch-name:
       separator: '/'
+    # 本番デプロイ経路 (id-token: write / CLOUDFLARE_API_TOKEN を扱う) で利用する
+    # Action の semver-major アップグレードは破壊的変更検証が必須なため、Dependabot
+    # の自動 PR 対象外にして手動で別 PR 化する。minor / patch / SHA 追従は引き続き
+    # 自動 PR で受け取る。
+    ignore:
+      - dependency-name: 'cloudflare/wrangler-action'
+        update-types: ['version-update:semver-major']
+      - dependency-name: 'docker/build-push-action'
+        update-types: ['version-update:semver-major']
+      - dependency-name: 'docker/setup-buildx-action'
+        update-types: ['version-update:semver-major']
+      - dependency-name: 'dorny/paths-filter'
+        update-types: ['version-update:semver-major']
+      - dependency-name: 'google-github-actions/*'
+        update-types: ['version-update:semver-major']
+      - dependency-name: 'oven-sh/setup-bun'
+        update-types: ['version-update:semver-major']
 
   # Docker base image (backend)
   - package-ecosystem: 'docker'
