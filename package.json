@@ -15,11 +15,11 @@
   },
   "lint-staged": {
     "backend/src/**/*.ts": [
-      "bun --cwd backend run lint -- --fix",
+      "bun --cwd backend run lint --fix",
       "bun --cwd backend run format"
     ],
     "frontend/src/**/*.{ts,tsx}": [
-      "bun --cwd frontend run lint -- --fix",
+      "bun --cwd frontend run lint --fix",
       "bun --cwd frontend run format"
     ]
   }
