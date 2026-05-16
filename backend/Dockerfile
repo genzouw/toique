@@ -36,6 +36,8 @@ COPY --from=build /app/src/schema.ts ./src/schema.ts
 COPY --from=build /app/drizzle.config.ts ./drizzle.config.ts
 COPY --from=build /app/tsconfig.json ./tsconfig.json
 COPY db/migrations ./db/migrations
-RUN --mount=type=cache,target=/root/.bun,sharing=locked bun install drizzle-kit
+# drizzle-kit はマイグレーション専用ツールで実行時は不要。CI/CD (deploy.yml の
+# `bunx drizzle-kit migrate` ステップ) で実行するため、本番イメージには含めない。
 EXPOSE 8080
-CMD ["bun", "run", "dist/index.js"]
+USER bun
+CMD ["bun", "dist/index.js"]
