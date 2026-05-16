@@ -3,6 +3,7 @@ import { eq } from 'drizzle-orm';
 import db from '../db.js';
 import { tenants } from '../schema.js';
 import { stripe, STRIPE_PRO_PRICE_ID } from '../lib/stripe.js';
+import { frontendUrl } from '../lib/frontend-origin.js';
 
 const app = new Hono();
 
@@ -45,8 +46,8 @@ app.post('/checkout', async (c) => {
     customer: customerId,
     mode: 'subscription',
     line_items: [{ price: STRIPE_PRO_PRICE_ID, quantity: 1 }],
-    success_url: `${process.env.CORS_ORIGIN || 'http://localhost:5173'}/dashboard?upgraded=1`,
-    cancel_url: `${process.env.CORS_ORIGIN || 'http://localhost:5173'}/pricing`,
+    success_url: `${frontendUrl}/dashboard?upgraded=1`,
+    cancel_url: `${frontendUrl}/pricing`,
     metadata: { tenantId: tenant.id },
   });
 
@@ -72,7 +73,7 @@ app.post('/portal', async (c) => {
 
   const session = await stripe.billingPortal.sessions.create({
     customer: t.stripeCustomerId,
-    return_url: `${process.env.CORS_ORIGIN || 'http://localhost:5173'}/dashboard`,
+    return_url: `${frontendUrl}/dashboard`,
   });
 
   return c.json({ url: session.url });

@@ -89,7 +89,7 @@ jobs:
             --port=8080
           env_vars: |
             NODE_ENV=production
-            CORS_ORIGIN=https://toique.genzouw.com
+            CORS_ORIGIN=https://toique.genzouw.com,https://toique.pages.dev
             STRIPE_PRO_PRICE_ID=price_1TPYvGIlm7LOZC27c1gsQ7q7
             MAIL_DRIVER=resend
             MAIL_FROM=Toique <noreply@toique.genzouw.com>

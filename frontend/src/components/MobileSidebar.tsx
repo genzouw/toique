@@ -27,6 +27,7 @@ export function MobileHeader({
       <button
         onClick={onOpen}
         aria-label="メニューを開く"
+        title="メニューを開く"
         className={cn('p-1.5 rounded-md', menuButtonClassName)}
       >
         <Menu size={ICON_SIZE.xl} />
@@ -88,6 +89,7 @@ export function SidebarPanel({
         <button
           onClick={onClose}
           aria-label="メニューを閉じる"
+          title="メニューを閉じる"
           className={cn('md:hidden p-1 rounded-md', closeButtonClassName)}
         >
           <X size={ICON_SIZE.xl} />
