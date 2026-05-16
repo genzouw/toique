@@ -164,6 +164,7 @@ export default function Channels() {
                       onClick={() => handleDelete(ch.id)}
                       className="p-2 text-red-600 hover:bg-red-50 rounded-md shrink-0"
                       aria-label="削除"
+                      title="削除"
                     >
                       <Trash2 size={ICON_SIZE.md} />
                     </button>
