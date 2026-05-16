@@ -1,1 +1,11 @@
+# Cloudflare Pages のプロジェクト既定ドメイン (*.pages.dev) と
+# カスタムドメインの両方で同じコンテンツが配信されると、検索エンジンが
+# 重複コンテンツとしてペナルティを与える可能性があります。
+# canonicalize する場合は、以下の形式で 2 行追加してください
+# (フォーク先のプロジェクト名 / ドメインに置き換えること):
+#
+#   http://<your-project>.pages.dev/*  https://<your-domain>/:splat  301!
+#   https://<your-project>.pages.dev/*  https://<your-domain>/:splat  301!
+
+# SPA フォールバック (React Router 用)。必ず末尾に置く。
 /*  /index.html  200
