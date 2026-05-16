@@ -1,10 +1,21 @@
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { Link, useSearchParams } from 'react-router';
 import { AuthLayout } from './Login';
 import SEOMetadata from '../components/SEOMetadata';
 import { API_BASE_URL } from '../lib/api-base-url';
 
 type Status = 'pending' | 'success' | 'error';
+
+function formatError(code: string): string {
+  switch (code) {
+    case 'INVALID_TOKEN':
+      return '確認用リンクが無効です。再度メール送信をお試しください。';
+    case 'TOKEN_EXPIRED':
+      return '確認用リンクの有効期限が切れています。再度メール送信をお試しください。';
+    default:
+      return `メールアドレスの確認に失敗しました (${code})`;
+  }
+}
 
 /**
  * メールアドレス確認用のフロントエンド中継ページ。
@@ -18,40 +29,41 @@ type Status = 'pending' | 'success' | 'error';
  */
 export default function VerifyEmail() {
   const [params] = useSearchParams();
-  const [status, setStatus] = useState<Status>('pending');
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  const token = params.get('token');
+  const verified = params.get('verified');
+  const errorParam = params.get('error');
+
+  // URL パラメータから直接派生させる。useState で初期化キャプチャすると、SPA 内の
+  // パラメータ更新 (例: ブラウザバック→クエリ変化) が反映されないバグの温床になる。
+  const status: Status =
+    errorParam !== null
+      ? 'error'
+      : verified === '1'
+        ? 'success'
+        : !token
+          ? 'error'
+          : 'pending';
+
+  const errorMessage: string | null =
+    errorParam !== null
+      ? formatError(errorParam)
+      : !token && verified !== '1'
+        ? '確認用トークンが見つかりません。'
+        : null;
 
   useEffect(() => {
-    const token = params.get('token');
-    const verified = params.get('verified');
-    const errorParam = params.get('error');
-
-    if (errorParam) {
-      setStatus('error');
-      setErrorMessage(formatError(errorParam));
-      return;
+    if (status === 'pending' && token) {
+      // backend の verify-email に直接遷移して検証してもらう。
+      // 検証後は callbackURL (このページ + ?verified=1) に戻ってくる。
+      const callbackURL = `${window.location.origin}/verify-email?verified=1`;
+      window.location.replace(
+        `${API_BASE_URL}/api/auth/verify-email?token=${encodeURIComponent(
+          token,
+        )}&callbackURL=${encodeURIComponent(callbackURL)}`,
+      );
     }
-
-    if (verified === '1') {
-      setStatus('success');
-      return;
-    }
-
-    if (!token) {
-      setStatus('error');
-      setErrorMessage('確認用トークンが見つかりません。');
-      return;
-    }
-
-    // backend の verify-email に直接遷移して検証してもらう。
-    // 検証後は callbackURL (このページ + ?verified=1) に戻ってくる。
-    const callbackURL = `${window.location.origin}/verify-email?verified=1`;
-    window.location.replace(
-      `${API_BASE_URL}/api/auth/verify-email?token=${encodeURIComponent(
-        token,
-      )}&callbackURL=${encodeURIComponent(callbackURL)}`,
-    );
-  }, [params]);
+  }, [status, token]);
 
   return (
     <AuthLayout title="メールアドレスの確認">
@@ -88,15 +100,4 @@ export default function VerifyEmail() {
       )}
     </AuthLayout>
   );
-}
-
-function formatError(code: string): string {
-  switch (code) {
-    case 'INVALID_TOKEN':
-      return '確認用リンクが無効です。再度メール送信をお試しください。';
-    case 'TOKEN_EXPIRED':
-      return '確認用リンクの有効期限が切れています。再度メール送信をお試しください。';
-    default:
-      return `メールアドレスの確認に失敗しました (${code})`;
-  }
 }
