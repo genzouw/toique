@@ -1,64 +1,83 @@
-name: Restore Test
-
-on:
-  schedule:
-    # 毎月1日 午前4時 (JST) = 前日19時 (UTC) に実行
-    - cron: '0 19 1 * *'
-  workflow_dispatch:
-
-concurrency:
-  group: restore-test
-  cancel-in-progress: true
-
-env:
-  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
-  GCP_PROJECT_ID: toique-app-prod
-  GCS_BUCKET: toique-app-prod-db-backups
-
-jobs:
-  restore-test:
-    name: Monthly restore verification
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      id-token: write
-    services:
-      postgres:
-        image: postgres:17-alpine
-        env:
-          POSTGRES_USER: toique
-          POSTGRES_PASSWORD: toique
-          POSTGRES_DB: toique_restore_test
-        ports:
-          - 5432:5432
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-    steps:
-      - uses: actions/checkout@v6
-
-      - uses: google-github-actions/auth@v3
-        with:
-          workload_identity_provider: projects/800954033936/locations/global/workloadIdentityPools/github-pool/providers/github-provider
-          service_account: github-deployer@toique-app-prod.iam.gserviceaccount.com
-
-      - uses: google-github-actions/setup-gcloud@v3
-
-      - name: Install PostgreSQL client
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y postgresql-client
-
-      - name: Run restore test
-        env:
-          GCS_BUCKET: ${{ env.GCS_BUCKET }}
-          POSTGRES_HOST: localhost
-          POSTGRES_PORT: '5432'
-          POSTGRES_USER: toique
-          POSTGRES_PASSWORD: toique
-          POSTGRES_DB: toique_restore_test
-        run: |
-          chmod +x backup/restore-test.sh
-          bash backup/restore-test.sh
+# TODO: GitHub Actions 月間無料枠を使い切ったため一時的に無効化中。
+# TODO: 2026-06-01 以降に無料枠がリセットされたタイミング、または当リポジトリが Public 化された時点でコメントを外し再有効化すること。
+# name: Restore Test
+#
+# on:
+#   schedule:
+#     # 毎月1日 午前4時 (JST) = 前日19時 (UTC) に実行
+#     - cron: '0 19 1 * *'
+#   workflow_dispatch:
+#
+# concurrency:
+#   group: restore-test
+#   cancel-in-progress: true
+#
+# env:
+#   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+#   GCP_PROJECT_ID: ${{ vars.GCP_PROJECT_ID }}
+#   GCS_BUCKET: ${{ vars.GCS_BUCKET || format('{0}-db-backups', vars.GCP_PROJECT_ID) }}
+#
+# jobs:
+#   restore-test:
+#     name: Monthly restore verification
+#     runs-on: ubuntu-latest
+#     permissions:
+#       contents: read
+#       id-token: write
+#     services:
+#       postgres:
+#         image: postgres:17-alpine
+#         env:
+#           POSTGRES_USER: toique
+#           POSTGRES_PASSWORD: toique
+#           POSTGRES_DB: toique_restore_test
+#         ports:
+#           - 5432:5432
+#         options: >-
+#           --health-cmd pg_isready
+#           --health-interval 10s
+#           --health-timeout 5s
+#           --health-retries 5
+#     steps:
+#       - uses: actions/checkout@v6
+#
+#       - name: Validate required repository variables
+#         env:
+#           GCP_PROJECT_ID: ${{ vars.GCP_PROJECT_ID }}
+#           GCP_PROJECT_NUMBER: ${{ vars.GCP_PROJECT_NUMBER }}
+#           GCP_SERVICE_ACCOUNT: ${{ vars.GCP_SERVICE_ACCOUNT }}
+#         run: |
+#           missing=0
+#           for v in GCP_PROJECT_ID GCP_PROJECT_NUMBER GCP_SERVICE_ACCOUNT; do
+#             if [ -z "${!v}" ]; then
+#               echo "::error::Repository variable '$v' is not set. Define it in Settings → Actions → Variables before running this workflow."
+#               missing=1
+#             fi
+#           done
+#           if [ "$missing" -ne 0 ]; then
+#             exit 1
+#           fi
+#
+#       - uses: google-github-actions/auth@7c6bc770dae815cd3e89ee6cdf493a5fab2cc093 # v3.0.0
+#         with:
+#           workload_identity_provider: projects/${{ vars.GCP_PROJECT_NUMBER }}/locations/global/workloadIdentityPools/github-pool/providers/github-provider
+#           service_account: ${{ vars.GCP_SERVICE_ACCOUNT }}
+#
+#       - uses: google-github-actions/setup-gcloud@aa5489c8933f4cc7a4f7d45035b3b1440c9c10db # v3.0.1
+#
+#       - name: Install PostgreSQL client
+#         run: |
+#           sudo apt-get update
+#           sudo apt-get install -y postgresql-client
+#
+#       - name: Run restore test
+#         env:
+#           GCS_BUCKET: ${{ env.GCS_BUCKET }}
+#           POSTGRES_HOST: localhost
+#           POSTGRES_PORT: '5432'
+#           POSTGRES_USER: toique
+#           POSTGRES_PASSWORD: toique
+#           POSTGRES_DB: toique_restore_test
+#         run: |
+#           chmod +x backup/restore-test.sh
+#           bash backup/restore-test.sh

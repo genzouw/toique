@@ -14,7 +14,7 @@ export default function Tokushoho() {
     <div className="min-h-full bg-slate-50">
       <SEOMetadata
         title="特定商取引法に基づく表記 | Toique"
-        description="Toique（運営: flumen）の特定商取引法に基づく表記。販売事業者、所在地、連絡先、販売価格、支払方法、解約方法などを記載しています。"
+        description={`Toique（運営: ${import.meta.env.VITE_COMPANY_NAME || 'Your Company Name'}）の特定商取引法に基づく表記。販売事業者、所在地、連絡先、販売価格、支払方法、解約方法などを記載しています。`}
       />
       <header className="bg-white border-b border-slate-200">
         <div className="max-w-4xl mx-auto px-6 py-5 flex items-center justify-between">
@@ -43,8 +43,8 @@ export default function Tokushoho() {
 
         <div className="bg-white border border-slate-200 rounded-md overflow-hidden">
           <dl className="divide-y divide-slate-200">
-            <Row term="販売事業者">flumen（フルメン）</Row>
-            <Row term="運営統括責任者">若林 利秋</Row>
+            <Row term="販売事業者">{import.meta.env.VITE_COMPANY_NAME || 'Your Company Name'}</Row>
+            <Row term="運営統括責任者">{import.meta.env.VITE_REPRESENTATIVE_NAME || 'Representative Name'}</Row>
             <Row term="所在地">
               ご請求をいただいた場合、遅滞なく開示いたします。
             </Row>
@@ -61,10 +61,10 @@ export default function Tokushoho() {
             </Row>
             <Row term="メールアドレス">
               <a
-                href="mailto:genzouw@gmail.com"
+                href={`mailto:${import.meta.env.VITE_CONTACT_EMAIL || 'contact@example.com'}`}
                 className="underline hover:text-slate-900"
               >
-                genzouw@gmail.com
+                {import.meta.env.VITE_CONTACT_EMAIL || 'contact@example.com'}
               </a>
             </Row>
             <Row term="販売URL">
@@ -127,10 +127,10 @@ export default function Tokushoho() {
               本サービスはデジタルコンテンツ・SaaS
               の提供であるため、役務の提供開始後の返金・返品はお受けできません。不具合等が発生した場合は{' '}
               <a
-                href="mailto:genzouw@gmail.com"
+                href={`mailto:${import.meta.env.VITE_CONTACT_EMAIL || 'contact@example.com'}`}
                 className="underline hover:text-slate-900"
               >
-                genzouw@gmail.com
+                {import.meta.env.VITE_CONTACT_EMAIL || 'contact@example.com'}
               </a>{' '}
               までご連絡ください。
             </Row>
