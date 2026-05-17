@@ -46,17 +46,19 @@
 
 `Settings → Secrets and variables → Actions → Secrets` に以下を設定する。
 
-| 名前                    | 用途                                                         |
-| ----------------------- | ------------------------------------------------------------ |
-| `CLOUDFLARE_API_TOKEN`  | Cloudflare Pages デプロイ用 API トークン (`Pages:Edit` 権限) |
-| `CLOUDFLARE_ACCOUNT_ID` | Cloudflare アカウント ID                                     |
-| `OPERATOR_EMAILS`       | 運営者扱いするアカウントの email (カンマ区切り)              |
-| `ADMIN_USERNAME`        | 管理 UI のベーシック認証ユーザー名                           |
+| 名前                    | 用途                                                                           |
+| ----------------------- | ------------------------------------------------------------------------------ |
+| `CLOUDFLARE_API_TOKEN`  | Cloudflare Pages デプロイ用 API トークン (`Pages:Edit` 権限)                   |
+| `CLOUDFLARE_ACCOUNT_ID` | Cloudflare アカウント ID                                                       |
+| `OPERATOR_EMAILS`       | 運営者扱いするアカウントの email (カンマ区切り)                                |
+| `ADMIN_USERNAME`        | 管理 UI のベーシック認証ユーザー名                                             |
+| `DOGFOODING_EMAILS`     | (任意) Stripe 課金なしで Pro 相当として扱う dogfooding 用 email (カンマ区切り) |
 
-`OPERATOR_EMAILS` と `ADMIN_USERNAME` を Secrets として扱う理由:
+`OPERATOR_EMAILS` / `ADMIN_USERNAME` / `DOGFOODING_EMAILS` を Secrets として扱う理由:
 
 - `OPERATOR_EMAILS`: 個人 Gmail アドレス等が含まれることが多く、CI ログ等への意図せぬ漏出リスクを最小化するため
 - `ADMIN_USERNAME`: 管理 UI のベーシック認証情報の一部。攻撃面を狭めるため `ADMIN_PASSWORD` (Secret Manager) と対応する形で隠蔽
+- `DOGFOODING_EMAILS`: 課金スキップを意味する email リスト。漏れると「この email を乗っ取れば Pro 機能が無料で使える」というシグナルになるため、攻撃標的化を避ける目的で Secrets で管理。未設定なら dogfooding 機能は無効化される (空集合扱い)
 
 ## 3. Google Cloud 側のセットアップ
 

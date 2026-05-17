@@ -1,19 +1,32 @@
-import { describe, it, expect } from 'vitest';
-import { isDogfoodingEmail, DOGFOODING_EMAILS } from './dogfooding.js';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import { isDogfoodingEmail } from './dogfooding.js';
 
 describe('isDogfoodingEmail', () => {
-  it('returns true for the canonical dogfooding address', () => {
-    expect(isDogfoodingEmail('toique.official@gmail.com')).toBe(true);
+  beforeEach(() => {
+    // dogfooding 用 email は env から取得する。テストでは安定した値を stub する。
+    vi.stubEnv(
+      'DOGFOODING_EMAILS',
+      'dogfooding-test@example.com,internal@example.com',
+    );
+  });
+
+  afterEach(() => {
+    vi.unstubAllEnvs();
+  });
+
+  it('returns true for a configured dogfooding address', () => {
+    expect(isDogfoodingEmail('dogfooding-test@example.com')).toBe(true);
+    expect(isDogfoodingEmail('internal@example.com')).toBe(true);
   });
 
   it('matches case-insensitively and trims whitespace', () => {
-    expect(isDogfoodingEmail('TOIQUE.OFFICIAL@gmail.com')).toBe(true);
-    expect(isDogfoodingEmail('  toique.official@gmail.com  ')).toBe(true);
+    expect(isDogfoodingEmail('DOGFOODING-TEST@example.com')).toBe(true);
+    expect(isDogfoodingEmail('  dogfooding-test@example.com  ')).toBe(true);
   });
 
   it('returns false for unrelated addresses', () => {
     expect(isDogfoodingEmail('someone@example.com')).toBe(false);
-    expect(isDogfoodingEmail('toique@gmail.com')).toBe(false);
+    expect(isDogfoodingEmail('dogfooding@example.org')).toBe(false);
   });
 
   it('returns false for null, undefined, or empty string', () => {
@@ -22,7 +35,11 @@ describe('isDogfoodingEmail', () => {
     expect(isDogfoodingEmail('')).toBe(false);
   });
 
-  it('exposes the configured email list as readonly metadata', () => {
-    expect(DOGFOODING_EMAILS).toContain('toique.official@gmail.com');
+  it('disables dogfooding entirely when DOGFOODING_EMAILS is unset or empty', () => {
+    vi.stubEnv('DOGFOODING_EMAILS', '');
+    expect(isDogfoodingEmail('dogfooding-test@example.com')).toBe(false);
+
+    vi.stubEnv('DOGFOODING_EMAILS', '   ,  , ');
+    expect(isDogfoodingEmail('dogfooding-test@example.com')).toBe(false);
   });
 });
