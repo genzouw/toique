@@ -7,6 +7,7 @@ import { ServiceAccount } from '@cdktf/provider-google/lib/service-account';
 import { ProjectIamMember } from '@cdktf/provider-google/lib/project-iam-member';
 import { SecretManagerSecretIamMember } from '@cdktf/provider-google/lib/secret-manager-secret-iam-member';
 import { CloudRunV2Job } from '@cdktf/provider-google/lib/cloud-run-v2-job';
+import { CloudRunV2JobIamMember } from '@cdktf/provider-google/lib/cloud-run-v2-job-iam-member';
 import { CloudSchedulerJob } from '@cdktf/provider-google/lib/cloud-scheduler-job';
 import { IamWorkloadIdentityPool } from '@cdktf/provider-google/lib/iam-workload-identity-pool';
 import { IamWorkloadIdentityPoolProvider } from '@cdktf/provider-google/lib/iam-workload-identity-pool-provider';
@@ -82,12 +83,12 @@ class MyStack extends TerraformStack {
       member: `serviceAccount:${backupSa.email}`,
     });
 
-    // Cloud Run Job 実行権限 (Cloud Scheduler が使用)
-    new ProjectIamMember(this, 'backup-sa-run-invoker', {
-      project: projectId,
-      role: 'roles/run.developer',
-      member: `serviceAccount:${backupSa.email}`,
-    });
+    // Cloud Run Job 実行権限。後段で定義する `db-backup` Job リソース限定 (PoLP)。
+    // 旧実装は Project-wide `roles/run.developer` で、攻撃者が backupSa を奪った
+    // 場合に project 内任意の Cloud Run service / job を更新できる経路があった。
+    // ここでは Job リソース単位の `roles/run.invoker` に絞り、影響範囲を
+    // 「Cloud Scheduler が `db-backup` Job を発火する」最小権限に縮小する。
+    // (定義本体は backupJob の宣言後に移動。L96 付近の `backup-sa-run-invoker` を参照)
 
     // Secret Manager 読み取り権限（バックアップ用シークレット限定）
     backupSecrets.forEach(({ secretName }) => {
@@ -136,6 +137,18 @@ class MyStack extends TerraformStack {
           ],
         },
       },
+    });
+
+    // backupSa は Cloud Scheduler が `db-backup` Job を発火するときの
+    // OAuth identity として使われる (CloudSchedulerJob.httpTarget.oauthToken)。
+    // `roles/run.invoker` を **Job リソース単位** に絞り、Project 全体ではなく
+    // この Job のみ実行可能にする。
+    new CloudRunV2JobIamMember(this, 'backup-sa-run-invoker', {
+      project: projectId,
+      location: region,
+      name: backupJob.name,
+      role: 'roles/run.invoker',
+      member: `serviceAccount:${backupSa.email}`,
     });
 
     // --- Cloud Scheduler ---
