@@ -8,13 +8,21 @@ import { ProjectIamMember } from '@cdktf/provider-google/lib/project-iam-member'
 import { SecretManagerSecretIamMember } from '@cdktf/provider-google/lib/secret-manager-secret-iam-member';
 import { CloudRunV2Job } from '@cdktf/provider-google/lib/cloud-run-v2-job';
 import { CloudSchedulerJob } from '@cdktf/provider-google/lib/cloud-scheduler-job';
+import { IamWorkloadIdentityPool } from '@cdktf/provider-google/lib/iam-workload-identity-pool';
+import { IamWorkloadIdentityPoolProvider } from '@cdktf/provider-google/lib/iam-workload-identity-pool-provider';
+import { ServiceAccountIamMember } from '@cdktf/provider-google/lib/service-account-iam-member';
 
 class MyStack extends TerraformStack {
   constructor(scope: Construct, id: string) {
     super(scope, id);
 
     const projectId = process.env.GCP_PROJECT_ID || 'example-project-id';
+    const projectNumber = process.env.GCP_PROJECT_NUMBER || '000000000000';
     const region = process.env.GCP_REGION || 'asia-northeast1';
+    // WIF が認可する GitHub リポジトリ。
+    // `<owner>/<repo>` 形式で、attribute_condition と SA binding の両方に展開される。
+    const githubRepository =
+      process.env.GITHUB_REPOSITORY || 'example-owner/example-repo';
 
     // バックアップジョブが参照するシークレット定義（env 名と Secret Manager 上の名前のマッピング）
     const backupSecrets = [
@@ -132,6 +140,83 @@ class MyStack extends TerraformStack {
           serviceAccountEmail: backupSa.email,
         },
       },
+    });
+
+    // =========================================================================
+    // Workload Identity Federation (GitHub Actions OIDC)
+    // =========================================================================
+    // GitHub Actions が GCP リソースにアクセスするための WIF Pool / Provider / SA。
+    // 元々 gcloud で手動構築していたものを IaC 化し、attribute_condition と
+    // principalSet の双方を厳格化することで、Public 化後の運用ミス耐性を高める。
+    //
+    // 既存リソースの import 手順は infra/README.md を参照。
+    // =========================================================================
+
+    // --- WIF Pool ---
+    const githubPool = new IamWorkloadIdentityPool(this, 'github-pool', {
+      project: projectId,
+      workloadIdentityPoolId: 'github-pool',
+      displayName: 'GitHub Actions Pool',
+      description: 'WIF pool for GitHub Actions OIDC',
+    });
+
+    // --- WIF Provider (OIDC) ---
+    //
+    // attribute_condition で `<owner>/<repo>` リポジトリ かつ main ブランチからの
+    // OIDC のみ許可する。同オーナーの他リポ・他ブランチ・タグ・PR からは
+    // WIF を発行できないため、漏えい時の攻撃面が最小化される。
+    new IamWorkloadIdentityPoolProvider(this, 'github-provider', {
+      project: projectId,
+      workloadIdentityPoolId: githubPool.workloadIdentityPoolId,
+      workloadIdentityPoolProviderId: 'github-provider',
+      displayName: 'GitHub Actions OIDC',
+      description: 'OIDC provider for GitHub Actions',
+      oidc: {
+        issuerUri: 'https://token.actions.githubusercontent.com',
+      },
+      attributeMapping: {
+        'google.subject': 'assertion.sub',
+        'attribute.repository': 'assertion.repository',
+        'attribute.repository_owner': 'assertion.repository_owner',
+        'attribute.ref': 'assertion.ref',
+      },
+      attributeCondition: `assertion.repository == '${githubRepository}' && assertion.ref == 'refs/heads/main'`,
+    });
+
+    // --- GitHub Actions デプロイ用 Service Account ---
+    const githubDeployerSa = new ServiceAccount(this, 'github-deployer-sa', {
+      accountId: 'github-deployer',
+      displayName: 'GitHub Actions Deployer',
+      project: projectId,
+    });
+
+    // 必要な role を Project レベルで付与。
+    // 個別リソース単位に絞れるものは将来的に縮小していく余地あり。
+    const deployerRoles = [
+      'roles/run.admin', // Cloud Run service / job のデプロイ
+      'roles/artifactregistry.writer', // Docker image push
+      'roles/secretmanager.secretAccessor', // Secret Manager から secret 取得
+      'roles/iam.serviceAccountUser', // Cloud Run の runtime SA として使用
+    ] as const;
+    deployerRoles.forEach((role) => {
+      // role 名にスラッシュが含まれるのでリソース ID には末尾部分のみ使う
+      const safeId = role.split('/')[1].replace(/\./g, '-');
+      new ProjectIamMember(this, `github-deployer-${safeId}`, {
+        project: projectId,
+        role,
+        member: `serviceAccount:${githubDeployerSa.email}`,
+      });
+    });
+
+    // --- WIF → SA binding ---
+    //
+    // principalSet を `attribute.repository/<owner>/<repo>` に絞り、当該リポジトリ
+    // 経由でない OIDC からはこの SA を impersonate できないようにする。
+    // attribute_condition と二重にガードする多層防御。
+    new ServiceAccountIamMember(this, 'github-deployer-wif-binding', {
+      serviceAccountId: githubDeployerSa.name,
+      role: 'roles/iam.workloadIdentityUser',
+      member: `principalSet://iam.googleapis.com/projects/${projectNumber}/locations/global/workloadIdentityPools/${githubPool.workloadIdentityPoolId}/attribute.repository/${githubRepository}`,
     });
   }
 }

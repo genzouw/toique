@@ -84,31 +84,44 @@ gcloud artifacts repositories create $ARTIFACT_REPO \
   --repository-format=docker
 ```
 
-### 3-3. Workload Identity Federation (GitHub Actions 用)
+### 3-3. Workload Identity Federation + デプロイ用 SA (推奨: CDKTF 経由)
+
+WIF Pool / Provider / `github-deployer` SA / SA への IAM 設定 / WIF→SA binding は `infra/main.ts` で IaC 化されている。詳細手順は `infra/README.md` を参照。
 
 ```bash
-gcloud iam workload-identity-pools create github-pool \
-  --location=global \
-  --display-name="GitHub Actions Pool"
+cd infra
+bun install --frozen-lockfile
+export GCP_PROJECT_ID=...
+export GCP_PROJECT_NUMBER=...
+export GITHUB_REPOSITORY=<owner>/<repo>
+bunx cdktf deploy
+```
 
+`attribute_condition` は `assertion.repository == '<owner>/<repo>' && assertion.ref == 'refs/heads/main'` で厳格化済み。同オーナーの他リポ・他ブランチ・PR・タグからは OIDC を発行できない。
+
+#### gcloud で手動構築する場合（CDKTF を使わない初回 quick start）
+
+```bash
+# 1. Pool
+gcloud iam workload-identity-pools create github-pool \
+  --location=global --display-name="GitHub Actions Pool"
+
+# 2. Provider（厳格な attribute_condition）
 gcloud iam workload-identity-pools providers create-oidc github-provider \
   --location=global \
   --workload-identity-pool=github-pool \
   --display-name="GitHub Actions OIDC" \
   --issuer-uri="https://token.actions.githubusercontent.com" \
-  --attribute-mapping="google.subject=assertion.sub,attribute.repository=assertion.repository,attribute.repository_owner=assertion.repository_owner" \
-  --attribute-condition="assertion.repository_owner == '<YOUR_GITHUB_USERNAME>'"
-```
+  --attribute-mapping="google.subject=assertion.sub,attribute.repository=assertion.repository,attribute.repository_owner=assertion.repository_owner,attribute.ref=assertion.ref" \
+  --attribute-condition="assertion.repository == '<YOUR_GITHUB_USERNAME>/<YOUR_REPO_NAME>' && assertion.ref == 'refs/heads/main'"
 
-### 3-4. デプロイ用 Service Account
-
-```bash
+# 3. デプロイ用 SA
 gcloud iam service-accounts create github-deployer \
   --display-name="GitHub Actions Deployer"
 
 DEPLOYER_SA="github-deployer@$GCP_PROJECT_ID.iam.gserviceaccount.com"
 
-# 必要な権限
+# 4. SA への role 付与
 for role in roles/run.admin \
             roles/artifactregistry.writer \
             roles/secretmanager.secretAccessor \
@@ -117,11 +130,13 @@ for role in roles/run.admin \
     --member="serviceAccount:$DEPLOYER_SA" --role="$role"
 done
 
-# Workload Identity に紐付け
+# 5. WIF → SA binding（principalSet を repo 単位で限定する多層防御）
 gcloud iam service-accounts add-iam-policy-binding $DEPLOYER_SA \
   --member="principalSet://iam.googleapis.com/projects/$GCP_PROJECT_NUMBER/locations/global/workloadIdentityPools/github-pool/attribute.repository/<YOUR_GITHUB_USERNAME>/<YOUR_REPO_NAME>" \
   --role="roles/iam.workloadIdentityUser"
 ```
+
+手動構築した場合も後から CDKTF 管理下に取り込める。`infra/README.md` の「既存リソースの取り込み」節を参照。
 
 ### 3-5. Secret Manager (本番値)
 
