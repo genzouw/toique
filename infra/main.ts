@@ -16,13 +16,26 @@ class MyStack extends TerraformStack {
   constructor(scope: Construct, id: string) {
     super(scope, id);
 
+    // env のうち、ダミー値で synth/apply されると本番に dead な trust binding を
+    // 仕込む恐れがあるものは必須化する (fail fast)。
+    const requireEnv = (name: string): string => {
+      const value = process.env[name]?.trim();
+      if (!value) {
+        throw new Error(
+          `${name} is required for cdktf synth/deploy. Set it as an environment variable before running.`,
+        );
+      }
+      return value;
+    };
+
     const projectId = process.env.GCP_PROJECT_ID || 'example-project-id';
-    const projectNumber = process.env.GCP_PROJECT_NUMBER || '000000000000';
     const region = process.env.GCP_REGION || 'asia-northeast1';
-    // WIF が認可する GitHub リポジトリ。
-    // `<owner>/<repo>` 形式で、attribute_condition と SA binding の両方に展開される。
-    const githubRepository =
-      process.env.GITHUB_REPOSITORY || 'example-owner/example-repo';
+    // WIF が認可する `<owner>/<repo>`。principal:// subject に展開される。
+    // 誤値だと WIF binding 全体が意味を成さないため必須化。
+    const githubRepository = requireEnv('GITHUB_REPOSITORY');
+    // WIF principal:// URL の構築に必須。誤った projectNumber を指定すると
+    // 別プロジェクトの pool に binding しようとして失敗する。
+    const projectNumber = requireEnv('GCP_PROJECT_NUMBER');
 
     // バックアップジョブが参照するシークレット定義（env 名と Secret Manager 上の名前のマッピング）
     const backupSecrets = [
@@ -191,12 +204,14 @@ class MyStack extends TerraformStack {
     });
 
     // 必要な role を Project レベルで付与。
-    // 個別リソース単位に絞れるものは将来的に縮小していく余地あり。
+    // `roles/iam.serviceAccountUser` は Project-wide だと「プロジェクト内任意の SA を
+    // Cloud Run runtime として attach できる」権限になり、deployer が認証に成功した
+    // 後に backup-sa 等の高権限 SA を impersonate する経路を残してしまう。
+    // 代わりに後段で runtime SA 単位の ServiceAccountIamMember として絞る。
     const deployerRoles = [
       'roles/run.admin', // Cloud Run service / job のデプロイ
       'roles/artifactregistry.writer', // Docker image push
       'roles/secretmanager.secretAccessor', // Secret Manager から secret 取得
-      'roles/iam.serviceAccountUser', // Cloud Run の runtime SA として使用
     ] as const;
     deployerRoles.forEach((role) => {
       // role 名にスラッシュが含まれるのでリソース ID には末尾部分のみ使う
@@ -208,15 +223,39 @@ class MyStack extends TerraformStack {
       });
     });
 
+    // --- runtime SA への SA User 権限 (個別 binding で PoLP) ---
+    //
+    // Cloud Run service (toique-backend) は --service-account 指定なしで動いており、
+    // GCP デフォルトの Compute Engine SA (<project_number>-compute@developer...) が
+    // runtime として attach される。github-deployer はこの SA を attach できる
+    // 必要がある。
+    new ServiceAccountIamMember(this, 'github-deployer-compute-sa-user', {
+      serviceAccountId: `projects/${projectId}/serviceAccounts/${projectNumber}-compute@developer.gserviceaccount.com`,
+      role: 'roles/iam.serviceAccountUser',
+      member: `serviceAccount:${githubDeployerSa.email}`,
+    });
+
+    // db-backup Cloud Run Job の runtime である backupSa に対しても attach 権限が必要。
+    new ServiceAccountIamMember(this, 'github-deployer-backup-sa-user', {
+      serviceAccountId: backupSa.name,
+      role: 'roles/iam.serviceAccountUser',
+      member: `serviceAccount:${githubDeployerSa.email}`,
+    });
+
     // --- WIF → SA binding ---
     //
-    // principalSet を `attribute.repository/<owner>/<repo>` に絞り、当該リポジトリ
-    // 経由でない OIDC からはこの SA を impersonate できないようにする。
-    // attribute_condition と二重にガードする多層防御。
+    // principal:// (subject 単位) で `repo:<owner>/<repo>:ref:refs/heads/main` を
+    // 唯一の許可 subject にする。GitHub Actions の OIDC `sub` claim はデフォルトで
+    // `repo:<owner>/<repo>:ref:<ref>` 形式のため、binding 自体が **特定リポジトリの
+    // main ブランチからの OIDC** にしか対応しなくなる。
+    //
+    // attribute_condition と principal subject の二重で repository + branch を
+    // ガードする多層防御 (defense-in-depth)。OIDC token customization で sub
+    // フォーマットを変えた場合は本 binding も合わせて更新する必要がある。
     new ServiceAccountIamMember(this, 'github-deployer-wif-binding', {
       serviceAccountId: githubDeployerSa.name,
       role: 'roles/iam.workloadIdentityUser',
-      member: `principalSet://iam.googleapis.com/projects/${projectNumber}/locations/global/workloadIdentityPools/${githubPool.workloadIdentityPoolId}/attribute.repository/${githubRepository}`,
+      member: `principal://iam.googleapis.com/projects/${projectNumber}/locations/global/workloadIdentityPools/${githubPool.workloadIdentityPoolId}/subject/repo:${githubRepository}:ref:refs/heads/main`,
     });
   }
 }

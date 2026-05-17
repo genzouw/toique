@@ -97,7 +97,7 @@ export GITHUB_REPOSITORY=<owner>/<repo>
 bunx cdktf deploy
 ```
 
-`attribute_condition` は `assertion.repository == '<owner>/<repo>' && assertion.ref == 'refs/heads/main'` で厳格化済み。同オーナーの他リポ・他ブランチ・PR・タグからは OIDC を発行できない。
+`attribute_condition` は `assertion.repository == '<owner>/<repo>' && assertion.ref == 'refs/heads/main'` で厳格化済み。GitHub Actions は workflow ごとに OIDC token を常に発行するが、Google STS への token 交換時にこの条件で評価され、同オーナー他リポ・他ブランチ・PR・タグからの token は **GCP 側で拒否される** (= GCP 認証に失敗する)。
 
 #### gcloud で手動構築する場合（CDKTF を使わない初回 quick start）
 
@@ -121,18 +121,29 @@ gcloud iam service-accounts create github-deployer \
 
 DEPLOYER_SA="github-deployer@$GCP_PROJECT_ID.iam.gserviceaccount.com"
 
-# 4. SA への role 付与
+# 4. SA への role 付与（PoLP: roles/iam.serviceAccountUser は Project-wide には付与しない）
 for role in roles/run.admin \
             roles/artifactregistry.writer \
-            roles/secretmanager.secretAccessor \
-            roles/iam.serviceAccountUser; do
+            roles/secretmanager.secretAccessor; do
   gcloud projects add-iam-policy-binding $GCP_PROJECT_ID \
     --member="serviceAccount:$DEPLOYER_SA" --role="$role"
 done
 
-# 5. WIF → SA binding（principalSet を repo 単位で限定する多層防御）
+# 4-b. runtime SA への SA User 権限を個別 binding で付与
+# Cloud Run service の runtime はデフォルト Compute SA
+gcloud iam service-accounts add-iam-policy-binding \
+  $GCP_PROJECT_NUMBER-compute@developer.gserviceaccount.com \
+  --member="serviceAccount:$DEPLOYER_SA" \
+  --role=roles/iam.serviceAccountUser
+# db-backup Cloud Run Job の runtime は backup-job SA
+gcloud iam service-accounts add-iam-policy-binding \
+  backup-job@$GCP_PROJECT_ID.iam.gserviceaccount.com \
+  --member="serviceAccount:$DEPLOYER_SA" \
+  --role=roles/iam.serviceAccountUser
+
+# 5. WIF → SA binding（principal:// subject で repo + main branch に限定する多層防御）
 gcloud iam service-accounts add-iam-policy-binding $DEPLOYER_SA \
-  --member="principalSet://iam.googleapis.com/projects/$GCP_PROJECT_NUMBER/locations/global/workloadIdentityPools/github-pool/attribute.repository/<YOUR_GITHUB_USERNAME>/<YOUR_REPO_NAME>" \
+  --member="principal://iam.googleapis.com/projects/$GCP_PROJECT_NUMBER/locations/global/workloadIdentityPools/github-pool/subject/repo:<YOUR_GITHUB_USERNAME>/<YOUR_REPO_NAME>:ref:refs/heads/main" \
   --role="roles/iam.workloadIdentityUser"
 ```
 
