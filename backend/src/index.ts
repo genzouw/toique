@@ -1,5 +1,6 @@
 import { Hono } from 'hono';
 import { cors } from 'hono/cors';
+import { csrf } from 'hono/csrf';
 import { logger } from 'hono/logger';
 import { secureHeaders } from 'hono/secure-headers';
 import { serve } from '@hono/node-server';
@@ -31,6 +32,13 @@ app.use('*', logger());
 
 // セキュリティヘッダーを付与
 app.use('*', secureHeaders(securityHeadersConfig));
+
+app.use(
+  '/api/*',
+  csrf({
+    origin: allowedOrigins as string[],
+  }),
+);
 
 app.use(
   '/api/*',
