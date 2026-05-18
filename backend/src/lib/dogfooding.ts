@@ -5,18 +5,27 @@ import { tenantMembers, users } from '../schema.js';
 /**
  * Stripe による課金なしで Pro 相当として扱う、運営ドッグフーディング用のメールアドレス。
  * 本番環境で運営自身がプロダクトを利用しながら検証するための例外口。
+ *
+ * 値は `DOGFOODING_EMAILS` 環境変数 (カンマ区切り) から取得する。
+ * 未設定または空の場合は dogfooding 機能が無効化され、`isDogfoodingEmail` は
+ * 常に false を返す。
+ *
+ * Public 化したリポジトリでハードコードを避けるための実装で、本番用の email は
+ * GitHub Actions Secrets で管理して Cloud Run env として渡す。
  */
-export const DOGFOODING_EMAILS: readonly string[] = [
-  'toique.official@gmail.com',
-];
-
-const NORMALIZED_DOGFOODING_EMAILS: ReadonlySet<string> = new Set(
-  DOGFOODING_EMAILS.map((e) => e.trim().toLowerCase()),
-);
+function getDogfoodingEmailSet(): ReadonlySet<string> {
+  const raw = process.env.DOGFOODING_EMAILS ?? '';
+  return new Set(
+    raw
+      .split(',')
+      .map((e) => e.trim().toLowerCase())
+      .filter(Boolean),
+  );
+}
 
 export function isDogfoodingEmail(email: string | null | undefined): boolean {
   if (!email) return false;
-  return NORMALIZED_DOGFOODING_EMAILS.has(email.trim().toLowerCase());
+  return getDogfoodingEmailSet().has(email.trim().toLowerCase());
 }
 
 /**

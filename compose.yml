@@ -66,6 +66,9 @@ services:
       STRIPE_PRO_PRICE_ID: ${STRIPE_PRO_PRICE_ID:-price_dummy}
       # 運営者エリアを使う場合はここに自分のメールを入れる
       OPERATOR_EMAILS: ${OPERATOR_EMAILS:-}
+      # Stripe 課金なしで Pro 相当として扱う dogfooding 用 email (カンマ区切り)。
+      # 未設定なら dogfooding 機能は無効。本番値は GH Actions Secrets で管理する。
+      DOGFOODING_EMAILS: ${DOGFOODING_EMAILS:-}
       # /admin 向け Basic 認証の固定 ID/パスワード (ローカル開発用)
       ADMIN_USERNAME: ${ADMIN_USERNAME:-admin}
       ADMIN_PASSWORD: ${ADMIN_PASSWORD:-admin}
