@@ -22,6 +22,7 @@ import adminUsers from './routes/admin/users.js';
 import { logger as appLogger } from './lib/logger.js';
 import { securityHeadersConfig } from './lib/security-headers.js';
 import { allowedOrigins } from './lib/frontend-origin.js';
+import { applyCsrfMiddleware } from './lib/csrf-middleware.js';
 import { applyErrorHandlers } from './lib/error-handlers.js';
 
 const app = new Hono({ strict: false });
@@ -32,6 +33,9 @@ app.use('*', logger());
 
 // セキュリティヘッダーを付与
 app.use('*', secureHeaders(securityHeadersConfig));
+
+// CSRF 保護 (詳細・適用範囲は lib/csrf-middleware.ts のコメント参照)
+applyCsrfMiddleware(app);
 
 app.use(
   '/api/*',
