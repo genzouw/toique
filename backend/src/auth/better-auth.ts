@@ -4,6 +4,7 @@ import db from '../db.js';
 import * as schema from '../schema.js';
 import { getMailer } from '../lib/mail/index.js';
 import { logger } from '../lib/logger.js';
+import { allowedOrigins, frontendUrl } from '../lib/frontend-origin.js';
 
 function getAuthSecret() {
   const secret = process.env.BETTER_AUTH_SECRET;
@@ -43,7 +44,7 @@ async function sendAuthEmail(input: {
 
 // メール本文の検証/リセット用リンクは、ユーザーがフロントエンドのドメインから踏む形にする。
 // フロント側の /verify-email・/reset-password ページが受けて、backend の API を呼び出す。
-const FRONTEND_URL = process.env.CORS_ORIGIN || 'http://localhost:5173';
+const FRONTEND_URL = frontendUrl;
 
 export const auth = betterAuth({
   baseURL: process.env.BETTER_AUTH_URL || 'http://localhost:3000',
@@ -93,7 +94,7 @@ export const auth = betterAuth({
       });
     },
   },
-  trustedOrigins: [FRONTEND_URL],
+  trustedOrigins: [...allowedOrigins],
   advanced: {
     database: {
       // PostgreSQL の gen_random_uuid() default に任せる (schema 側で uuid 型使用のため)

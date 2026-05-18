@@ -1,4 +1,6 @@
-import { useState } from 'react';
+import { useState, useId } from 'react';
+import { Eye, EyeOff } from 'lucide-react';
+import { ICON_SIZE } from '../lib/icon-size';
 import { useNavigate, Link } from 'react-router';
 import { signIn } from '../lib/auth-client';
 import SEOMetadata from '../components/SEOMetadata';
@@ -107,16 +109,41 @@ export function AuthField({
   value: string;
   onChange: (v: string) => void;
 }) {
+  const id = useId();
+  const [showPassword, setShowPassword] = useState(false);
+  const isPassword = type === 'password';
+  const inputType = isPassword && showPassword ? 'text' : type;
+
   return (
-    <label className="block">
-      <span className="text-sm font-medium text-slate-700">{label}</span>
-      <input
-        type={type}
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        required
-        className="mt-1 w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-slate-900"
-      />
-    </label>
+    <div>
+      <label htmlFor={id} className="block text-sm font-medium text-slate-700">
+        {label}
+      </label>
+      <div className="mt-1 relative">
+        <input
+          id={id}
+          type={inputType}
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          required
+          className={`w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-900 ${isPassword ? 'pr-10' : ''}`}
+        />
+        {isPassword && (
+          <button
+            type="button"
+            onClick={() => setShowPassword(!showPassword)}
+            aria-controls={id}
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-900 rounded-sm"
+            aria-label={showPassword ? 'パスワードを隠す' : 'パスワードを表示'}
+          >
+            {showPassword ? (
+              <EyeOff size={ICON_SIZE.sm} />
+            ) : (
+              <Eye size={ICON_SIZE.sm} />
+            )}
+          </button>
+        )}
+      </div>
+    </div>
   );
 }

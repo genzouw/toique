@@ -7,7 +7,7 @@ import Sitemap from 'vite-plugin-sitemap';
 
 // VITE_SITE_ORIGIN の真実の源は .env(.local) → process.env → ここのフォールバック。
 // 値は src/lib/site.ts と一致させること。
-const SITE_ORIGIN_FALLBACK = 'https://toique.genzouw.com';
+const SITE_ORIGIN_FALLBACK = 'https://example.com';
 
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), 'VITE_');
@@ -73,6 +73,11 @@ export default defineConfig(({ mode }) => {
         '.ngrok.app',
         'localhost',
       ],
+    },
+    // Vitest はユニットテスト (src/ 配下) のみを対象とする。
+    // Playwright で動かす e2e/ は @playwright/test を直接呼ぶため vitest からは除外。
+    test: {
+      include: ['src/**/*.{test,spec}.{ts,tsx}'],
     },
   };
 });

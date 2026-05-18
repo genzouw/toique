@@ -4,7 +4,18 @@ import reactHooks from 'eslint-plugin-react-hooks';
 import reactRefresh from 'eslint-plugin-react-refresh';
 
 export default tseslint.config(
-  { ignores: ['dist/', 'scripts/'] },
+  {
+    // e2e/ は Playwright のテストコードで lint 対象外（独自実行レイヤ）。
+    // playwright-report/, test-results/, .wrangler/ は実行成果物。
+    ignores: [
+      'dist/',
+      'scripts/',
+      'e2e/',
+      'playwright-report/',
+      'test-results/',
+      '.wrangler/',
+    ],
+  },
   js.configs.recommended,
   ...tseslint.configs.recommended,
   {

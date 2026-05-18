@@ -181,6 +181,7 @@ export default function Layout() {
               className="ml-4"
               title="メッセージを閉じる"
               aria-label="メッセージを閉じる"
+              title="メッセージを閉じる"
             >
               <X size={ICON_SIZE.sm} />
             </button>

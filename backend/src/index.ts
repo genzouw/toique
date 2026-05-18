@@ -21,6 +21,7 @@ import adminMe from './routes/admin/me.js';
 import adminUsers from './routes/admin/users.js';
 import { logger as appLogger } from './lib/logger.js';
 import { securityHeadersConfig } from './lib/security-headers.js';
+import { allowedOrigins } from './lib/frontend-origin.js';
 
 const app = new Hono({ strict: false });
 
@@ -34,7 +35,7 @@ app.use('*', secureHeaders(securityHeadersConfig));
 app.use(
   '/api/*',
   cors({
-    origin: process.env.CORS_ORIGIN || 'http://localhost:5173',
+    origin: (origin) => (allowedOrigins.includes(origin) ? origin : null),
     credentials: true,
   }),
 );
