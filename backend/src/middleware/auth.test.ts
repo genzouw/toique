@@ -154,6 +154,12 @@ describe('isOperatorEmail', () => {
 describe('requireTenant middleware', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    // dogfooding 判定は DOGFOODING_EMAILS env に依存するため、テストでは安定した値を stub する。
+    vi.stubEnv('DOGFOODING_EMAILS', 'TOIQUE.OFFICIAL@gmail.com');
+  });
+
+  afterEach(() => {
+    vi.unstubAllEnvs();
   });
 
   function buildApp() {

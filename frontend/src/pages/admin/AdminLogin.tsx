@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router';
-import { Shield } from 'lucide-react';
+import { Shield, Eye, EyeOff } from 'lucide-react';
 import { api } from '../../lib/api';
 import { ICON_SIZE } from '../../lib/icon-size';
 import LoadingButton from '../../components/LoadingButton';
@@ -11,6 +11,7 @@ export default function AdminLogin() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -77,14 +78,33 @@ export default function AdminLogin() {
               >
                 パスワード
               </label>
-              <input
-                id="password"
-                type="password"
-                required
-                className="mt-1 block w-full px-3 py-2 border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-amber-500 focus:border-amber-500"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-              />
+              <div className="mt-1 relative">
+                <input
+                  id="password"
+                  type={showPassword ? 'text' : 'password'}
+                  required
+                  className="block w-full px-3 py-2 pr-10 border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-amber-500 focus:border-amber-500"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  aria-controls="password"
+                  aria-pressed={showPassword}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 p-2 text-slate-500 hover:text-slate-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 rounded-md"
+                  aria-label={
+                    showPassword ? 'パスワードを隠す' : 'パスワードを表示'
+                  }
+                  title={showPassword ? 'パスワードを隠す' : 'パスワードを表示'}
+                >
+                  {showPassword ? (
+                    <EyeOff size={ICON_SIZE.sm} />
+                  ) : (
+                    <Eye size={ICON_SIZE.sm} />
+                  )}
+                </button>
+              </div>
             </div>
           </div>
           <div>

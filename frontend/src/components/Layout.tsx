@@ -179,6 +179,7 @@ export default function Layout() {
             <button
               onClick={() => setDismissed(true)}
               className="ml-4"
+              title="メッセージを閉じる"
               aria-label="メッセージを閉じる"
               title="メッセージを閉じる"
             >

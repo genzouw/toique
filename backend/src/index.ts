@@ -22,6 +22,7 @@ import adminUsers from './routes/admin/users.js';
 import { logger as appLogger } from './lib/logger.js';
 import { securityHeadersConfig } from './lib/security-headers.js';
 import { allowedOrigins } from './lib/frontend-origin.js';
+import { applyErrorHandlers } from './lib/error-handlers.js';
 
 const app = new Hono({ strict: false });
 
@@ -82,6 +83,8 @@ app.use('/api/v1/admin/*', requireOperator);
 app.route('/api/v1/admin/me', adminMe);
 app.route('/api/v1/admin/contacts', adminContacts);
 app.route('/api/v1/admin/users', adminUsers);
+
+applyErrorHandlers(app);
 
 const port = Number(process.env.PORT) || 3000;
 serve({ fetch: app.fetch, port }, () => {
