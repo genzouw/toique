@@ -34,10 +34,10 @@ cd infra
 bun install --frozen-lockfile
 
 # 必須 env を export
-export GCP_PROJECT_ID=toique-app-prod
-export GCP_PROJECT_NUMBER=800954033936
+export GCP_PROJECT_ID=your-gcp-project-id
+export GCP_PROJECT_NUMBER=123456789012
 export GCP_REGION=asia-northeast1
-export GITHUB_REPOSITORY=genzouw/toique
+export GITHUB_REPOSITORY=owner/repo
 
 # 認証 (個人 or 適切な権限を持つアカウント)
 gcloud auth login
