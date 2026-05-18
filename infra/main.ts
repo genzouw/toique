@@ -83,12 +83,9 @@ class MyStack extends TerraformStack {
       member: `serviceAccount:${backupSa.email}`,
     });
 
-    // Cloud Run Job 実行権限。後段で定義する `db-backup` Job リソース限定 (PoLP)。
-    // 旧実装は Project-wide `roles/run.developer` で、攻撃者が backupSa を奪った
-    // 場合に project 内任意の Cloud Run service / job を更新できる経路があった。
-    // ここでは Job リソース単位の `roles/run.invoker` に絞り、影響範囲を
-    // 「Cloud Scheduler が `db-backup` Job を発火する」最小権限に縮小する。
-    // (定義本体は backupJob の宣言後に移動。L96 付近の `backup-sa-run-invoker` を参照)
+    // Cloud Run Job 実行権限。
+    // Job リソース単位の IAM binding は対象リソースの定義が必要なため、
+    // backupJob の宣言後に定義している。
 
     // Secret Manager 読み取り権限（バックアップ用シークレット限定）
     backupSecrets.forEach(({ secretName }) => {
@@ -141,8 +138,7 @@ class MyStack extends TerraformStack {
 
     // backupSa は Cloud Scheduler が `db-backup` Job を発火するときの
     // OAuth identity として使われる (CloudSchedulerJob.httpTarget.oauthToken)。
-    // `roles/run.invoker` を **Job リソース単位** に絞り、Project 全体ではなく
-    // この Job のみ実行可能にする。
+    // 最小権限の原則 (PoLP) に基づき、権限をこの Job リソース単位に限定する。
     new CloudRunV2JobIamMember(this, 'backup-sa-run-invoker', {
       project: projectId,
       location: region,
