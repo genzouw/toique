@@ -1,6 +1,5 @@
 import { Hono } from 'hono';
 import { cors } from 'hono/cors';
-import { csrf } from 'hono/csrf';
 import { logger } from 'hono/logger';
 import { secureHeaders } from 'hono/secure-headers';
 import { serve } from '@hono/node-server';
@@ -23,6 +22,7 @@ import adminUsers from './routes/admin/users.js';
 import { logger as appLogger } from './lib/logger.js';
 import { securityHeadersConfig } from './lib/security-headers.js';
 import { allowedOrigins } from './lib/frontend-origin.js';
+import { applyCsrfMiddleware } from './lib/csrf-middleware.js';
 
 const app = new Hono({ strict: false });
 
@@ -33,12 +33,8 @@ app.use('*', logger());
 // セキュリティヘッダーを付与
 app.use('*', secureHeaders(securityHeadersConfig));
 
-app.use(
-  '/api/*',
-  csrf({
-    origin: (origin) => allowedOrigins.includes(origin),
-  }),
-);
+// CSRF 保護 (詳細・適用範囲は lib/csrf-middleware.ts のコメント参照)
+applyCsrfMiddleware(app);
 
 app.use(
   '/api/*',
