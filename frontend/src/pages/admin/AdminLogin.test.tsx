@@ -131,4 +131,30 @@ describe('AdminLogin', () => {
       screen.queryByText('IDまたはパスワードが正しくありません。'),
     ).not.toBeInTheDocument();
   });
+
+  it('toggles password visibility when the toggle button is clicked', async () => {
+    const user = userEvent.setup();
+
+    render(
+      <BrowserRouter>
+        <AdminLogin />
+      </BrowserRouter>,
+    );
+
+    const passwordInput = screen.getByLabelText('パスワード');
+    expect(passwordInput).toHaveAttribute('type', 'password');
+
+    const showButton = screen.getByRole('button', { name: 'パスワードを表示' });
+    await user.click(showButton);
+
+    expect(passwordInput).toHaveAttribute('type', 'text');
+    const hideButton = screen.getByRole('button', { name: 'パスワードを隠す' });
+    expect(hideButton).toBeInTheDocument();
+
+    await user.click(hideButton);
+    expect(passwordInput).toHaveAttribute('type', 'password');
+    expect(
+      screen.getByRole('button', { name: 'パスワードを表示' }),
+    ).toBeInTheDocument();
+  });
 });
