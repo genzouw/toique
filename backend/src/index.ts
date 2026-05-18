@@ -36,7 +36,7 @@ app.use('*', secureHeaders(securityHeadersConfig));
 app.use(
   '/api/*',
   csrf({
-    origin: allowedOrigins as string[],
+    origin: (origin) => allowedOrigins.includes(origin),
   }),
 );
 
