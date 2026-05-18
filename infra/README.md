@@ -7,7 +7,7 @@ CDKTF (TypeScript) で書かれた GCP インフラ定義。
 - `<PROJECT_ID>-db-backups` GCS バケット（DB バックアップ保管）
 - `db-backup` Cloud Run Job（pg_dump 実行）
 - `db-backup-daily` Cloud Scheduler（毎日 3:00 JST 起動）
-- `backup-job@<PROJECT_ID>.iam.gserviceaccount.com` SA とその IAM 設定
+- `backup-job@<PROJECT_ID>.iam.gserviceaccount.com` SA とその IAM 設定（`roles/run.invoker` は `db-backup` Job リソース限定で付与）
 - `github-pool` Workload Identity Pool
 - `github-provider` Workload Identity Pool Provider（OIDC、`attribute_condition` で `repository` × `ref` をガード）
 - `github-deployer@<PROJECT_ID>.iam.gserviceaccount.com` SA とその IAM 設定
@@ -149,6 +149,28 @@ gcloud iam service-accounts remove-iam-policy-binding \
   github-deployer@$GCP_PROJECT_ID.iam.gserviceaccount.com \
   --role=roles/iam.workloadIdentityUser \
   --member="<削除する member の値>"
+```
+
+### backup-sa の旧 Project-wide `roles/run.developer` 削除
+
+`infra/main.ts` の H-4 対応で、`backup-sa` (`backup-job@<PROJECT_ID>.iam.gserviceaccount.com`) の Cloud Run 実行権限を Project 全体の `roles/run.developer` から **`db-backup` Job リソース限定** の `roles/run.invoker` に縮小した。`cdktf deploy` は新しい Job 単位 binding を **追加** するが、既存の Project IAM 上の `roles/run.developer` は加算性のため自動削除されない。apply 後に必ず手動で削除すること:
+
+```bash
+# 既存の Project IAM binding を確認
+gcloud projects get-iam-policy $GCP_PROJECT_ID \
+  --flatten="bindings[].members" \
+  --filter="bindings.members:serviceAccount:backup-job@$GCP_PROJECT_ID.iam.gserviceaccount.com" \
+  --format="table(bindings.role)"
+
+# `roles/run.developer` があれば削除（縮小後は不要）
+gcloud projects remove-iam-policy-binding $GCP_PROJECT_ID \
+  --member="serviceAccount:backup-job@$GCP_PROJECT_ID.iam.gserviceaccount.com" \
+  --role=roles/run.developer
+
+# 確認: Job リソース単位の binding が新しく入っていることをチェック
+gcloud run jobs get-iam-policy db-backup \
+  --region=$GCP_REGION --project=$GCP_PROJECT_ID
+# 期待: roles/run.invoker に serviceAccount:backup-job@... が 1 件
 ```
 
 ## バックアップ関連の運用は `docs/backup.md` を参照
