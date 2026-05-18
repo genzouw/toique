@@ -34,10 +34,10 @@ cd infra
 bun install --frozen-lockfile
 
 # 必須 env を export
-export GCP_PROJECT_ID=<GCP_PROJECT_ID>
-export GCP_PROJECT_NUMBER=<GCP_PROJECT_NUMBER>
+export GCP_PROJECT_ID=your-gcp-project-id
+export GCP_PROJECT_NUMBER=123456789012
 export GCP_REGION=asia-northeast1
-export GITHUB_REPOSITORY=<owner>/<repo>
+export GITHUB_REPOSITORY=owner/repo
 
 # 認証 (個人 or 適切な権限を持つアカウント)
 gcloud auth login
