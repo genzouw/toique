@@ -145,16 +145,20 @@ describe('AdminLogin', () => {
     expect(passwordInput).toHaveAttribute('type', 'password');
 
     const showButton = screen.getByRole('button', { name: 'パスワードを表示' });
+    expect(showButton).toHaveAttribute('aria-pressed', 'false');
     await user.click(showButton);
 
     expect(passwordInput).toHaveAttribute('type', 'text');
     const hideButton = screen.getByRole('button', { name: 'パスワードを隠す' });
     expect(hideButton).toBeInTheDocument();
+    expect(hideButton).toHaveAttribute('aria-pressed', 'true');
 
     await user.click(hideButton);
     expect(passwordInput).toHaveAttribute('type', 'password');
-    expect(
-      screen.getByRole('button', { name: 'パスワードを表示' }),
-    ).toBeInTheDocument();
+    const showButtonAgain = screen.getByRole('button', {
+      name: 'パスワードを表示',
+    });
+    expect(showButtonAgain).toBeInTheDocument();
+    expect(showButtonAgain).toHaveAttribute('aria-pressed', 'false');
   });
 });
