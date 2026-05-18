@@ -42,17 +42,26 @@
 | ------------ | ------------------------------ |
 | `GCS_BUCKET` | `${GCP_PROJECT_ID}-db-backups` |
 
-## 2. 必須 Repository Secrets
+## 2. Repository Secrets
 
 `Settings → Secrets and variables → Actions → Secrets` に以下を設定する。
 
-| 名前                    | 用途                                                                           |
-| ----------------------- | ------------------------------------------------------------------------------ |
-| `CLOUDFLARE_API_TOKEN`  | Cloudflare Pages デプロイ用 API トークン (`Pages:Edit` 権限)                   |
-| `CLOUDFLARE_ACCOUNT_ID` | Cloudflare アカウント ID                                                       |
-| `OPERATOR_EMAILS`       | 運営者扱いするアカウントの email (カンマ区切り)                                |
-| `ADMIN_USERNAME`        | 管理 UI のベーシック認証ユーザー名                                             |
-| `DOGFOODING_EMAILS`     | (任意) Stripe 課金なしで Pro 相当として扱う dogfooding 用 email (カンマ区切り) |
+### 2-1. 必須 Secrets
+
+| 名前                    | 用途                                                         |
+| ----------------------- | ------------------------------------------------------------ |
+| `CLOUDFLARE_API_TOKEN`  | Cloudflare Pages デプロイ用 API トークン (`Pages:Edit` 権限) |
+| `CLOUDFLARE_ACCOUNT_ID` | Cloudflare アカウント ID                                     |
+| `OPERATOR_EMAILS`       | 運営者扱いするアカウントの email (カンマ区切り)              |
+| `ADMIN_USERNAME`        | 管理 UI のベーシック認証ユーザー名                           |
+
+### 2-2. 任意 Secrets
+
+未設定でもデプロイは成立する。設定すると追加機能が有効化される。
+
+| 名前                | 用途                                                                                          |
+| ------------------- | --------------------------------------------------------------------------------------------- |
+| `DOGFOODING_EMAILS` | Stripe 課金なしで Pro 相当として扱う dogfooding 用 email (カンマ区切り)。未設定だと機能無効化 |
 
 `OPERATOR_EMAILS` / `ADMIN_USERNAME` / `DOGFOODING_EMAILS` を Secrets として扱う理由:
 

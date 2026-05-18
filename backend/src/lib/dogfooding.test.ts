@@ -36,9 +36,15 @@ describe('isDogfoodingEmail', () => {
   });
 
   it('disables dogfooding entirely when DOGFOODING_EMAILS is unset or empty', () => {
+    // unset (undefined) のケース
+    vi.stubEnv('DOGFOODING_EMAILS', undefined);
+    expect(isDogfoodingEmail('dogfooding-test@example.com')).toBe(false);
+
+    // 空文字
     vi.stubEnv('DOGFOODING_EMAILS', '');
     expect(isDogfoodingEmail('dogfooding-test@example.com')).toBe(false);
 
+    // 空白とカンマのみ
     vi.stubEnv('DOGFOODING_EMAILS', '   ,  , ');
     expect(isDogfoodingEmail('dogfooding-test@example.com')).toBe(false);
   });
