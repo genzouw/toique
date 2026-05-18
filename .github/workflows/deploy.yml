@@ -129,6 +129,7 @@
 #             CONTACT_FROM=${{ vars.CONTACT_FROM }}
 #             OPERATOR_EMAILS=${{ secrets.OPERATOR_EMAILS }}
 #             ADMIN_USERNAME=${{ secrets.ADMIN_USERNAME }}
+#             DOGFOODING_EMAILS=${{ secrets.DOGFOODING_EMAILS }}
 #           secrets: |
 #             DATABASE_URL=DATABASE_URL:latest
 #             BETTER_AUTH_SECRET=BETTER_AUTH_SECRET:latest

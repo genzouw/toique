@@ -42,9 +42,11 @@
 | ------------ | ------------------------------ |
 | `GCS_BUCKET` | `${GCP_PROJECT_ID}-db-backups` |
 
-## 2. 必須 Repository Secrets
+## 2. Repository Secrets
 
 `Settings → Secrets and variables → Actions → Secrets` に以下を設定する。
+
+### 2-1. 必須 Secrets
 
 | 名前                    | 用途                                                         |
 | ----------------------- | ------------------------------------------------------------ |
@@ -53,10 +55,19 @@
 | `OPERATOR_EMAILS`       | 運営者扱いするアカウントの email (カンマ区切り)              |
 | `ADMIN_USERNAME`        | 管理 UI のベーシック認証ユーザー名                           |
 
-`OPERATOR_EMAILS` と `ADMIN_USERNAME` を Secrets として扱う理由:
+### 2-2. 任意 Secrets
+
+未設定でもデプロイは成立する。設定すると追加機能が有効化される。
+
+| 名前                | 用途                                                                                          |
+| ------------------- | --------------------------------------------------------------------------------------------- |
+| `DOGFOODING_EMAILS` | Stripe 課金なしで Pro 相当として扱う dogfooding 用 email (カンマ区切り)。未設定だと機能無効化 |
+
+`OPERATOR_EMAILS` / `ADMIN_USERNAME` / `DOGFOODING_EMAILS` を Secrets として扱う理由:
 
 - `OPERATOR_EMAILS`: 個人 Gmail アドレス等が含まれることが多く、CI ログ等への意図せぬ漏出リスクを最小化するため
 - `ADMIN_USERNAME`: 管理 UI のベーシック認証情報の一部。攻撃面を狭めるため `ADMIN_PASSWORD` (Secret Manager) と対応する形で隠蔽
+- `DOGFOODING_EMAILS`: 課金スキップを意味する email リスト。漏れると「この email を乗っ取れば Pro 機能が無料で使える」というシグナルになるため、攻撃標的化を避ける目的で Secrets で管理。未設定なら dogfooding 機能は無効化される (空集合扱い)
 
 ## 3. Google Cloud 側のセットアップ
 

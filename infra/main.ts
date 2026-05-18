@@ -7,6 +7,7 @@ import { ServiceAccount } from '@cdktf/provider-google/lib/service-account';
 import { ProjectIamMember } from '@cdktf/provider-google/lib/project-iam-member';
 import { SecretManagerSecretIamMember } from '@cdktf/provider-google/lib/secret-manager-secret-iam-member';
 import { CloudRunV2Job } from '@cdktf/provider-google/lib/cloud-run-v2-job';
+import { CloudRunV2JobIamMember } from '@cdktf/provider-google/lib/cloud-run-v2-job-iam-member';
 import { CloudSchedulerJob } from '@cdktf/provider-google/lib/cloud-scheduler-job';
 import { IamWorkloadIdentityPool } from '@cdktf/provider-google/lib/iam-workload-identity-pool';
 import { IamWorkloadIdentityPoolProvider } from '@cdktf/provider-google/lib/iam-workload-identity-pool-provider';
@@ -82,12 +83,9 @@ class MyStack extends TerraformStack {
       member: `serviceAccount:${backupSa.email}`,
     });
 
-    // Cloud Run Job 実行権限 (Cloud Scheduler が使用)
-    new ProjectIamMember(this, 'backup-sa-run-invoker', {
-      project: projectId,
-      role: 'roles/run.developer',
-      member: `serviceAccount:${backupSa.email}`,
-    });
+    // Cloud Run Job 実行権限。
+    // Job リソース単位の IAM binding は対象リソースの定義が必要なため、
+    // backupJob の宣言後に定義している。
 
     // Secret Manager 読み取り権限（バックアップ用シークレット限定）
     backupSecrets.forEach(({ secretName }) => {
@@ -136,6 +134,21 @@ class MyStack extends TerraformStack {
           ],
         },
       },
+    });
+
+    // backupSa は Cloud Scheduler が `db-backup` Job を発火するときの
+    // OAuth identity として使われる (CloudSchedulerJob.httpTarget.oauthToken)。
+    // 最小権限の原則 (PoLP) に基づき、権限をこの Job リソース単位に限定する。
+    //
+    // `IamMember` (additive) を使い、Terraform 管理外の手動 binding を踏み潰さない。
+    // `IamPolicy` (authoritative) は既存 binding を全消去するため、
+    // infra/README.md の手動 IAM 削除手順と組み合わせるとリスクが大きい。
+    new CloudRunV2JobIamMember(this, 'backup-sa-run-invoker', {
+      project: projectId,
+      location: region,
+      name: backupJob.name,
+      role: 'roles/run.invoker',
+      member: `serviceAccount:${backupSa.email}`,
     });
 
     // --- Cloud Scheduler ---
