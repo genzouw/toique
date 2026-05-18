@@ -4,7 +4,7 @@ name: Restore Test
 
 on:
   schedule:
-    # 毎月1日 午前4時 (JST) = 前日19時 (UTC) に実行
+    # 毎月2日 午前4時 (JST) = 毎月1日 19時 (UTC) に実行
     - cron: '0 19 1 * *'
   workflow_dispatch:
 
