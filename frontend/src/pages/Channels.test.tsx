@@ -74,7 +74,9 @@ describe('Channels Page', () => {
         expect(screen.getByText('Test Channel 1')).toBeInTheDocument();
       });
 
-      const deleteButtons = screen.getAllByRole('button', { name: '削除' });
+      const deleteButtons = screen.getAllByRole('button', {
+        name: 'Test Channel 1 を削除',
+      });
       fireEvent.click(deleteButtons[0]);
 
       expect(window.confirm).toHaveBeenCalledWith('削除してよろしいですか？');
@@ -95,7 +97,9 @@ describe('Channels Page', () => {
         expect(screen.getByText('Test Channel 1')).toBeInTheDocument();
       });
 
-      const deleteButtons = screen.getAllByRole('button', { name: '削除' });
+      const deleteButtons = screen.getAllByRole('button', {
+        name: 'Test Channel 1 を削除',
+      });
       fireEvent.click(deleteButtons[0]);
 
       expect(window.confirm).toHaveBeenCalledWith('削除してよろしいですか？');
@@ -115,7 +119,9 @@ describe('Channels Page', () => {
         expect(screen.getByText('Test Channel 1')).toBeInTheDocument();
       });
 
-      const deleteButtons = screen.getAllByRole('button', { name: '削除' });
+      const deleteButtons = screen.getAllByRole('button', {
+        name: 'Test Channel 1 を削除',
+      });
       fireEvent.click(deleteButtons[0]);
 
       await waitFor(() => {
