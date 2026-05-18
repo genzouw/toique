@@ -139,6 +139,10 @@ class MyStack extends TerraformStack {
     // backupSa は Cloud Scheduler が `db-backup` Job を発火するときの
     // OAuth identity として使われる (CloudSchedulerJob.httpTarget.oauthToken)。
     // 最小権限の原則 (PoLP) に基づき、権限をこの Job リソース単位に限定する。
+    //
+    // `IamMember` (additive) を使い、Terraform 管理外の手動 binding を踏み潰さない。
+    // `IamPolicy` (authoritative) は既存 binding を全消去するため、
+    // infra/README.md の手動 IAM 削除手順と組み合わせるとリスクが大きい。
     new CloudRunV2JobIamMember(this, 'backup-sa-run-invoker', {
       project: projectId,
       location: region,
