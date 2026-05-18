@@ -49,10 +49,10 @@ Cloud Run Jobs の環境変数として以下のシークレットを Secret Man
 | `BACKUP_POSTGRES_HOST`     | データベースホスト（Neon のエンドポイント等） |
 
 ```bash
-echo -n "toique" | gcloud secrets create BACKUP_POSTGRES_DB --data-file=- --project=<GCP_PROJECT_ID>
-echo -n "toique" | gcloud secrets create BACKUP_POSTGRES_USER --data-file=- --project=<GCP_PROJECT_ID>
-echo -n "<password>" | gcloud secrets create BACKUP_POSTGRES_PASSWORD --data-file=- --project=<GCP_PROJECT_ID>
-echo -n "<host>" | gcloud secrets create BACKUP_POSTGRES_HOST --data-file=- --project=<GCP_PROJECT_ID>
+echo -n "<POSTGRES_DB>" | gcloud secrets create BACKUP_POSTGRES_DB --data-file=- --project=<GCP_PROJECT_ID>
+echo -n "<POSTGRES_USER>" | gcloud secrets create BACKUP_POSTGRES_USER --data-file=- --project=<GCP_PROJECT_ID>
+echo -n "<POSTGRES_PASSWORD>" | gcloud secrets create BACKUP_POSTGRES_PASSWORD --data-file=- --project=<GCP_PROJECT_ID>
+echo -n "<POSTGRES_HOST>" | gcloud secrets create BACKUP_POSTGRES_HOST --data-file=- --project=<GCP_PROJECT_ID>
 ```
 
 ## 手動実行

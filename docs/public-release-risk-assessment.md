@@ -3,8 +3,8 @@
 **調査日**: 2026-05-17
 **調査対象**:
 
-- `/Users/toshiaki.wakabayashi/.ghq/github.com/genzouw/toique` (HEAD: PR #289 マージ後)
-- 隣接リポジトリ `/Users/toshiaki.wakabayashi/.ghq/github.com/genzouw/genzouw.com/terraform`
+- `toique` リポジトリ (HEAD: PR #289 マージ後)
+- 隣接リポジトリ `genzouw.com/terraform`
 
 **調査者**: Claude (一次調査) + Gemini (二次照合) を統合
 **判定方針**: 両者一致した指摘は重大度確定、片方のみは検出元を明記、誤検出は注記して訂正
@@ -243,7 +243,7 @@
 | --- | ------------------------------------------------------------------------------------------------------------------------- | -------- | -------- | -------------------------------------------------------------------------------------- |
 | 1   | **deploy.yml の 3rd-party Action を全て SHA pin**                                                                         | Critical | 30 分    | `Renovate` か `Dependabot` で自動更新化                                                |
 | 2   | **GCP WIF `attribute-condition` 厳格化** (`assertion.repository == 'genzouw/toique' && assertion.ref == refs/heads/main`) | Critical | 15 分    | `gcloud` で実機確認 + 設定変更                                                         |
-| 3   | **docs/manual-deploy.md / backup.md の本番固有名詞をプレースホルダ化**                                                    | High     | 30 分    | <GCP_PROJECT_ID>, SA email, Price ID 等                                                 |
+| 3   | **docs/manual-deploy.md / backup.md の本番固有名詞をプレースホルダ化**                                                    | High     | 30 分    | <GCP_PROJECT_ID>, SA email, Price ID 等                                                |
 | 4   | **GitHub Environments `production` 作成 + Required reviewers + wait timer**                                               | High     | 10 分    | Public 化と同時に必須                                                                  |
 | 5   | **`dogfooding.ts` の Gmail を env 化 + 該当アカウント 2FA 強化**                                                          | High     | 30 分    | 攻撃面の縮小                                                                           |
 | 6   | **`backup-sa` の権限をリソーススコープに縮小**                                                                            | High     | 30 分    | `infra/main.ts` 修正 + apply                                                           |
