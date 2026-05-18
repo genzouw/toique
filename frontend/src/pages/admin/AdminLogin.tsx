@@ -91,8 +91,10 @@ export default function AdminLogin() {
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
                   aria-controls="password"
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 rounded-sm"
-                  aria-label={showPassword ? 'パスワードを隠す' : 'パスワードを表示'}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 p-2 text-slate-400 hover:text-slate-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 rounded-sm"
+                  aria-label={
+                    showPassword ? 'パスワードを隠す' : 'パスワードを表示'
+                  }
                   title={showPassword ? 'パスワードを隠す' : 'パスワードを表示'}
                 >
                   {showPassword ? (
