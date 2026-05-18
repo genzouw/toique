@@ -94,7 +94,7 @@
   - `<STRIPE_PRO_PRICE_ID>` (Stripe Pro Price ID)
   - `<MAIL_FROM_ADDRESS>` (送信元)
   - `<OPERATOR_EMAIL>` (運営者 email)
-  - `BACKUP_POSTGRES_USER=toique` (Neon DB ユーザー名)
+  - `BACKUP_POSTGRES_USER=<POSTGRES_USER>` (Neon DB ユーザー名)
 - **リスク**: 攻撃者の偵察コスト 0 化。フィッシング標的選定・GCS バケット名 (`<GCP_PROJECT_ID>-db-backups`) 推測・DDoS ターゲット選定に直結
 - **対応**: docs から本番値を全てプレースホルダ化 (`<YOUR_PROJECT_ID>`, `<YOUR_SA_EMAIL>`, `<YOUR_STRIPE_PRICE_ID>` 等)。Variables/Secrets で既に管理されているため docs に実値を書く必要はない
 
@@ -239,16 +239,16 @@
 
 事実確認の結果、最低限これだけは Public 化前に処置必須:
 
-| #   | 項目                                                                                                                      | 重大度   | 工数目安 | 補足                                                                                   |
-| --- | ------------------------------------------------------------------------------------------------------------------------- | -------- | -------- | -------------------------------------------------------------------------------------- |
-| 1   | **deploy.yml の 3rd-party Action を全て SHA pin**                                                                         | Critical | 30 分    | `Renovate` か `Dependabot` で自動更新化                                                |
-| 2   | **GCP WIF `attribute-condition` 厳格化** (`assertion.repository == 'genzouw/toique' && assertion.ref == refs/heads/main`) | Critical | 15 分    | `gcloud` で実機確認 + 設定変更                                                         |
-| 3   | **docs/manual-deploy.md / backup.md の本番固有名詞をプレースホルダ化**                                                    | High     | 30 分    | <GCP_PROJECT_ID>, SA email, Price ID 等                                                |
-| 4   | **GitHub Environments `production` 作成 + Required reviewers + wait timer**                                               | High     | 10 分    | Public 化と同時に必須                                                                  |
-| 5   | **`dogfooding.ts` の Gmail を env 化 + 該当アカウント 2FA 強化**                                                          | High     | 30 分    | 攻撃面の縮小                                                                           |
-| 6   | **`backup-sa` の権限をリソーススコープに縮小**                                                                            | High     | 30 分    | `infra/main.ts` 修正 + apply                                                           |
-| 7   | **1st-party Action も SHA pin**                                                                                           | Medium   | 30 分    | genzouw.com Terraform で `actions_sha_pinning_required` 自動 ON されるため事前対応必須 |
-| 8   | **WIF 設定を `infra/main.ts` に IaC 化**                                                                                  | High     | 60 分    | 中期。手動 gcloud 設定を Terraform に移行                                              |
+| #   | 項目                                                                                                                        | 重大度   | 工数目安 | 補足                                                                                   |
+| --- | --------------------------------------------------------------------------------------------------------------------------- | -------- | -------- | -------------------------------------------------------------------------------------- |
+| 1   | **deploy.yml の 3rd-party Action を全て SHA pin**                                                                           | Critical | 30 分    | `Renovate` か `Dependabot` で自動更新化                                                |
+| 2   | **GCP WIF `attribute-condition` 厳格化** (`assertion.repository == 'genzouw/toique' && assertion.ref == 'refs/heads/main'`) | Critical | 15 分    | `gcloud` で実機確認 + 設定変更                                                         |
+| 3   | **docs/manual-deploy.md / backup.md の本番固有名詞をプレースホルダ化**                                                      | High     | 30 分    | <GCP_PROJECT_ID>, SA email, Price ID 等                                                |
+| 4   | **GitHub Environments `production` 作成 + Required reviewers + wait timer**                                                 | High     | 10 分    | Public 化と同時に必須                                                                  |
+| 5   | **`dogfooding.ts` の Gmail を env 化 + 該当アカウント 2FA 強化**                                                            | High     | 30 分    | 攻撃面の縮小                                                                           |
+| 6   | **`backup-sa` の権限をリソーススコープに縮小**                                                                              | High     | 30 分    | `infra/main.ts` 修正 + apply                                                           |
+| 7   | **1st-party Action も SHA pin**                                                                                             | Medium   | 30 分    | genzouw.com Terraform で `actions_sha_pinning_required` 自動 ON されるため事前対応必須 |
+| 8   | **WIF 設定を `infra/main.ts` に IaC 化**                                                                                    | High     | 60 分    | 中期。手動 gcloud 設定を Terraform に移行                                              |
 
 **toique Public 化スコープ外**:
 
