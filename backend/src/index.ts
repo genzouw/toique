@@ -1,6 +1,5 @@
 import { Hono } from 'hono';
 import { cors } from 'hono/cors';
-import { HTTPException } from 'hono/http-exception';
 import { logger } from 'hono/logger';
 import { secureHeaders } from 'hono/secure-headers';
 import { serve } from '@hono/node-server';
@@ -23,6 +22,7 @@ import adminUsers from './routes/admin/users.js';
 import { logger as appLogger } from './lib/logger.js';
 import { securityHeadersConfig } from './lib/security-headers.js';
 import { allowedOrigins } from './lib/frontend-origin.js';
+import { applyErrorHandlers } from './lib/error-handlers.js';
 
 const app = new Hono({ strict: false });
 
@@ -84,17 +84,7 @@ app.route('/api/v1/admin/me', adminMe);
 app.route('/api/v1/admin/contacts', adminContacts);
 app.route('/api/v1/admin/users', adminUsers);
 
-app.notFound((c) => {
-  return c.json({ error: 'Not Found' }, 404);
-});
-
-app.onError((err, c) => {
-  if (err instanceof HTTPException) {
-    return err.getResponse();
-  }
-  appLogger.error('Unhandled exception', err);
-  return c.json({ error: 'Internal Server Error' }, 500);
-});
+applyErrorHandlers(app);
 
 const port = Number(process.env.PORT) || 3000;
 serve({ fetch: app.fetch, port }, () => {
