@@ -155,7 +155,7 @@ describe('requireTenant middleware', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     // dogfooding 判定は DOGFOODING_EMAILS env に依存するため、テストでは安定した値を stub する。
-    vi.stubEnv('DOGFOODING_EMAILS', 'TOIQUE.OFFICIAL@gmail.com');
+    vi.stubEnv('DOGFOODING_EMAILS', 'dummy@example.com');
   });
 
   afterEach(() => {
@@ -200,7 +200,7 @@ describe('requireTenant middleware', () => {
     vi.mocked(auth.api.getSession).mockResolvedValue({
       user: {
         id: 'user-2',
-        email: 'TOIQUE.OFFICIAL@gmail.com',
+        email: 'dummy@example.com',
         name: 'Toique Official',
       },
     } as unknown as SessionResult);
