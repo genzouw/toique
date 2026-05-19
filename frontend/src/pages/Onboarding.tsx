@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router';
 import { api } from '../lib/api';
-import { AuthLayout, AuthField } from './Login';
+import { AuthLayout } from './Login';
+import { AuthField } from '../components/AuthField';
 import LoadingButton from '../components/LoadingButton';
 
 export default function Onboarding() {
