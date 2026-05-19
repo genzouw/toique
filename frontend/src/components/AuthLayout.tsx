@@ -1,5 +1,4 @@
 import type { ReactNode } from 'react';
-import { Link } from 'react-router';
 
 export interface AuthLayoutProps {
   title: string;
@@ -14,14 +13,15 @@ export function AuthLayout({ title, children }: AuthLayoutProps) {
         <h1 className="mt-4 text-lg font-semibold text-slate-900">{title}</h1>
         <div className="mt-6">{children}</div>
       </div>
-      <Link
-        to="/help"
+      <a
+        href="/help"
         target="_blank"
         rel="noopener noreferrer"
+        aria-label="使い方・ヘルプを見る（別タブで開きます）"
         className="mt-6 text-xs text-slate-500 hover:text-slate-900 underline"
       >
-        使い方・ヘルプを見る
-      </Link>
+        使い方・ヘルプを見る ↗
+      </a>
     </div>
   );
 }
