@@ -246,4 +246,9 @@ jobs:
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          # wrangler v4 は Node 22+ 必須。setup-bun した bun 1.3.14 が偽装する
+          # process.version は v20.20.2 のため、wrangler v4 を bun で起動すると
+          # "Wrangler requires at least Node.js v22.0.0" で起動拒否される。
+          # bun を上げるか setup-node@22 を併用するまでの暫定処置として v3 に固定する。
+          wranglerVersion: '3'
           command: pages deploy frontend/dist --project-name ${{ env.CF_PAGES_PROJECT }} --commit-dirty=true --commit-hash=${{ github.sha }} --commit-message="Deploy ${{ github.sha }}"
