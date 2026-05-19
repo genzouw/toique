@@ -5,7 +5,7 @@ export default defineConfig({
     environment: 'node',
     include: ['src/**/*.test.ts'],
     coverage: {
-      provider: 'istanbul',
+      provider: 'v8',
       reporter: [['text', { maxCols: 150 }], 'json-summary'],
       exclude: [
         'node_modules/**',
