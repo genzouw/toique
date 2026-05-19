@@ -10,7 +10,7 @@ export type AuthFieldVariant = 'user' | 'admin';
 const inputClassByVariant: Record<AuthFieldVariant, string> = {
   user: 'text-sm focus-visible:ring-2 focus-visible:ring-slate-900',
   admin:
-    'shadow-sm focus:ring-amber-500 focus:border-amber-500 focus-visible:ring-2 focus-visible:ring-amber-500',
+    'shadow-sm text-sm focus:border-amber-500 focus-visible:ring-2 focus-visible:ring-amber-500',
 };
 
 const toggleButtonClassByVariant: Record<AuthFieldVariant, string> = {
