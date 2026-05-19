@@ -160,7 +160,7 @@ class MyStack extends TerraformStack {
       schedule: '0 3 * * *',
       timeZone: 'Asia/Tokyo',
       httpTarget: {
-        uri: `https://${region}-run.googleapis.com/apis/run.googleapis.com/v1/namespaces/${projectId}/jobs/${backupJob.name}:run`,
+        uri: `https://${backupJob.location}-run.googleapis.com/v2/projects/${backupJob.project}/locations/${backupJob.location}/jobs/${backupJob.name}:run`,
         httpMethod: 'POST',
         oauthToken: {
           serviceAccountEmail: backupSa.email,
