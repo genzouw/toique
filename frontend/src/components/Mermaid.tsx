@@ -58,7 +58,7 @@ function sanitizeMermaidSvg(svgContent: string): string {
     ADD_TAGS: ['style', 'foreignObject'],
     RETURN_DOM: true,
     RETURN_DOM_FRAGMENT: false,
-  }) as HTMLElement | null;
+  }) as Element | null;
   if (!sanitizedRoot) {
     return '';
   }
