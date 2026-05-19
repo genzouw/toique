@@ -159,9 +159,9 @@ GitHub リポジトリは一度 Public にすると、その瞬間に world-read
 1. **0-1 WIF apply**:
    ```bash
    cd infra
-   export GCP_PROJECT_ID=toique-app-prod
-   export GCP_PROJECT_NUMBER=800954033936
-   export GITHUB_REPOSITORY=genzouw/toique
+   export GCP_PROJECT_ID=YOUR_GCP_PROJECT_ID
+   export GCP_PROJECT_NUMBER=YOUR_GCP_PROJECT_NUMBER
+   export GITHUB_REPOSITORY=YOUR_GITHUB_REPOSITORY
    bun install --frozen-lockfile
    bunx cdktf deploy
    ```
