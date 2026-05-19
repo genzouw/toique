@@ -51,9 +51,8 @@ function sanitizeMermaidSvg(svgContent: string): string {
   );
 
   // 2. パース済みの sourceSvg を DOM ノードとして DOMPurify に渡し、RETURN_DOM:true で
-  //    サニタイズ済み DOM を直接受け取る。文字列→DOM→文字列→DOM の往復が無くなり、
-  //    パース回数が 3 → 1 に減る。DOMPurify v3 は RETURN_DOM:true で body 相当の
-  //    ラッパー要素を返すため、SVG 要素を querySelector で取り直す（防御的）。
+  //    サニタイズ済み DOM を直接受け取る。DOMPurify v3 は RETURN_DOM:true で
+  //    ラッパー要素を返す場合があるため、SVG 要素を querySelector で取り直す（防御的）。
   const sanitizedRoot = DOMPurify.sanitize(sourceSvg, {
     USE_PROFILES: { svg: true },
     ADD_TAGS: ['style', 'foreignObject'],
