@@ -44,7 +44,10 @@ function sanitizeMermaidSvg(svgContent: string): string {
   // 1. 各 foreignObject の中身を HTML として抽出し、HTML プロファイルでサニタイズして退避。
   const sourceForeignObjects = sourceSvg.querySelectorAll('foreignObject');
   const sanitizedInners: string[] = Array.from(sourceForeignObjects).map((fo) =>
-    DOMPurify.sanitize(fo.innerHTML, { USE_PROFILES: { html: true } }),
+    DOMPurify.sanitize(fo.innerHTML, {
+      ALLOWED_TAGS: ['div', 'span', 'p', 'br'],
+      ALLOWED_ATTR: ['class', 'style', 'xmlns'],
+    }),
   );
 
   // 2. SVG 全体は SVG プロファイル + `style`/`foreignObject` の追加許可でサニタイズ。
