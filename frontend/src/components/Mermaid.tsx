@@ -25,6 +25,65 @@ interface MermaidProps {
   interactive?: boolean;
 }
 
+// Mermaid v11 のフローチャートはノードラベルを <foreignObject> 内に xhtml 名前空間の
+// <div>/<span>/<p>/<br> として描画する。DOMPurify の SVG プロファイルは xhtml 子要素を
+// 剥がしてしまうため、SVG 本体と foreignObject 内 HTML を別プロファイルで二段階に
+// サニタイズし、最後に foreignObject へ戻す。これでラベル文字を保持しつつ、XSS は
+// foreignObject 内外いずれの注入も防げる（中身は HTML profile、外側は SVG profile）。
+function sanitizeMermaidSvg(svgContent: string): string {
+  // text/html パーサーを使う。`image/svg+xml` だと <br> が XML void でないため
+  // 後続テキストノードを巻き込んで壊れる。HTML パーサーは foreignObject 内の
+  // HTML を仕様通り解釈するので Mermaid 出力をそのまま読める。
+  const parser = new DOMParser();
+  const sourceDoc = parser.parseFromString(svgContent, 'text/html');
+  const sourceSvg = sourceDoc.querySelector('svg');
+  if (!sourceSvg) {
+    return '';
+  }
+
+  // 1. 各 foreignObject の中身を HTML として抽出し、HTML プロファイルでサニタイズして退避。
+  const sourceForeignObjects = sourceSvg.querySelectorAll('foreignObject');
+  const sanitizedInners: string[] = Array.from(sourceForeignObjects).map((fo) =>
+    DOMPurify.sanitize(fo.innerHTML, {
+      ALLOWED_TAGS: ['div', 'span', 'p', 'br'],
+      ALLOWED_ATTR: ['class', 'style', 'xmlns'],
+    }),
+  );
+
+  // 2. SVG 全体は SVG プロファイル + `style`/`foreignObject` の追加許可でサニタイズ。
+  //    この段で foreignObject の中身は剥がれるが、骨格と各種属性は保護される。
+  const sanitizedSvg = DOMPurify.sanitize(svgContent, {
+    USE_PROFILES: { svg: true },
+    ADD_TAGS: ['style', 'foreignObject'],
+  });
+
+  // 3. サニタイズ済み SVG をパースし直し、空になった foreignObject へ退避したラベルを戻す。
+  const wrapper = document.createElement('div');
+  wrapper.innerHTML = sanitizedSvg;
+  const resultSvg = wrapper.querySelector('svg');
+  if (!resultSvg) {
+    return '';
+  }
+  const resultForeignObjects = resultSvg.querySelectorAll('foreignObject');
+  // サニタイズで foreignObject が除去された場合、インデックス不整合を防ぐ
+  if (resultForeignObjects.length !== sanitizedInners.length) {
+    console.warn(
+      'foreignObject count mismatch after sanitization:',
+      sanitizedInners.length,
+      '→',
+      resultForeignObjects.length,
+    );
+  }
+  resultForeignObjects.forEach((fo, i) => {
+    const inner = sanitizedInners[i];
+    if (inner) {
+      fo.innerHTML = inner;
+    }
+  });
+
+  return resultSvg.outerHTML;
+}
+
 export default function Mermaid({ chart, interactive = false }: MermaidProps) {
   const uniqueId = useId();
   const id = useRef(`mermaid-${uniqueId.replace(/:/g, '')}`);
@@ -42,15 +101,7 @@ export default function Mermaid({ chart, interactive = false }: MermaidProps) {
         if (ignore || !container) {
           return;
         }
-        const sanitized = DOMPurify.sanitize(svgContent, {
-          USE_PROFILES: { svg: true },
-          // Mermaid のフローチャートはノードラベルを <foreignObject> 内の HTML
-          // (<div>/<span>/<p>/<br>) として描画する。`USE_PROFILES.svg` のみだと
-          // <foreignObject> 自体および中身の HTML が剥がされてラベル文字や
-          // 明示的な改行 (<br>) が失われるため、必要なタグを明示的に許可する。
-          ADD_TAGS: ['style', 'foreignObject', 'div', 'span', 'p', 'br'],
-        });
-        container.innerHTML = sanitized;
+        container.innerHTML = sanitizeMermaidSvg(svgContent);
         if (interactive) {
           bindFunctions?.(container);
         }
