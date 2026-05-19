@@ -107,4 +107,4 @@ if (!isBunRuntime) {
   appLogger.info(`Toique backend (Bun) listening on :${port}`);
 }
 
-export default { fetch: app.fetch, port };
+export default Object.assign(app, { port });
