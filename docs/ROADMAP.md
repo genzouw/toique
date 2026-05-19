@@ -4,13 +4,13 @@
 
 ## 完了フェーズ
 
-| フェーズ     | 内容                                                                | 計画書                                                                 |
-| ------------ | ------------------------------------------------------------------- | ---------------------------------------------------------------------- |
-| **Phase 1**  | LINE連携基盤 (Webhook受信 + 署名検証 + DB保存 + オウム返し)         | [plan](superpowers/plans/2026-04-16-line-foundation-implementation.md) |
-| **Phase 2b** | 管理画面・最小 (ダッシュボード / チャネル管理 / 受信メッセージ一覧) | [plan](superpowers/plans/2026-04-16-frontend-minimal-admin.md)         |
-| **Phase 2a** | 認証 + マルチテナント (better-auth / tenants / tenant_members)      | [plan](superpowers/plans/2026-04-16-auth-multitenancy.md)              |
-| **Phase 3**  | フォームエンジン (JSONスキーマ駆動対話型フォーム、submissions記録)  | [plan](superpowers/plans/2026-04-16-forms-engine.md)                   |
-| **Infrastructure** | 本番ホスティング決定とCI/CDパイプライン (Cloud Run, Cloudflare Pages, GitHub Actions) | - |
+| フェーズ           | 内容                                                                                  | 計画書                                                                 |
+| ------------------ | ------------------------------------------------------------------------------------- | ---------------------------------------------------------------------- |
+| **Phase 1**        | LINE連携基盤 (Webhook受信 + 署名検証 + DB保存 + オウム返し)                           | [plan](superpowers/plans/2026-04-16-line-foundation-implementation.md) |
+| **Phase 2b**       | 管理画面・最小 (ダッシュボード / チャネル管理 / 受信メッセージ一覧)                   | [plan](superpowers/plans/2026-04-16-frontend-minimal-admin.md)         |
+| **Phase 2a**       | 認証 + マルチテナント (better-auth / tenants / tenant_members)                        | [plan](superpowers/plans/2026-04-16-auth-multitenancy.md)              |
+| **Phase 3**        | フォームエンジン (JSONスキーマ駆動対話型フォーム、submissions記録)                    | [plan](superpowers/plans/2026-04-16-forms-engine.md)                   |
+| **Infrastructure** | 本番ホスティング決定とCI/CDパイプライン (Cloud Run, Cloudflare Pages, GitHub Actions) | -                                                                      |
 
 ---
 
@@ -69,19 +69,11 @@
 
 ### セキュリティ / 運用
 
-- [ ] **秘密情報暗号化**
-  - `line_channels.channel_secret` / `channel_access_token` を pgcrypto で DB暗号化
-  - エンタープライズ向けは AWS KMS envelope encryption
-- [ ] **個人情報削除API**
-  - LINE User ID 単位で全データ物理削除 (削除要求対応)
-- [ ] **データ保持ポリシー**
-  - テナント別に保持期間設定 (デフォルト3年)
-  - 期限切れ session/submission の自動削除
-- [ ] **レート制限**
-  - Webhook以外のAPIに IP/ユーザー単位の制限
-- [ ] **監視 / アラート**
-  - エラーログ集約 (Sentry等)
-  - 稼働率監視
+- [ ] 機密情報の保存方式の強化
+- [ ] 個人情報削除フローの整備 (削除要求対応)
+- [ ] データ保持ポリシーの整備
+- [ ] レート制限の整備
+- [ ] 監視 / アラート整備 (エラーログ集約・稼働率監視)
 
 ### インフラ / 本番化
 
@@ -90,19 +82,6 @@
 - [ ] **課金・サブスク決済 (Stripe)**
   - プラン管理、利用量メトリクス
 - [ ] **多言語対応** (ja/en)
-
----
-
-## 既知の制限 (Phase 3 現時点)
-
-- LINE Channel Secret / Access Token が DB に平文保存
-- 認可は要認証のみ、ロール別制限は未実装
-- フォームスキーマはJSONエディタで手入力 (ノーコードUIなし)
-- 条件分岐は単純な choices[].next のみ
-- 画像・ファイルの回答ステップ未対応
-- オペレーターからの返信機能なし
-- パスワードリセット機能なし
-- Web版のみ (モバイルアプリなし)
 
 ---
 

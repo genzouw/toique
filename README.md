@@ -217,13 +217,6 @@ curl -s http://localhost:3000/api/v1/messages | jq
 
 - `frontend/public/ogp.png` は未配置。現状は暫定で `ogp.svg`（1200×630）をコミットしているが、主要SNS（X/Facebook/LINE）はSVGを解釈しないため、PNGに差し替える必要あり。Figma等で作成した1200×630 PNGを同ファイル名で配置すれば `index.html` の `og:image` / `twitter:image` がそのまま機能する。
 
-## Phase 1 の限界 (意図的に後回し)
+## ロードマップ
 
-以下は Phase 2 以降で対応:
-
-- 認証・認可 (現在は管理 API は誰でも叩ける)
-- LINE チャネルの secret/token の DB 暗号化
-- フォームエンジン (現在はオウム返しのみ)
-- 画像/ファイルダウンロード処理 (現在は受信ログのみ)
-- フロントエンド管理画面
-- マルチテナント (tenants テーブル)
+将来計画は [`docs/ROADMAP.md`](docs/ROADMAP.md) を参照。
