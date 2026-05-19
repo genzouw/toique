@@ -6,6 +6,7 @@ export default defineConfig({
     include: ['src/**/*.test.ts'],
     server: {
       deps: {
+        // coverage-istanbul instruments zod v4 ESM named exports incorrectly; inlining forces Vite to transform it first
         inline: ['zod'],
       },
     },
