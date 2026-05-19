@@ -165,7 +165,7 @@ GitHub リポジトリは一度 Public にすると、その瞬間に world-read
    bun install --frozen-lockfile
    bunx cdktf deploy
    ```
-   apply 後に `gcloud iam workload-identity-pools providers describe github-provider --location=global --workload-identity-pool=github-pool --project=toique-app-prod` で `attributeCondition` が `assertion.repository == 'genzouw/toique' && assertion.ref == 'refs/heads/main'` になっていること、SA Binding の principalSet にも `:ref:refs/heads/main` が含まれていることを確認。
+   apply 後に `gcloud iam workload-identity-pools providers describe github-provider --location=global --workload-identity-pool=github-pool --project=$GCP_PROJECT_ID` で `attributeCondition` が `assertion.repository == "$GITHUB_REPOSITORY" && assertion.ref == 'refs/heads/main'` になっていること、SA Binding の principalSet にも `:ref:refs/heads/main` が含まれていることを確認。
 2. **0-2 Cloudflare Token 縮小**: 上記メモ参照。新規 Token 発行後に `gh secret set CLOUDFLARE_API_TOKEN < /path/to/new-token` で置換。
 3. **0-8 課金アラート**: 上記メモ参照。最低でも GCP の月額予算アラートは公開化前に必須。
 4. **0-9 SPF/DMARC**: 上記メモ参照。SPF 未設定はなりすまし送信に悪用される恐れあり。まず `dig TXT <ドメイン>` で既存の TXT レコードを確認し、`toique.pages.dev.` のような不正な値が含まれている場合は DNS 管理画面で **削除または置換** してから `v=spf1 include:_spf.resend.com -all` を追加すること（複数の SPF TXT レコードが存在すると SPF 検証が失敗する）。
