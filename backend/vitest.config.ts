@@ -4,8 +4,13 @@ export default defineConfig({
   test: {
     environment: 'node',
     include: ['src/**/*.test.ts'],
+    server: {
+      deps: {
+        inline: ['zod'],
+      },
+    },
     coverage: {
-      provider: 'v8',
+      provider: 'istanbul',
       reporter: [['text', { maxCols: 150 }], 'json-summary'],
       exclude: [
         'node_modules/**',
