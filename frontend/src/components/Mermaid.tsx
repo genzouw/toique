@@ -50,20 +50,28 @@ function sanitizeMermaidSvg(svgContent: string): string {
     }),
   );
 
-  // 2. SVG 全体は SVG プロファイル + `style`/`foreignObject` の追加許可でサニタイズ。
-  //    この段で foreignObject の中身は剥がれるが、骨格と各種属性は保護される。
-  const sanitizedSvg = DOMPurify.sanitize(svgContent, {
+  // 2. パース済みの sourceSvg を DOM ノードとして DOMPurify に渡し、RETURN_DOM:true で
+  //    サニタイズ済み DOM を直接受け取る。文字列→DOM→文字列→DOM の往復が無くなり、
+  //    パース回数が 3 → 1 に減る。DOMPurify v3 は RETURN_DOM:true で body 相当の
+  //    ラッパー要素を返すため、SVG 要素を querySelector で取り直す（防御的）。
+  const sanitizedRoot = DOMPurify.sanitize(sourceSvg, {
     USE_PROFILES: { svg: true },
     ADD_TAGS: ['style', 'foreignObject'],
-  });
-
-  // 3. サニタイズ済み SVG をパースし直し、空になった foreignObject へ退避したラベルを戻す。
-  const wrapper = document.createElement('div');
-  wrapper.innerHTML = sanitizedSvg;
-  const resultSvg = wrapper.querySelector('svg');
+    RETURN_DOM: true,
+    RETURN_DOM_FRAGMENT: false,
+  }) as HTMLElement | null;
+  if (!sanitizedRoot) {
+    return '';
+  }
+  const resultSvg =
+    sanitizedRoot.tagName.toLowerCase() === 'svg'
+      ? sanitizedRoot
+      : sanitizedRoot.querySelector('svg');
   if (!resultSvg) {
     return '';
   }
+
+  // 3. 空になった foreignObject へ退避したラベルを戻す。
   const resultForeignObjects = resultSvg.querySelectorAll('foreignObject');
   // サニタイズで foreignObject が除去された場合、インデックス不整合を防ぐ
   if (resultForeignObjects.length !== sanitizedInners.length) {
