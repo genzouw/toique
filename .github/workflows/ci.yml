@@ -26,6 +26,10 @@ jobs:
       backend: ${{ steps.filter.outputs.backend }}
     steps:
       - uses: actions/checkout@a5ac7e51b41094c92402da3b24376905380afc29 # v4.1.6
+      # dorny/paths-filter は User アカウント所有で Marketplace verified 扱いに
+      # ならないため、本リポジトリの Actions ポリシー (selected + verified) では
+      # patterns_allowed に "dorny/paths-filter@*" を明示許可している
+      # (terraform: genzouw/genzouw.com)。差し替え時は同設定の更新も必要。
       - uses: dorny/paths-filter@fbd0ab8f3e69293af611ebaee6363fc25e6d187d # v4.0.1
         id: filter
         with:
