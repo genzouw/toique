@@ -91,8 +91,20 @@ app.route('/api/v1/admin/users', adminUsers);
 applyErrorHandlers(app);
 
 const port = Number(process.env.PORT) || 3000;
-serve({ fetch: app.fetch, port }, () => {
-  appLogger.info(`Toique backend listening on :${port}`);
-});
 
-export default app;
+// Bun ランタイム (本番 Cloud Run: `bun dist/index.js`) は default export の
+// `{ fetch, port }` を検出して自動的に listen する。`@hono/node-server` の serve()
+// を同時に呼ぶと両者が同じポートを listen し EADDRINUSE で起動失敗する。
+// Node.js ランタイム (ローカル `tsx watch`) でのみ serve() を呼ぶ。
+const isBunRuntime =
+  typeof (globalThis as { Bun?: unknown }).Bun !== 'undefined';
+
+if (!isBunRuntime) {
+  serve({ fetch: app.fetch, port }, () => {
+    appLogger.info(`Toique backend listening on :${port}`);
+  });
+} else {
+  appLogger.info(`Toique backend (Bun) listening on :${port}`);
+}
+
+export default Object.assign(app, { port });
