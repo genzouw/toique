@@ -65,6 +65,15 @@ function sanitizeMermaidSvg(svgContent: string): string {
     return '';
   }
   const resultForeignObjects = resultSvg.querySelectorAll('foreignObject');
+  // サニタイズで foreignObject が除去された場合、インデックス不整合を防ぐ
+  if (resultForeignObjects.length !== sanitizedInners.length) {
+    console.warn(
+      'foreignObject count mismatch after sanitization:',
+      sanitizedInners.length,
+      '→',
+      resultForeignObjects.length,
+    );
+  }
   resultForeignObjects.forEach((fo, i) => {
     const inner = sanitizedInners[i];
     if (inner) {
