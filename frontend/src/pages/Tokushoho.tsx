@@ -43,8 +43,13 @@ export default function Tokushoho() {
 
         <div className="bg-white border border-slate-200 rounded-md overflow-hidden">
           <dl className="divide-y divide-slate-200">
-            <Row term="販売事業者">{import.meta.env.VITE_COMPANY_NAME || 'Your Company Name'}</Row>
-            <Row term="運営統括責任者">{import.meta.env.VITE_REPRESENTATIVE_NAME || 'Representative Name'}</Row>
+            <Row term="販売事業者">
+              {import.meta.env.VITE_COMPANY_NAME || 'Your Company Name'}
+            </Row>
+            <Row term="運営統括責任者">
+              {import.meta.env.VITE_REPRESENTATIVE_NAME ||
+                'Representative Name'}
+            </Row>
             <Row term="所在地">
               ご請求をいただいた場合、遅滞なく開示いたします。
             </Row>
