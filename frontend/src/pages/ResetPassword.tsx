@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link, useSearchParams } from 'react-router';
-import { AuthLayout, AuthField } from './Login';
+import { AuthLayout } from './Login';
+import { AuthField } from '../components/AuthField';
 import SEOMetadata from '../components/SEOMetadata';
 import LoadingButton from '../components/LoadingButton';
 import { API_BASE_URL } from '../lib/api-base-url';
