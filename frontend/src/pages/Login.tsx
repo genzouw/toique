@@ -4,6 +4,7 @@ import { signIn } from '../lib/auth-client';
 import SEOMetadata from '../components/SEOMetadata';
 import LoadingButton from '../components/LoadingButton';
 import { AuthField } from '../components/AuthField';
+import { AuthLayout } from '../components/AuthLayout';
 
 export default function Login() {
   const navigate = useNavigate();
@@ -68,31 +69,5 @@ export default function Login() {
         </Link>
       </div>
     </AuthLayout>
-  );
-}
-
-export function AuthLayout({
-  title,
-  children,
-}: {
-  title: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <div className="min-h-full flex flex-col items-center justify-center bg-slate-50 p-6">
-      <div className="w-full max-w-sm bg-white border border-slate-200 rounded-lg p-6 shadow-sm">
-        <div className="text-xl font-bold text-slate-900">Toique</div>
-        <h1 className="mt-4 text-lg font-semibold text-slate-900">{title}</h1>
-        <div className="mt-6">{children}</div>
-      </div>
-      <a
-        href="/help"
-        target="_blank"
-        rel="noopener noreferrer"
-        className="mt-6 text-xs text-slate-500 hover:text-slate-900 underline"
-      >
-        使い方・ヘルプを見る
-      </a>
-    </div>
   );
 }

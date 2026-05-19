@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router';
 import { signUp } from '../lib/auth-client';
-import { AuthLayout } from './Login';
+import { AuthLayout } from '../components/AuthLayout';
 import { AuthField } from '../components/AuthField';
 import SEOMetadata from '../components/SEOMetadata';
 import LoadingButton from '../components/LoadingButton';
