@@ -26,19 +26,19 @@ jobs:
         with:
           persist-credentials: false
 
+      - name: Install Trivy
+        run: curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh -s -- -b /usr/local/bin
+
       - name: Run Trivy (vulnerabilities + misconfig)
-        uses: aquasecurity/trivy-action@915b19bbe73b92a6cf82a1bc12b087c9a19a5fe2 # 0.28.0
-        with:
-          scan-type: 'fs'
-          scan-ref: '.'
-          format: 'sarif'
-          output: 'trivy-fs.sarif'
-          severity: 'CRITICAL,HIGH'
-          ignore-unfixed: true
-          # 依存関係 (package-lock / bun.lock) と Dockerfile / IaC の両方を検出
-          scanners: 'vuln,misconfig,secret'
-          # スキャン途中でエラーが出ても SARIF アップロードまで進めたいので、PR では失敗扱いにしない
-          exit-code: '0'
+        run: |
+          trivy fs \
+            --format sarif \
+            --output trivy-fs.sarif \
+            --severity CRITICAL,HIGH \
+            --ignore-unfixed \
+            --scanners vuln,misconfig,secret \
+            --exit-code 0 \
+            .
 
       - name: Upload SARIF to GitHub Security
         if: always()
