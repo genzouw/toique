@@ -30,8 +30,13 @@ jobs:
         id: actionlint
         run: |
           set -euo pipefail
-          bash <(curl -fsSL https://raw.githubusercontent.com/rhysd/actionlint/v1.7.7/scripts/download-actionlint.bash) 1.7.7
-          echo "executable=$(pwd)/actionlint" >> "$GITHUB_OUTPUT"
+          VERSION=1.7.7
+          TARBALL="actionlint_${VERSION}_linux_amd64.tar.gz"
+          curl -fsSL -o "/tmp/${TARBALL}" "https://github.com/rhysd/actionlint/releases/download/v${VERSION}/${TARBALL}"
+          curl -fsSL -o /tmp/checksums.txt "https://github.com/rhysd/actionlint/releases/download/v${VERSION}/actionlint_${VERSION}_checksums.txt"
+          cd /tmp && grep "${TARBALL}" checksums.txt | sha256sum -c -
+          tar -xzf "/tmp/${TARBALL}" -C /tmp actionlint
+          echo "executable=/tmp/actionlint" >> "$GITHUB_OUTPUT"
 
       - name: Run actionlint
         run: |
