@@ -1,0 +1,15 @@
+{
+  "$schema": "https://unpkg.com/knip@5/schema-jsonc.json",
+  "entry": [
+    "src/index.ts",
+    "src/**/*.test.ts",
+    "drizzle.config.ts",
+    "vitest.config.ts",
+    "eslint.config.js",
+  ],
+  "project": ["src/**/*.ts"],
+  "ignoreDependencies": [
+    // esbuild は overrides 経由で再ピン留めしているだけで直接 import しない
+    "esbuild",
+  ],
+}

@@ -220,3 +220,48 @@ curl -s http://localhost:3000/api/v1/messages | jq
 ## ロードマップ
 
 将来計画は [`docs/ROADMAP.md`](docs/ROADMAP.md) を参照。
+
+## 品質・セキュリティの仕組み
+
+### CI / CD
+
+| Workflow           | 目的                                                                           |
+| ------------------ | ------------------------------------------------------------------------------ |
+| `ci.yml`           | frontend / backend の lint / typecheck / format / test / build (Docker ベース) |
+| `deploy.yml`       | Cloud Run / Cloudflare Pages へのデプロイ                                      |
+| `restore-test.yml` | DB バックアップの月次復旧検証                                                  |
+
+### 静的解析・セキュリティスキャン
+
+| Workflow           | 目的                                                                                        |
+| ------------------ | ------------------------------------------------------------------------------------------- |
+| `codeql.yml`       | GitHub CodeQL (JS/TS) による静的解析。push / PR / 週次                                      |
+| `trivy.yml`        | 依存関係 / IaC / Dockerfile / secret の脆弱性スキャン。SARIF を Security タブにアップロード |
+| `gitleaks.yml`     | コミット履歴を含むシークレットスキャン                                                      |
+| `actionlint.yml`   | GitHub Actions YAML の lint                                                                 |
+| `markdownlint.yml` | Markdown の lint (`.markdownlint-cli2.jsonc`)                                               |
+| `knip.yml`         | 未使用コード・未使用依存の検出                                                              |
+
+### コードレビュー
+
+- **CodeRabbit** (`.coderabbit.yaml`): profile=assertive。本番自動デプロイ運用のため高感度
+- **Gemini Code Assist** (`.gemini/config.yaml` + `.gemini/styleguide.md`): 日本語レビュー
+
+### PR / リポジトリ運用
+
+| 仕組み                     | 説明                                                                                                                                              |
+| -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `PULL_REQUEST_TEMPLATE.md` | PR 説明の標準テンプレート                                                                                                                         |
+| `stale.yml`                | 最終更新から 14 日で `stale`、最終更新から 16 日で自動クローズ（= stale 付与から約 2 日後）。`WIP` / `do-not-close` / `dependencies` ラベルは除外 |
+| `pr_conflict_notify.yml`   | main push 時 / 日次で全 open PR のコンフリクト検出 → author へ通知                                                                                |
+| `dependabot.yml`           | npm / github-actions / docker を週次でグループ化 PR                                                                                               |
+| `CODEOWNERS`               | レビュー自動アサイン                                                                                                                              |
+
+### ローカル開発時の品質ゲート
+
+- **Husky** (`.husky/pre-commit`): lint-staged → 変更が backend / frontend に及ぶ場合は typecheck + test も実行
+- **lint-staged** (ルート `package.json`): backend / frontend それぞれ ESLint --fix + Prettier
+
+### 脆弱性報告
+
+[`SECURITY.md`](SECURITY.md) を参照。
