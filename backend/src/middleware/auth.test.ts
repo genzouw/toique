@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { Hono } from 'hono';
-import { requireAuth, requireTenant } from './auth.js';
+import { isOperatorEmail, requireAuth, requireTenant } from './auth.js';
 import { auth } from '../auth/better-auth.js';
 import db from '../db.js';
 
@@ -103,50 +103,36 @@ describe('requireAuth middleware', () => {
 });
 
 describe('isOperatorEmail', () => {
-  beforeEach(() => {
-    vi.resetModules();
-  });
-
   afterEach(() => {
     vi.unstubAllEnvs();
   });
 
-  async function loadIsOperatorEmail(operatorEmails: string) {
-    vi.stubEnv('OPERATOR_EMAILS', operatorEmails);
-    const { isOperatorEmail } = await import('./auth.js');
-    return isOperatorEmail;
-  }
-
-  it('returns true if email is in OPERATOR_EMAILS', async () => {
-    const isOperatorEmail = await loadIsOperatorEmail(
-      'admin@example.com,test@example.com',
-    );
+  it('returns true if email is in OPERATOR_EMAILS', () => {
+    vi.stubEnv('OPERATOR_EMAILS', 'admin@example.com,test@example.com');
     expect(isOperatorEmail('admin@example.com')).toBe(true);
     expect(isOperatorEmail('test@example.com')).toBe(true);
   });
 
-  it('is case-insensitive and trims whitespace', async () => {
-    const isOperatorEmail = await loadIsOperatorEmail(
-      ' admin@EXAMPLE.com ,  test@example.com',
-    );
+  it('is case-insensitive and trims whitespace', () => {
+    vi.stubEnv('OPERATOR_EMAILS', ' admin@EXAMPLE.com ,  test@example.com');
     expect(isOperatorEmail('ADMIN@example.com')).toBe(true);
     expect(isOperatorEmail('  test@example.com  ')).toBe(true);
   });
 
-  it('returns false for unknown emails', async () => {
-    const isOperatorEmail = await loadIsOperatorEmail('admin@example.com');
+  it('returns false for unknown emails', () => {
+    vi.stubEnv('OPERATOR_EMAILS', 'admin@example.com');
     expect(isOperatorEmail('unknown@example.com')).toBe(false);
   });
 
-  it('returns false for null, undefined, or empty string', async () => {
-    const isOperatorEmail = await loadIsOperatorEmail('admin@example.com');
+  it('returns false for null, undefined, or empty string', () => {
+    vi.stubEnv('OPERATOR_EMAILS', 'admin@example.com');
     expect(isOperatorEmail(null)).toBe(false);
     expect(isOperatorEmail(undefined)).toBe(false);
     expect(isOperatorEmail('')).toBe(false);
   });
 
-  it('handles empty OPERATOR_EMAILS gracefully', async () => {
-    const isOperatorEmail = await loadIsOperatorEmail('');
+  it('handles empty OPERATOR_EMAILS gracefully', () => {
+    vi.stubEnv('OPERATOR_EMAILS', '');
     expect(isOperatorEmail('admin@example.com')).toBe(false);
   });
 });
