@@ -7,7 +7,8 @@
     "lint": "bun --cwd backend run lint && bun --cwd frontend run lint",
     "format:check": "bun --cwd backend run format:check && bun --cwd frontend run format:check",
     "typecheck": "bun --cwd backend run typecheck && bun --cwd frontend run typecheck",
-    "test": "bun --cwd backend run test && bun --cwd frontend run test"
+    "test": "bun --cwd backend run test && bun --cwd frontend run test",
+    "knip": "bun --cwd backend run knip && bun --cwd frontend run knip"
   },
   "devDependencies": {
     "husky": "^9.1.0",

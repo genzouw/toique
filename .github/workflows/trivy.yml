@@ -1,0 +1,46 @@
+name: Trivy Scan
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  schedule:
+    # 毎週月曜 04:00 JST (= 日曜 19:00 UTC) に再スキャンして新規 CVE を拾う
+    - cron: '0 19 * * 0'
+
+concurrency:
+  group: trivy-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  security-events: write
+
+jobs:
+  fs-scan:
+    name: Trivy filesystem scan
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@a5ac7e51b41094c92402da3b24376905380afc29 # v4.1.6
+
+      - name: Run Trivy (vulnerabilities + misconfig)
+        uses: aquasecurity/trivy-action@0.28.0
+        with:
+          scan-type: 'fs'
+          scan-ref: '.'
+          format: 'sarif'
+          output: 'trivy-fs.sarif'
+          severity: 'CRITICAL,HIGH'
+          ignore-unfixed: true
+          # 依存関係 (package-lock / bun.lock) と Dockerfile / IaC の両方を検出
+          scanners: 'vuln,misconfig,secret'
+          # スキャン途中でエラーが出ても SARIF アップロードまで進めたいので、PR では失敗扱いにしない
+          exit-code: '0'
+
+      - name: Upload SARIF to GitHub Security
+        if: always()
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: 'trivy-fs.sarif'
+          category: trivy-fs
