@@ -28,7 +28,7 @@ jobs:
 
       - name: Install Trivy
         env:
-          TRIVY_VERSION: v0.52.2
+          TRIVY_VERSION: v0.70.0
         run: |
           ARCH=Linux-64bit
           BASE_URL="https://github.com/aquasecurity/trivy/releases/download/${TRIVY_VERSION}"
