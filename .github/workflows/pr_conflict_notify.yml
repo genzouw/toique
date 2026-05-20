@@ -43,6 +43,7 @@ jobs:
             }
 
             const conflictedPRs = [];
+            const mergeableByPrNumber = new Map();
 
             for (const pr of pullRequests) {
               console.log(`\n🔎 Checking PR #${pr.number}: ${pr.title}`);
@@ -70,8 +71,11 @@ jobs:
                 mergeable = prDetailRetry.mergeable;
               }
 
+              mergeableByPrNumber.set(pr.number, mergeable);
+
               if (mergeable === null) {
                 console.log(`⚠️ WARNING: Mergeable status is still null for PR #${pr.number} after ${maxRetries} retries. Manual check may be required.`);
+                continue;
               }
 
               console.log(`  - Mergeable: ${mergeable}`);
@@ -91,9 +95,10 @@ jobs:
             console.log(`\n📊 Summary: ${conflictedPRs.length} PR(s) with conflicts`);
 
             // コンフリクトが解消された PR の古いコメントを削除
+            // mergeable === true が確認できた PR のみを対象にする（null の PR は除外）
             console.log('\n🧹 Checking for resolved conflicts...');
             const nonConflictedPRNumbers = pullRequests
-              .filter(pr => !conflictedPRs.some(cp => cp.number === pr.number))
+              .filter(pr => mergeableByPrNumber.get(pr.number) === true)
               .map(pr => pr.number);
 
             const botCommentMarker = '<!-- pr-conflict-notify -->';
