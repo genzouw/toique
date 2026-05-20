@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router';
 import { api } from '../lib/api';
-import { AuthLayout } from './Login';
+import { AuthLayout } from '../components/AuthLayout';
 import { AuthField } from '../components/AuthField';
 import LoadingButton from '../components/LoadingButton';
 

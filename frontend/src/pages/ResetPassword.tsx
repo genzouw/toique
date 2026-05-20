@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link, useSearchParams } from 'react-router';
-import { AuthLayout } from './Login';
+import { AuthLayout } from '../components/AuthLayout';
 import { AuthField } from '../components/AuthField';
 import SEOMetadata from '../components/SEOMetadata';
 import LoadingButton from '../components/LoadingButton';

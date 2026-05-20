@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { Link, useSearchParams } from 'react-router';
-import { AuthLayout } from './Login';
+import { AuthLayout } from '../components/AuthLayout';
 import SEOMetadata from '../components/SEOMetadata';
 import { API_BASE_URL } from '../lib/api-base-url';
 

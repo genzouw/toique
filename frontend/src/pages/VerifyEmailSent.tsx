@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link, useLocation } from 'react-router';
-import { AuthLayout } from './Login';
+import { AuthLayout } from '../components/AuthLayout';
 import SEOMetadata from '../components/SEOMetadata';
 import LoadingButton from '../components/LoadingButton';
 import { API_BASE_URL } from '../lib/api-base-url';
