@@ -46,13 +46,19 @@ const getExpectedHash = (val: string | undefined) =>
 const expectedUsernameHash = getExpectedHash(process.env.ADMIN_USERNAME);
 const expectedPasswordHash = getExpectedHash(process.env.ADMIN_PASSWORD);
 
+function getOperatorEmailSet(): ReadonlySet<string> {
+  const raw = process.env.OPERATOR_EMAILS ?? '';
+  return new Set(
+    raw
+      .split(',')
+      .map((s) => s.trim().toLowerCase())
+      .filter(Boolean),
+  );
+}
+
 export function isOperatorEmail(email: string | null | undefined): boolean {
   if (!email) return false;
-  const allowlist = (process.env.OPERATOR_EMAILS ?? '')
-    .split(',')
-    .map((s) => s.trim().toLowerCase())
-    .filter(Boolean);
-  return allowlist.includes(email.trim().toLowerCase());
+  return getOperatorEmailSet().has(email.trim().toLowerCase());
 }
 
 export const requireAuth: MiddlewareHandler = async (c, next) => {
