@@ -31,13 +31,6 @@ declare module 'hono' {
   }
 }
 
-const OPERATOR_ALLOWLIST: ReadonlySet<string> = new Set(
-  (process.env.OPERATOR_EMAILS ?? '')
-    .split(',')
-    .map((s) => s.trim().toLowerCase())
-    .filter(Boolean),
-);
-
 if (
   process.env.NODE_ENV === 'production' &&
   (!process.env.ADMIN_USERNAME || !process.env.ADMIN_PASSWORD)
@@ -55,7 +48,11 @@ const expectedPasswordHash = getExpectedHash(process.env.ADMIN_PASSWORD);
 
 export function isOperatorEmail(email: string | null | undefined): boolean {
   if (!email) return false;
-  return OPERATOR_ALLOWLIST.has(email.trim().toLowerCase());
+  const allowlist = (process.env.OPERATOR_EMAILS ?? '')
+    .split(',')
+    .map((s) => s.trim().toLowerCase())
+    .filter(Boolean);
+  return allowlist.includes(email.trim().toLowerCase());
 }
 
 export const requireAuth: MiddlewareHandler = async (c, next) => {
