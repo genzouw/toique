@@ -2,15 +2,14 @@ import js from '@eslint/js';
 import tseslint from 'typescript-eslint';
 import reactHooks from 'eslint-plugin-react-hooks';
 import reactRefresh from 'eslint-plugin-react-refresh';
+import playwright from 'eslint-plugin-playwright';
 
 export default tseslint.config(
   {
-    // e2e/ は Playwright のテストコードで lint 対象外（独自実行レイヤ）。
     // playwright-report/, test-results/, .wrangler/ は実行成果物。
     ignores: [
       'dist/',
       'scripts/',
-      'e2e/',
       'playwright-report/',
       'test-results/',
       '.wrangler/',
@@ -47,5 +46,9 @@ export default tseslint.config(
     rules: {
       'no-restricted-syntax': 'off',
     },
+  },
+  {
+    files: ['e2e/**/*.ts'],
+    ...playwright.configs['flat/recommended'],
   },
 );
