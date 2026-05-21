@@ -73,6 +73,7 @@ for (const path of PUBLIC_ROUTES) {
     // SSE/WebSocket 接続が増えてタイムアウトする場合は、`domcontentloaded` +
     // 短い grace period か、CDP 経由 `Network.loadingFailed` (blockedReason: csp)
     // 直接観測への置き換えを検討する。
+    // eslint-disable-next-line playwright/no-networkidle
     const response = await page.goto(path, { waitUntil: 'networkidle' });
     expect(response, `no response for ${path}`).not.toBeNull();
     expect(response!.status(), `HTTP status for ${path}`).toBeLessThan(400);
