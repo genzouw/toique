@@ -111,6 +111,14 @@ bunx cdktf import \
   --resource-type google_service_account_iam_member \
   --resource-id "projects/$GCP_PROJECT_ID/serviceAccounts/github-deployer@$GCP_PROJECT_ID.iam.gserviceaccount.com roles/iam.workloadIdentityUser principal://iam.googleapis.com/projects/$GCP_PROJECT_NUMBER/locations/global/workloadIdentityPools/github-pool/subject/repo:$GITHUB_REPOSITORY:ref:refs/heads/main" \
   --resource-name github-deployer-wif-binding
+
+# 8. Secret Manager シークレット本体 (4件)
+for secret in BACKUP_POSTGRES_DB BACKUP_POSTGRES_USER BACKUP_POSTGRES_PASSWORD BACKUP_POSTGRES_HOST; do
+  bunx cdktf import \
+    --resource-type google_secret_manager_secret \
+    --resource-id "projects/$GCP_PROJECT_ID/secrets/$secret" \
+    --resource-name "backup-secret-$secret"
+done
 ```
 
 import 後に `bunx cdktf diff` を実行し、差分が以下の意図したものだけであることを確認してから `cdktf deploy` する:
