@@ -74,5 +74,3 @@ export function AuthField({
     </div>
   );
 }
-
-export default AuthField;
