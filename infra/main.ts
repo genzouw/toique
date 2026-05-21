@@ -5,6 +5,7 @@ import { StorageBucket } from '@cdktf/provider-google/lib/storage-bucket';
 import { StorageBucketIamMember } from '@cdktf/provider-google/lib/storage-bucket-iam-member';
 import { ServiceAccount } from '@cdktf/provider-google/lib/service-account';
 import { ProjectIamMember } from '@cdktf/provider-google/lib/project-iam-member';
+import { SecretManagerSecret } from '@cdktf/provider-google/lib/secret-manager-secret';
 import { SecretManagerSecretIamMember } from '@cdktf/provider-google/lib/secret-manager-secret-iam-member';
 import { CloudRunV2Job } from '@cdktf/provider-google/lib/cloud-run-v2-job';
 import { CloudRunV2JobIamMember } from '@cdktf/provider-google/lib/cloud-run-v2-job-iam-member';
@@ -86,6 +87,19 @@ class MyStack extends TerraformStack {
     // Cloud Run Job 実行権限。
     // Job リソース単位の IAM binding は対象リソースの定義が必要なため、
     // backupJob の宣言後に定義している。
+
+    // --- Secret Manager シークレット本体の定義 ---
+    // 既存の手動作成シークレットは `terraform import` で CDKTF 管理下に取り込む。
+    // シークレット値は CDKTF で管理せず、値の更新は別の運用フローで行う。
+    backupSecrets.forEach(({ secretName }) => {
+      new SecretManagerSecret(this, `backup-secret-${secretName}`, {
+        project: projectId,
+        secretId: secretName,
+        replication: {
+          auto: {},
+        },
+      });
+    });
 
     // Secret Manager 読み取り権限（バックアップ用シークレット限定）
     backupSecrets.forEach(({ secretName }) => {
