@@ -1,4 +1,4 @@
-import { eq, gte, and, sql } from 'drizzle-orm';
+import { eq, gte, and, count } from 'drizzle-orm';
 import db from '../db.js';
 import { lineChannels, forms, submissions, tenantMembers } from '../schema.js';
 import { getPlanLimits } from './plan-config.js';
@@ -26,21 +26,21 @@ async function countResource(
   switch (resource) {
     case 'lineChannels': {
       const [r] = await db
-        .select({ count: sql<number>`count(*)::int` })
+        .select({ count: count() })
         .from(lineChannels)
         .where(eq(lineChannels.tenantId, tenantId));
       return r.count;
     }
     case 'forms': {
       const [r] = await db
-        .select({ count: sql<number>`count(*)::int` })
+        .select({ count: count() })
         .from(forms)
         .where(eq(forms.tenantId, tenantId));
       return r.count;
     }
     case 'submissionsPerMonth': {
       const [r] = await db
-        .select({ count: sql<number>`count(*)::int` })
+        .select({ count: count() })
         .from(submissions)
         .where(
           and(
@@ -52,7 +52,7 @@ async function countResource(
     }
     case 'members': {
       const [r] = await db
-        .select({ count: sql<number>`count(*)::int` })
+        .select({ count: count() })
         .from(tenantMembers)
         .where(eq(tenantMembers.tenantId, tenantId));
       return r.count;
