@@ -100,13 +100,12 @@ export const auth = betterAuth({
       // PostgreSQL の gen_random_uuid() default に任せる (schema 側で uuid 型使用のため)
       generateId: false,
     },
-    // フロントエンド(Cloudflare Pages)とバックエンド(Cloud Run)が異なるドメインのため
-    // クロスオリジンでCookieを送受信できるよう設定
+    // 本番環境（同一親ドメインのサブドメイン間共有）では Lax を使用しセキュリティを強化
     crossSubDomainCookies: {
-      enabled: false,
+      enabled: process.env.NODE_ENV === 'production',
     },
     defaultCookieAttributes: {
-      sameSite: 'none',
+      sameSite: process.env.NODE_ENV === 'production' ? 'lax' : 'none',
       secure: true,
     },
   },

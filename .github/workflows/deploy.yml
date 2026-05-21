@@ -239,7 +239,7 @@ jobs:
           bun install --frozen-lockfile
           bun run build
         env:
-          VITE_API_URL: ${{ needs.deploy-backend.outputs.service_url }}
+          VITE_API_URL: https://api.toique.genzouw.com
           VITE_GA_TRACKING_ID: ${{ vars.VITE_GA_TRACKING_ID }}
       - name: Deploy to Cloudflare Pages
         uses: cloudflare/wrangler-action@ebbaa1584979971c8614a24965b4405ff95890e0 # v4.0.0
