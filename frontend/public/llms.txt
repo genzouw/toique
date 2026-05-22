@@ -1,0 +1,17 @@
+# Toique
+
+LINE問い合わせ受付 SaaS のフロントエンドおよびバックエンドシステム。
+
+## Architecture Overview
+- Frontend: React 19, Vite, Tailwind CSS 4
+- Backend: Bun, Hono, Drizzle ORM, PostgreSQL
+- Auth: better-auth
+
+## Key Concepts
+- LINE Webhook Integration: Receives user queries and provides automated or manual responses.
+- Dynamic Form Engine: JSON schema-driven interactive forms triggered by keywords.
+- Multi-tenant support: Data isolation per tenant.
+
+## Additional Resources
+- GitHub Repository: https://github.com/genzouw/ptasuku (Reference)
+- Documentation: `/docs/superpowers/specs/2026-04-16-toique-line-inquiry-saas-design.md`
