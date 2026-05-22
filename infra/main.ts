@@ -291,6 +291,9 @@ class MyStack extends TerraformStack {
     });
 
     // --- Artifact Registry リポジトリ定義とクリーンアップポリシーの設定 ---
+    // クリーンアップポリシー: GCP の仕様では KEEP ルールが DELETE ルールよりも優先評価される。
+    // そのため keep-latest-10 にマッチする最新 10 バージョンは何があっても保護され、
+    // それ以外のイメージが UNTAGGED (1 日経過) / 30 日経過の DELETE ルールで掃除される。
     new ArtifactRegistryRepository(this, 'artifact-repo', {
       project: projectId,
       location: region,
