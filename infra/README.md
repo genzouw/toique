@@ -24,6 +24,7 @@ CDKTF (TypeScript) で書かれた GCP インフラ定義。
 | `GCP_PROJECT_NUMBER` | WIF principal URL で利用するプロジェクト番号 | -                    | **必須** (未設定なら `cdktf synth` がエラーで落ちる) |
 | `GCP_REGION`         | Cloud Run / GCS の region                    | `asia-northeast1`    | 任意                                                 |
 | `GITHUB_REPOSITORY`  | WIF が認可する `<owner>/<repo>`              | -                    | **必須** (未設定なら `cdktf synth` がエラーで落ちる) |
+| `ARTIFACT_REPO`      | Artifact Registry リポジトリ名               | `toique`             | 任意 (既定値以外を使う場合は import 手順でも必須)    |
 
 未設定の場合はそれぞれ動かない（synth はできるが apply 時に GCP 側でエラー）。
 
@@ -38,6 +39,8 @@ export GCP_PROJECT_ID=your-gcp-project-id
 export GCP_PROJECT_NUMBER=123456789012
 export GCP_REGION=asia-northeast1
 export GITHUB_REPOSITORY=owner/repo
+# 既定の `toique` 以外のリポジトリ名を使う場合のみ export
+# export ARTIFACT_REPO=your-artifact-repo
 
 # 認証 (個人 or 適切な権限を持つアカウント)
 gcloud auth login
@@ -186,5 +189,19 @@ gcloud run jobs get-iam-policy db-backup \
   --region=$GCP_REGION --project=$GCP_PROJECT_ID
 # 期待: roles/run.invoker に serviceAccount:backup-job@... が 1 件
 ```
+
+### Artifact Registry クリーンアップポリシー初回適用時の注意
+
+`infra/main.ts` で定義している `cleanupPolicies` は `cdktf deploy` の **適用と同時に評価され、条件にマッチしたバージョンを実削除する** 仕様（Cleanup Policy は Dry-run モードを明示しない限り即時削除モード）。本リポジトリでは以下の3ルールを設定している:
+
+- `keep-latest-10` (KEEP): 最新10件は何があっても保持
+- `delete-untagged` (DELETE): タグなしイメージを1日後に削除
+- `delete-older-than-30-days` (DELETE): 30日経過したイメージを削除（KEEP > DELETE で評価されるため最新10件は守られる）
+
+**初回 `cdktf deploy` の挙動**:
+
+既存環境で 30 日以上前のタグ付きイメージが残っている場合、初回 apply の瞬間にそれらが（最新10件を除き）すべて削除される。ロールバック先として古いタグを参照していた場合は事前に対象を確認しておくこと。
+
+挙動を事前に確認したい場合は、`infra/main.ts` の `ArtifactRegistryRepository` リソースに一時的に `cleanupPolicyDryRun: true` を追加して apply し、Cloud Logging の `artifactregistry.googleapis.com/cleanup-policy-events` で削除候補をログ確認した上でフラグを外す二段階運用も可能（[Cleanup policy dry run](https://cloud.google.com/artifact-registry/docs/repositories/cleanup-policy#dry-run) 参照）。
 
 ## バックアップ関連の運用は `docs/backup.md` を参照
