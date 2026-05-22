@@ -27,7 +27,8 @@ CDKTF (TypeScript) で書かれた GCP インフラ定義。
 | `ARTIFACT_REPO`      | Artifact Registry リポジトリ名                                                       | `toique`             | 任意 (既定値以外を使う場合は import 手順でも必須)    |
 | `TF_STATE_BUCKET`    | Terraform state を保管する GCS バケット名 (Backend バケット、CDKTF 管理外で事前作成) | -                    | **必須** (未設定なら `cdktf synth` がエラーで落ちる) |
 
-未設定の場合はそれぞれ動かない（synth はできるが apply 時に GCP 側でエラー）。
+未設定の必須環境変数がある場合は `cdktf synth` が fail-fast でエラーになる。
+任意項目のみ未設定なら synth は可能だが、実行時に必要な値が不足すると apply 時に GCP 側でエラーになる。
 
 ## 通常運用
 
