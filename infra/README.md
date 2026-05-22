@@ -119,6 +119,12 @@ for secret in BACKUP_POSTGRES_DB BACKUP_POSTGRES_USER BACKUP_POSTGRES_PASSWORD B
     --resource-id "projects/$GCP_PROJECT_ID/secrets/$secret" \
     --resource-name "backup-secret-$secret"
 done
+
+# 9. Artifact Registry リポジトリ
+bunx cdktf import \
+  --resource-type google_artifact_registry_repository \
+  --resource-id "projects/$GCP_PROJECT_ID/locations/$GCP_REGION/repositories/$ARTIFACT_REPO" \
+  --resource-name "artifact-repo"
 ```
 
 import 後に `bunx cdktf diff` を実行し、差分が以下の意図したものだけであることを確認してから `cdktf deploy` する:

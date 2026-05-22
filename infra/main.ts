@@ -13,6 +13,7 @@ import { CloudSchedulerJob } from '@cdktf/provider-google/lib/cloud-scheduler-jo
 import { IamWorkloadIdentityPool } from '@cdktf/provider-google/lib/iam-workload-identity-pool';
 import { IamWorkloadIdentityPoolProvider } from '@cdktf/provider-google/lib/iam-workload-identity-pool-provider';
 import { ServiceAccountIamMember } from '@cdktf/provider-google/lib/service-account-iam-member';
+import { ArtifactRegistryRepository } from '@cdktf/provider-google/lib/artifact-registry-repository';
 
 class MyStack extends TerraformStack {
   constructor(scope: Construct, id: string) {
@@ -283,6 +284,40 @@ class MyStack extends TerraformStack {
       serviceAccountId: githubDeployerSa.name,
       role: 'roles/iam.workloadIdentityUser',
       member: `principal://iam.googleapis.com/projects/${projectNumber}/locations/global/workloadIdentityPools/${githubPool.workloadIdentityPoolId}/subject/repo:${githubRepository}:ref:refs/heads/main`,
+    });
+
+    // --- Artifact Registry リポジトリ定義とクリーンアップポリシーの設定 ---
+    const artifactRepoName = process.env.ARTIFACT_REPO || 'toique';
+    new ArtifactRegistryRepository(this, 'artifact-repo', {
+      project: projectId,
+      location: region,
+      repositoryId: artifactRepoName,
+      format: 'DOCKER',
+      cleanupPolicies: [
+        {
+          id: 'keep-latest-10',
+          action: 'KEEP',
+          mostRecentVersions: {
+            keepCount: 10,
+          },
+        },
+        {
+          id: 'delete-untagged',
+          action: 'DELETE',
+          condition: {
+            tagState: 'UNTAGGED',
+            olderThan: '86400s', // 1日
+          },
+        },
+        {
+          id: 'delete-older-than-30-days',
+          action: 'DELETE',
+          condition: {
+            tagState: 'ANY',
+            olderThan: '2592000s', // 30日
+          },
+        },
+      ],
     });
   }
 }
