@@ -97,6 +97,10 @@ gcloud artifacts repositories create $ARTIFACT_REPO \
 
 # コスト削減のためのクリーンアップポリシー（自動削除ルール）の設定
 # 最新10件のイメージを保持し、タグなしイメージや30日以上経過した古いイメージを自動で削除します。
+#
+# `infra/gcp-cleanup-policy.json` は CDKTF (`infra/main.ts`) 側でも読み込んで利用する
+# Single Source of Truth (SSOT)。ポリシーを変更するときは JSON を編集すれば gcloud 経由と
+# CDKTF 経由の両方に自動で反映される。
 gcloud artifacts repositories set-cleanup-policies $ARTIFACT_REPO \
   --location=$GCP_REGION \
   --policy=infra/gcp-cleanup-policy.json
