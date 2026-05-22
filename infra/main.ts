@@ -1,5 +1,5 @@
 import { Construct } from 'constructs';
-import { App, TerraformStack } from 'cdktf';
+import { App, TerraformStack, GcsBackend } from 'cdktf';
 import { GoogleProvider } from '@cdktf/provider-google/lib/provider';
 import { StorageBucket } from '@cdktf/provider-google/lib/storage-bucket';
 import { StorageBucketIamMember } from '@cdktf/provider-google/lib/storage-bucket-iam-member';
@@ -43,6 +43,19 @@ class MyStack extends TerraformStack {
     // WIF principal:// URL の構築に必須。誤った projectNumber を指定すると
     // 別プロジェクトの pool に binding しようとして失敗する。
     const projectNumber = requireEnv('GCP_PROJECT_NUMBER');
+
+    // Terraform state を保管する GCS バケット名。公開リポジトリのため
+    // バケット名はコードに直書きせず環境変数で外部化する。
+    const tfStateBucket = requireEnv('TF_STATE_BUCKET');
+
+    // --- Terraform Backend (GCS) ---
+    // ローカル state は端末故障で消失するリスクがあるため、CDKTF 管理の state は
+    // GCS バケットで一元化する。Backend バケット自体は CDKTF 管理外で先行作成し
+    // (chicken-and-egg 回避)、Versioning + Lifecycle で state 履歴を保護する。
+    new GcsBackend(this, {
+      bucket: tfStateBucket,
+      prefix: id,
+    });
 
     // バックアップジョブが参照するシークレット定義（env 名と Secret Manager 上の名前のマッピング）
     const backupSecrets = [
