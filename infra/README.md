@@ -23,7 +23,7 @@ CDKTF (TypeScript) で書かれた GCP インフラ定義。
 | `GCP_PROJECT_ID`     | 対象 GCP プロジェクト ID                                                             | `example-project-id` | 任意 (apply 時に必要)                                |
 | `GCP_PROJECT_NUMBER` | WIF principal URL で利用するプロジェクト番号                                         | -                    | **必須** (未設定なら `cdktf synth` がエラーで落ちる) |
 | `GCP_REGION`         | Cloud Run / GCS の region                                                            | `asia-northeast1`    | 任意                                                 |
-| `GITHUB_REPOSITORY`  | WIF が認可する `<owner>/<repo>`                                                      | -                    | **必須** (未設定なら `cdktf synth` がエラーで落ちる) |
+| `GITHUB_REPOSITORY`  | WIF が認可する `OWNER/REPO`                                                          | -                    | **必須** (未設定なら `cdktf synth` がエラーで落ちる) |
 | `ARTIFACT_REPO`      | Artifact Registry リポジトリ名                                                       | `toique`             | 任意 (既定値以外を使う場合は import 手順でも必須)    |
 | `TF_STATE_BUCKET`    | Terraform state を保管する GCS バケット名 (Backend バケット、CDKTF 管理外で事前作成) | -                    | **必須** (未設定なら `cdktf synth` がエラーで落ちる) |
 
