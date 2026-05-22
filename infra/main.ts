@@ -1,3 +1,5 @@
+import * as fs from 'fs';
+import * as path from 'path';
 import { Construct } from 'constructs';
 import { App, TerraformStack } from 'cdktf';
 import { GoogleProvider } from '@cdktf/provider-google/lib/provider';
@@ -294,38 +296,57 @@ class MyStack extends TerraformStack {
     // クリーンアップポリシー: GCP の仕様では KEEP ルールが DELETE ルールよりも優先評価される。
     // そのため keep-latest-10 にマッチする最新 10 バージョンは何があっても保護され、
     // それ以外のイメージが UNTAGGED (1 日経過) / 30 日経過の DELETE ルールで掃除される。
+    //
+    // ポリシーの定義は `infra/gcp-cleanup-policy.json` を Single Source of Truth とし、
+    // gcloud (docs/fork-setup.md の quick start) と CDKTF (本ファイル) の両方が
+    // 同一の JSON を参照することで二重管理を排除している (#331)。
     new ArtifactRegistryRepository(this, 'artifact-repo', {
       project: projectId,
       location: region,
       repositoryId: artifactRepoName,
       format: 'DOCKER',
-      cleanupPolicies: [
-        {
-          id: 'keep-latest-10',
-          action: 'KEEP',
-          mostRecentVersions: {
-            keepCount: 10,
-          },
-        },
-        {
-          id: 'delete-untagged',
-          action: 'DELETE',
-          condition: {
-            tagState: 'UNTAGGED',
-            olderThan: '86400s', // 1日
-          },
-        },
-        {
-          id: 'delete-older-than-30-days',
-          action: 'DELETE',
-          condition: {
-            tagState: 'ANY',
-            olderThan: '2592000s', // 30日
-          },
-        },
-      ],
+      cleanupPolicies: loadCleanupPolicies(),
     });
   }
+}
+
+// gcp-cleanup-policy.json (gcloud `set-cleanup-policies --policy=...` 用フォーマット) を
+// CDKTF の `cleanupPolicies` 期待スキーマに変換する。両者は同じ意味だが構造が異なる:
+//   JSON: { id, action: { type: 'Keep' | 'Delete' }, ... }
+//   CDK : { id, action: 'KEEP' | 'DELETE', ... }
+// fail-fast で typo 等の不正値は synth 段階で検出する。
+interface RawCleanupPolicy {
+  id: string;
+  action?: { type?: string };
+  mostRecentVersions?: { keepCount: number };
+  condition?: { tagState: string; olderThan: string };
+}
+
+function loadCleanupPolicies(): Array<{
+  id: string;
+  action: string;
+  mostRecentVersions?: { keepCount: number };
+  condition?: { tagState: string; olderThan: string };
+}> {
+  const jsonPath = path.resolve(__dirname, 'gcp-cleanup-policy.json');
+  const raw: RawCleanupPolicy[] = JSON.parse(fs.readFileSync(jsonPath, 'utf8'));
+
+  return raw.map((p) => {
+    const action = p.action?.type?.toUpperCase();
+    if (action !== 'KEEP' && action !== 'DELETE') {
+      throw new Error(
+        `Invalid action.type "${p.action?.type}" in cleanup policy "${p.id}". Expected "Keep" or "Delete".`,
+      );
+    }
+    return {
+      id: p.id,
+      action,
+      ...(p.mostRecentVersions
+        ? { mostRecentVersions: p.mostRecentVersions }
+        : {}),
+      ...(p.condition ? { condition: p.condition } : {}),
+    };
+  });
 }
 
 const app = new App();
