@@ -344,15 +344,21 @@ interface CleanupPolicy {
 
 function loadCleanupPolicies(): CleanupPolicy[] {
   const jsonPath = path.resolve(__dirname, 'gcp-cleanup-policy.json');
-  let raw: RawCleanupPolicy[];
+  let parsed: unknown;
   try {
     const content = fs.readFileSync(jsonPath, 'utf8');
-    raw = JSON.parse(content);
+    parsed = JSON.parse(content);
   } catch (err) {
     throw new Error(
       `Failed to load cleanup policies from ${jsonPath}: ${err instanceof Error ? err.message : String(err)}`,
     );
   }
+  if (!Array.isArray(parsed)) {
+    throw new Error(
+      `Invalid cleanup policy format in ${jsonPath}: expected a JSON array.`,
+    );
+  }
+  const raw = parsed as RawCleanupPolicy[];
 
   return raw.map((p) => {
     const actionType = p.action?.type;
