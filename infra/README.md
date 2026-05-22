@@ -18,13 +18,14 @@ CDKTF (TypeScript) で書かれた GCP インフラ定義。
 
 `cdktf synth` / `cdktf deploy` を実行する前に export しておく:
 
-| 環境変数             | 用途                                         | デフォルト           | 必須？                                               |
-| -------------------- | -------------------------------------------- | -------------------- | ---------------------------------------------------- |
-| `GCP_PROJECT_ID`     | 対象 GCP プロジェクト ID                     | `example-project-id` | 任意 (apply 時に必要)                                |
-| `GCP_PROJECT_NUMBER` | WIF principal URL で利用するプロジェクト番号 | -                    | **必須** (未設定なら `cdktf synth` がエラーで落ちる) |
-| `GCP_REGION`         | Cloud Run / GCS の region                    | `asia-northeast1`    | 任意                                                 |
-| `GITHUB_REPOSITORY`  | WIF が認可する `<owner>/<repo>`              | -                    | **必須** (未設定なら `cdktf synth` がエラーで落ちる) |
-| `ARTIFACT_REPO`      | Artifact Registry リポジトリ名               | `toique`             | 任意 (既定値以外を使う場合は import 手順でも必須)    |
+| 環境変数             | 用途                                                                                 | デフォルト           | 必須？                                               |
+| -------------------- | ------------------------------------------------------------------------------------ | -------------------- | ---------------------------------------------------- |
+| `GCP_PROJECT_ID`     | 対象 GCP プロジェクト ID                                                             | `example-project-id` | 任意 (apply 時に必要)                                |
+| `GCP_PROJECT_NUMBER` | WIF principal URL で利用するプロジェクト番号                                         | -                    | **必須** (未設定なら `cdktf synth` がエラーで落ちる) |
+| `GCP_REGION`         | Cloud Run / GCS の region                                                            | `asia-northeast1`    | 任意                                                 |
+| `GITHUB_REPOSITORY`  | WIF が認可する `<owner>/<repo>`                                                      | -                    | **必須** (未設定なら `cdktf synth` がエラーで落ちる) |
+| `ARTIFACT_REPO`      | Artifact Registry リポジトリ名                                                       | `toique`             | 任意 (既定値以外を使う場合は import 手順でも必須)    |
+| `TF_STATE_BUCKET`    | Terraform state を保管する GCS バケット名 (Backend バケット、CDKTF 管理外で事前作成) | -                    | **必須** (未設定なら `cdktf synth` がエラーで落ちる) |
 
 未設定の場合はそれぞれ動かない（synth はできるが apply 時に GCP 側でエラー）。
 
@@ -39,6 +40,7 @@ export GCP_PROJECT_ID=your-gcp-project-id
 export GCP_PROJECT_NUMBER=123456789012
 export GCP_REGION=asia-northeast1
 export GITHUB_REPOSITORY=owner/repo
+export TF_STATE_BUCKET=your-terraform-state-bucket
 # 既定の `toique` 以外のリポジトリ名を使う場合のみ export
 # export ARTIFACT_REPO=your-artifact-repo
 
@@ -52,6 +54,34 @@ bunx cdktf diff
 
 # 適用
 bunx cdktf deploy
+```
+
+## Terraform Backend バケット（GCS）の事前準備（初回のみ）
+
+CDKTF の state は GCS バケットで一元管理する。Backend バケット自体は CDKTF 管理外で事前作成する（chicken-and-egg を避けるため）。
+
+```bash
+# 環境変数を export 済みの前提
+gcloud storage buckets create gs://$TF_STATE_BUCKET \
+  --project=$GCP_PROJECT_ID \
+  --location=$GCP_REGION \
+  --default-storage-class=STANDARD \
+  --uniform-bucket-level-access \
+  --public-access-prevention
+
+# Versioning を有効化（state 破損時のロールバックに必須）
+gcloud storage buckets update gs://$TF_STATE_BUCKET --versioning
+
+# 非現行バージョンを 30 日で削除する Lifecycle ポリシー（コスト抑制）
+cat > /tmp/tfstate-lifecycle.json <<'EOF'
+{
+  "rule": [
+    {"action": {"type": "Delete"}, "condition": {"daysSinceNoncurrentTime": 30}}
+  ]
+}
+EOF
+gcloud storage buckets update gs://$TF_STATE_BUCKET \
+  --lifecycle-file=/tmp/tfstate-lifecycle.json
 ```
 
 ## 既存リソースの取り込み（初回のみ）
