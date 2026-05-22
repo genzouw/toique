@@ -123,7 +123,7 @@ done
 # 9. Artifact Registry リポジトリ
 bunx cdktf import \
   --resource-type google_artifact_registry_repository \
-  --resource-id "projects/$GCP_PROJECT_ID/locations/$GCP_REGION/repositories/$ARTIFACT_REPO" \
+  --resource-id "projects/$GCP_PROJECT_ID/locations/$GCP_REGION/repositories/${ARTIFACT_REPO:-toique}" \
   --resource-name "artifact-repo"
 ```
 
