@@ -16,9 +16,13 @@ COPY .prettierrc .
 
 # ローカル開発用
 FROM base AS dev
+# oven/bun イメージに含まれる非 root ユーザー。Docker のベストプラクティスに沿い
+# コンテナ実行時の権限を最小化する (Trivy DS-0002 対応)。
+USER bun
 EXPOSE 5173
 CMD ["bun", "run", "dev"]
 
 # CI: lint + format + build
 FROM base AS ci-check
+USER bun
 RUN bun run format:check && bun run lint && bun run test && bun run build
