@@ -13,6 +13,7 @@ import { CloudSchedulerJob } from '@cdktf/provider-google/lib/cloud-scheduler-jo
 import { IamWorkloadIdentityPool } from '@cdktf/provider-google/lib/iam-workload-identity-pool';
 import { IamWorkloadIdentityPoolProvider } from '@cdktf/provider-google/lib/iam-workload-identity-pool-provider';
 import { ServiceAccountIamMember } from '@cdktf/provider-google/lib/service-account-iam-member';
+import { ArtifactRegistryRepository } from '@cdktf/provider-google/lib/artifact-registry-repository';
 
 class MyStack extends TerraformStack {
   constructor(scope: Construct, id: string) {
@@ -32,6 +33,10 @@ class MyStack extends TerraformStack {
 
     const projectId = process.env.GCP_PROJECT_ID || 'example-project-id';
     const region = process.env.GCP_REGION || 'asia-northeast1';
+    // Artifact Registry リポジトリ名。Cloud Run Job の image 参照と
+    // ArtifactRegistryRepository の repositoryId で共通利用する。
+    // 既定値を変えると pull 先とリポジトリ作成先がズレるため両者で必ず同じ変数を参照する。
+    const artifactRepoName = process.env.ARTIFACT_REPO || 'toique';
     // WIF が認可する `<owner>/<repo>`。principal:// subject に展開される。
     // 誤値だと WIF binding 全体が意味を成さないため必須化。
     const githubRepository = requireEnv('GITHUB_REPOSITORY');
@@ -122,7 +127,7 @@ class MyStack extends TerraformStack {
           timeout: '600s',
           containers: [
             {
-              image: `${region}-docker.pkg.dev/${projectId}/toique/backup:latest`,
+              image: `${region}-docker.pkg.dev/${projectId}/${artifactRepoName}/backup:latest`,
               resources: {
                 limits: {
                   cpu: '1',
@@ -283,6 +288,42 @@ class MyStack extends TerraformStack {
       serviceAccountId: githubDeployerSa.name,
       role: 'roles/iam.workloadIdentityUser',
       member: `principal://iam.googleapis.com/projects/${projectNumber}/locations/global/workloadIdentityPools/${githubPool.workloadIdentityPoolId}/subject/repo:${githubRepository}:ref:refs/heads/main`,
+    });
+
+    // --- Artifact Registry リポジトリ定義とクリーンアップポリシーの設定 ---
+    // クリーンアップポリシー: GCP の仕様では KEEP ルールが DELETE ルールよりも優先評価される。
+    // そのため keep-latest-10 にマッチする最新 10 バージョンは何があっても保護され、
+    // それ以外のイメージが UNTAGGED (1 日経過) / 30 日経過の DELETE ルールで掃除される。
+    new ArtifactRegistryRepository(this, 'artifact-repo', {
+      project: projectId,
+      location: region,
+      repositoryId: artifactRepoName,
+      format: 'DOCKER',
+      cleanupPolicies: [
+        {
+          id: 'keep-latest-10',
+          action: 'KEEP',
+          mostRecentVersions: {
+            keepCount: 10,
+          },
+        },
+        {
+          id: 'delete-untagged',
+          action: 'DELETE',
+          condition: {
+            tagState: 'UNTAGGED',
+            olderThan: '86400s', // 1日
+          },
+        },
+        {
+          id: 'delete-older-than-30-days',
+          action: 'DELETE',
+          condition: {
+            tagState: 'ANY',
+            olderThan: '2592000s', // 30日
+          },
+        },
+      ],
     });
   }
 }

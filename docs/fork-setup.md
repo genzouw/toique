@@ -87,12 +87,19 @@ gcloud services enable \
   sts.googleapis.com
 ```
 
-### 3-2. Artifact Registry リポジトリ作成
+### 3-2. Artifact Registry リポジトリ作成とクリーンアップポリシーの設定
 
 ```bash
+# リポジトリの作成
 gcloud artifacts repositories create $ARTIFACT_REPO \
   --location=$GCP_REGION \
   --repository-format=docker
+
+# コスト削減のためのクリーンアップポリシー（自動削除ルール）の設定
+# 最新10件のイメージを保持し、タグなしイメージや30日以上経過した古いイメージを自動で削除します。
+gcloud artifacts repositories set-cleanup-policies $ARTIFACT_REPO \
+  --location=$GCP_REGION \
+  --policy=infra/gcp-cleanup-policy.json
 ```
 
 ### 3-3. Workload Identity Federation + デプロイ用 SA (推奨: CDKTF 経由)

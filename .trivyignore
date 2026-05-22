@@ -1,0 +1,22 @@
+# Trivy ignore list
+#
+# 以下の CVE はすべて `cdktf` パッケージが bundleDependencies で同梱している
+# `archiver` → `archiver-utils` の transitive dep に由来する。`bundleDependencies`
+# は npm publish 時にパッケージ内へ同梱されるため、利用側 (本リポジトリ) の
+# npm overrides では上書きできず、cdktf 本体のリリースを待つ以外に解消手段がない。
+#
+# 影響範囲は infra/ 配下の CDKTF synth/deploy 時のみ。本番ランタイムには
+# 含まれないため、悪用される攻撃面は実質的に存在しない。
+# cdktf が新しい archiver を取り込んだバージョンを公開し次第、本ファイルから
+# 該当 CVE を削除し、依存を更新する。
+
+# minimatch (5.1.6 / 9.0.5): ReDoS via repeated wildcards / GLOBSTAR / extglobs
+CVE-2026-26996
+CVE-2026-27903
+CVE-2026-27904
+
+# lodash (4.17.21): Prototype Pollution / Code Injection
+CVE-2026-4800
+
+# glob (10.4.5): CLI command injection (CLI は CDK 経由で実行されない)
+CVE-2025-64756
