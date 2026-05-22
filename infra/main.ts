@@ -299,7 +299,7 @@ class MyStack extends TerraformStack {
     //
     // ポリシーの定義は `infra/gcp-cleanup-policy.json` を Single Source of Truth とし、
     // gcloud (docs/fork-setup.md の quick start) と CDKTF (本ファイル) の両方が
-    // 同一の JSON を参照することで二重管理を排除している (#331)。
+    // 同一の JSON を参照することで二重管理を排除している。
     new ArtifactRegistryRepository(this, 'artifact-repo', {
       project: projectId,
       location: region,
