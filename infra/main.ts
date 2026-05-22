@@ -322,20 +322,36 @@ interface RawCleanupPolicy {
   condition?: { tagState: string; olderThan: string };
 }
 
-function loadCleanupPolicies(): Array<{
+interface CleanupPolicy {
   id: string;
   action: string;
   mostRecentVersions?: { keepCount: number };
   condition?: { tagState: string; olderThan: string };
-}> {
+}
+
+function loadCleanupPolicies(): CleanupPolicy[] {
   const jsonPath = path.resolve(__dirname, 'gcp-cleanup-policy.json');
-  const raw: RawCleanupPolicy[] = JSON.parse(fs.readFileSync(jsonPath, 'utf8'));
+  let raw: RawCleanupPolicy[];
+  try {
+    const content = fs.readFileSync(jsonPath, 'utf8');
+    raw = JSON.parse(content);
+  } catch (err) {
+    throw new Error(
+      `Failed to load cleanup policies from ${jsonPath}: ${err instanceof Error ? err.message : String(err)}`,
+    );
+  }
 
   return raw.map((p) => {
-    const action = p.action?.type?.toUpperCase();
+    const actionType = p.action?.type;
+    if (!actionType) {
+      throw new Error(
+        `Missing action.type in cleanup policy "${p.id}". Expected "Keep" or "Delete".`,
+      );
+    }
+    const action = actionType.toUpperCase();
     if (action !== 'KEEP' && action !== 'DELETE') {
       throw new Error(
-        `Invalid action.type "${p.action?.type}" in cleanup policy "${p.id}". Expected "Keep" or "Delete".`,
+        `Invalid action.type "${actionType}" in cleanup policy "${p.id}". Expected "Keep" or "Delete".`,
       );
     }
     return {
