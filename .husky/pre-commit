@@ -20,9 +20,12 @@ if [ -n "$changed_workflows" ]; then
     fi
     # `-no-color` は macOS ローカルで actionlint がハングする回避策
     # (一部環境で color 出力初期化が詰まる事例あり、CI 側は -color で別途実行)
+    # NOTE: `if ! cmd; then rc=$?` の形だと sh/bash/zsh いずれも `rc=0` になり、
+    # `124` 判定と失敗時 exit が常に偽となる。直接実行 → `$?` 退避の形にする。
     # shellcheck disable=SC2086
-    if ! $timeout_cmd actionlint -no-color $shellcheck_opt $changed_workflows; then
-      rc=$?
+    $timeout_cmd actionlint -no-color $shellcheck_opt $changed_workflows
+    rc=$?
+    if [ "$rc" -ne 0 ]; then
       if [ "$rc" = "124" ]; then
         echo "⚠️  actionlint timed out locally (>60s) — skipping; CI will run the full check."
       else
