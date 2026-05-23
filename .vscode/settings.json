@@ -1,0 +1,28 @@
+{
+  "search.exclude": {
+    "**/*.env": true,
+    "**/*.env.*": true,
+    "**/*.pem": true,
+    "**/*.key": true,
+    "**/*credentials*.json": true,
+    "**/.cursor": true,
+    "**/.claude": true,
+    "**/.aider*": true,
+    "**/.windsurf": true,
+    "**/.jules": true,
+    "**/.Jules": true
+  },
+  "files.exclude": {
+    "**/*.env": true,
+    "**/*.env.*": true,
+    "**/*.pem": true,
+    "**/*.key": true,
+    "**/*credentials*.json": true,
+    "**/.cursor": true,
+    "**/.claude": true,
+    "**/.aider*": true,
+    "**/.windsurf": true,
+    "**/.jules": true,
+    "**/.Jules": true
+  }
+}

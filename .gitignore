@@ -55,3 +55,12 @@ skills-lock.json
 
 # Cloudflare Wrangler
 .wrangler/
+
+# Additional Security / AI agents
+.cursor/
+.aider*/
+.aider*
+.windsurf/
+*.pem
+*.key
+*credentials*.json

@@ -1,0 +1,12 @@
+# Prevent sensitive files from being included in git archives
+*.env* export-ignore
+*.pem export-ignore
+*.key export-ignore
+*credentials*.json export-ignore
+.vscode/ export-ignore
+.claude/ export-ignore
+.cursor/ export-ignore
+.aider*/ export-ignore
+.windsurf/ export-ignore
+.jules/ export-ignore
+.Jules/ export-ignore

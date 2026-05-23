@@ -1,4 +1,24 @@
+# husky v9 は内部で `sh -e` 起動するため実質的に既に有効だが、
+# 単体実行や将来の起動経路変更でも安全側に倒すため明示する。
+# (途中コマンドが失敗した場合は即時中断してコミットを成立させない)
+set -e
+
 bunx lint-staged
+
+# --- Security: Prevent committing sensitive file paths ---
+# 以下のパターンにマッチするファイル名が含まれている場合はコミットを拒否する。
+# `--diff-filter=d` で「削除 (Deleted)」を除外: リスクは「機密ファイルがリポジトリに
+# 含まれること」なので、すでにコミットされてしまった機密ファイルを `git rm` で
+# 削除しようとした際にこのチェックでブロックされないようにする。
+FORBIDDEN_FILES=$(git diff --cached --name-only --diff-filter=d | grep -E '(\.env.*|\.cursor/.*|\.claude/.*|\.aider.*|\.windsurf/.*|\.jules/.*|\.Jules/.*|.*credentials.*\.json|.*\.pem|.*\.key)$' || true)
+
+if [ -n "$FORBIDDEN_FILES" ]; then
+  echo "🚨 [Security Error] The following sensitive files are staged for commit:"
+  echo "$FORBIDDEN_FILES"
+  echo "Please unstage them using 'git restore --staged <file>' and ensure they are added to .gitignore."
+  exit 1
+fi
+# ---------------------------------------------------------
 
 # Run typecheck for changed workspaces
 changed_backend=$(git diff --cached --name-only -- 'backend/src/')
