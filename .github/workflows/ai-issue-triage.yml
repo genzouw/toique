@@ -8,8 +8,14 @@ jobs:
   triage:
     name: AI Issue Analysis
     runs-on: ubuntu-latest
+    # 公開リポジトリで第三者が OPENAI_API_KEY を消費しないよう、
+    # 信頼できる author_association のみ実行可能にする。
+    if: contains(fromJSON('["OWNER","MEMBER","COLLABORATOR"]'), github.event.issue.author_association)
     permissions:
       issues: write
+    concurrency:
+      group: ai-issue-triage-${{ github.event.issue.number }}
+      cancel-in-progress: false
     steps:
       - name: Call OpenAI for Issue Triage
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
