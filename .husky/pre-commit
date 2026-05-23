@@ -20,6 +20,48 @@ if [ -n "$FORBIDDEN_FILES" ]; then
 fi
 # ---------------------------------------------------------
 
+# .github/workflows/ がステージされていれば actionlint をローカルで実行
+# (actionlint がインストールされていない環境はスキップして CI 側で拾う)
+changed_workflows=$(git diff --cached --name-only --diff-filter=ACMR -- '.github/workflows/' || true)
+if [ -n "$changed_workflows" ]; then
+  if command -v actionlint >/dev/null 2>&1; then
+    echo "🔍 Running actionlint on staged workflows..."
+    # ローカル環境で actionlint が外部呼び出し待ちでハングする事例があるため
+    # 60s で打ち切り、CI 側に委ねる (macOS は gtimeout = coreutils 経由)
+    timeout_cmd=""
+    if command -v timeout >/dev/null 2>&1; then
+      timeout_cmd="timeout 60s"
+    elif command -v gtimeout >/dev/null 2>&1; then
+      timeout_cmd="gtimeout 60s"
+    fi
+    # actionlint の `-shellcheck` 既定値は `"shellcheck"` (PATH 探索)。
+    # ローカルに shellcheck が無い環境では actionlint が起動時にエラー終了して
+    # コミット全体をブロックするため、明示的に空指定で integration を無効化。
+    shellcheck_opt="-shellcheck="
+    if command -v shellcheck >/dev/null 2>&1; then
+      shellcheck_opt="-shellcheck=$(command -v shellcheck)"
+    fi
+    # `-no-color` は macOS ローカルで actionlint がハングする回避策
+    # (一部環境で color 出力初期化が詰まる事例あり、CI 側は -color で別途実行)
+    # NOTE: husky v9 は `sh -e` で hook を起動するため、actionlint が non-zero
+    # で返るとその場で hook が死ぬ。`|| rc=$?` で exit を捕捉してから自分で
+    # 判定・分岐する。失敗しなかった場合は `rc` 未設定なので `${rc:-0}` で補完。
+    rc=0
+    # shellcheck disable=SC2086
+    $timeout_cmd actionlint -no-color $shellcheck_opt $changed_workflows || rc=$?
+    if [ "$rc" -ne 0 ]; then
+      if [ "$rc" = "124" ]; then
+        echo "⚠️  actionlint timed out locally (>60s) — skipping; CI will run the full check."
+      else
+        exit "$rc"
+      fi
+    fi
+  else
+    echo "ℹ️  actionlint not installed locally — workflow lint will run in CI only."
+    echo "   Install: brew install actionlint  (macOS) or see https://github.com/rhysd/actionlint"
+  fi
+fi
+
 # Run typecheck for changed workspaces
 changed_backend=$(git diff --cached --name-only -- 'backend/src/')
 changed_frontend=$(git diff --cached --name-only -- 'frontend/src/')

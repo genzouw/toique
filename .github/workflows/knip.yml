@@ -17,6 +17,7 @@ on:
       - 'package.json'
       - 'bun.lock'
       - '.github/workflows/knip.yml'
+  workflow_dispatch:
 
 concurrency:
   group: knip-${{ github.ref }}
