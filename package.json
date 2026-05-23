@@ -18,7 +18,7 @@
     "secretlint": "^13.0.2"
   },
   "lint-staged": {
-    "*": [
+    "**/*": [
       "secretlint"
     ],
     "backend/src/**/*.ts": [
