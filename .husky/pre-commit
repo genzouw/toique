@@ -23,11 +23,12 @@ if [ -n "$changed_workflows" ]; then
     fi
     # `-no-color` は macOS ローカルで actionlint がハングする回避策
     # (一部環境で color 出力初期化が詰まる事例あり、CI 側は -color で別途実行)
-    # NOTE: `if ! cmd; then rc=$?` の形だと sh/bash/zsh いずれも `rc=0` になり、
-    # `124` 判定と失敗時 exit が常に偽となる。直接実行 → `$?` 退避の形にする。
+    # NOTE: husky v9 は `sh -e` で hook を起動するため、actionlint が non-zero
+    # で返るとその場で hook が死ぬ。`|| rc=$?` で exit を捕捉してから自分で
+    # 判定・分岐する。失敗しなかった場合は `rc` 未設定なので `${rc:-0}` で補完。
+    rc=0
     # shellcheck disable=SC2086
-    $timeout_cmd actionlint -no-color $shellcheck_opt $changed_workflows
-    rc=$?
+    $timeout_cmd actionlint -no-color $shellcheck_opt $changed_workflows || rc=$?
     if [ "$rc" -ne 0 ]; then
       if [ "$rc" = "124" ]; then
         echo "⚠️  actionlint timed out locally (>60s) — skipping; CI will run the full check."
