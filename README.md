@@ -120,7 +120,7 @@ DATABASE_URL=postgresql://toique:toique@localhost:5433/toique bun run db:migrate
 
 ```bash
 cd backend
-DATABASE_URL=postgresql://toique:toique@localhost:5433/toique bun test
+DATABASE_URL=postgresql://toique:toique@localhost:5433/toique bun run test
 ```
 
 DBを使うテストがあるため、事前に `docker compose up -d db` が必要です。
