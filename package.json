@@ -9,7 +9,7 @@
     "typecheck": "bun --cwd backend run typecheck && bun --cwd frontend run typecheck",
     "test": "bun --cwd backend run test && bun --cwd frontend run test",
     "knip": "bun --cwd backend run knip && bun --cwd frontend run knip",
-    "secretlint": "secretlint \"**/*\""
+    "secretlint": "git ls-files -z | xargs -0 secretlint"
   },
   "devDependencies": {
     "@secretlint/secretlint-rule-preset-recommend": "^13.0.2",
