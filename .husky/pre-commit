@@ -14,7 +14,10 @@ if [ -n "$changed_workflows" ]; then
     elif command -v gtimeout >/dev/null 2>&1; then
       timeout_cmd="gtimeout 60s"
     fi
-    shellcheck_opt=""
+    # actionlint の `-shellcheck` 既定値は `"shellcheck"` (PATH 探索)。
+    # ローカルに shellcheck が無い環境では actionlint が起動時にエラー終了して
+    # コミット全体をブロックするため、明示的に空指定で integration を無効化。
+    shellcheck_opt="-shellcheck="
     if command -v shellcheck >/dev/null 2>&1; then
       shellcheck_opt="-shellcheck=$(command -v shellcheck)"
     fi
