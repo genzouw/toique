@@ -13,6 +13,7 @@ on:
       - '**/*.md'
       - '.markdownlint-cli2.jsonc'
       - '.github/workflows/markdownlint.yml'
+  workflow_dispatch:
 
 concurrency:
   group: markdownlint-${{ github.ref }}
@@ -25,15 +26,15 @@ jobs:
   markdownlint:
     name: markdownlint-cli2
     runs-on: ubuntu-latest
-    # 既存ドキュメントの MD040/MD031 違反を片付けるまでは赤検知にしない。
-    # 整備完了後に continue-on-error を外して赤検知に切り替える。
-    continue-on-error: true
     steps:
       - uses: actions/checkout@a5ac7e51b41094c92402da3b24376905380afc29 # v4.1.6
         with:
           persist-credentials: false
 
       - name: Run markdownlint-cli2
+        # 既存ドキュメントの MD040/MD031 違反を片付けるまでは赤検知にしない。
+        # 整備完了後に continue-on-error を外して赤検知に切り替える。
+        continue-on-error: true
         uses: DavidAnson/markdownlint-cli2-action@992badcdf24e3b8eb7e87ff9287fe931bcb00c6e # v20
         with:
           config: '.markdownlint-cli2.jsonc'
