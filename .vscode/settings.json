@@ -13,6 +13,8 @@
     "**/.Jules": true
   },
   "files.exclude": {
+    "**/*.env": true,
+    "**/*.env.*": true,
     "**/*.pem": true,
     "**/*.key": true,
     "**/*credentials*.json": true,
