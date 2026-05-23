@@ -59,6 +59,7 @@ skills-lock.json
 # Additional Security / AI agents
 .cursor/
 .aider*/
+.aider*
 .windsurf/
 *.pem
 *.key
