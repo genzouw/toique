@@ -1,3 +1,8 @@
+# husky v9 は内部で `sh -e` 起動するため実質的に既に有効だが、
+# 単体実行や将来の起動経路変更でも安全側に倒すため明示する。
+# (途中コマンドが失敗した場合は即時中断してコミットを成立させない)
+set -e
+
 bunx lint-staged
 
 # --- Security: Prevent committing sensitive file paths ---
