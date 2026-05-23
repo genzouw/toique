@@ -265,3 +265,11 @@ curl -s http://localhost:3000/api/v1/messages | jq
 ### 脆弱性報告
 
 [`SECURITY.md`](SECURITY.md) を参照。
+
+### シークレット漏洩防止
+
+当プロジェクトは公開リポジトリであるため、誤ってシークレットをコミットしないよう以下の仕組みを導入しています。
+詳しくは [`docs/security/leak-prevention.md`](docs/security/leak-prevention.md) を参照してください。
+
+- **Pre-commit フック (`secretlint`)**: 開発者のローカル環境でコミット前にシークレットを検知しブロックします。
+- **CI / GitHub Actions**: `gitleaks` および `trivy` を使用して PR および push 時に二重チェックを行います。
