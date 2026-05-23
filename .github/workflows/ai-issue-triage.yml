@@ -55,8 +55,7 @@ jobs:
             });
 
             if (!response.ok) {
-              const errorText = await response.text();
-              console.error(`OpenAI API Error: ${errorText}`);
+              console.error(`OpenAI API Error: status=${response.status}`);
               return;
             }
 
