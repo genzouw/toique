@@ -1,0 +1,14 @@
+{
+  "search.exclude": {
+    "**/*.env": true,
+    "**/*.env.*": true,
+    "**/*.pem": true,
+    "**/*.key": true,
+    "**/*credentials*.json": true
+  },
+  "files.exclude": {
+    "**/*.pem": true,
+    "**/*.key": true,
+    "**/*credentials*.json": true
+  }
+}
