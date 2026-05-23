@@ -8,13 +8,19 @@
     "format:check": "bun --cwd backend run format:check && bun --cwd frontend run format:check",
     "typecheck": "bun --cwd backend run typecheck && bun --cwd frontend run typecheck",
     "test": "bun --cwd backend run test && bun --cwd frontend run test",
-    "knip": "bun --cwd backend run knip && bun --cwd frontend run knip"
+    "knip": "bun --cwd backend run knip && bun --cwd frontend run knip",
+    "secretlint": "secretlint \"**/*\""
   },
   "devDependencies": {
+    "@secretlint/secretlint-rule-preset-recommend": "^13.0.2",
     "husky": "^9.1.0",
-    "lint-staged": "^15.5.0"
+    "lint-staged": "^15.5.0",
+    "secretlint": "^13.0.2"
   },
   "lint-staged": {
+    "*": [
+      "secretlint"
+    ],
     "backend/src/**/*.ts": [
       "bun --cwd backend run lint --fix",
       "bun --cwd backend run format"
