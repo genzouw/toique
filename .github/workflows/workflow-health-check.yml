@@ -21,9 +21,9 @@ concurrency:
   cancel-in-progress: false
 
 permissions:
-  contents: read
-  actions: read
-  issues: write
+  contents: read # actions/checkout でリポジトリを読み取るため
+  actions: read # 各 workflow の直近 run を GitHub API で集計するため
+  issues: write # 検知結果を追跡 issue として作成・コメント追記するため
 
 jobs:
   check:
