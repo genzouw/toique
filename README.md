@@ -253,7 +253,7 @@ curl -s http://localhost:3000/api/v1/messages | jq
 > **導入のための手動事前作業:**
 >
 > 1. Qodo Merge は、[Qodo Merge GitHub App](https://github.com/apps/qodo-merge) をインストールするだけで公開リポジトリに対して完全無料で利用可能です。自動的に `.pr_agent.toml` の設定を読み込みます。
-> 2. `ai-issue-triage.yml` を動作させるためには、GitHub の **Settings → Secrets and variables → Actions** にて `OPENAI_API_KEY` を登録する必要があります。また、当該リポジトリの `GITHUB_TOKEN` に Read and Write permissions が付与されていることを確認してください。
+> 2. `ai-issue-triage.yml` を動作させるためには、GitHub の **Settings → Secrets and variables → Actions** にて `OPENAI_API_KEY` を登録する必要があります。また、**Settings → Actions → General** の "Workflow permissions" で `GITHUB_TOKEN` に **Read and write permissions** が付与されていることを確認してください。
 
 ### PR / リポジトリ運用
 
