@@ -242,10 +242,17 @@ curl -s http://localhost:3000/api/v1/messages | jq
 | `markdownlint.yml` | Markdown の lint (`.markdownlint-cli2.jsonc`)                                               |
 | `knip.yml`         | 未使用コード・未使用依存の検出                                                              |
 
-### コードレビュー
+### コードレビューとAI自動化
 
 - **CodeRabbit** (`.coderabbit.yaml`): profile=assertive。本番自動デプロイ運用のため高感度
 - **Gemini Code Assist** (`.gemini/config.yaml` + `.gemini/styleguide.md`): 日本語レビュー
+- **Qodo Merge (PR Agent)**: CodiumAI を使用したPR自動レビュー。公開リポジトリは完全無料で使用できます（※ GitHub Appとしてのインストール推奨、または Actions経由での実行）。
+- **AI Issue Triage** (`ai-issue-triage.yml`): `actions/github-script` を用いて、Issueが作成された際に自動でOpenAI APIを呼び出し、トリアージを行う仕組みです。
+
+> [!NOTE]
+> **導入のための手動事前作業:**
+> 1. Qodo Merge は、[Qodo Merge GitHub App](https://github.com/apps/qodo-merge) をインストールするだけで公開リポジトリに対して完全無料で利用可能です。自動的に `.pr_agent.toml` の設定を読み込みます。
+> 2. `ai-issue-triage.yml` を動作させるためには、GitHub の **Settings → Secrets and variables → Actions** にて `OPENAI_API_KEY` を登録する必要があります。また、当該リポジトリの `GITHUB_TOKEN` に Read and Write permissions が付与されていることを確認してください。
 
 ### PR / リポジトリ運用
 
