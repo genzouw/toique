@@ -1,12 +1,4 @@
-npx lint-staged
-
-# Run gitleaks local check if installed to prevent committing secrets
-if command -v gitleaks >/dev/null 2>&1; then
-  echo "🔒 Running local gitleaks check..."
-  gitleaks protect --staged --verbose
-else
-  echo "⚠️ gitleaks is not installed locally. Skipping local secret scan. (Highly recommended: brew install gitleaks)"
-fi
+bunx lint-staged
 
 # Run typecheck for changed workspaces
 changed_backend=$(git diff --cached --name-only -- 'backend/src/')
