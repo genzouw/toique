@@ -39,7 +39,7 @@ export default defineConfig({
     // "This Worker requires compatibility date ... newest date supported by this
     // server binary is ..." で失敗する。bun.lock 上の workerd@1.20260515.x に
     // 対応する 2026-05-15 を採用 (Cloudflare 推奨: 固定日付で挙動を安定化)。
-    command: `npx wrangler pages dev dist --port ${PORT} --ip 127.0.0.1 --log-level warn --compatibility-date=2026-05-15`,
+    command: `bunx wrangler pages dev dist --port ${PORT} --ip 127.0.0.1 --log-level warn --compatibility-date=2026-05-15`,
     url: BASE_URL,
     reuseExistingServer: !process.env.CI,
     timeout: 120_000,
