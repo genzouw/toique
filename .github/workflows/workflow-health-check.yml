@@ -21,7 +21,8 @@ concurrency:
   cancel-in-progress: false
 
 permissions:
-  contents: read # actions/checkout でリポジトリを読み取るため
+  # 本 workflow は `gh api` + `$RUNNER_TEMP` のみ使い、checkout したリポジトリの
+  # ローカルファイルは一切参照しないため `contents` は不要 (最小権限の原則)。
   actions: read # 各 workflow の直近 run を GitHub API で集計するため
   issues: write # 検知結果を追跡 issue として作成・コメント追記するため
 
@@ -40,10 +41,8 @@ jobs:
       GH_TOKEN: ${{ github.token }}
       GH_REPO: ${{ github.repository }}
     steps:
-      - uses: actions/checkout@a5ac7e51b41094c92402da3b24376905380afc29 # v4.1.6
-        with:
-          persist-credentials: false
-
+      # 本 workflow はリポジトリのローカルファイルを参照しないため
+      # actions/checkout は省略 (zizmor excessive-permissions 解消)。
       - name: Scan recent workflow runs
         id: scan
         run: |
