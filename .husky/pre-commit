@@ -1,4 +1,4 @@
-npx lint-staged
+bunx lint-staged
 
 # Run typecheck for changed workspaces
 changed_backend=$(git diff --cached --name-only -- 'backend/src/')
