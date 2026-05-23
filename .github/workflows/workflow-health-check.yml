@@ -1,0 +1,151 @@
+name: Workflow Health Check
+
+# 過去事案 (PR #336) のような「特定の workflow が継続的に startup_failure し続ける」
+# 状況を、誰も気付かないまま放置する事態を防ぐためのヘルスチェック。
+#
+# 仕組み:
+# 1. 毎朝 cron で、リポジトリ内全 workflow の直近 N 件の run を集計
+# 2. 直近に `startup_failure` が含まれる workflow、または連続失敗している workflow を検出
+# 3. 検出時は固定タイトルの issue を作成 (既存ならコメント追記) して通知
+#
+# 検査自体は read-only で、誤検知してもリポジトリ状態に影響を与えない。
+
+on:
+  schedule:
+    # 毎日 07:30 JST (= 22:30 UTC) — 朝の業務開始前に通知が届くようにする
+    - cron: '30 22 * * *'
+  workflow_dispatch:
+
+concurrency:
+  group: workflow-health-check
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  actions: read
+  issues: write
+
+jobs:
+  check:
+    name: Detect startup_failure / chronic failures
+    runs-on: ubuntu-latest
+    env:
+      # 各 workflow について遡って参照する直近 run 数
+      RECENT_RUN_LIMIT: 10
+      # 直近 RECENT_RUN_LIMIT 件中の失敗数 (failure/startup_failure/timed_out)
+      # がこの値以上なら "chronic failure" として検出する
+      CHRONIC_FAILURE_THRESHOLD: 3
+      # 検出結果を集約する issue の固定タイトル (タイトル一致で再利用)
+      TRACKING_ISSUE_TITLE: '[workflow-health-check] startup_failure / chronic failure detected'
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: ${{ github.repository }}
+    steps:
+      - uses: actions/checkout@a5ac7e51b41094c92402da3b24376905380afc29 # v4.1.6
+        with:
+          persist-credentials: false
+
+      - name: Scan recent workflow runs
+        id: scan
+        run: |
+          set -euo pipefail
+
+          # アクティブな workflow 一覧 (disabled は除く) を取得
+          workflows_json=$(gh api "repos/${GH_REPO}/actions/workflows?per_page=100")
+          mapfile -t workflow_ids < <(echo "$workflows_json" | jq -r '.workflows[] | select(.state=="active") | .id')
+
+          report_file="$RUNNER_TEMP/health-report.md"
+          : > "$report_file"
+
+          any_problem=0
+
+          for wf_id in "${workflow_ids[@]}"; do
+            wf=$(echo "$workflows_json" | jq --arg id "$wf_id" '.workflows[] | select(.id==($id|tonumber))')
+            wf_name=$(echo "$wf" | jq -r '.name')
+            wf_path=$(echo "$wf" | jq -r '.path')
+            wf_html=$(echo "$wf" | jq -r '.html_url')
+
+            # 直近 N 件の run を取得
+            runs=$(gh api "repos/${GH_REPO}/actions/workflows/${wf_id}/runs?per_page=${RECENT_RUN_LIMIT}" --jq '[.workflow_runs[] | {conclusion, status, run_number, html_url, created_at}]')
+            total=$(echo "$runs" | jq 'length')
+
+            if [ "$total" -eq 0 ]; then
+              continue
+            fi
+
+            # startup_failure を含むか
+            startup_failures=$(echo "$runs" | jq '[.[] | select(.conclusion=="startup_failure")] | length')
+
+            # 直近 N 件のうち failure / startup_failure / timed_out の件数
+            failure_count=$(echo "$runs" | jq '[.[] | select(.conclusion=="failure" or .conclusion=="startup_failure" or .conclusion=="timed_out")] | length')
+
+            problem=0
+            reasons=()
+            if [ "$startup_failures" -gt 0 ]; then
+              problem=1
+              reasons+=("startup_failure x${startup_failures} in last ${RECENT_RUN_LIMIT}")
+            fi
+            if [ "$failure_count" -ge "$CHRONIC_FAILURE_THRESHOLD" ]; then
+              problem=1
+              reasons+=("chronic failures: ${failure_count}/${RECENT_RUN_LIMIT}")
+            fi
+
+            if [ "$problem" -eq 1 ]; then
+              any_problem=1
+              {
+                printf -- '- **%s** (`%s`) — %s\n' "$wf_name" "$wf_path" "$(IFS='; '; echo "${reasons[*]}")"
+                printf '  - Workflow page: %s\n' "$wf_html"
+                # 最近の startup_failure run URL を3件まで列挙
+                echo "$runs" | jq -r '[.[] | select(.conclusion=="startup_failure" or .conclusion=="failure" or .conclusion=="timed_out")] | .[0:3] | .[] | "  - " + (.created_at // "?") + " " + (.conclusion // "?") + " " + .html_url'
+              } >> "$report_file"
+            fi
+          done
+
+          {
+            echo "report_file=$report_file"
+            echo "any_problem=$any_problem"
+          } >> "$GITHUB_OUTPUT"
+
+          if [ "$any_problem" -eq 1 ]; then
+            echo "::warning::Detected unhealthy workflow(s). See report."
+            cat "$report_file"
+          else
+            echo "All workflows are healthy."
+          fi
+
+      - name: Create or update tracking issue
+        if: steps.scan.outputs.any_problem == '1'
+        env:
+          REPORT_FILE: ${{ steps.scan.outputs.report_file }}
+        run: |
+          set -euo pipefail
+
+          ts=$(date -u +'%Y-%m-%dT%H:%M:%SZ')
+          body_file="$RUNNER_TEMP/body.md"
+          {
+            echo "Detected at: \`$ts\` (UTC)"
+            echo ""
+            echo "## Unhealthy workflows"
+            echo ""
+            cat "$REPORT_FILE"
+            echo ""
+            echo "### Recommended actions"
+            echo ""
+            echo "- \`startup_failure\` → 起動段階で死んでいるため、ジョブ定義 / 参照アクション / runtime 整合 (Node ランタイム等) を疑う。本リポジトリでは PR #336 のように \`run:\` 直接実行への切替で回避できる場合あり"
+            echo "- consecutive failures → 内容を要確認。フレーキーテストでなく恒常的不具合なら本 issue で修正を追跡してください"
+            echo ""
+            echo "_この issue は [workflow-health-check](${{ github.server_url }}/${{ github.repository }}/actions/workflows/workflow-health-check.yml) によって自動更新されます。問題解決後は手動で close してください。_"
+          } > "$body_file"
+
+          # 同タイトルの open issue があるか
+          existing=$(gh issue list --search "in:title \"$TRACKING_ISSUE_TITLE\" state:open" --json number,title --jq '.[] | select(.title=="'"$TRACKING_ISSUE_TITLE"'") | .number' | head -n1 || true)
+
+          if [ -n "$existing" ]; then
+            echo "Updating existing issue #$existing"
+            gh issue comment "$existing" --body-file "$body_file"
+          else
+            echo "Creating new issue"
+            gh issue create \
+              --title "$TRACKING_ISSUE_TITLE" \
+              --body-file "$body_file" \
+              --label "ci,bug"
+          fi

@@ -11,6 +11,7 @@ on:
     paths:
       - '.github/workflows/**'
       - '.github/actionlint*'
+  workflow_dispatch:
 
 concurrency:
   group: actionlint-${{ github.ref }}
@@ -25,6 +26,19 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@a5ac7e51b41094c92402da3b24376905380afc29 # v4.1.6
+        with:
+          persist-credentials: false
+
+      - name: Ensure shellcheck is available
+        # ubuntu-latest には標準で shellcheck が含まれるが、明示インストールで
+        # Runner image 差分による startup 系不整合を予防する
+        run: |
+          set -euo pipefail
+          if ! command -v shellcheck >/dev/null 2>&1; then
+            sudo apt-get update
+            sudo apt-get install -y shellcheck
+          fi
+          shellcheck --version
 
       - name: Download actionlint
         id: actionlint
@@ -38,6 +52,10 @@ jobs:
           tar -xzf "/tmp/${TARBALL}" -C /tmp actionlint
           echo "executable=/tmp/actionlint" >> "$GITHUB_OUTPUT"
 
-      - name: Run actionlint
+      - name: Run actionlint (with shellcheck integration)
+        # `-shellcheck` で `run:` ブロックのシェル検査を厳格化し、
+        # `paths`/`if` 等の構文ミスや誤った expression を起動前に弾く
         run: |
-          "${{ steps.actionlint.outputs.executable }}" -color
+          "${{ steps.actionlint.outputs.executable }}" \
+            -color \
+            -shellcheck="$(command -v shellcheck)"
