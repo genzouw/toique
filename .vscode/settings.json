@@ -4,11 +4,23 @@
     "**/*.env.*": true,
     "**/*.pem": true,
     "**/*.key": true,
-    "**/*credentials*.json": true
+    "**/*credentials*.json": true,
+    "**/.cursor": true,
+    "**/.claude": true,
+    "**/.aider*": true,
+    "**/.windsurf": true,
+    "**/.jules": true,
+    "**/.Jules": true
   },
   "files.exclude": {
     "**/*.pem": true,
     "**/*.key": true,
-    "**/*credentials*.json": true
+    "**/*credentials*.json": true,
+    "**/.cursor": true,
+    "**/.claude": true,
+    "**/.aider*": true,
+    "**/.windsurf": true,
+    "**/.jules": true,
+    "**/.Jules": true
   }
 }
