@@ -91,6 +91,10 @@ jobs:
 
             if [ "$problem" -eq 1 ]; then
               any_problem=1
+              # printf のフォーマット指定子 (`%s`) と jq のフィルタ文字列内 `.html_url` などを
+              # shellcheck が「シングルクォート内のシェル変数が展開されない」(SC2016) と
+              # 誤検知する。これらはシェル変数ではなく printf/jq の構文要素のため抑制する。
+              # shellcheck disable=SC2016
               {
                 printf -- '- **%s** (`%s`) — %s\n' "$wf_name" "$wf_path" "$(IFS='; '; echo "${reasons[*]}")"
                 printf '  - Workflow page: %s\n' "$wf_html"
