@@ -254,7 +254,7 @@ curl -s http://localhost:3000/api/v1/messages | jq
 >
 > 1. **Qodo Merge**: [Qodo Merge GitHub App](https://github.com/apps/qodo-merge) をインストールするだけで公開リポジトリに対して完全無料で利用可能です。自動的に `.pr_agent.toml` の設定を読み込みます。
 > 2. **AI Issue Triage (`ai-issue-triage.yml`) / AI Weekly Summary (`ai-weekly-summary.yml`)**: GitHub の **Settings → Secrets and variables → Actions** にて `OPENAI_API_KEY` を登録してください。
-> 3. **権限設定**: 上記の自動化ツールが Issue や Pull Request にコメント・操作を行えるように、**Settings → Actions → General** の "Workflow permissions" で `GITHUB_TOKEN` に **Read and write permissions** が付与されていることを確認してください。
+> 3. **権限設定**: 各ワークフローファイルに `permissions:` が個別定義されているため、リポジトリ全体の "Workflow permissions" を **Read and write** にする必要はありません。デフォルトの **Read repository contents and packages permissions** のままで動作します。
 
 ### PR / リポジトリ運用
 
