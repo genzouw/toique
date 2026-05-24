@@ -25,14 +25,18 @@ jobs:
           ISSUES=$(gh issue list --state closed --search "closed:>=$LAST_WEEK" --json number,title,author --limit 50 || echo "[]")
 
           DELIMITER=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
-          echo "PRS_DATA<<$DELIMITER" >> "$GITHUB_ENV"
-          echo "$PRS" >> "$GITHUB_ENV"
-          echo "$DELIMITER" >> "$GITHUB_ENV"
+          {
+            echo "PRS_DATA<<$DELIMITER"
+            echo "$PRS"
+            echo "$DELIMITER"
+          } >> "$GITHUB_ENV"
 
           DELIMITER2=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
-          echo "ISSUES_DATA<<$DELIMITER2" >> "$GITHUB_ENV"
-          echo "$ISSUES" >> "$GITHUB_ENV"
-          echo "$DELIMITER2" >> "$GITHUB_ENV"
+          {
+            echo "ISSUES_DATA<<$DELIMITER2"
+            echo "$ISSUES"
+            echo "$DELIMITER2"
+          } >> "$GITHUB_ENV"
 
       - name: Generate and Post Summary with AI
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
