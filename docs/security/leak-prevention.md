@@ -22,7 +22,7 @@
 ## 責任分界
 
 - **開発者（AIエージェント含む）:** コミット前にローカル環境で `secretlint` が正しく動作するように、必ず依存関係 (`bun install`) をインストールしておくこと。
-- **リポジトリ管理者:** GitHub Secret Scanning / Push Protection を有効にし、CIでの二重・三重チェックを維持すること。手動でリポジトリの設定（Code security → Push protection）から有効化してください。
+- **リポジトリ管理者:** GitHub Secret Scanning / Push Protection を有効にし、CIでの多層的なチェックを維持すること。手動でリポジトリの設定（Code security → Push protection）から有効化してください。
 
 ## 運用ルール
 
