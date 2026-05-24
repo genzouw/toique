@@ -113,26 +113,37 @@ export const tenantMembers = pgTable(
       .notNull()
       .defaultNow(),
   },
-  (t) => [unique('tenant_members_user_id_key').on(t.userId)],
+  (t) => [
+    unique('tenant_members_user_id_key').on(t.userId),
+    // ⚡ Bolt: Indexing the tenantId foreign key prevents O(N) sequential scans during tenant-scoped filtering and quota checks.
+    index('tenant_members_tenant_id_idx').on(t.tenantId),
+  ],
 );
 
 // -----------------------------
 // LINE domain (tenant-scoped)
 // -----------------------------
-export const lineChannels = pgTable('line_channels', {
-  id: uuid('id').primaryKey().defaultRandom(),
-  tenantId: uuid('tenant_id')
-    .notNull()
-    .references(() => tenants.id, { onDelete: 'cascade' }),
-  channelId: text('channel_id').notNull().unique(),
-  channelSecret: text('channel_secret').notNull(),
-  channelAccessToken: text('channel_access_token').notNull(),
-  displayName: text('display_name').notNull(),
-  isActive: boolean('is_active').notNull().default(true),
-  createdAt: timestamp('created_at', { withTimezone: true })
-    .notNull()
-    .defaultNow(),
-});
+export const lineChannels = pgTable(
+  'line_channels',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    tenantId: uuid('tenant_id')
+      .notNull()
+      .references(() => tenants.id, { onDelete: 'cascade' }),
+    channelId: text('channel_id').notNull().unique(),
+    channelSecret: text('channel_secret').notNull(),
+    channelAccessToken: text('channel_access_token').notNull(),
+    displayName: text('display_name').notNull(),
+    isActive: boolean('is_active').notNull().default(true),
+    createdAt: timestamp('created_at', { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (t) => [
+    // ⚡ Bolt: Indexing the tenantId foreign key prevents O(N) sequential scans during tenant-scoped filtering and quota checks.
+    index('line_channels_tenant_id_idx').on(t.tenantId),
+  ],
+);
 
 export const lineUsers = pgTable(
   'line_users',
@@ -184,26 +195,33 @@ export const inboundMessages = pgTable(
 // -----------------------------
 // Forms (Phase 3)
 // -----------------------------
-export const forms = pgTable('forms', {
-  id: uuid('id').primaryKey().defaultRandom(),
-  tenantId: uuid('tenant_id')
-    .notNull()
-    .references(() => tenants.id, { onDelete: 'cascade' }),
-  lineChannelId: uuid('line_channel_id')
-    .notNull()
-    .references(() => lineChannels.id, { onDelete: 'cascade' }),
-  name: text('name').notNull(),
-  status: text('status').notNull().default('draft'), // draft / published / archived
-  triggerKeyword: text('trigger_keyword'),
-  schema: jsonb('schema').notNull(),
-  version: integer('version').notNull().default(1),
-  createdAt: timestamp('created_at', { withTimezone: true })
-    .notNull()
-    .defaultNow(),
-  updatedAt: timestamp('updated_at', { withTimezone: true })
-    .notNull()
-    .defaultNow(),
-});
+export const forms = pgTable(
+  'forms',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    tenantId: uuid('tenant_id')
+      .notNull()
+      .references(() => tenants.id, { onDelete: 'cascade' }),
+    lineChannelId: uuid('line_channel_id')
+      .notNull()
+      .references(() => lineChannels.id, { onDelete: 'cascade' }),
+    name: text('name').notNull(),
+    status: text('status').notNull().default('draft'), // draft / published / archived
+    triggerKeyword: text('trigger_keyword'),
+    schema: jsonb('schema').notNull(),
+    version: integer('version').notNull().default(1),
+    createdAt: timestamp('created_at', { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    updatedAt: timestamp('updated_at', { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (t) => [
+    // ⚡ Bolt: Indexing the tenantId foreign key prevents O(N) sequential scans during tenant-scoped filtering and quota checks.
+    index('forms_tenant_id_idx').on(t.tenantId),
+  ],
+);
 
 export const lineSessions = pgTable(
   'line_sessions',
