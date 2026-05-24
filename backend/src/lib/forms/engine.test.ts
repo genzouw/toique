@@ -47,6 +47,7 @@ let tenantId: string;
 let channelRowId: string;
 let lineUserRowId: string;
 let formId: string;
+let formId2: string;
 
 async function seed() {
   const [t] = await db
@@ -88,6 +89,19 @@ async function seed() {
     })
     .returning({ id: forms.id });
   formId = f.id;
+
+  const [f2] = await db
+    .insert(forms)
+    .values({
+      tenantId,
+      lineChannelId: channelRowId,
+      name: '出張査定',
+      status: 'published',
+      triggerKeyword: '出張査定',
+      schema: sampleSchema as unknown as Record<string, unknown>,
+    })
+    .returning({ id: forms.id });
+  formId2 = f2.id;
 }
 
 async function cleanup() {
@@ -112,6 +126,16 @@ describe('forms engine', () => {
   it('findFormByTrigger returns null for non-matching text', async () => {
     const form = await findFormByTrigger(channelRowId, 'こんにちは');
     expect(form).toBeNull();
+  });
+
+  it('findFormByTrigger supports partial match', async () => {
+    const form = await findFormByTrigger(channelRowId, '査定をお願いします');
+    expect(form?.id).toBe(formId);
+  });
+
+  it('findFormByTrigger prioritizes longer matching keyword', async () => {
+    const form = await findFormByTrigger(channelRowId, '出張査定をお願いします');
+    expect(form?.id).toBe(formId2);
   });
 
   it('startSession creates a session and returns the first step as Quick Reply', async () => {
