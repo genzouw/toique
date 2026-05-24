@@ -1,0 +1,95 @@
+name: AI Weekly Summary
+
+on:
+  schedule:
+    - cron: '0 0 * * 1' # 毎週月曜日の00:00 UTC に実行
+  workflow_dispatch: # 手動実行用
+
+jobs:
+  weekly_summary:
+    name: Generate Weekly Summary
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+      pull-requests: read
+      contents: read
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Fetch week's data using GitHub CLI
+        id: fetch_data
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          LAST_WEEK=$(date -d "7 days ago" +%Y-%m-%d)
+          echo "Fetching PRs merged since $LAST_WEEK"
+          PRS=$(gh pr list --state merged --search "merged:>=$LAST_WEEK" --json number,title,author --limit 50 || echo "[]")
+          echo "Fetching Issues closed since $LAST_WEEK"
+          ISSUES=$(gh issue list --state closed --search "closed:>=$LAST_WEEK" --json number,title,author --limit 50 || echo "[]")
+
+          DELIMITER=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
+          echo "PRS_DATA<<$DELIMITER" >> $GITHUB_ENV
+          echo "$PRS" >> $GITHUB_ENV
+          echo "$DELIMITER" >> $GITHUB_ENV
+
+          DELIMITER2=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
+          echo "ISSUES_DATA<<$DELIMITER2" >> $GITHUB_ENV
+          echo "$ISSUES" >> $GITHUB_ENV
+          echo "$DELIMITER2" >> $GITHUB_ENV
+
+      - name: Generate and Post Summary with AI
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          PRS_DATA: ${{ env.PRS_DATA }}
+          ISSUES_DATA: ${{ env.ISSUES_DATA }}
+        with:
+          script: |
+            if (!process.env.OPENAI_API_KEY) {
+              console.log('OPENAI_API_KEY is not set. Skipping summary creation.');
+              return;
+            }
+
+            const prompt = `
+            以下のデータは、このプロジェクトにおいて過去1週間でマージされたPull Requestと、クローズされたIssueの一覧（JSON形式）です。
+            これらを元に、今週の開発の進捗サマリーを作成してください。
+            内容は日本語で、読みやすくMarkdown形式で整理してください。
+
+            【マージされた Pull Requests】
+            ${process.env.PRS_DATA}
+
+            【クローズされた Issues】
+            ${process.env.ISSUES_DATA}
+            `;
+
+            const response = await fetch('https://api.openai.com/v1/chat/completions', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`
+              },
+              body: JSON.stringify({
+                model: 'gpt-4o',
+                messages: [
+                  { role: 'system', content: 'You are a helpful AI assistant summarizing software development progress. Answer in Japanese.' },
+                  { role: 'user', content: prompt }
+                ]
+              })
+            });
+
+            if (!response.ok) {
+              console.error(`OpenAI API Error: status=${response.status}`);
+              return;
+            }
+
+            const data = await response.json();
+            const summary = data.choices[0].message.content;
+
+            const dateStr = new Date().toISOString().split('T')[0];
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: `📅 開発週報サマリー (${dateStr})`,
+              body: "🤖 **AIによる今週の開発サマリー:**\n\n" + summary
+            });

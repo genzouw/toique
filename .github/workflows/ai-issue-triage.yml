@@ -13,18 +13,38 @@ jobs:
     if: contains(fromJSON('["OWNER","MEMBER","COLLABORATOR"]'), github.event.issue.author_association)
     permissions:
       issues: write
+      contents: read
     concurrency:
       group: ai-issue-triage-${{ github.event.issue.number }}
       cancel-in-progress: false
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Search Similar Issues (RAG prep)
+        id: search_issues
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ISSUE_TITLE: ${{ github.event.issue.title }}
+        run: |
+          # タイトルのキーワードを用いて類似の Issue を検索
+          # 検索結果を最大 5 件取得
+          SEARCH_QUERY="$ISSUE_TITLE is:issue"
+          DELIMITER=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
+          echo "SEARCH_RESULTS<<$DELIMITER" >> $GITHUB_ENV
+          gh issue list --search "$SEARCH_QUERY" --limit 5 --state all >> $GITHUB_ENV || echo "No similar issues found or search failed." >> $GITHUB_ENV
+          echo "$DELIMITER" >> $GITHUB_ENV
+
       - name: Call OpenAI for Issue Triage
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          SEARCH_RESULTS: ${{ env.SEARCH_RESULTS }}
         with:
           script: |
             const issueBody = context.payload.issue.body || '';
             const issueTitle = context.payload.issue.title || '';
+            const searchResults = process.env.SEARCH_RESULTS || '';
 
             if (!process.env.OPENAI_API_KEY) {
               console.log('OPENAI_API_KEY is not set. Skipping triage.');
@@ -37,6 +57,11 @@ jobs:
 
             タイトル: ${issueTitle}
             本文: ${issueBody}
+
+            【過去の類似Issue検索結果】
+            ${searchResults}
+
+            上記検索結果も踏まえ、すでに解決済みの問題であれば解決策を提示し、未解決のバグや新規提案であればその旨をコメントに含めてください。
             `;
 
             const response = await fetch('https://api.openai.com/v1/chat/completions', {
