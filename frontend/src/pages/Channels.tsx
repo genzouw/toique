@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useId } from 'react';
 import { Trash2, Copy, Check, MessageCircle } from 'lucide-react';
 import { api, type LineChannel } from '../lib/api';
 import { ICON_SIZE } from '../lib/icon-size';
@@ -223,10 +223,14 @@ function Field({
   placeholder?: string;
   type?: string;
 }) {
+  const id = useId();
   return (
-    <label className="block">
-      <span className="text-sm font-medium text-slate-700">{label}</span>
+    <div className="block">
+      <label htmlFor={id} className="block text-sm font-medium text-slate-700">
+        {label}
+      </label>
       <input
+        id={id}
         type={type}
         value={value}
         onChange={(e) => onChange(e.target.value)}
@@ -234,6 +238,6 @@ function Field({
         required
         className="mt-1 w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-slate-900"
       />
-    </label>
+    </div>
   );
 }
