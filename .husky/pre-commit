@@ -20,6 +20,23 @@ if [ -n "$FORBIDDEN_FILES" ]; then
 fi
 # ---------------------------------------------------------
 
+# --- Security: Gitleaks scan for staged files ---
+# コミットされるファイルの中身に対して gitleaks を実行し、APIキー等の混入を防ぐ。
+# バイナリがインストールされていない場合は warning を出しつつ CI での検知に委ねる。
+if command -v gitleaks >/dev/null 2>&1; then
+  echo "🔍 Running gitleaks on staged files..."
+  # `--staged`: ステージされたファイルのみをスキャン対象とする
+  # `--redact`: ターミナル出力でシークレットの生値をマスクする
+  gitleaks protect --staged --redact --verbose || exit 1
+else
+  echo "⚠️  gitleaks is not installed locally."
+  echo "   It is strongly recommended to install it to prevent committing secrets."
+  echo "   Install (macOS): brew install gitleaks"
+  echo "   Install (Linux): See https://github.com/gitleaks/gitleaks"
+  echo "   Skipping local scan; CI will run the full check."
+fi
+# ---------------------------------------------------------
+
 # .github/workflows/ がステージされていれば actionlint をローカルで実行
 # (actionlint がインストールされていない環境はスキップして CI 側で拾う)
 changed_workflows=$(git diff --cached --name-only --diff-filter=ACMR -- '.github/workflows/' || true)

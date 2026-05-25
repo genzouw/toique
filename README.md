@@ -271,14 +271,14 @@ curl -s http://localhost:3000/api/v1/messages | jq
 - **Husky** (`.husky/pre-commit`): lint-staged → 変更が backend / frontend に及ぶ場合は typecheck + test も実行
 - **lint-staged** (ルート `package.json`): backend / frontend それぞれ ESLint --fix + Prettier
 
-### 脆弱性報告
-
-[`SECURITY.md`](SECURITY.md) を参照。
-
 ### シークレット漏洩防止
 
 当プロジェクトは公開リポジトリであるため、誤ってシークレットをコミットしないよう以下の仕組みを導入しています。
 詳しくは [`docs/security/leak-prevention.md`](docs/security/leak-prevention.md) を参照してください。
 
-- **Pre-commit フック (`secretlint`)**: 開発者のローカル環境でコミット前にシークレットを検知しブロックします。
+- **Pre-commit フック (`secretlint`, `gitleaks`)**: 開発者のローカル環境でコミット前にシークレットを検知しブロックします。
 - **CI / GitHub Actions**: `gitleaks` および `trivy` を使用して PR および push 時に二重チェックを行います。
+
+### セキュリティ報告窓口
+
+脆弱性やシークレット漏洩を発見した場合は、公開のIssue等で報告せず、速やかにプライベートな窓口（[`SECURITY.md`](SECURITY.md) 参照）へご報告ください。
