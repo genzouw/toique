@@ -99,7 +99,7 @@ export DATABASE_URL="$(gcloud secrets versions access latest --secret=DATABASE_U
 
 # 1) 対象インデックスを CONCURRENTLY で先行作成（autocommit セッションで実行）
 psql "$DATABASE_URL" -c \
-  'CREATE INDEX CONCURRENTLY IF NOT EXISTS "<index_name>" ON "<table>" ("<col>");'
+  'CREATE INDEX CONCURRENTLY IF NOT EXISTS "INDEX_NAME" ON "TABLE_NAME" ("COLUMN_NAME");'
 
 # 2) drizzle-kit migrate は IF NOT EXISTS により skip され、ロック発生なしで完了
 (cd backend && bun install --frozen-lockfile && bunx drizzle-kit migrate)
