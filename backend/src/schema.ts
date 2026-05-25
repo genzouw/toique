@@ -115,7 +115,7 @@ export const tenantMembers = pgTable(
   },
   (t) => [
     unique('tenant_members_user_id_key').on(t.userId),
-    // ⚡ Bolt: Indexing the tenantId foreign key prevents O(N) sequential scans during tenant-scoped filtering and quota checks.
+    // tenant_id によるフィルタリングとクォータチェックの高速化
     index('tenant_members_tenant_id_idx').on(t.tenantId),
   ],
 );
@@ -140,7 +140,7 @@ export const lineChannels = pgTable(
       .defaultNow(),
   },
   (t) => [
-    // ⚡ Bolt: Indexing the tenantId foreign key prevents O(N) sequential scans during tenant-scoped filtering and quota checks.
+    // tenant_id によるフィルタリングの高速化
     index('line_channels_tenant_id_idx').on(t.tenantId),
   ],
 );
@@ -218,7 +218,7 @@ export const forms = pgTable(
       .defaultNow(),
   },
   (t) => [
-    // ⚡ Bolt: Indexing the tenantId foreign key prevents O(N) sequential scans during tenant-scoped filtering and quota checks.
+    // tenant_id によるフィルタリングの高速化
     index('forms_tenant_id_idx').on(t.tenantId),
   ],
 );
