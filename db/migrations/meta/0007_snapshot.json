@@ -1,5 +1,5 @@
 {
-  "id": "9285415b-9728-4035-9d27-51cf3caeb43d",
+  "id": "bec11f11-13a5-4477-8dfe-f1bcd2cd9ab6",
   "prevId": "daf6320b-296a-437c-9c72-9d1e7e869915",
   "version": "7",
   "dialect": "postgresql",
@@ -310,7 +310,23 @@
           "default": "now()"
         }
       },
-      "indexes": {},
+      "indexes": {
+        "forms_tenant_id_idx": {
+          "name": "forms_tenant_id_idx",
+          "columns": [
+            {
+              "expression": "tenant_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
       "foreignKeys": {
         "forms_tenant_id_tenants_id_fk": {
           "name": "forms_tenant_id_tenants_id_fk",
@@ -513,7 +529,23 @@
           "default": "now()"
         }
       },
-      "indexes": {},
+      "indexes": {
+        "line_channels_tenant_id_idx": {
+          "name": "line_channels_tenant_id_idx",
+          "columns": [
+            {
+              "expression": "tenant_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
       "foreignKeys": {
         "line_channels_tenant_id_tenants_id_fk": {
           "name": "line_channels_tenant_id_tenants_id_fk",
@@ -1008,7 +1040,23 @@
           "default": "now()"
         }
       },
-      "indexes": {},
+      "indexes": {
+        "tenant_members_tenant_id_idx": {
+          "name": "tenant_members_tenant_id_idx",
+          "columns": [
+            {
+              "expression": "tenant_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
       "foreignKeys": {
         "tenant_members_tenant_id_tenants_id_fk": {
           "name": "tenant_members_tenant_id_tenants_id_fk",
