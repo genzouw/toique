@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useId, useRef, useState } from 'react';
 import { useNavigate, useParams, Link } from 'react-router';
 import { ChevronLeft, Trash2 } from 'lucide-react';
 import { api, type Form, type LineChannel } from '../lib/api';
@@ -125,6 +125,11 @@ export default function FormEdit() {
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(true);
+
+  const nameInputId = useId();
+  const lineChannelInputId = useId();
+  const statusInputId = useId();
+  const triggerInputId = useId();
 
   useEffect(() => {
     (async () => {
@@ -314,16 +319,18 @@ export default function FormEdit() {
       )}
 
       <div className="mt-6 bg-white border border-slate-200 rounded-lg p-5 space-y-4">
-        <Field label="表示名">
+        <Field label="表示名" htmlFor={nameInputId}>
           <input
+            id={nameInputId}
             value={name}
             onChange={(e) => setName(e.target.value)}
             className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm"
           />
         </Field>
 
-        <Field label="LINE チャネル">
+        <Field label="LINE チャネル" htmlFor={lineChannelInputId}>
           <select
+            id={lineChannelInputId}
             value={lineChannelId}
             onChange={(e) => setLineChannelId(e.target.value)}
             disabled={!isNew}
@@ -343,8 +350,9 @@ export default function FormEdit() {
           )}
         </Field>
 
-        <Field label="ステータス">
+        <Field label="ステータス" htmlFor={statusInputId}>
           <select
+            id={statusInputId}
             value={status}
             onChange={(e) => setStatus(e.target.value as Form['status'])}
             className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm"
@@ -358,8 +366,9 @@ export default function FormEdit() {
           </div>
         </Field>
 
-        <Field label="トリガーキーワード">
+        <Field label="トリガーキーワード" htmlFor={triggerInputId}>
           <input
+            id={triggerInputId}
             value={triggerKeyword}
             onChange={(e) => setTriggerKeyword(e.target.value)}
             placeholder="例: 査定"
@@ -474,15 +483,22 @@ export default function FormEdit() {
 
 function Field({
   label,
+  htmlFor,
   children,
 }: {
   label: string;
+  htmlFor?: string;
   children: React.ReactNode;
 }) {
   return (
-    <label className="block">
-      <span className="text-sm font-medium text-slate-700">{label}</span>
+    <div className="block">
+      <label
+        htmlFor={htmlFor}
+        className="block text-sm font-medium text-slate-700"
+      >
+        {label}
+      </label>
       <div className="mt-1">{children}</div>
-    </label>
+    </div>
   );
 }

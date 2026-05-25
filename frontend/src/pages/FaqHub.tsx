@@ -56,22 +56,24 @@ export default function FaqHub() {
       {/* Search */}
       <section className="px-6">
         <div className="max-w-2xl mx-auto">
-          <label className="relative block">
-            <span className="sr-only">FAQを検索</span>
+          <div className="relative block">
+            <label htmlFor="search-faq" className="sr-only">
+              FAQを検索
+            </label>
             <Search
               size={ICON_SIZE.md}
               className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
               aria-hidden="true"
             />
             <input
+              id="search-faq"
               type="search"
-              aria-label="FAQを検索"
               placeholder="キーワードで検索（例: LINE, 料金, CSV）"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               className="w-full pl-9 pr-3 py-2.5 border border-slate-300 rounded-md text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-900 focus:border-slate-900"
             />
-          </label>
+          </div>
         </div>
       </section>
 
