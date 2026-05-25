@@ -19,42 +19,58 @@ function startOfCurrentMonth(): Date {
   return new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1));
 }
 
+function buildLineChannelsCountQuery(tenantId: string) {
+  return db
+    .select({ count: count() })
+    .from(lineChannels)
+    .where(eq(lineChannels.tenantId, tenantId));
+}
+
+function buildFormsCountQuery(tenantId: string) {
+  return db
+    .select({ count: count() })
+    .from(forms)
+    .where(eq(forms.tenantId, tenantId));
+}
+
+function buildSubmissionsCountQuery(tenantId: string) {
+  return db
+    .select({ count: count() })
+    .from(submissions)
+    .where(
+      and(
+        eq(submissions.tenantId, tenantId),
+        gte(submissions.submittedAt, startOfCurrentMonth()),
+      ),
+    );
+}
+
+function buildMembersCountQuery(tenantId: string) {
+  return db
+    .select({ count: count() })
+    .from(tenantMembers)
+    .where(eq(tenantMembers.tenantId, tenantId));
+}
+
 async function countResource(
   tenantId: string,
   resource: ResourceKey,
 ): Promise<number> {
   switch (resource) {
     case 'lineChannels': {
-      const [r] = await db
-        .select({ count: count() })
-        .from(lineChannels)
-        .where(eq(lineChannels.tenantId, tenantId));
+      const [r] = await buildLineChannelsCountQuery(tenantId);
       return r.count;
     }
     case 'forms': {
-      const [r] = await db
-        .select({ count: count() })
-        .from(forms)
-        .where(eq(forms.tenantId, tenantId));
+      const [r] = await buildFormsCountQuery(tenantId);
       return r.count;
     }
     case 'submissionsPerMonth': {
-      const [r] = await db
-        .select({ count: count() })
-        .from(submissions)
-        .where(
-          and(
-            eq(submissions.tenantId, tenantId),
-            gte(submissions.submittedAt, startOfCurrentMonth()),
-          ),
-        );
+      const [r] = await buildSubmissionsCountQuery(tenantId);
       return r.count;
     }
     case 'members': {
-      const [r] = await db
-        .select({ count: count() })
-        .from(tenantMembers)
-        .where(eq(tenantMembers.tenantId, tenantId));
+      const [r] = await buildMembersCountQuery(tenantId);
       return r.count;
     }
   }
@@ -90,27 +106,10 @@ export async function getTenantUsage(
 
   // ⚡ Bolt: Use db.batch() to execute all count queries in a single roundtrip
   const batchResults = await db.batch([
-    db
-      .select({ count: count() })
-      .from(lineChannels)
-      .where(eq(lineChannels.tenantId, tenantId)),
-    db
-      .select({ count: count() })
-      .from(forms)
-      .where(eq(forms.tenantId, tenantId)),
-    db
-      .select({ count: count() })
-      .from(submissions)
-      .where(
-        and(
-          eq(submissions.tenantId, tenantId),
-          gte(submissions.submittedAt, startOfCurrentMonth()),
-        ),
-      ),
-    db
-      .select({ count: count() })
-      .from(tenantMembers)
-      .where(eq(tenantMembers.tenantId, tenantId)),
+    buildLineChannelsCountQuery(tenantId),
+    buildFormsCountQuery(tenantId),
+    buildSubmissionsCountQuery(tenantId),
+    buildMembersCountQuery(tenantId),
   ]);
 
   const channels = batchResults[0][0]?.count ?? 0;
