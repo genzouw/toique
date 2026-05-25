@@ -24,6 +24,7 @@ jobs:
     outputs:
       frontend: ${{ steps.filter.outputs.frontend }}
       backend: ${{ steps.filter.outputs.backend }}
+      migrations: ${{ steps.filter.outputs.migrations }}
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
       # dorny/paths-filter は User アカウント所有で Marketplace verified 扱いに
@@ -43,6 +44,22 @@ jobs:
               - 'db/**'
               - '.prettierrc'
               - '.github/workflows/ci.yml'
+            migrations:
+              - 'db/migrations/**'
+              - 'scripts/check-migrations.sh'
+              - '.github/workflows/ci.yml'
+
+  migrations-lint:
+    name: Migrations (index ops safety lint)
+    needs: changes
+    # changes ジョブが failure になっても本ジョブは走らせる (フォールバックで全件実行)。
+    # always() を挟まないと needs 失敗時に GitHub Actions の暗黙ガードで SKIPPED になる。
+    if: always() && (needs.changes.result != 'success' || needs.changes.outputs.migrations == 'true')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - name: Lint migration SQL (CREATE/DROP INDEX must be idempotent)
+        run: bash scripts/check-migrations.sh
 
   frontend:
     name: Frontend (lint / typecheck / format / test / build)

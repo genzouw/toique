@@ -89,6 +89,26 @@ unset DATABASE_URL
 
 心配なら `bunx drizzle-kit check` で整合性チェックしてから `migrate` するのが安全。
 
+#### 大規模テーブルへのインデックス追加が含まれる場合
+
+`drizzle-kit migrate` は 1 トランザクション内で SQL を実行するため、`CREATE INDEX CONCURRENTLY` を SQL に直接書くことはできない（PostgreSQL の制約）。
+代わりに以下のフローで、**本番 DB に CONCURRENTLY で先行手動適用**してから `drizzle-kit migrate` を実行する。
+
+```bash
+export DATABASE_URL="$(gcloud secrets versions access latest --secret=DATABASE_URL --project=$GCP_PROJECT_ID)"
+
+# 1) 対象インデックスを CONCURRENTLY で先行作成（autocommit セッションで実行）
+psql "$DATABASE_URL" -c \
+  'CREATE INDEX CONCURRENTLY IF NOT EXISTS "<index_name>" ON "<table>" ("<col>");'
+
+# 2) drizzle-kit migrate は IF NOT EXISTS により skip され、ロック発生なしで完了
+(cd backend && bun install --frozen-lockfile && bunx drizzle-kit migrate)
+
+unset DATABASE_URL
+```
+
+詳細と運用ルールは `docs/migrations.md` を参照。
+
 ### 3. Cloud Run へデプロイ
 
 環境変数にカンマを含む値 (`CORS_ORIGIN`) があるため、`--env-vars-file` (YAML) を使うのが安全。
