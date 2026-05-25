@@ -110,13 +110,27 @@ export async function advanceSession(
     } else if (input.kind === 'text' && input.text) {
       // 1000年先のアプローチ: ユーザーの自然なテキスト入力を意図として解釈し、選択肢とマッチングする
       const normalizedInput = input.text.trim().toLowerCase();
+
+      // まず完全一致を優先して判定
       choice = currentStep.choices.find(
         (c) =>
           c.label.toLowerCase() === normalizedInput ||
-          c.value.toLowerCase() === normalizedInput ||
-          normalizedInput.includes(c.label.toLowerCase()) ||
-          normalizedInput.includes(c.value.toLowerCase())
+          c.value.toLowerCase() === normalizedInput,
       );
+
+      // 完全一致しない場合のみ部分一致を判定（長い選択肢優先・2文字未満はスキップ）
+      if (!choice) {
+        const sortedChoices = [...currentStep.choices].sort(
+          (a, b) => b.label.length - a.label.length,
+        );
+        choice = sortedChoices.find(
+          (c) =>
+            (c.label.length >= 2 &&
+              normalizedInput.includes(c.label.toLowerCase())) ||
+            (c.value.length >= 2 &&
+              normalizedInput.includes(c.value.toLowerCase())),
+        );
+      }
     }
 
     if (!choice) {
