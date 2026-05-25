@@ -28,7 +28,9 @@ fi
 fail=0
 for file in "${files[@]}"; do
   line_no=0
-  while IFS= read -r line; do
+  # `|| [[ -n "$line" ]]` で末尾改行のないファイルでも最終行を処理する
+  # (Drizzle 生成 SQL は末尾改行が無いケースがある)
+  while IFS= read -r line || [[ -n "$line" ]]; do
     line_no=$((line_no + 1))
     lower=$(printf '%s' "$line" | tr '[:upper:]' '[:lower:]')
 
