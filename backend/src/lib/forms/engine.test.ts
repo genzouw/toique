@@ -134,7 +134,10 @@ describe('forms engine', () => {
   });
 
   it('findFormByTrigger prioritizes longer matching keyword', async () => {
-    const form = await findFormByTrigger(channelRowId, '出張査定をお願いします');
+    const form = await findFormByTrigger(
+      channelRowId,
+      '出張査定をお願いします',
+    );
     expect(form?.id).toBe(formId2);
   });
 
