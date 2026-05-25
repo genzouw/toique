@@ -27,7 +27,8 @@ if command -v gitleaks >/dev/null 2>&1; then
   echo "🔍 Running gitleaks on staged files..."
   # `--staged`: ステージされたファイルのみをスキャン対象とする
   # `--redact`: ターミナル出力でシークレットの生値をマスクする
-  gitleaks protect --staged --redact --verbose || exit 1
+  # `--no-banner`: 起動時のアスキーアートバナーを抑制し pre-commit 出力を簡潔に保つ
+  gitleaks protect --staged --redact --verbose --no-banner || exit 1
 else
   echo "⚠️  gitleaks is not installed locally."
   echo "   It is strongly recommended to install it to prevent committing secrets."
