@@ -276,7 +276,7 @@ curl -s http://localhost:3000/api/v1/messages | jq
 当プロジェクトは公開リポジトリであるため、誤ってシークレットをコミットしないよう以下の仕組みを導入しています。
 詳しくは [`docs/security/leak-prevention.md`](docs/security/leak-prevention.md) を参照してください。
 
-- **Pre-commit フック (`secretlint`, `gitleaks`)**: 開発者のローカル環境でコミット前にシークレットを検知しブロックします。
+- **Pre-commit フック (`secretlint`, `gitleaks`)**: 開発者のローカル環境でコミット前にシークレットを検知します（`gitleaks` はローカルにインストールされている場合のみ実行され、検出時はコミットをブロック。未インストール時は警告のみでスキップし、CI 側の検知に委ねます）。
 - **CI / GitHub Actions**: `gitleaks` および `trivy` を使用して PR および push 時に二重チェックを行います。
 
 ### セキュリティ報告窓口
