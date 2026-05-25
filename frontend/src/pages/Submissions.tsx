@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState, useId } from 'react';
 import { Inbox, Download, RefreshCw } from 'lucide-react';
 import { api, type Submission, type FormListItem } from '../lib/api';
 import EmptyState from '../components/EmptyState';
@@ -24,6 +24,7 @@ export default function Submissions() {
   const [error, setError] = useState<string | null>(null);
   const [exportFormId, setExportFormId] = useState<string>('');
   const [downloading, setDownloading] = useState(false);
+  const selectId = useId();
 
   const formsById = useMemo(
     () => Object.fromEntries(forms.map((f) => [f.id, f])),
@@ -98,11 +99,15 @@ export default function Submissions() {
       {/* CSV エクスポート */}
       <div className="mt-6 bg-white border border-slate-200 rounded-lg p-4">
         <div className="flex items-end gap-3 flex-wrap">
-          <label className="flex-1 min-w-[240px]">
-            <span className="text-sm font-medium text-slate-700">
+          <div className="flex-1 min-w-[240px]">
+            <label
+              htmlFor={selectId}
+              className="block text-sm font-medium text-slate-700"
+            >
               CSVダウンロード対象のフォーム
-            </span>
+            </label>
             <select
+              id={selectId}
               value={exportFormId}
               onChange={(e) => setExportFormId(e.target.value)}
               disabled={forms.length === 0}
@@ -118,7 +123,7 @@ export default function Submissions() {
                 ))
               )}
             </select>
-          </label>
+          </div>
           <button
             onClick={handleDownload}
             disabled={!exportFormId || downloading}
