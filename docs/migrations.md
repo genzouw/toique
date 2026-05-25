@@ -49,9 +49,16 @@ IF NOT EXISTS により skip され、ロックは発生しない
 
 ### 3. 既存マイグレーションの遡及修正は原則しない
 
-`db/migrations/*.sql` は本番に適用済みの履歴であり、ハッシュが `meta/_journal.json` と `__drizzle_migrations` テーブルに記録されている。原則として遡及修正はしない。
+`db/migrations/*.sql` は本番に適用済みの履歴であり、原則として遡及修正はしない。
 
-ただし、**`IF NOT EXISTS` / `IF EXISTS` の付与は冪等化のみで実体スキーマを変えない**ため、過去ファイルに付与しても問題ない（実害なし・万一の再適用時の安全性が上がる）。
+参考までに `drizzle-orm` の migrator (`drizzle-orm/pg-core/dialect.js` の `migrate`) が見る情報は以下のとおり:
+
+- `meta/_journal.json` の `entries[]` に記録されるのは `idx` / `when` / `tag` / `breakpoints` のみで、**SQL ハッシュは含まれない**
+- 適用済み判定は `__drizzle_migrations.created_at` と journal 側の `when`（タイムスタンプ）の大小比較で行う
+- SQL ハッシュは `__drizzle_migrations.hash` に「適用時の記録」として書き込まれるが、後続の適用判定には使われない
+
+このため **SQL 内容を編集してもハッシュ不一致による再適用は発生しない**。
+特に **`IF NOT EXISTS` / `IF EXISTS` の付与は冪等化のみで実体スキーマを変えない**ため、過去ファイルに付与しても問題ない（実害なし・万一の再適用時の安全性が上がる）。
 
 ## 将来案: CONCURRENTLY 対応のカスタム migrator
 
