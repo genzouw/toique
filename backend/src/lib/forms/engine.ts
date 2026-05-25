@@ -100,27 +100,33 @@ export async function advanceSession(
   let nextStepId: string | null | undefined;
 
   if (currentStep.type === 'choice') {
-    if (input.kind !== 'postback' || !input.postbackData) {
-      // 選択肢中にテキスト入力されたら同じ質問を再送
-      return {
-        replyMessages: buildStepMessages(session.currentStep, currentStep),
-        completed: false,
-      };
+    let choice: { value: string; next: string } | undefined;
+
+    if (input.kind === 'postback' && input.postbackData) {
+      const parsed = parsePostbackData(input.postbackData);
+      if (parsed && parsed.stepId === session.currentStep) {
+        choice = currentStep.choices.find((c) => c.value === parsed.value);
+      }
+    } else if (input.kind === 'text' && input.text) {
+      // 1000年先のアプローチ: ユーザーの自然なテキスト入力を意図として解釈し、選択肢とマッチングする
+      const normalizedInput = input.text.trim().toLowerCase();
+      choice = currentStep.choices.find(
+        (c) =>
+          c.label.toLowerCase() === normalizedInput ||
+          c.value.toLowerCase() === normalizedInput ||
+          normalizedInput.includes(c.label.toLowerCase()) ||
+          normalizedInput.includes(c.value.toLowerCase())
+      );
     }
-    const parsed = parsePostbackData(input.postbackData);
-    if (!parsed || parsed.stepId !== session.currentStep) {
-      return {
-        replyMessages: buildStepMessages(session.currentStep, currentStep),
-        completed: false,
-      };
-    }
-    const choice = currentStep.choices.find((c) => c.value === parsed.value);
+
     if (!choice) {
+      // 意図が解決できない場合のみ同じ質問を再送
       return {
         replyMessages: buildStepMessages(session.currentStep, currentStep),
         completed: false,
       };
     }
+
     answers[currentStep.field] = choice.value;
     nextStepId = choice.next;
   } else if (currentStep.type === 'text') {

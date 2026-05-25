@@ -225,7 +225,7 @@ describe('forms engine', () => {
     expect(session.status).toBe('completed');
   });
 
-  it('advanceSession re-sends the same choice prompt if user typed text', async () => {
+  it('advanceSession accepts typed text that matches a choice label', async () => {
     const [lineUser] = await db
       .select()
       .from(lineUsers)
@@ -236,7 +236,27 @@ describe('forms engine', () => {
 
     const r = await advanceSession(lineUser, form, active!.session, {
       kind: 'text',
-      text: '自由文',
+      text: '時計', // 選択肢のlabelに一致
+    });
+    expect(r.completed).toBe(false);
+    expect(r.replyMessages[0].text).toBe('ブランド名を教えてください');
+
+    const updated = await findActiveSession(lineUserRowId);
+    expect(updated?.session.answers).toEqual({ category: 'watch' });
+  });
+
+  it('advanceSession re-sends the same choice prompt if user typed unmatched text', async () => {
+    const [lineUser] = await db
+      .select()
+      .from(lineUsers)
+      .where(eq(lineUsers.id, lineUserRowId));
+    const [form] = await db.select().from(forms).where(eq(forms.id, formId));
+    await startSession(lineUser, form);
+    const active = await findActiveSession(lineUserRowId);
+
+    const r = await advanceSession(lineUser, form, active!.session, {
+      kind: 'text',
+      text: '自由文', // 選択肢に一致しない
     });
     expect(r.completed).toBe(false);
     expect(r.replyMessages[0].text).toBe('カテゴリを選んでください');
