@@ -50,6 +50,13 @@
       "when": 1777763790137,
       "tag": "0006_backfill_email_verified",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1779660853016,
+      "tag": "0007_needy_tattoo",
+      "breakpoints": true
     }
   ]
 }
