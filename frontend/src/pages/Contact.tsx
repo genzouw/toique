@@ -1,5 +1,5 @@
 import { Link } from 'react-router';
-import { useEffect, useState } from 'react';
+import { useEffect, useId, useState } from 'react';
 import { api, type ContactCategory } from '../lib/api';
 import { useSession } from '../lib/auth-client';
 import SEOMetadata from '../components/SEOMetadata';
@@ -26,6 +26,14 @@ export default function Contact() {
   const [submitting, setSubmitting] = useState(false);
   const [done, setDone] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const websiteId = useId();
+  const nameId = useId();
+  const emailId = useId();
+  const categoryId = useId();
+  const subjectId = useId();
+  const bodyId = useId();
+  const urlId = useId();
 
   // ログインユーザーの情報を自動入力
   useEffect(() => {
@@ -148,9 +156,9 @@ export default function Contact() {
                 overflow: 'hidden',
               }}
             >
-              <label htmlFor="website-hp">Website</label>
+              <label htmlFor={websiteId}>Website</label>
               <input
-                id="website-hp"
+                id={websiteId}
                 type="text"
                 tabIndex={-1}
                 autoComplete="off"
@@ -159,9 +167,9 @@ export default function Contact() {
               />
             </div>
 
-            <Field label="お名前" required htmlFor="contact-name">
+            <Field label="お名前" required htmlFor={nameId}>
               <input
-                id="contact-name"
+                id={nameId}
                 type="text"
                 required
                 maxLength={100}
@@ -171,9 +179,9 @@ export default function Contact() {
               />
             </Field>
 
-            <Field label="メールアドレス" required htmlFor="contact-email">
+            <Field label="メールアドレス" required htmlFor={emailId}>
               <input
-                id="contact-email"
+                id={emailId}
                 type="email"
                 required
                 maxLength={200}
@@ -183,9 +191,9 @@ export default function Contact() {
               />
             </Field>
 
-            <Field label="お問い合わせ種別" required htmlFor="contact-category">
+            <Field label="お問い合わせ種別" required htmlFor={categoryId}>
               <select
-                id="contact-category"
+                id={categoryId}
                 required
                 value={category}
                 onChange={(e) => setCategory(e.target.value as ContactCategory)}
@@ -199,9 +207,9 @@ export default function Contact() {
               </select>
             </Field>
 
-            <Field label="件名" required htmlFor="contact-subject">
+            <Field label="件名" required htmlFor={subjectId}>
               <input
-                id="contact-subject"
+                id={subjectId}
                 type="text"
                 required
                 maxLength={200}
@@ -211,9 +219,9 @@ export default function Contact() {
               />
             </Field>
 
-            <Field label="お問い合わせ内容" required htmlFor="contact-body">
+            <Field label="お問い合わせ内容" required htmlFor={bodyId}>
               <textarea
-                id="contact-body"
+                id={bodyId}
                 required
                 maxLength={5000}
                 rows={8}
@@ -226,9 +234,9 @@ export default function Contact() {
               </p>
             </Field>
 
-            <Field label="関連URL (任意)" htmlFor="contact-url">
+            <Field label="関連URL (任意)" htmlFor={urlId}>
               <input
-                id="contact-url"
+                id={urlId}
                 type="url"
                 maxLength={500}
                 placeholder="https://..."
