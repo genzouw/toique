@@ -91,7 +91,7 @@ JOIN pg_class t ON t.oid = ix.indrelid
 WHERE NOT ix.indisvalid;
 
 -- 削除
-DROP INDEX CONCURRENTLY IF EXISTS "<index_name>";
+DROP INDEX CONCURRENTLY IF EXISTS "INDEX_NAME";
 ```
 
 ### `relation "xxx_idx" already exists`
