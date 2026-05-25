@@ -141,6 +141,25 @@ describe('forms engine', () => {
     expect(form?.id).toBe(formId2);
   });
 
+  it('findFormByTrigger prefers newer form when keyword lengths are tied', async () => {
+    // 既存の formId と同じ '査定' を triggerKeyword に持つ別フォームを後から追加し、
+    // createdAt 降順の第2ソートキーで「新しい方」が優先されることを検証する。
+    const [newer] = await db
+      .insert(forms)
+      .values({
+        tenantId,
+        lineChannelId: channelRowId,
+        name: '査定 (新)',
+        status: 'published',
+        triggerKeyword: '査定',
+        schema: sampleSchema as unknown as Record<string, unknown>,
+      })
+      .returning({ id: forms.id });
+
+    const form = await findFormByTrigger(channelRowId, '査定をお願いします');
+    expect(form?.id).toBe(newer.id);
+  });
+
   it('startSession creates a session and returns the first step as Quick Reply', async () => {
     const [lineUser] = await db
       .select()
