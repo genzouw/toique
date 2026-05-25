@@ -1,3 +1,7 @@
+[config]
+model="gpt-4o"
+model_weak="gpt-4o-mini"
+
 [pr_reviewer]
 extra_instructions = """
 変更がプロジェクト全体に与える影響や、アーキテクチャの観点など、広いスコープからコードレビューを行ってください。必ず日本語でコメントしてください。
