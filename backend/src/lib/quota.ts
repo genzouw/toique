@@ -87,12 +87,37 @@ export async function getTenantUsage(
   options?: QuotaOptions,
 ): Promise<TenantUsage> {
   const limits = getPlanLimits(plan);
-  const [channels, formCount, subs, members] = await Promise.all([
-    countResource(tenantId, 'lineChannels'),
-    countResource(tenantId, 'forms'),
-    countResource(tenantId, 'submissionsPerMonth'),
-    countResource(tenantId, 'members'),
+
+  // ⚡ Bolt: Use db.batch() to execute all count queries in a single roundtrip
+  const batchResults = await db.batch([
+    db
+      .select({ count: count() })
+      .from(lineChannels)
+      .where(eq(lineChannels.tenantId, tenantId)),
+    db
+      .select({ count: count() })
+      .from(forms)
+      .where(eq(forms.tenantId, tenantId)),
+    db
+      .select({ count: count() })
+      .from(submissions)
+      .where(
+        and(
+          eq(submissions.tenantId, tenantId),
+          gte(submissions.submittedAt, startOfCurrentMonth()),
+        ),
+      ),
+    db
+      .select({ count: count() })
+      .from(tenantMembers)
+      .where(eq(tenantMembers.tenantId, tenantId)),
   ]);
+
+  const channels = batchResults[0][0]?.count ?? 0;
+  const formCount = batchResults[1][0]?.count ?? 0;
+  const subs = batchResults[2][0]?.count ?? 0;
+  const members = batchResults[3][0]?.count ?? 0;
+
   if (options?.unlimited) {
     return {
       lineChannels: { current: channels, limit: -1 },

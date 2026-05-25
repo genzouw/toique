@@ -3,6 +3,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 vi.mock('../db.js', () => {
   const dbMock = {
     select: vi.fn(),
+    batch: vi.fn(),
   };
   return { default: dbMock };
 });
@@ -43,11 +44,17 @@ describe('checkQuota with unlimited option', () => {
 describe('getTenantUsage with unlimited option', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    const where = vi.fn().mockResolvedValue([{ count: 7 }]);
+    const where = vi.fn().mockReturnValue('mocked-query');
     const from = vi.fn().mockReturnValue({ where });
     vi.mocked(db.select).mockReturnValue({
       from,
     } as unknown as ReturnType<typeof db.select>);
+    vi.mocked(db.batch).mockResolvedValue([
+      [{ count: 7 }],
+      [{ count: 7 }],
+      [{ count: 7 }],
+      [{ count: 7 }],
+    ] as unknown as ReturnType<typeof db.batch>);
   });
 
   it('reports actual current values but reports limit as -1 (unlimited)', async () => {
@@ -60,6 +67,13 @@ describe('getTenantUsage with unlimited option', () => {
       submissionsPerMonth: { current: 7, limit: -1 },
       members: { current: 7, limit: -1 },
     });
+    expect(db.batch).toHaveBeenCalledTimes(1);
+    expect(db.batch).toHaveBeenCalledWith([
+      'mocked-query',
+      'mocked-query',
+      'mocked-query',
+      'mocked-query',
+    ]);
   });
 
   it('reports plan-derived limits when unlimited is false', async () => {
@@ -70,5 +84,6 @@ describe('getTenantUsage with unlimited option', () => {
     expect(usage.lineChannels.limit).toBe(5);
     expect(usage.submissionsPerMonth.limit).toBe(3000);
     expect(usage.members.limit).toBe(5);
+    expect(db.batch).toHaveBeenCalledTimes(1);
   });
 });
