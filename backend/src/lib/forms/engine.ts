@@ -287,7 +287,7 @@ export async function findFormByTrigger(
         sql`strpos(${normalized}, ${forms.triggerKeyword}) > 0`,
       ),
     )
-    .orderBy(desc(sql`length(${forms.triggerKeyword})`))
+    .orderBy(desc(sql`length(${forms.triggerKeyword})`), desc(forms.createdAt))
     .limit(1);
   return rows[0] ?? null;
 }
