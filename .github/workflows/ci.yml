@@ -52,7 +52,9 @@ jobs:
   migrations-lint:
     name: Migrations (index ops safety lint)
     needs: changes
-    if: needs.changes.result != 'success' || needs.changes.outputs.migrations == 'true'
+    # changes ジョブが failure になっても本ジョブは走らせる (フォールバックで全件実行)。
+    # always() を挟まないと needs 失敗時に GitHub Actions の暗黙ガードで SKIPPED になる。
+    if: always() && (needs.changes.result != 'success' || needs.changes.outputs.migrations == 'true')
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
