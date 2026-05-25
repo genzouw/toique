@@ -1,4 +1,4 @@
-import { and, eq, sql } from 'drizzle-orm';
+import { and, eq, isNotNull, ne, sql, desc } from 'drizzle-orm';
 import db from '../../db.js';
 import {
   forms,
@@ -282,9 +282,12 @@ export async function findFormByTrigger(
       and(
         eq(forms.lineChannelId, lineChannelId),
         eq(forms.status, 'published'),
-        eq(forms.triggerKeyword, normalized),
+        isNotNull(forms.triggerKeyword),
+        ne(forms.triggerKeyword, ''),
+        sql`strpos(${normalized}, ${forms.triggerKeyword}) > 0`,
       ),
     )
+    .orderBy(desc(sql`length(${forms.triggerKeyword})`), desc(forms.createdAt))
     .limit(1);
   return rows[0] ?? null;
 }
