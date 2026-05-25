@@ -43,7 +43,12 @@ describe('checkQuota with unlimited option', () => {
 describe('getTenantUsage with unlimited option', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    const where = vi.fn().mockResolvedValue([{ count: 7 }]);
+    const where = vi
+      .fn()
+      .mockResolvedValueOnce([{ count: 3 }])
+      .mockResolvedValueOnce([{ count: 5 }])
+      .mockResolvedValueOnce([{ count: 11 }])
+      .mockResolvedValueOnce([{ count: 2 }]);
     const from = vi.fn().mockReturnValue({ where });
     vi.mocked(db.select).mockReturnValue({
       from,
@@ -55,10 +60,10 @@ describe('getTenantUsage with unlimited option', () => {
       unlimited: true,
     });
     expect(usage).toEqual({
-      lineChannels: { current: 7, limit: -1 },
-      forms: { current: 7, limit: -1 },
-      submissionsPerMonth: { current: 7, limit: -1 },
-      members: { current: 7, limit: -1 },
+      lineChannels: { current: 3, limit: -1 },
+      forms: { current: 5, limit: -1 },
+      submissionsPerMonth: { current: 11, limit: -1 },
+      members: { current: 2, limit: -1 },
     });
     expect(db.select).toHaveBeenCalledTimes(4);
   });

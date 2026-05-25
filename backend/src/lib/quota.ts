@@ -19,21 +19,21 @@ function startOfCurrentMonth(): Date {
   return new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1));
 }
 
-function lineChannelsCountQuery(tenantId: string) {
+function buildLineChannelsCountQuery(tenantId: string) {
   return db
     .select({ count: count() })
     .from(lineChannels)
     .where(eq(lineChannels.tenantId, tenantId));
 }
 
-function formsCountQuery(tenantId: string) {
+function buildFormsCountQuery(tenantId: string) {
   return db
     .select({ count: count() })
     .from(forms)
     .where(eq(forms.tenantId, tenantId));
 }
 
-function submissionsThisMonthCountQuery(tenantId: string) {
+function buildSubmissionsCountQuery(tenantId: string) {
   return db
     .select({ count: count() })
     .from(submissions)
@@ -45,7 +45,7 @@ function submissionsThisMonthCountQuery(tenantId: string) {
     );
 }
 
-function tenantMembersCountQuery(tenantId: string) {
+function buildMembersCountQuery(tenantId: string) {
   return db
     .select({ count: count() })
     .from(tenantMembers)
@@ -58,19 +58,19 @@ async function countResource(
 ): Promise<number> {
   switch (resource) {
     case 'lineChannels': {
-      const [r] = await lineChannelsCountQuery(tenantId);
+      const [r] = await buildLineChannelsCountQuery(tenantId);
       return r.count;
     }
     case 'forms': {
-      const [r] = await formsCountQuery(tenantId);
+      const [r] = await buildFormsCountQuery(tenantId);
       return r.count;
     }
     case 'submissionsPerMonth': {
-      const [r] = await submissionsThisMonthCountQuery(tenantId);
+      const [r] = await buildSubmissionsCountQuery(tenantId);
       return r.count;
     }
     case 'members': {
-      const [r] = await tenantMembersCountQuery(tenantId);
+      const [r] = await buildMembersCountQuery(tenantId);
       return r.count;
     }
   }
@@ -104,18 +104,20 @@ export async function getTenantUsage(
 ): Promise<TenantUsage> {
   const limits = getPlanLimits(plan);
 
-  // ⚡ Bolt: Execute all count queries concurrently in a single roundtrip
   const batchResults = await Promise.all([
-    lineChannelsCountQuery(tenantId),
-    formsCountQuery(tenantId),
-    submissionsThisMonthCountQuery(tenantId),
-    tenantMembersCountQuery(tenantId),
+    buildLineChannelsCountQuery(tenantId),
+    buildFormsCountQuery(tenantId),
+    buildSubmissionsCountQuery(tenantId),
+    buildMembersCountQuery(tenantId),
   ]);
 
-  const channels = batchResults[0][0]?.count ?? 0;
-  const formCount = batchResults[1][0]?.count ?? 0;
-  const subs = batchResults[2][0]?.count ?? 0;
-  const members = batchResults[3][0]?.count ?? 0;
+  const [[channelsResult], [formsResult], [subsResult], [membersResult]] =
+    batchResults;
+
+  const channels = channelsResult?.count ?? 0;
+  const formCount = formsResult?.count ?? 0;
+  const subs = subsResult?.count ?? 0;
+  const members = membersResult?.count ?? 0;
 
   if (options?.unlimited) {
     return {
