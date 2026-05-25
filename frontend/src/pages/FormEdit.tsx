@@ -314,16 +314,18 @@ export default function FormEdit() {
       )}
 
       <div className="mt-6 bg-white border border-slate-200 rounded-lg p-5 space-y-4">
-        <Field label="表示名">
+        <Field label="表示名" htmlFor="form-name">
           <input
+            id="form-name"
             value={name}
             onChange={(e) => setName(e.target.value)}
             className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm"
           />
         </Field>
 
-        <Field label="LINE チャネル">
+        <Field label="LINE チャネル" htmlFor="form-line-channel">
           <select
+            id="form-line-channel"
             value={lineChannelId}
             onChange={(e) => setLineChannelId(e.target.value)}
             disabled={!isNew}
@@ -343,8 +345,9 @@ export default function FormEdit() {
           )}
         </Field>
 
-        <Field label="ステータス">
+        <Field label="ステータス" htmlFor="form-status">
           <select
+            id="form-status"
             value={status}
             onChange={(e) => setStatus(e.target.value as Form['status'])}
             className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm"
@@ -358,8 +361,9 @@ export default function FormEdit() {
           </div>
         </Field>
 
-        <Field label="トリガーキーワード">
+        <Field label="トリガーキーワード" htmlFor="form-trigger">
           <input
+            id="form-trigger"
             value={triggerKeyword}
             onChange={(e) => setTriggerKeyword(e.target.value)}
             placeholder="例: 査定"
@@ -474,15 +478,22 @@ export default function FormEdit() {
 
 function Field({
   label,
+  htmlFor,
   children,
 }: {
   label: string;
+  htmlFor?: string;
   children: React.ReactNode;
 }) {
   return (
-    <label className="block">
-      <span className="text-sm font-medium text-slate-700">{label}</span>
+    <div className="block">
+      <label
+        htmlFor={htmlFor}
+        className="block text-sm font-medium text-slate-700"
+      >
+        {label}
+      </label>
       <div className="mt-1">{children}</div>
-    </label>
+    </div>
   );
 }

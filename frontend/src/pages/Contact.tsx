@@ -148,20 +148,20 @@ export default function Contact() {
                 overflow: 'hidden',
               }}
             >
-              <label>
-                Website
-                <input
-                  type="text"
-                  tabIndex={-1}
-                  autoComplete="off"
-                  value={website}
-                  onChange={(e) => setWebsite(e.target.value)}
-                />
-              </label>
+              <label htmlFor="website-hp">Website</label>
+              <input
+                id="website-hp"
+                type="text"
+                tabIndex={-1}
+                autoComplete="off"
+                value={website}
+                onChange={(e) => setWebsite(e.target.value)}
+              />
             </div>
 
-            <Field label="お名前" required>
+            <Field label="お名前" required htmlFor="contact-name">
               <input
+                id="contact-name"
                 type="text"
                 required
                 maxLength={100}
@@ -171,8 +171,9 @@ export default function Contact() {
               />
             </Field>
 
-            <Field label="メールアドレス" required>
+            <Field label="メールアドレス" required htmlFor="contact-email">
               <input
+                id="contact-email"
                 type="email"
                 required
                 maxLength={200}
@@ -182,8 +183,9 @@ export default function Contact() {
               />
             </Field>
 
-            <Field label="お問い合わせ種別" required>
+            <Field label="お問い合わせ種別" required htmlFor="contact-category">
               <select
+                id="contact-category"
                 required
                 value={category}
                 onChange={(e) => setCategory(e.target.value as ContactCategory)}
@@ -197,8 +199,9 @@ export default function Contact() {
               </select>
             </Field>
 
-            <Field label="件名" required>
+            <Field label="件名" required htmlFor="contact-subject">
               <input
+                id="contact-subject"
                 type="text"
                 required
                 maxLength={200}
@@ -208,8 +211,9 @@ export default function Contact() {
               />
             </Field>
 
-            <Field label="お問い合わせ内容" required>
+            <Field label="お問い合わせ内容" required htmlFor="contact-body">
               <textarea
+                id="contact-body"
                 required
                 maxLength={5000}
                 rows={8}
@@ -222,8 +226,9 @@ export default function Contact() {
               </p>
             </Field>
 
-            <Field label="関連URL (任意)">
+            <Field label="関連URL (任意)" htmlFor="contact-url">
               <input
+                id="contact-url"
                 type="url"
                 maxLength={500}
                 placeholder="https://..."
@@ -271,19 +276,24 @@ const inputCls =
 function Field({
   label,
   required,
+  htmlFor,
   children,
 }: {
   label: string;
   required?: boolean;
+  htmlFor?: string;
   children: React.ReactNode;
 }) {
   return (
-    <label className="block">
-      <span className="block text-sm font-medium text-slate-900 mb-1">
+    <div className="block">
+      <label
+        htmlFor={htmlFor}
+        className="block text-sm font-medium text-slate-900 mb-1"
+      >
         {label}
         {required && <span className="text-red-600 ml-0.5">*</span>}
-      </span>
+      </label>
       {children}
-    </label>
+    </div>
   );
 }
