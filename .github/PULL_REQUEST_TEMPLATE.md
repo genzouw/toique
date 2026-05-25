@@ -31,6 +31,7 @@
 - [ ] `bun --cwd backend run typecheck` / `bun --cwd frontend run typecheck` がパスする
 - [ ] 破壊的変更がある場合、README または docs を更新した
 - [ ] DB マイグレーションがある場合、ロールバック手順を確認した
+- [ ] インデックス変更を含む場合、`CREATE INDEX` / `DROP INDEX` を `IF (NOT) EXISTS` で冪等化し、必要なら本番に CONCURRENTLY で先行適用した（`docs/migrations.md`）
 - [ ] secret / 個人情報を含むコードや設定が含まれていない
 
 ## デプロイ時の注意
