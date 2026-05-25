@@ -112,10 +112,13 @@ export async function getTenantUsage(
     buildMembersCountQuery(tenantId),
   ]);
 
-  const channels = batchResults[0][0]?.count ?? 0;
-  const formCount = batchResults[1][0]?.count ?? 0;
-  const subs = batchResults[2][0]?.count ?? 0;
-  const members = batchResults[3][0]?.count ?? 0;
+  const [[channelsResult], [formsResult], [subsResult], [membersResult]] =
+    batchResults;
+
+  const channels = channelsResult?.count ?? 0;
+  const formCount = formsResult?.count ?? 0;
+  const subs = subsResult?.count ?? 0;
+  const members = membersResult?.count ?? 0;
 
   if (options?.unlimited) {
     return {
