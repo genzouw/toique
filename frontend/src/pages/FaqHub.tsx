@@ -68,7 +68,6 @@ export default function FaqHub() {
             <input
               id="search-faq"
               type="search"
-              aria-label="FAQを検索"
               placeholder="キーワードで検索（例: LINE, 料金, CSV）"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
