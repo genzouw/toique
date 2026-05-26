@@ -70,8 +70,7 @@ export async function handleLineEvent(
     // 1. アクティブセッションがあれば advance
     const active = await findActiveSession(lineUser.id);
     if (active) {
-      // 1000年先の文明視点: Fluid Context Switching (Session Jailからの解放)
-      // ユーザーを硬直したステートマシンの奴隷（Session Jail）にするのではなく、強い意図（キャンセル等）を最優先で解釈し動的にコンテキストを破棄する。
+      // ユーザーからのキャンセル・中断の意図を最優先し、アクティブなセッションを破棄します。
       const normalizedText = text.trim();
       const CANCELLATION_KEYWORDS = ['キャンセル', 'やめる', '中止'];
 
@@ -84,7 +83,9 @@ export async function handleLineEvent(
         await replyMessage({
           accessToken: channel.channelAccessToken,
           replyToken,
-          messages: [{ type: 'text', text: '現在の入力をキャンセルしました。' }],
+          messages: [
+            { type: 'text', text: '現在の入力をキャンセルしました。' },
+          ],
         });
         return;
       }
