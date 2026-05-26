@@ -1,0 +1,63 @@
+title = "toique custom gitleaks config"
+
+[extend]
+useDefault = true
+
+[[rules]]
+id = "custom-gcp-project-id"
+description = "Detects hardcoded GCP Project IDs"
+regex = '''(?i)(toique-[a-z0-9-]+-prod)'''
+tags = ["gcp", "project-id"]
+[rules.allowlist]
+paths = [
+    '''\.github/workflows/deploy\.yml''',
+    '''\.github/workflows/restore-test\.yml''',
+    '''compose\.yml''',
+    '''docs/backup\.md''',
+    '''infra/main\.ts''',
+    '''infra/README\.md'''
+]
+
+[[rules]]
+id = "custom-ai-traces"
+description = "Detects left-over AI agent placeholders"
+regex = '''(?i)(YOUR_(REAL_)?(API_KEY|PROJECT_ID|PASSWORD))'''
+tags = ["ai-trace"]
+[rules.allowlist]
+paths = [
+    '''docs/public-release-risk-assessment\.md'''
+]
+
+[[rules]]
+id = "custom-pii-email"
+description = "Detects email addresses (PII risk)"
+regex = '''[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}'''
+tags = ["pii", "email"]
+[rules.allowlist]
+regexes = [
+    '''(?i)@example\.com''',
+    '''(?i)\bdummy@example\.com\b''',
+    '''(?i)@users\.noreply\.github\.com'''
+]
+paths = [
+    '''\.github/workflows/deploy\.yml''',
+    '''\.github/workflows/restore-test\.yml''',
+    '''backend/src/lib/dogfooding\.ts''',
+    '''backend/src/lib/dogfooding\.test\.ts''',
+    '''backend/src/lib/mail/index\.test\.ts''',
+    '''backend/src/lib/mail/resend-adapter\.test\.ts''',
+    '''backend/src/lib/mail/smtp-adapter\.test\.ts''',
+    '''backend/src/lib/notify-contact\.ts''',
+    '''backend/src/lib/notify-contact\.test\.ts''',
+    '''backend/src/middleware/auth\.test\.ts''',
+    '''backend/src/routes/line-channels\.test\.ts''',
+    '''backend/src/routes/messages\.test\.ts''',
+    '''backend/src/routes/submissions\.test\.ts''',
+    '''compose\.yml''',
+    '''docs/fork-setup\.md''',
+    '''docs/public-release-checklist\.md''',
+    '''frontend/src/pages/Tokushoho\.tsx''',
+    '''infra/README\.md''',
+    '''infra/main\.ts''',
+    '''SECURITY\.md'''
+]
