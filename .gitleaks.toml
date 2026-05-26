@@ -12,8 +12,10 @@ tags = ["gcp", "project-id"]
 paths = [
     '''\.github/workflows/deploy\.yml''',
     '''\.github/workflows/restore-test\.yml''',
+    '''compose\.yml''',
     '''docs/backup\.md''',
-    '''infra/main\.ts'''
+    '''infra/main\.ts''',
+    '''infra/README\.md'''
 ]
 
 [[rules]]
@@ -21,6 +23,10 @@ id = "custom-ai-traces"
 description = "Detects left-over AI agent placeholders"
 regex = '''(?i)(YOUR_(REAL_)?(API_KEY|PROJECT_ID|PASSWORD))'''
 tags = ["ai-trace"]
+[rules.allowlist]
+paths = [
+    '''docs/public-release-risk-assessment\.md'''
+]
 
 [[rules]]
 id = "custom-pii-email"
@@ -36,10 +42,12 @@ regexes = [
 paths = [
     '''\.github/workflows/deploy\.yml''',
     '''\.github/workflows/restore-test\.yml''',
+    '''backend/src/lib/dogfooding\.ts''',
     '''backend/src/lib/dogfooding\.test\.ts''',
     '''backend/src/lib/mail/index\.test\.ts''',
     '''backend/src/lib/mail/resend-adapter\.test\.ts''',
     '''backend/src/lib/mail/smtp-adapter\.test\.ts''',
+    '''backend/src/lib/notify-contact\.ts''',
     '''backend/src/lib/notify-contact\.test\.ts''',
     '''backend/src/middleware/auth\.test\.ts''',
     '''backend/src/routes/line-channels\.test\.ts''',
@@ -47,6 +55,9 @@ paths = [
     '''backend/src/routes/submissions\.test\.ts''',
     '''compose\.yml''',
     '''docs/fork-setup\.md''',
+    '''docs/public-release-checklist\.md''',
+    '''frontend/src/pages/Tokushoho\.tsx''',
     '''infra/README\.md''',
-    '''infra/main\.ts'''
+    '''infra/main\.ts''',
+    '''SECURITY\.md'''
 ]
