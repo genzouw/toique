@@ -104,7 +104,9 @@ export async function getTenantUsage(
 ): Promise<TenantUsage> {
   const limits = getPlanLimits(plan);
 
-  const batchResults = await Promise.all([
+  // ⚡ Bolt: Using db.batch() instead of Promise.all() for multiple independent count queries
+  // This combines them into a single database roundtrip, reducing connection latency and network overhead.
+  const batchResults = await db.batch([
     buildLineChannelsCountQuery(tenantId),
     buildFormsCountQuery(tenantId),
     buildSubmissionsCountQuery(tenantId),
