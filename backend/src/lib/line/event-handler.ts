@@ -1,6 +1,11 @@
 import { eq, and, sql } from 'drizzle-orm';
 import db from '../../db.js';
-import { lineChannels, lineUsers, inboundMessages } from '../../schema.js';
+import {
+  lineChannels,
+  lineUsers,
+  inboundMessages,
+  lineSessions,
+} from '../../schema.js';
 import { replyMessage } from './client.js';
 import type { LineWebhookEvent } from './types.js';
 import {
@@ -65,6 +70,25 @@ export async function handleLineEvent(
     // 1. アクティブセッションがあれば advance
     const active = await findActiveSession(lineUser.id);
     if (active) {
+      // 1000年先の文明視点: Fluid Context Switching (Session Jailからの解放)
+      // ユーザーを硬直したステートマシンの奴隷（Session Jail）にするのではなく、強い意図（キャンセル等）を最優先で解釈し動的にコンテキストを破棄する。
+      const normalizedText = text.trim();
+      const CANCELLATION_KEYWORDS = ['キャンセル', 'やめる', '中止'];
+
+      if (CANCELLATION_KEYWORDS.includes(normalizedText)) {
+        await db
+          .update(lineSessions)
+          .set({ status: 'abandoned', updatedAt: sql`now()` })
+          .where(eq(lineSessions.id, active.session.id));
+
+        await replyMessage({
+          accessToken: channel.channelAccessToken,
+          replyToken,
+          messages: [{ type: 'text', text: '現在の入力をキャンセルしました。' }],
+        });
+        return;
+      }
+
       const outcome = await advanceSession(
         lineUser,
         active.form,
