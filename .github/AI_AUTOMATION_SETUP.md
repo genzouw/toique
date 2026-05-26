@@ -8,6 +8,7 @@
 Dependabotによるマイナー/パッチアップデートの自動マージ（`.github/workflows/dependabot-auto-merge.yml`）を機能させるために、リポジトリの設定で「Auto-merge」を許可する必要があります。
 
 **設定手順:**
+
 1. GitHubリポジトリの **Settings** を開く。
 2. 左側メニューの **General** を選択する。
 3. 画面中央の **Pull Requests** セクションまでスクロールする。
@@ -20,6 +21,7 @@ Dependabotによるマイナー/パッチアップデートの自動マージ（
 これにより、CodeQL等で検出された脆弱性に対して、AIが自動で修正案（Autofix PRコメント）を提示するようになります。
 
 **設定手順:**
+
 1. GitHubリポジトリの **Settings** を開く。
 2. 左側メニューの **Code security and analysis** を選択する。
 3. 以下の機能をそれぞれ **Enable**（有効化）する。
@@ -36,6 +38,7 @@ AI Issue Triage (`ai-issue-triage.yml`) を利用するためには、OpenAIのA
 ※このアクションは権限を持つユーザー（OWNER, MEMBER, COLLABORATOR）がIssueを作成した場合のみ実行されるよう保護されています。
 
 **設定手順:**
+
 1. GitHubリポジトリの **Settings** を開く。
 2. 左側メニューの **Secrets and variables** > **Actions** を選択する。
 3. **Repository secrets** タブで **New repository secret** をクリックする。
@@ -43,6 +46,15 @@ AI Issue Triage (`ai-issue-triage.yml`) を利用するためには、OpenAIのA
    - Name: `OPENAI_API_KEY`
    - Secret: あなたの OpenAI API キー
 
+## 4. AIコードレビューの設定最適化
+
+当リポジトリでは CodeRabbit および Qodo Merge (旧 PR Agent) などの無料AIレビューツールを導入しています。
+生成AIのレビュー精度を向上させるため、各設定ファイル（`.coderabbit.yaml`, `.pr_agent.toml`）には以下のような追加のレビュー観点が定義されています。
+もし新たなセキュリティやパフォーマンス、アクセシビリティの懸念事項があれば、設定ファイルを手動で調整し、AIのプロンプトを最適化してください。
+
+- パフォーマンス: O(N)ループの回避、N+1問題の防止、不要なDBクエリの削減など
+- アクセシビリティ: ボタン等のアクション要素における具体的な対象を含んだ aria-label や title の付与、role="tablist" におけるキーボードナビゲーションや roving tabIndex のサポートなど
+
 ---
 
-上記の事前設定が完了していることを確認した上で、プルリクエストをメインブランチにマージしてください。
+上記の事前設定および確認が完了していることを確認した上で、プルリクエストをメインブランチにマージしてください。
