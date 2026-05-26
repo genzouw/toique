@@ -19,7 +19,7 @@ paths = [
 [[rules]]
 id = "custom-ai-traces"
 description = "Detects left-over AI agent placeholders"
-regex = '''(?i)(YOUR_REAL_API_KEY|YOUR_REAL_PROJECT_ID|YOUR_REAL_PASSWORD)'''
+regex = '''(?i)(YOUR_(REAL_)?(API_KEY|PROJECT_ID|PASSWORD))'''
 tags = ["ai-trace"]
 
 [[rules]]
