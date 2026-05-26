@@ -30,15 +30,13 @@ tags = ["pii", "email"]
 [rules.allowlist]
 regexes = [
     '''(?i)@example\.com''',
-    '''(?i)dummy@''',
-    '''(?i)genzouw@gmail\.com''',
+    '''(?i)\bdummy@example\.com\b''',
     '''(?i)@users\.noreply\.github\.com'''
 ]
 paths = [
     '''\.github/workflows/deploy\.yml''',
     '''\.github/workflows/restore-test\.yml''',
     '''backend/src/lib/dogfooding\.test\.ts''',
-    '''backend/src/lib/dogfooding\.ts''',
     '''backend/src/lib/mail/index\.test\.ts''',
     '''backend/src/lib/mail/resend-adapter\.test\.ts''',
     '''backend/src/lib/mail/smtp-adapter\.test\.ts''',
