@@ -106,20 +106,29 @@ describe('handleLineEvent', () => {
     const channel = await getTestChannel();
 
     // Create a line user manually
-    const [lineUser] = await db.insert(lineUsers).values({
-      lineChannelId: channel.id,
-      lineUserId: TEST_USER_ID,
-    }).returning();
+    const [lineUser] = await db
+      .insert(lineUsers)
+      .values({
+        lineChannelId: channel.id,
+        lineUserId: TEST_USER_ID,
+      })
+      .returning();
 
     // Create a dummy form
-    const [form] = await db.insert(forms).values({
-      tenantId,
-      lineChannelId: channel.id,
-      name: 'Test Form',
-      status: 'published',
-      triggerKeyword: 'start',
-      schema: { steps: { s1: { type: 'text', field: 'f1', next: 'end' } }, startStep: 's1' },
-    }).returning();
+    const [form] = await db
+      .insert(forms)
+      .values({
+        tenantId,
+        lineChannelId: channel.id,
+        name: 'Test Form',
+        status: 'published',
+        triggerKeyword: 'start',
+        schema: {
+          steps: { s1: { type: 'text', field: 'f1', next: 'end' } },
+          startStep: 's1',
+        },
+      })
+      .returning();
 
     // Start an active session
     await db.insert(lineSessions).values({
@@ -141,7 +150,10 @@ describe('handleLineEvent', () => {
 
     await handleLineEvent(channel, event);
 
-    const session = await db.select().from(lineSessions).where(eq(lineSessions.lineUserId, lineUser.id));
+    const session = await db
+      .select()
+      .from(lineSessions)
+      .where(eq(lineSessions.lineUserId, lineUser.id));
     expect(session[0].status).toBe('abandoned');
 
     const fetchMock = global.fetch as unknown as ReturnType<typeof vi.fn>;
