@@ -104,8 +104,7 @@ export async function getTenantUsage(
 ): Promise<TenantUsage> {
   const limits = getPlanLimits(plan);
 
-  // ⚡ Bolt: Using db.batch() instead of Promise.all() for multiple independent count queries
-  // This combines them into a single database roundtrip, reducing connection latency and network overhead.
+  // 複数の独立したカウントクエリをバッチ実行し、データベースへのラウンドトリップを1回に削減します。
   const batchResults = await db.batch([
     buildLineChannelsCountQuery(tenantId),
     buildFormsCountQuery(tenantId),
