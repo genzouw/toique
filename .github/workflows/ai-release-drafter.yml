@@ -1,0 +1,123 @@
+name: AI Release Drafter
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  draft_release:
+    name: Draft Release Notes
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: read
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Get latest release tag
+        id: get_latest_tag
+        run: |
+          LATEST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
+          echo "LATEST_TAG=$LATEST_TAG" >> "$GITHUB_ENV"
+          echo "latest_tag=$LATEST_TAG" >> "$GITHUB_OUTPUT"
+
+      - name: Get commits since last release
+        id: get_commits
+        run: |
+          if [ -z "$LATEST_TAG" ]; then
+            echo "No previous release found. Fetching all commits."
+            COMMITS=$(git log --pretty=format:"- %s (%h) by %an" | head -n 50)
+          else
+            echo "Fetching commits since $LATEST_TAG."
+            COMMITS=$(git log ${LATEST_TAG}..HEAD --pretty=format:"- %s (%h) by %an")
+          fi
+
+          if [ -z "$COMMITS" ]; then
+            echo "No new commits. Skipping release draft."
+            echo "SKIP=true" >> "$GITHUB_ENV"
+          else
+            echo "SKIP=false" >> "$GITHUB_ENV"
+          fi
+
+          DELIMITER=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
+          {
+            echo "COMMITS<<$DELIMITER"
+            echo "$COMMITS"
+            echo "$DELIMITER"
+          } >> "$GITHUB_ENV"
+
+      - name: Generate Release Notes with Gemini
+        if: env.SKIP == 'false'
+        id: generate_notes
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          COMMITS: ${{ env.COMMITS }}
+          LATEST_TAG: ${{ env.LATEST_TAG }}
+        with:
+          script: |
+            if (!process.env.GEMINI_API_KEY) {
+              console.log('GEMINI_API_KEY is not set. Skipping release draft.');
+              return;
+            }
+
+            const prompt = `
+            以下のデータは、前回のリリース（${process.env.LATEST_TAG || '初回'}）以降に main ブランチへマージされたコミットの一覧です。
+            これらを元に、次回のリリースに向けた「リリースノートのドラフト（下書き）」を作成してください。
+            内容は日本語で、Markdown形式で整理してください。機能追加、バグ修正、その他（リファクタリング・依存関係の更新など）に分類すると読みやすくなります。
+            また、開発者やコントリビューターへの感謝のメッセージを含めてください。
+
+            【コミット一覧】
+            ${process.env.COMMITS}
+            `;
+
+            const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({
+                system_instruction: {
+                  parts: { text: "You are a helpful AI assistant that writes clean, professional, and well-structured software release notes. Answer in Japanese." }
+                },
+                contents: [{
+                  role: "user",
+                  parts: [{ text: prompt }]
+                }]
+              })
+            });
+
+            if (!response.ok) {
+              console.error(`Gemini API Error: status=${response.status}`);
+              return;
+            }
+
+            const data = await response.json();
+            if (data.error) {
+              console.error('Gemini API Error:', data.error);
+              return;
+            }
+            const releaseNotes = data.candidates[0].content.parts[0].text;
+
+            const fs = require('fs');
+            fs.writeFileSync('release_notes.md', releaseNotes);
+
+      - name: Create or Update Draft Release
+        if: env.SKIP == 'false'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          if [ ! -f "release_notes.md" ]; then
+            echo "Release notes file not found. Skipping draft creation."
+          else
+            NEW_TAG="v-draft-$(date +'%Y%m%d%H%M%S')"
+            RELEASE_TITLE="Next Release (Draft)"
+            gh release create "$NEW_TAG" \
+              --draft \
+              --title "$RELEASE_TITLE" \
+              --notes-file release_notes.md
+          fi
