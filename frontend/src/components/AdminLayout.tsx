@@ -65,7 +65,7 @@ export default function AdminLayout() {
                 to={item.to}
                 className={({ isActive }) =>
                   cn(
-                    'flex items-center gap-2 px-3 py-2 rounded-md text-sm',
+                    'flex items-center gap-2 px-3 py-2 rounded-md text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 focus-visible:ring-offset-1 focus-visible:ring-offset-slate-900 transition-colors',
                     isActive
                       ? 'bg-amber-500 text-slate-900 font-medium'
                       : 'text-slate-300 hover:bg-slate-800',
@@ -84,7 +84,7 @@ export default function AdminLayout() {
           </div>
           <button
             onClick={handleSignOut}
-            className="mt-2 w-full inline-flex items-center gap-2 px-2 py-1.5 text-xs text-slate-300 hover:bg-slate-800 rounded-md"
+            className="mt-2 w-full inline-flex items-center gap-2 px-2 py-1.5 text-xs text-slate-300 hover:bg-slate-800 rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 focus-visible:ring-offset-1 focus-visible:ring-offset-slate-900 transition-colors"
           >
             <LogOut size={ICON_SIZE.xs} />
             ログアウト
