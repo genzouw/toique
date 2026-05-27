@@ -107,7 +107,7 @@ export default function Layout() {
                 to={item.to}
                 className={({ isActive }) =>
                   cn(
-                    'flex items-center gap-2 px-3 py-2 rounded-md text-sm',
+                    'flex items-center gap-2 px-3 py-2 rounded-md text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-900 focus-visible:ring-offset-1 transition-colors',
                     isActive
                       ? 'bg-slate-900 text-white'
                       : 'text-slate-700 hover:bg-slate-100',
@@ -123,7 +123,7 @@ export default function Layout() {
             href="/help"
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center gap-2 px-3 py-2 rounded-md text-sm text-slate-700 hover:bg-slate-100"
+            className="flex items-center gap-2 px-3 py-2 rounded-md text-sm text-slate-700 hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-900 focus-visible:ring-offset-1 transition-colors"
           >
             <HelpCircle size={ICON_SIZE.md} />
             ヘルプ
@@ -135,7 +135,7 @@ export default function Layout() {
           {isOperator && (
             <Link
               to="/admin"
-              className="flex items-center gap-2 px-3 py-2 rounded-md text-sm text-amber-700 hover:bg-amber-50 border border-dashed border-amber-300 mt-2"
+              className="flex items-center gap-2 px-3 py-2 rounded-md text-sm text-amber-700 hover:bg-amber-50 border border-dashed border-amber-300 mt-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 focus-visible:ring-offset-1 transition-colors"
             >
               <Shield size={ICON_SIZE.md} />
               運営者エリア
@@ -150,7 +150,7 @@ export default function Layout() {
               </div>
               <button
                 onClick={handleSignOut}
-                className="mt-2 w-full inline-flex items-center gap-2 px-2 py-1.5 text-xs text-slate-700 hover:bg-slate-100 rounded-md"
+                className="mt-2 w-full inline-flex items-center gap-2 px-2 py-1.5 text-xs text-slate-700 hover:bg-slate-100 rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-900 focus-visible:ring-offset-1 transition-colors"
               >
                 <LogOut size={ICON_SIZE.xs} />
                 ログアウト
@@ -178,7 +178,7 @@ export default function Layout() {
             </span>
             <button
               onClick={() => setDismissed(true)}
-              className="ml-4"
+              className="ml-4 p-1 rounded-md hover:bg-black/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-current transition-colors"
               title="メッセージを閉じる"
               aria-label="メッセージを閉じる"
             >
