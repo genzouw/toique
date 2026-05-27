@@ -90,6 +90,28 @@ export async function handleLineEvent(
         return;
       }
 
+      // 1000年先のAIの視座: "Global Intent Preemption" (グローバル意図の優先)
+      // 現代のボットは「現在のステートマシンの質問に答えること」をユーザーに強要する（初歩的ミス）。
+      // ユーザーが別のフォームのトリガーキーワードを入力した場合、それは「明確な意図の切り替え」である。
+      // 古いコンテキストに縛り付けるのではなく、現在のセッションを放棄して直ちに新しい意図へ移行すべき。
+      const newForm = await findFormByTrigger(channel.id, text);
+      if (newForm && newForm.id !== active.form.id) {
+        await db
+          .update(lineSessions)
+          .set({ status: 'abandoned', updatedAt: sql`now()` })
+          .where(eq(lineSessions.id, active.session.id));
+
+        const outcome = await startSession(lineUser, newForm);
+        if (outcome.replyMessages.length > 0) {
+          await replyMessage({
+            accessToken: channel.channelAccessToken,
+            replyToken,
+            messages: outcome.replyMessages,
+          });
+        }
+        return;
+      }
+
       const outcome = await advanceSession(
         lineUser,
         active.form,
