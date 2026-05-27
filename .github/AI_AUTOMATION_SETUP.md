@@ -32,9 +32,9 @@ Dependabotによるマイナー/パッチアップデートの自動マージ（
    - **Secret scanning push protection**
 4. 組織設定（Organization Settings）で Copilot の機能が有効化されている場合、Code scanning の設定内に **Copilot Autofix** のトグルが表示されるので、それを **On** にする。
 
-## 3. OpenAI API キーの設定 (Issue Triage 用)
+## 3. Gemini API キーの設定 (Issue Triage, Weekly Summary, Release Drafter 用)
 
-AI Issue Triage (`ai-issue-triage.yml`) を利用するためには、OpenAIのAPIキーが必要です。
+AI Issue Triage (`ai-issue-triage.yml`)、AI Weekly Summary (`ai-weekly-summary.yml`)、AI Release Drafter (`ai-release-drafter.yml`) を無料で利用するためには、Google の Gemini API キーが必要です。Google AI Studio から無料で取得できます。
 ※このアクションは権限を持つユーザー（OWNER, MEMBER, COLLABORATOR）がIssueを作成した場合のみ実行されるよう保護されています。
 
 **設定手順:**
@@ -43,8 +43,8 @@ AI Issue Triage (`ai-issue-triage.yml`) を利用するためには、OpenAIのA
 2. 左側メニューの **Secrets and variables** > **Actions** を選択する。
 3. **Repository secrets** タブで **New repository secret** をクリックする。
 4. 以下の通り入力して保存する。
-   - Name: `OPENAI_API_KEY`
-   - Secret: あなたの OpenAI API キー
+   - Name: `GEMINI_API_KEY`
+   - Secret: あなたの Gemini API キー
 
 ## 4. AIコードレビューの設定最適化
 
