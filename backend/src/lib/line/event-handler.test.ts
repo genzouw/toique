@@ -6,6 +6,8 @@ import {
   lineUsers,
   inboundMessages,
   tenants,
+  forms,
+  lineSessions,
 } from '../../schema.js';
 import { handleLineEvent } from './event-handler.js';
 import type { LineMessageEvent } from './types.js';
@@ -98,5 +100,67 @@ describe('handleLineEvent', () => {
       .where(eq(lineUsers.lineChannelId, channel.id));
     expect(users).toHaveLength(1);
     expect(users[0].lineUserId).toBe(TEST_USER_ID);
+  });
+
+  it('abandons active session on cancellation keywords (Fluid Context Switching)', async () => {
+    const channel = await getTestChannel();
+
+    // Create a line user manually
+    const [lineUser] = await db
+      .insert(lineUsers)
+      .values({
+        lineChannelId: channel.id,
+        lineUserId: TEST_USER_ID,
+      })
+      .returning();
+
+    // Create a dummy form
+    const [form] = await db
+      .insert(forms)
+      .values({
+        tenantId,
+        lineChannelId: channel.id,
+        name: 'Test Form',
+        status: 'published',
+        triggerKeyword: 'start',
+        schema: {
+          steps: { s1: { type: 'text', field: 'f1', next: 'end' } },
+          startStep: 's1',
+        },
+      })
+      .returning();
+
+    // Start an active session
+    await db.insert(lineSessions).values({
+      lineUserId: lineUser.id,
+      formId: form.id,
+      currentStep: 's1',
+      status: 'in_progress',
+      answers: {},
+      expiresAt: new Date(Date.now() + 100000),
+    });
+
+    const event: LineMessageEvent = {
+      type: 'message',
+      replyToken: 'rt-cancel',
+      source: { type: 'user', userId: TEST_USER_ID },
+      timestamp: Date.now(),
+      message: { type: 'text', id: 'm-cancel', text: ' キャンセル ' },
+    };
+
+    await handleLineEvent(channel, event);
+
+    const session = await db
+      .select()
+      .from(lineSessions)
+      .where(eq(lineSessions.lineUserId, lineUser.id));
+    expect(session[0].status).toBe('abandoned');
+
+    const fetchMock = global.fetch as unknown as ReturnType<typeof vi.fn>;
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    const callArgs = fetchMock.mock.calls[0];
+    const reqBody = JSON.parse(callArgs[1].body);
+    expect(reqBody.replyToken).toBe('rt-cancel');
+    expect(reqBody.messages[0].text).toBe('現在の入力をキャンセルしました。');
   });
 });
