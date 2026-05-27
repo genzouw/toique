@@ -111,10 +111,11 @@ updates:
   # Infra (CDKTF) Node.js dependencies
   # version update の自動 PR は受けず、security updates のみ対象とする
   # (open-pull-requests-limit: 0 で version updates を停止)。
-  # minimatch の脆弱性は cdktf がバンドルする archiver 内部 (bundleDependencies)
-  # にあり、npm overrides では上書き不可。security update job が
-  # `security_update_not_possible` で失敗するため ignore で抑止する。
-  # cdktf が archiver を更新するまでアップストリーム側の対応待ち。
+  # minimatch / glob の脆弱性は cdktf がバンドルする archiver / archiver-utils
+  # 内部 (bundleDependencies) にあり、npm overrides では上書き不可。
+  # security update job が `security_update_not_possible` で失敗するため
+  # ignore で抑止する。cdktf が archiver / archiver-utils を更新するまで
+  # アップストリーム側の対応待ち。
   - package-ecosystem: 'npm'
     directory: '/infra'
     schedule:
@@ -136,6 +137,7 @@ updates:
       separator: '/'
     ignore:
       - dependency-name: 'minimatch'
+      - dependency-name: 'glob'
 
   # GitHub Actions
   - package-ecosystem: 'github-actions'
