@@ -74,7 +74,7 @@ jobs:
         shell: python
 
       - name: Install DuckDuckGo Search
-        run: pip install duckduckgo-search
+        run: pip install "duckduckgo-search==8.1.1"
 
       - name: Search DuckDuckGo (RAG prep)
         id: search_ddg
@@ -196,6 +196,10 @@ jobs:
             const data = await response.json();
             if (data.error) {
               console.error('Gemini API Error:', data.error);
+              return;
+            }
+            if (!data.candidates || data.candidates.length === 0) {
+              console.error('Gemini API returned no candidates:', JSON.stringify(data));
               return;
             }
             let textResult = data.candidates[0].content.parts[0].text;
