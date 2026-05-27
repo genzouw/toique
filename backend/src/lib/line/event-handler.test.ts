@@ -12,7 +12,7 @@ import {
 import { handleLineEvent } from './event-handler.js';
 import type { LineMessageEvent } from './types.js';
 
-import { randomUUID } from 'crypto';
+import { randomUUID } from 'node:crypto';
 
 const TEST_SECRET = 'sec';
 const TEST_TOKEN = 'tok';
