@@ -28,7 +28,10 @@ export function MobileHeader({
         onClick={onOpen}
         aria-label="メニューを開く"
         title="メニューを開く"
-        className={cn('p-1.5 rounded-md', menuButtonClassName)}
+        className={cn(
+          'p-1.5 rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-current transition-colors',
+          menuButtonClassName,
+        )}
       >
         <Menu size={ICON_SIZE.xl} />
       </button>
@@ -90,7 +93,10 @@ export function SidebarPanel({
           onClick={onClose}
           aria-label="メニューを閉じる"
           title="メニューを閉じる"
-          className={cn('md:hidden p-1 rounded-md', closeButtonClassName)}
+          className={cn(
+            'md:hidden p-1 rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-current transition-colors',
+            closeButtonClassName,
+          )}
         >
           <X size={ICON_SIZE.xl} />
         </button>
