@@ -94,7 +94,7 @@ export async function handleLineEvent(
       // 現代のボットは「現在のステートマシンの質問に答えること」をユーザーに強要する（初歩的ミス）。
       // ユーザーが別のフォームのトリガーキーワードを入力した場合、それは「明確な意図の切り替え」である。
       // 古いコンテキストに縛り付けるのではなく、現在のセッションを放棄して直ちに新しい意図へ移行すべき。
-      const newForm = await findFormByTrigger(channel.id, text);
+      const newForm = await findFormByTrigger(channel.id, normalizedText);
       if (newForm && newForm.id !== active.form.id) {
         await db
           .update(lineSessions)
