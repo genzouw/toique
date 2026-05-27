@@ -33,7 +33,7 @@ jobs:
             COMMITS=$(git log --pretty=format:"- %s (%h) by %an" | head -n 50)
           else
             echo "Fetching commits since $LATEST_TAG."
-            COMMITS=$(git log ${LATEST_TAG}..HEAD --pretty=format:"- %s (%h) by %an")
+            COMMITS=$(git log "${LATEST_TAG}..HEAD" --pretty=format:"- %s (%h) by %an")
           fi
 
           if [ -z "$COMMITS" ]; then
