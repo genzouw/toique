@@ -116,6 +116,10 @@ updates:
   # にあり、npm overrides では上書き不可。security update job が
   # `security_update_not_possible` で失敗するため ignore で抑止する。
   # cdktf が同梱依存を更新するまでアップストリーム側の対応待ち。
+  #
+  # `dependency-name` 単独指定だと security update job 側で
+  # `ignore-conditions` に伝播せず失敗するケース (run #26548981924) を観測したため、
+  # `versions: ['>= 0']` を明示してすべてのバージョンを対象に ignore する。
   - package-ecosystem: 'npm'
     directory: '/infra'
     schedule:
@@ -137,9 +141,13 @@ updates:
       separator: '/'
     ignore:
       - dependency-name: 'minimatch'
+        versions: ['>= 0']
       - dependency-name: 'glob'
+        versions: ['>= 0']
       - dependency-name: 'lodash'
+        versions: ['>= 0']
       - dependency-name: 'brace-expansion'
+        versions: ['>= 0']
 
   # GitHub Actions
   - package-ecosystem: 'github-actions'
