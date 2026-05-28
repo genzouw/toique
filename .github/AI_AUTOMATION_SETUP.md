@@ -32,19 +32,10 @@ Dependabotによるマイナー/パッチアップデートの自動マージ（
    - **Secret scanning push protection**
 4. 組織設定（Organization Settings）で Copilot の機能が有効化されている場合、Code scanning の設定内に **Copilot Autofix** のトグルが表示されるので、それを **On** にする。
 
-## 3. Gemini API キーの設定 (Issue Triage, Weekly Summary, Release Drafter 用)
+## 3. GitHub Models (Issue Triage, Weekly Summary, Release Drafter 用)
 
-AI Issue Triage (`ai-issue-triage.yml`)、AI Weekly Summary (`ai-weekly-summary.yml`)、AI Release Drafter (`ai-release-drafter.yml`) を無料で利用するためには、Google の Gemini API キーが必要です。Google AI Studio から無料で取得できます。
+AI Issue Triage (`ai-issue-triage.yml`)、AI Weekly Summary (`ai-weekly-summary.yml`)、AI Release Drafter (`ai-release-drafter.yml`) は、GitHubが提供する無料の GitHub Models (gpt-4o-mini) を利用しています。追加のAPIキー設定は不要で、標準の `GITHUB_TOKEN` を用いて動作します。
 ※このアクションは権限を持つユーザー（OWNER, MEMBER, COLLABORATOR）がIssueを作成した場合のみ実行されるよう保護されています。
-
-**設定手順:**
-
-1. GitHubリポジトリの **Settings** を開く。
-2. 左側メニューの **Secrets and variables** > **Actions** を選択する。
-3. **Repository secrets** タブで **New repository secret** をクリックする。
-4. 以下の通り入力して保存する。
-   - Name: `GEMINI_API_KEY`
-   - Secret: あなたの Gemini API キー
 
 ## 4. AIコードレビューの設定最適化
 
