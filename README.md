@@ -253,8 +253,8 @@ curl -s http://localhost:3000/api/v1/messages | jq
 > **導入のための手動事前作業:**
 >
 > 1. **Qodo Merge**: [Qodo Merge GitHub App](https://github.com/apps/qodo-merge) をインストールするだけで公開リポジトリに対して完全無料で利用可能です。自動的に `.pr_agent.toml` の設定を読み込みます。
-> 2. **AI Issue Triage (`ai-issue-triage.yml`) / AI Weekly Summary (`ai-weekly-summary.yml`)**: GitHub Models を使用するため、手動での API キー登録は不要です（自動で `GITHUB_TOKEN` が利用されます）。
-> 3. **権限設定**: 各ワークフローファイルに `permissions:` が個別定義されているため、リポジトリ全体の "Workflow permissions" を **Read and write** にする必要はありません。デフォルトの **Read repository contents and packages permissions** のままで動作します。
+> 2. **AI Issue Triage (`ai-issue-triage.yml`) / AI Weekly Summary (`ai-weekly-summary.yml`) / AI Release Drafter (`ai-release-drafter.yml`)**: GitHub Models を使用するため、手動での API キー登録は不要です（自動で `GITHUB_TOKEN` が利用されます）。
+> 3. **権限設定**: 各ワークフローファイルに `permissions:` が個別定義されているため、リポジトリ全体の "Workflow permissions" を **Read and write** にする必要はありません。デフォルトの **Read repository contents and packages permissions** のままで動作します（各ワークフローは `issues: write` などの必要な書き込み権限を内部で個別に宣言しています）。
 
 ### PR / リポジトリ運用
 
