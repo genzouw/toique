@@ -122,11 +122,6 @@ jobs:
             const soSearchResults = process.env.SO_SEARCH_RESULTS || '';
             const webSearchResults = process.env.WEB_SEARCH_RESULTS || '';
 
-            if (!process.env.GITHUB_TOKEN) {
-              console.log('GITHUB_TOKEN is not set. Skipping triage.');
-              return;
-            }
-
             const prompt = `
             以下のGitHub Issueを分析し、適切なラベルや回答案を日本語で提案してください。
             このリポジトリはLINE問い合わせ受付SaaS（Bun, Hono, React 19）です。
