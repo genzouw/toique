@@ -5,8 +5,12 @@
 # 本プロジェクトのフロントエンドは ESLint + Prettier を採用しており、Biome は
 # 導入していない。Codacy がデフォルトで有効化している Biome 解析は二重解析と
 # なるだけでなく、`noReactSpecificProps` のようなルールが React プロジェクトの
-# `className` 属性を誤検知し、Quality Gate を恒常的に fail させる原因となる
-# ため、Biome エンジン全体を無効化する。
+# `className` 属性を誤検知し、Quality Gate を恒常的に fail させる原因となる。
+#
+# Codacy の設定ファイルではツール自体の enable/disable は切り替えられない
+# (Code patterns UI 経由のみ) ため、Biome に対してすべてのファイルを
+# exclude_paths で除外することで実質的に無効化する。
 engines:
   biome:
-    enabled: false
+    exclude_paths:
+      - '**'
