@@ -1,0 +1,12 @@
+---
+# Codacy configuration
+# https://docs.codacy.com/repositories-configure/codacy-configuration-file/
+#
+# 本プロジェクトのフロントエンドは ESLint + Prettier を採用しており、Biome は
+# 導入していない。Codacy がデフォルトで有効化している Biome 解析は二重解析と
+# なるだけでなく、`noReactSpecificProps` のようなルールが React プロジェクトの
+# `className` 属性を誤検知し、Quality Gate を恒常的に fail させる原因となる
+# ため、Biome エンジン全体を無効化する。
+engines:
+  biome:
+    enabled: false
