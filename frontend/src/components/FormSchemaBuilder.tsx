@@ -160,7 +160,7 @@ export default function FormSchemaBuilder({
                 value={step.id}
                 onChange={(e) => updateStep(idx, { id: e.target.value })}
                 placeholder="ステップ名"
-                className="flex-1 px-2 py-1 border border-slate-300 rounded text-sm font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-900"
+                className="flex-1 px-2 py-1 border border-slate-300 rounded text-sm font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-900 focus-visible:ring-offset-1"
               />
             ) : (
               <span className="flex-1 text-sm font-medium text-slate-700">
@@ -176,7 +176,7 @@ export default function FormSchemaBuilder({
                     onChange={(e) =>
                       updateStep(idx, { type: e.target.value as StepType })
                     }
-                    className="text-xs px-2 py-1 border border-slate-300 rounded appearance-none pr-6 bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-900"
+                    className="text-xs px-2 py-1 border border-slate-300 rounded appearance-none pr-6 bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-900 focus-visible:ring-offset-1"
                   >
                     <option value="text">テキスト入力</option>
                     <option value="choice">選択肢</option>
@@ -188,7 +188,7 @@ export default function FormSchemaBuilder({
                 </div>
                 <button
                   onClick={() => removeStep(idx)}
-                  className="p-1 text-red-500 hover:bg-red-50 rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 transition-colors"
+                  className="p-1 text-red-500 hover:bg-red-50 rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-1 transition-colors"
                   title="削除"
                   aria-label="ステップを削除"
                 >
@@ -204,7 +204,7 @@ export default function FormSchemaBuilder({
               onChange={(e) => updateStep(idx, { thanks: e.target.value })}
               placeholder="お問い合わせありがとうございました。"
               rows={2}
-              className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-900"
+              className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-900 focus-visible:ring-offset-2"
             />
           ) : (
             <>
@@ -212,7 +212,7 @@ export default function FormSchemaBuilder({
                 value={step.prompt}
                 onChange={(e) => updateStep(idx, { prompt: e.target.value })}
                 placeholder="LINEで表示する質問文"
-                className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-900"
+                className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-900 focus-visible:ring-offset-2"
               />
 
               {step.type === 'choice' && (
@@ -229,12 +229,12 @@ export default function FormSchemaBuilder({
                           })
                         }
                         placeholder={`選択肢 ${ci + 1}`}
-                        className="flex-1 px-2 py-1 border border-slate-300 rounded text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-900"
+                        className="flex-1 px-2 py-1 border border-slate-300 rounded text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-900 focus-visible:ring-offset-1"
                       />
                       <button
                         onClick={() => removeChoice(idx, ci)}
                         disabled={step.choices.length <= 1}
-                        className="p-1 text-red-400 hover:text-red-600 disabled:opacity-30 rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 transition-colors"
+                        className="p-1 text-red-400 hover:text-red-600 disabled:opacity-30 rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-1 transition-colors"
                         title="削除"
                         aria-label="選択肢を削除"
                       >
@@ -244,7 +244,7 @@ export default function FormSchemaBuilder({
                   ))}
                   <button
                     onClick={() => addChoice(idx)}
-                    className="text-xs text-slate-600 hover:text-slate-900 flex items-center gap-1 rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-900 transition-colors px-1"
+                    className="text-xs text-slate-600 hover:text-slate-900 flex items-center gap-1 rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-900 focus-visible:ring-offset-1 transition-colors p-1"
                   >
                     <Plus size={ICON_SIZE.xs} /> 選択肢を追加
                   </button>
@@ -257,7 +257,7 @@ export default function FormSchemaBuilder({
 
       <button
         onClick={addStep}
-        className="w-full py-2 border-2 border-dashed border-slate-300 rounded-lg text-sm text-slate-600 hover:border-slate-400 hover:text-slate-900 flex items-center justify-center gap-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-900 transition-colors"
+        className="w-full py-2 border-2 border-dashed border-slate-300 rounded-lg text-sm text-slate-600 hover:border-slate-400 hover:text-slate-900 flex items-center justify-center gap-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-900 focus-visible:ring-offset-2 transition-colors"
       >
         <Plus size={ICON_SIZE.sm} /> ステップを追加
       </button>
