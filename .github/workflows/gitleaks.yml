@@ -17,12 +17,15 @@ concurrency:
 permissions:
   contents: read
   security-events: write
-  pull-requests: write
 
 jobs:
   gitleaks-differential:
     name: Scan for leaked secrets (Differential)
     if: github.event_name == 'push' || github.event_name == 'pull_request'
+    permissions:
+      contents: read
+      security-events: write
+      pull-requests: write
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
