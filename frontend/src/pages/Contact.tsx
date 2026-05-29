@@ -134,7 +134,7 @@ export default function Contact() {
                   setBody('');
                   setUrl('');
                 }}
-                className="underline text-slate-700"
+                className="underline text-slate-700 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-slate-900 focus-visible:ring-offset-2 rounded-sm transition-colors"
               >
                 続けて問い合わせる
               </button>

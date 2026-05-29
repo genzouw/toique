@@ -303,7 +303,7 @@ export default function FormEdit() {
         {!isNew && (
           <button
             onClick={handleDelete}
-            className="p-2 text-red-600 hover:bg-red-50 rounded-md"
+            className="p-2 text-red-600 hover:bg-red-50 rounded-md focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-1 transition-colors"
             title="フォームを削除"
             aria-label="フォームを削除"
           >
@@ -398,7 +398,7 @@ export default function FormEdit() {
                 tabIndex={tab === 'visual' ? 0 : -1}
                 onClick={() => switchTab('visual')}
                 onKeyDown={handleTabKeyDown}
-                className={`px-3 py-1 text-xs rounded ${
+                className={`px-3 py-1 text-xs rounded focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-slate-900 focus-visible:ring-offset-1 transition-colors ${
                   tab === 'visual'
                     ? 'bg-white text-slate-900 shadow-sm'
                     : 'text-slate-600'
@@ -417,7 +417,7 @@ export default function FormEdit() {
                 tabIndex={tab === 'json' ? 0 : -1}
                 onClick={() => switchTab('json')}
                 onKeyDown={handleTabKeyDown}
-                className={`px-3 py-1 text-xs rounded ${
+                className={`px-3 py-1 text-xs rounded focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-slate-900 focus-visible:ring-offset-1 transition-colors ${
                   tab === 'json'
                     ? 'bg-white text-slate-900 shadow-sm'
                     : 'text-slate-600'
