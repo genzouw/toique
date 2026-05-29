@@ -41,7 +41,7 @@ AI Issue Triage (`ai-issue-triage.yml`)、AI Weekly Summary (`ai-weekly-summary.
 - **AI Issue Triage** — Issue が作成された時にトリガー。`author_association` ガードにより権限を持つユーザー（OWNER, MEMBER, COLLABORATOR）が Issue を作成した場合のみ実行されます。
 - **AI Weekly Summary** — `schedule`（毎週月曜 00:00 UTC）および `workflow_dispatch`（手動実行）でトリガー。スケジュール起動のため `author_association` ガードは適用されません。
 - **AI Release Drafter** — `main` ブランチへの `push` でトリガー。push 権限を持つユーザーのみがトリガーできるため、`author_association` ガードは適用されません。
-- **AI PR Code Review** — Pull Requestの `opened`, `synchronize`, `reopened` 時にトリガー。PRのdiffを取得し、GitHub Models (gpt-4o-mini) が自動でレビューコメントを投稿します。設定不要で標準の `GITHUB_TOKEN` で動作しますが、リポジトリの Actions 設定で GitHub Actions に PR への Write 権限 (`pull-requests: write`) が付与されていることを確認してください。
+- **AI PR Code Review** — Pull Requestの `opened`, `synchronize`, `reopened` 時にトリガー。PRのdiffを取得し、GitHub Models (gpt-4o-mini) が自動でレビューコメントを投稿します。設定不要で標準の `GITHUB_TOKEN` で動作しますが、ワークフローファイル内で `permissions` キーを使用して `pull-requests: write` 権限を明示的に付与してください（最小権限の原則に従い、リポジトリ全体の Actions 設定では `Read repository contents and packages permissions`（読み取り専用）のままにしておくことを推奨します）。
 
 ## 4. AIコードレビューの設定最適化
 
