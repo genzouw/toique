@@ -60,11 +60,6 @@ jobs:
           LATEST_TAG: ${{ env.LATEST_TAG }}
         with:
           script: |
-            if (!process.env.GITHUB_TOKEN) {
-              console.log('GITHUB_TOKEN is not set. Skipping release draft.');
-              return;
-            }
-
             const prompt = `
             以下のデータは、前回のリリース（${process.env.LATEST_TAG || '初回'}）以降に main ブランチへマージされたコミットの一覧です。
             これらを元に、次回のリリースに向けた「リリースノートのドラフト（下書き）」を作成してください。
