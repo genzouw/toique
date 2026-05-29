@@ -162,7 +162,7 @@ export default function Channels() {
                     </div>
                     <button
                       onClick={() => handleDelete(ch.id)}
-                      className="p-2 text-red-600 hover:bg-red-50 rounded-md shrink-0"
+                      className="p-2 text-red-600 hover:bg-red-50 rounded-md shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-1 transition-colors"
                       title={`${ch.displayName} を削除`}
                       aria-label={`${ch.displayName} を削除`}
                     >
@@ -183,7 +183,7 @@ export default function Channels() {
                       <button
                         type="button"
                         onClick={() => handleCopy(ch.channelId, ch.id)}
-                        className="px-2 py-1.5 text-slate-700 hover:bg-slate-100 rounded-md flex items-center gap-1 text-xs border border-slate-300 shrink-0"
+                        className="px-2 py-1.5 text-slate-700 hover:bg-slate-100 rounded-md flex items-center gap-1 text-xs border border-slate-300 shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-900 focus-visible:ring-offset-1 transition-colors"
                         aria-label={`Webhook URL をコピー: ${webhookUrl}`}
                       >
                         {isCopied ? (
