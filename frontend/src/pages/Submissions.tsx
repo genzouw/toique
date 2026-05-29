@@ -127,7 +127,7 @@ export default function Submissions() {
           <button
             onClick={handleDownload}
             disabled={!exportFormId || downloading}
-            className="inline-flex items-center gap-2 px-4 py-2 bg-slate-900 text-white text-sm rounded-md disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-900 focus-visible:ring-offset-2 transition-colors"
+            className="inline-flex items-center gap-2 px-4 py-2 bg-slate-900 text-white text-sm rounded-md disabled:opacity-50 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-slate-900 focus-visible:ring-offset-2 transition-colors"
           >
             <Download size={ICON_SIZE.sm} />
             {downloading ? 'ダウンロード中…' : 'CSVダウンロード'}
