@@ -12,6 +12,7 @@ jobs:
     permissions:
       issues: write
       pull-requests: read
+      models: read
     steps:
       - name: Fetch week's data using GitHub CLI
         id: fetch_data
