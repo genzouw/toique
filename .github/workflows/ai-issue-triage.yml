@@ -139,7 +139,7 @@ jobs:
             【Web 検索結果 (参考)】
             ${webSearchResults}
 
-            上記検索結果も踏まえ、すでに解決済みの問題であれば解決策をより具体的に（可能であればコード例や設定手順などを交えて）提示し、未解決のバグや新規提案であればその旨をコメントに含めてください。また、報告者に対する感謝の言葉を添えてください。
+            上記検索結果も踏まえ、すでに解決済みの問題であれば解決策をより具体的に（可能であればコード例や設定手順などを交えて）提示し、未解決のバグや新規提案であればその旨をコメントに含めてください。また、DuckDuckGoなどのWeb検索結果やStackOverflowの検索結果にセキュリティ上の脆弱性や既知のエクスプロイトが含まれている場合は、重大な問題として優先的に指摘してください。さらに、報告者に対する感謝の言葉を添えてください。
             `;
 
             // Use Structured Outputs (JSON Schema) for deterministic JSON response
@@ -148,15 +148,15 @@ jobs:
               properties: {
                 aiReply: {
                   type: "string",
-                  description: "ユーザーへの返信コメント（Markdown形式・日本語）"
+                  description: "ユーザーへの返信コメント（Markdown形式・日本語）。Issueの重要度（Severity）の判定結果も含めること。"
                 },
                 suggestedLabels: {
                   type: "array",
                   items: {
                     type: "string",
-                    enum: ["bug", "enhancement", "question", "documentation", "help wanted"]
+                    enum: ["bug", "enhancement", "question", "documentation", "help wanted", "high-priority", "low-priority", "security"]
                   },
-                  description: "Issueに付与すべきラベルの配列"
+                  description: "Issueに付与すべきラベルの配列。重要度に応じて high-priority や low-priority、セキュリティ関連なら security を付与すること。"
                 }
               },
               required: ["aiReply", "suggestedLabels"],
