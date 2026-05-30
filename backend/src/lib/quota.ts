@@ -104,16 +104,14 @@ export async function getTenantUsage(
 ): Promise<TenantUsage> {
   const limits = getPlanLimits(plan);
 
-  // 複数の独立したカウントクエリをバッチ処理し、データベースとのラウンドトリップを1回にしてパフォーマンスを最適化します。
-  const batchResults = await db.batch([
-    buildLineChannelsCountQuery(tenantId),
-    buildFormsCountQuery(tenantId),
-    buildSubmissionsCountQuery(tenantId),
-    buildMembersCountQuery(tenantId),
-  ]);
-
+  // 複数の独立したカウントクエリを並列実行して、合計のレイテンシを短縮します。
   const [[channelsResult], [formsResult], [subsResult], [membersResult]] =
-    batchResults;
+    await Promise.all([
+      buildLineChannelsCountQuery(tenantId),
+      buildFormsCountQuery(tenantId),
+      buildSubmissionsCountQuery(tenantId),
+      buildMembersCountQuery(tenantId),
+    ]);
 
   const channels = channelsResult?.count ?? 0;
   const formCount = formsResult?.count ?? 0;
