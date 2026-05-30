@@ -104,7 +104,6 @@ export async function getTenantUsage(
 ): Promise<TenantUsage> {
   const limits = getPlanLimits(plan);
 
-  // 複数の独立したカウントクエリを並列実行し、合計待機時間を削減します。
   const batchResults = await Promise.all([
     buildLineChannelsCountQuery(tenantId),
     buildFormsCountQuery(tenantId),
