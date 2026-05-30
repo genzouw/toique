@@ -26,7 +26,7 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PR_NUMBER: ${{ github.event.issue.number }}
         run: |
-          PR_DIFF=$(gh pr diff $PR_NUMBER || echo "Cannot fetch diff.")
+          PR_DIFF=$(gh pr diff "$PR_NUMBER" || echo "Cannot fetch diff.")
           TRUNCATED_DIFF=$(echo "$PR_DIFF" | head -c 10000)
 
           DELIMITER=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
