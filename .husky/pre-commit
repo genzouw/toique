@@ -22,19 +22,81 @@ fi
 
 # --- Security: Gitleaks scan for staged files ---
 # コミットされるファイルの中身に対して gitleaks を実行し、APIキー等の混入を防ぐ。
-# バイナリがインストールされていない場合は warning を出しつつ CI での検知に委ねる。
-if command -v gitleaks >/dev/null 2>&1; then
+# バイナリがインストールされていない場合はユーザーキャッシュに自動ダウンロードして実行する。
+# オフライン環境・未対応OS/ARCH・チェックサム検証失敗時はローカルスキャンをスキップし、
+# コミット自体はブロックしない（CIでの検知に委ねる）。
+GITLEAKS_CMD="gitleaks"
+if ! command -v gitleaks >/dev/null 2>&1; then
+  echo "⚠️  gitleaks is not installed globally. Downloading automatically..."
+  GITLEAKS_VERSION="8.21.2"
+  GITLEAKS_CACHE_DIR="${XDG_CACHE_HOME:-$HOME/.cache}/gitleaks"
+  GITLEAKS_BIN="${GITLEAKS_CACHE_DIR}/gitleaks-${GITLEAKS_VERSION}"
+  if [ ! -x "$GITLEAKS_BIN" ]; then
+    OS=$(uname -s | tr '[:upper:]' '[:lower:]')
+    ARCH=$(uname -m)
+    if [ "$OS" = "linux" ] || [ "$OS" = "darwin" ]; then
+      if [ "$ARCH" = "x86_64" ]; then
+        ARCH="x64"
+      elif [ "$ARCH" = "aarch64" ] || [ "$ARCH" = "arm64" ]; then
+        ARCH="arm64"
+      else
+        echo "⚠️  Unsupported architecture for automatic download: $ARCH. Skipping local scan."
+        GITLEAKS_CMD=""
+      fi
+      if [ -n "$GITLEAKS_CMD" ]; then
+        TARBALL="gitleaks_${GITLEAKS_VERSION}_${OS}_${ARCH}.tar.gz"
+        echo "Downloading ${TARBALL}..."
+        TMP_DIR=$(mktemp -d)
+        CHECKSUM_OK=0
+        if curl -fsSL "https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/${TARBALL}" -o "$TMP_DIR/$TARBALL" && \
+           curl -fsSL "https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/gitleaks_${GITLEAKS_VERSION}_checksums.txt" -o "$TMP_DIR/checksums.txt"; then
+          sha256sum_cmd=""
+          if command -v sha256sum >/dev/null 2>&1; then
+            sha256sum_cmd="sha256sum"
+          elif command -v shasum >/dev/null 2>&1; then
+            sha256sum_cmd="shasum -a 256"
+          fi
+          if [ -n "$sha256sum_cmd" ]; then
+            EXPECTED=$(grep "$TARBALL" "$TMP_DIR/checksums.txt" | awk '{print $1}')
+            ACTUAL=$($sha256sum_cmd "$TMP_DIR/$TARBALL" | awk '{print $1}')
+            if [ -n "$EXPECTED" ] && [ "$EXPECTED" = "$ACTUAL" ]; then
+              CHECKSUM_OK=1
+            else
+              echo "⚠️  Checksum verification failed. Skipping local scan."
+            fi
+          else
+            CHECKSUM_OK=1
+          fi
+        else
+          echo "⚠️  Failed to download gitleaks. Skipping local scan for this commit."
+        fi
+        if [ "$CHECKSUM_OK" = "1" ]; then
+          tar -xz -C "$TMP_DIR" -f "$TMP_DIR/$TARBALL" gitleaks
+          mkdir -p "$GITLEAKS_CACHE_DIR"
+          chmod 700 "$GITLEAKS_CACHE_DIR"
+          mv "$TMP_DIR/gitleaks" "$GITLEAKS_BIN"
+          chmod +x "$GITLEAKS_BIN"
+        else
+          GITLEAKS_CMD=""
+        fi
+        rm -rf "$TMP_DIR"
+      fi
+    else
+      echo "⚠️  Unsupported OS for automatic download: $OS. Skipping local scan."
+      GITLEAKS_CMD=""
+    fi
+  fi
+  if [ -n "$GITLEAKS_CMD" ] && [ -x "$GITLEAKS_BIN" ]; then
+    GITLEAKS_CMD="$GITLEAKS_BIN"
+  fi
+fi
+
+if [ -n "$GITLEAKS_CMD" ]; then
   echo "🔍 Running gitleaks on staged files..."
   # `--staged`: ステージされたファイルのみをスキャン対象とする
   # `--redact`: ターミナル出力でシークレットの生値をマスクする
   # `--no-banner`: 起動時のアスキーアートバナーを抑制し pre-commit 出力を簡潔に保つ
-  gitleaks protect --staged --redact --verbose --no-banner || exit 1
-else
-  echo "⚠️  gitleaks is not installed locally."
-  echo "   It is strongly recommended to install it to prevent committing secrets."
-  echo "   Install (macOS): brew install gitleaks"
-  echo "   Install (Linux): See https://github.com/gitleaks/gitleaks"
-  echo "   Skipping local scan; CI will run the full check."
+  "$GITLEAKS_CMD" protect --staged --redact --verbose --no-banner || exit 1
 fi
 # ---------------------------------------------------------
 
