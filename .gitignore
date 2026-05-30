@@ -64,3 +64,4 @@ skills-lock.json
 *.pem
 *.key
 *credentials*.json
+*.env*
