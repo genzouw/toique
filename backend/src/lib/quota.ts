@@ -104,14 +104,15 @@ export async function getTenantUsage(
 ): Promise<TenantUsage> {
   const limits = getPlanLimits(plan);
 
-  // 複数の独立したカウントクエリを並列実行して、合計のレイテンシを短縮します。
+  const batchResults = await Promise.all([
+    buildLineChannelsCountQuery(tenantId),
+    buildFormsCountQuery(tenantId),
+    buildSubmissionsCountQuery(tenantId),
+    buildMembersCountQuery(tenantId),
+  ]);
+
   const [[channelsResult], [formsResult], [subsResult], [membersResult]] =
-    await Promise.all([
-      buildLineChannelsCountQuery(tenantId),
-      buildFormsCountQuery(tenantId),
-      buildSubmissionsCountQuery(tenantId),
-      buildMembersCountQuery(tenantId),
-    ]);
+    batchResults;
 
   const channels = channelsResult?.count ?? 0;
   const formCount = formsResult?.count ?? 0;
