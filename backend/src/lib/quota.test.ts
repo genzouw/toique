@@ -3,7 +3,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 vi.mock('../db.js', () => {
   const dbMock = {
     select: vi.fn(),
-    batch: vi.fn((queries) => Promise.all(queries)),
+    batch: vi.fn((queries: unknown[]) => Promise.all(queries)),
   };
   return { default: dbMock };
 });
@@ -74,6 +74,7 @@ describe('getTenantUsage with unlimited option', () => {
       submissionsPerMonth: { current: 11, limit: -1 },
       members: { current: 2, limit: -1 },
     });
+    expect(db.batch).toHaveBeenCalledTimes(1);
     expect(db.select).toHaveBeenCalledTimes(4);
   });
 
@@ -89,6 +90,7 @@ describe('getTenantUsage with unlimited option', () => {
     expect(usage.lineChannels.limit).toBe(5);
     expect(usage.submissionsPerMonth.limit).toBe(3000);
     expect(usage.members.limit).toBe(5);
+    expect(db.batch).toHaveBeenCalledTimes(1);
     expect(db.select).toHaveBeenCalledTimes(4);
   });
 });
