@@ -52,25 +52,22 @@ AI Issue Triage (`ai-issue-triage.yml`)、AI Weekly Summary (`ai-weekly-summary.
 - パフォーマンス: O(N)ループの回避、N+1問題の防止、不要なDBクエリの削減など
 - アクセシビリティ: ボタン等のアクション要素における具体的な対象を含んだ aria-label や title の付与、role="tablist" におけるキーボードナビゲーションや roving tabIndex のサポートなど
 
+
 ## 5. 新規導入した自動化ツールの運用ルール (2024年導入)
 
 更なる開発効率化のため、以下の新しいAIツールおよびCI/CDの自動化パイプラインが追加されています。これらは標準で動作するように設定されていますが、運用上以下の点を留意してください。
 
 ### AI ChatOps の利用 (PRコメント)
-
 PRのコメント欄で `/ai <メッセージ>` を記述することで、GitHub Models (gpt-4o-mini) と DuckDuckGo を用いたアシスタント機能が起動します。
 例:
-
 - `/ai このPRのパフォーマンス上の懸念点を教えてください`
 - `/ai テストコードの作成を手伝ってください`
 
 ### Semantic PR Title の適用
-
 リリースノートの自動生成（AI Release Drafter）の精度向上のため、PRのタイトルには **Conventional Commits** フォーマットを強制するチェック (`semantic-pr-title.yml`) が有効になっています。
-PRのタイトルは必ず `feat: `, `fix: `, `docs: `, `chore: ` 等のプレフィックス（コロンの後に半角スペースが必要）から開始してください。
+PRのタイトルは必ず `feat:`, `fix:`, `docs:`, `chore:` 等のプレフィックスから開始してください。
 
 ### Typos (スペルチェッカー) の導入
-
 Rust製の高速なスペルチェッカー `typos` がCIに追加されています。タイポが検知された場合はCIが失敗するため、適宜修正してください。意図的な固有表現で引っかかる場合は、リポジトリルートに `typos.toml` を作成して除外設定を行ってください。
 
 ---
