@@ -42,7 +42,7 @@ AI Issue Triage (`ai-issue-triage.yml`)、AI Weekly Summary (`ai-weekly-summary.
 - **AI Weekly Summary** — `schedule`（毎週月曜 00:00 UTC）および `workflow_dispatch`（手動実行）でトリガー。スケジュール起動のため `author_association` ガードは適用されません。
 - **AI Release Drafter** — `main` ブランチへの `push` でトリガー。push 権限を持つユーザーのみがトリガーできるため、`author_association` ガードは適用されません。
 - **AI PR Code Review** — Pull Requestの `opened`, `synchronize`, `reopened` 時にトリガー。PRのdiffを取得し、GitHub Models (gpt-4o-mini) と `duckduckgo-search` による Web 検索 (RAG) を用いて、自動でレビューコメントを投稿します。
-- **AI ChatOps** — Pull Request へのコメントが `/ai ` で始まった時にトリガー。コメント内容と Web 検索 (RAG) を用いて回答や修正案を提示します。
+- **AI ChatOps** — Pull Request へのコメントが `/ai` で始まった時にトリガー。コメント内容と Web 検索 (RAG) を用いて回答や修正案を提示します。
 
 **権限の注意事項:**
 各ワークフローは設定不要で標準の `GITHUB_TOKEN` で動作しますが、ワークフローファイル内で `permissions` キーを使用して `issues: write` や `pull-requests: write` 権限を明示的に付与しています。最小権限の原則に従い、リポジトリ全体の Actions 設定では **`Read repository contents and packages permissions`（読み取り専用）のままにしておくことを推奨します。**
