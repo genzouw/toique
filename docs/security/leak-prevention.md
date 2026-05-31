@@ -12,7 +12,7 @@
 2. **CI 検知 (CI/CD)**
    - **ツール:** `gitleaks` (`gitleaks-action`), `trivy`, `TruffleHog`, `secretlint`
    - **実行タイミング:** GitHub への Push 時および PR 作成時
-   - **役割:** ローカルでの検知をすり抜けたシークレットや、CI環境特有の漏洩を検知します。`secretlint` によりファイルシステム全体の静的解析を行い、`gitleaks-action` により、Push 時や PR 作成時に差分（Differential）スキャンを効率的に実行し、さらに TruffleHog が補完的に動作して、実効性の高い Verified Secrets（クラウドプロバイダ等に到達可能な本物の鍵）を効率的にスキャンします。
+   - **役割:** ローカルでの検知をすり抜けたシークレットや、CI環境特有の漏洩を検知します。`secretlint` によりファイルシステム全体の静的解析を行います。また、`gitleaks-action` による Push 時や PR 作成時の効率的な差分（Differential）スキャンに加え、TruffleHog が補完的に動作して、実効性の高い Verified Secrets（クラウドプロバイダ等に到達可能な本物の鍵）をスキャンします。
 
 3. **定期監査 (Audit)**
    - **ツール:** `gitleaks`, `trivy`, `TruffleHog`, `secretlint`
