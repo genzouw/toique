@@ -104,8 +104,7 @@ export async function getTenantUsage(
 ): Promise<TenantUsage> {
   const limits = getPlanLimits(plan);
 
-  // Execute multiple count queries in a single database roundtrip to reduce network overhead and connection latency.
-  const batchResults = await db.batch([
+  const batchResults = await Promise.all([
     buildLineChannelsCountQuery(tenantId),
     buildFormsCountQuery(tenantId),
     buildSubmissionsCountQuery(tenantId),
