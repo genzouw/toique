@@ -248,13 +248,15 @@ curl -s http://localhost:3000/api/v1/messages | jq
 - **Gemini Code Assist** (`.gemini/config.yaml` + `.gemini/styleguide.md`): 日本語レビュー
 - **Qodo Merge (PR Agent)**: CodiumAI を使用したPR自動レビュー。公開リポジトリは完全無料で使用できます（※ GitHub Appとしてのインストール推奨、または Actions経由での実行）。
 - **AI Issue Triage** (`ai-issue-triage.yml`): `actions/github-script` を用いて、Issueが作成された際に自動で GitHub Models を呼び出し、トリアージを行う仕組みです。
+- **AI ChatOps** (`ai-chatops.yml`): PRのコメントで `/ai fix` などのコマンドを受け取り、GitHub Models と Web検索 (RAG) を活用して自動で回答や修正案を提示します。
+- **AI PR Code Review** (`ai-pr-review.yml`): PR作成時等に、コード差分とWeb検索から得たベストプラクティスに基づき、GitHub Modelsが自動レビューを行います。
 
 > [!NOTE]
 > **導入のための手動事前作業:**
 >
 > 1. **Qodo Merge**: [Qodo Merge GitHub App](https://github.com/apps/qodo-merge) をインストールするだけで公開リポジトリに対して完全無料で利用可能です。自動的に `.pr_agent.toml` の設定を読み込みます。
-> 2. **AI Issue Triage (`ai-issue-triage.yml`) / AI Weekly Summary (`ai-weekly-summary.yml`) / AI Release Drafter (`ai-release-drafter.yml`)**: GitHub Models を使用するため、手動での API キー登録は不要です（自動で `GITHUB_TOKEN` が利用されます）。
-> 3. **権限設定**: 各ワークフローファイルに `permissions:` が個別定義されているため、リポジトリ全体の "Workflow permissions" を **Read and write** にする必要はありません。デフォルトの **Read repository contents and packages permissions** のままで動作します（各ワークフローは `issues: write` などの必要な書き込み権限を内部で個別に宣言しています）。
+> 2. **GitHub Models連携**: AI Issue Triage, AI Weekly Summary, AI Release Drafter, AI ChatOps, AI PR Code Review はすべて GitHub Models を使用します。手動での API キー登録は不要で、自動的に `GITHUB_TOKEN` が利用されます。
+> 3. **権限設定**: 各ワークフローファイルに `permissions:` が個別定義されているため、リポジトリ全体の "Workflow permissions" を **Read and write** にする必要はありません。デフォルトの **Read repository contents and packages permissions** のままで動作します（各ワークフローは `issues: write` や `pull-requests: write` などの必要な権限を内部で個別に宣言しています）。
 
 ### PR / リポジトリ運用
 

@@ -11,7 +11,6 @@ jobs:
     permissions:
       contents: read
       pull-requests: write
-      models: read
     concurrency:
       group: ai-pr-review-${{ github.event.pull_request.number }}
       cancel-in-progress: true
@@ -38,16 +37,53 @@ jobs:
             echo "$DELIMITER"
           } >> "$GITHUB_ENV"
 
+      - name: Install DuckDuckGo Search
+        run: pip install "duckduckgo-search==8.1.1" --break-system-packages
+
+      - name: Search DuckDuckGo for Context (RAG prep)
+        id: search_ddg
+        env:
+          PR_TITLE: ${{ github.event.pull_request.title }}
+        run: |
+          import os
+          import base64
+          from duckduckgo_search import DDGS
+
+          title = os.environ.get('PR_TITLE', '')
+          query = f"{title} best practices OR security vulnerability"
+
+          try:
+              results = DDGS().text(query, max_results=3)
+              search_res = "\n\n".join([f"Title: {r.get('title')}\nURL: {r.get('href')}\nSnippet: {r.get('body')}" for r in results])
+
+              if not search_res:
+                  search_res = "No relevant Web search results found."
+
+              delimiter = base64.b64encode(os.urandom(15)).decode('utf-8')
+              with open(os.environ['GITHUB_ENV'], 'a') as f:
+                  f.write(f"WEB_SEARCH_RESULTS<<{delimiter}\n")
+                  f.write(f"{search_res}\n")
+                  f.write(f"{delimiter}\n")
+          except Exception as e:
+              delimiter = base64.b64encode(os.urandom(15)).decode('utf-8')
+              with open(os.environ['GITHUB_ENV'], 'a') as f:
+                  f.write(f"WEB_SEARCH_RESULTS<<{delimiter}\n")
+                  f.write(f"Web search failed: {e}\n")
+                  f.write(f"{delimiter}\n")
+        shell: python
+
       - name: Code Review with GitHub Models
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PR_DIFF: ${{ env.PR_DIFF }}
+          WEB_SEARCH_RESULTS: ${{ env.WEB_SEARCH_RESULTS }}
         with:
           script: |
             const prDiff = process.env.PR_DIFF || '';
             const prTitle = context.payload.pull_request.title || '';
             const prBody = context.payload.pull_request.body || '';
+            const webSearchResults = process.env.WEB_SEARCH_RESULTS || '';
 
             if (!prDiff || prDiff.trim() === 'Cannot fetch diff.') {
               console.log('No valid diff to review. Skipping.');
@@ -69,11 +105,15 @@ jobs:
             ${prDiff}
             \`\`\`
 
+            【Web検索結果 (参考・ベストプラクティス)】
+            ${webSearchResults}
+
             以下の観点からレビューを行い、問題点や改善案を提示してください：
             - バグの可能性やロジックの誤り
             - パフォーマンス上の懸念（O(N)ループや無駄なデータベースクエリなど）
             - セキュリティの脆弱性（APIキーのハードコード、XSS、SQLインジェクションなど）
             - コードの可読性や保守性
+            - Web検索結果から得られる最新のベストプラクティスに沿っているか
 
             ※ 差分に対して問題が見当たらない場合は、肯定的なフィードバック（LGTM等）を返してください。
             `;
