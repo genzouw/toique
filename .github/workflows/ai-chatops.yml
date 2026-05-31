@@ -6,8 +6,8 @@ on:
 
 jobs:
   ai_chatops:
-    name: Respond to AI Commands
-    # 実行対象は Pull Request に対するコメントのみ、かつ特定のコマンドで始まる場合
+    name: AI ChatOps Assistant
+    # PRへのコメントでのみ動作させる（Issueコメントは除外）、かつ /ai コマンドで始まる場合
     # 公開リポジトリでのAbuse防止のため、権限を持つユーザーからのコメントのみ実行
     if: >
       github.event.issue.pull_request &&
@@ -15,8 +15,10 @@ jobs:
       contains(fromJSON('["OWNER","MEMBER","COLLABORATOR"]'), github.event.comment.author_association)
     runs-on: ubuntu-latest
     permissions:
+      contents: read
       pull-requests: write
       issues: write
+      models: read
     steps:
       - name: Parse Command and Query
         id: parse
@@ -33,20 +35,50 @@ jobs:
             echo "$DELIMITER"
           } >> "$GITHUB_ENV"
 
-      - name: Install DuckDuckGo Search
-        run: pip install "duckduckgo-search==8.1.1" --break-system-packages
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
-      - name: Web Search for Context
-        id: web_search
+      - name: Get PR Information
+        id: get_pr_info
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ github.event.issue.number }}
+        run: |
+          PR_DIFF=$(gh pr diff "$PR_NUMBER" || echo "Cannot fetch diff.")
+          TRUNCATED_DIFF=$(echo "$PR_DIFF" | head -c 10000)
+
+          DELIMITER=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
+          {
+            echo "PR_DIFF<<$DELIMITER"
+            echo "$TRUNCATED_DIFF"
+            echo "$DELIMITER"
+          } >> "$GITHUB_ENV"
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install DuckDuckGo Search
+        run: pip install "duckduckgo-search==8.1.1"
+
+      - name: Search DuckDuckGo (RAG prep)
+        id: search_ddg
+        env:
+          USER_PROMPT: ${{ github.event.comment.body }}
         run: |
           import os
           import base64
           from duckduckgo_search import DDGS
 
-          query = os.environ.get('USER_QUERY', '')
+          # Extract query after "/ai search " if it exists, else just use the prompt for context
+          prompt = os.environ.get('USER_PROMPT', '')
+          query = prompt.replace('/ai ', '').strip()
 
           try:
-              results = DDGS().text(query, max_results=3)
+              results = DDGS().text(f"{query} site:stackoverflow.com OR site:github.com", max_results=3)
               search_res = "\n\n".join([f"Title: {r.get('title')}\nURL: {r.get('href')}\nSnippet: {r.get('body')}" for r in results])
 
               if not search_res:
@@ -54,36 +86,45 @@ jobs:
 
               delimiter = base64.b64encode(os.urandom(15)).decode('utf-8')
               with open(os.environ['GITHUB_ENV'], 'a') as f:
-                  f.write(f"WEB_CONTEXT<<{delimiter}\n")
+                  f.write(f"WEB_SEARCH_RESULTS<<{delimiter}\n")
                   f.write(f"{search_res}\n")
                   f.write(f"{delimiter}\n")
           except Exception as e:
               delimiter = base64.b64encode(os.urandom(15)).decode('utf-8')
               with open(os.environ['GITHUB_ENV'], 'a') as f:
-                  f.write(f"WEB_CONTEXT<<{delimiter}\n")
+                  f.write(f"WEB_SEARCH_RESULTS<<{delimiter}\n")
                   f.write(f"Web search failed: {e}\n")
                   f.write(f"{delimiter}\n")
         shell: python
 
-      - name: Generate AI Response
+      - name: Generate Response with GitHub Models
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          USER_QUERY: ${{ env.USER_QUERY }}
-          WEB_CONTEXT: ${{ env.WEB_CONTEXT }}
+          PR_DIFF: ${{ env.PR_DIFF }}
+          USER_PROMPT: ${{ github.event.comment.body }}
+          WEB_SEARCH_RESULTS: ${{ env.WEB_SEARCH_RESULTS }}
         with:
           script: |
-            const prompt = `
-            あなたはソフトウェアエンジニアを支援するAIアシスタントです。
-            以下のユーザーからのリクエスト（コマンドおよび質問）に対して、適切な回答や修正案を日本語で提示してください。
-            必要に応じて提供されたWeb検索結果を参考にしてください。
+            const prompt = process.env.USER_PROMPT.replace('/ai ', '').trim();
+            const prDiff = process.env.PR_DIFF || '';
+            const searchResults = process.env.WEB_SEARCH_RESULTS || '';
+            const author = context.payload.comment.user.login;
 
-            【ユーザーのリクエスト】
-            ${process.env.USER_QUERY}
+            const systemPrompt = `
+            あなたはシニアソフトウェアエンジニアであり、AIアシスタントとしてPull Requestのコメント経由で開発者をサポートします。
+            以下の情報を元に、ユーザーの質問や指示に日本語で丁寧に回答してください。
 
-            【Web検索結果 (参考)】
-            ${process.env.WEB_CONTEXT}
+            【Pull Request の現在の差分 (一部)】
+            \`\`\`diff
+            ${prDiff}
+            \`\`\`
+
+            【Web検索結果 (RAG用の最新技術情報参考)】
+            ${searchResults}
             `;
+
+            const userMessage = `ユーザー（@${author}）からの要求:\n${prompt}`;
 
             const response = await fetch('https://models.github.ai/inference/chat/completions', {
               method: 'POST',
@@ -94,31 +135,34 @@ jobs:
               body: JSON.stringify({
                 model: 'openai/gpt-4o-mini',
                 messages: [
-                  { role: "system", content: "You are a helpful software engineering AI assistant. Always answer in Japanese." },
-                  { role: "user", content: prompt }
+                  { role: "system", content: systemPrompt },
+                  { role: "user", content: userMessage }
                 ]
               })
             });
 
             if (!response.ok) {
               console.error(`GitHub Models API Error: status=${response.status}`);
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body: `🤖 エラーが発生しました。AIモデルAPIの呼び出しに失敗しました (status: ${response.status})。`
+              });
               return;
             }
 
             const data = await response.json();
-            if (data.error) {
-              console.error('GitHub Models API Error:', data.error);
+            if (data.error || !data.choices || data.choices.length === 0) {
+              console.error('GitHub Models API returned error or no choices');
               return;
             }
-            if (!data.choices || data.choices.length === 0) {
-              console.error('GitHub Models API returned no choices:', JSON.stringify(data));
-              return;
-            }
-            const aiReply = data.choices[0].message.content;
+
+            const reply = data.choices[0].message.content;
 
             await github.rest.issues.createComment({
               owner: context.repo.owner,
               repo: context.repo.repo,
               issue_number: context.issue.number,
-              body: "🤖 **AI ChatOps:**\n\n" + aiReply
+              body: `> ${process.env.USER_PROMPT}\n\n🤖 **AI ChatOps 回答:**\n\n${reply}`
             });

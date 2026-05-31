@@ -37,10 +37,15 @@ jobs:
             echo "$DELIMITER"
           } >> "$GITHUB_ENV"
 
-      - name: Install DuckDuckGo Search
-        run: pip install "duckduckgo-search==8.1.1" --break-system-packages
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
 
-      - name: Search DuckDuckGo for Context (RAG prep)
+      - name: Install DuckDuckGo Search
+        run: pip install "duckduckgo-search==8.1.1"
+
+      - name: Search DuckDuckGo (RAG prep)
         id: search_ddg
         env:
           PR_TITLE: ${{ github.event.pull_request.title }}
@@ -50,7 +55,7 @@ jobs:
           from duckduckgo_search import DDGS
 
           title = os.environ.get('PR_TITLE', '')
-          query = f"{title} best practices OR security vulnerability"
+          query = f"{title} vulnerabilities OR bugs OR best practices site:github.com OR site:stackoverflow.com"
 
           try:
               results = DDGS().text(query, max_results=3)
@@ -84,6 +89,7 @@ jobs:
             const prTitle = context.payload.pull_request.title || '';
             const prBody = context.payload.pull_request.body || '';
             const webSearchResults = process.env.WEB_SEARCH_RESULTS || '';
+            const searchResults = webSearchResults;
 
             if (!prDiff || prDiff.trim() === 'Cannot fetch diff.') {
               console.log('No valid diff to review. Skipping.');
@@ -100,6 +106,9 @@ jobs:
             【Pull Requestの説明】
             ${prBody}
 
+            【Web検索結果 (RAG用の最新技術情報・脆弱性情報参考)】
+            ${searchResults}
+
             【コードの差分 (一部切り詰められている可能性があります)】
             \`\`\`diff
             ${prDiff}
@@ -111,7 +120,7 @@ jobs:
             以下の観点からレビューを行い、問題点や改善案を提示してください：
             - バグの可能性やロジックの誤り
             - パフォーマンス上の懸念（O(N)ループや無駄なデータベースクエリなど）
-            - セキュリティの脆弱性（APIキーのハードコード、XSS、SQLインジェクションなど）
+            - セキュリティの脆弱性（APIキーのハードコード、XSS、SQLインジェクションなど）。特にWeb検索結果に脆弱性情報がある場合は優先的に指摘してください。
             - コードの可読性や保守性
             - Web検索結果から得られる最新のベストプラクティスに沿っているか
 
