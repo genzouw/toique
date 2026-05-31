@@ -34,7 +34,7 @@ Dependabotによるマイナー/パッチアップデートの自動マージ（
 
 ## 3. GitHub Models (Issue Triage, Weekly Summary, Release Drafter, AI ChatOps, AI PR Code Review 用)
 
-AI Issue Triage (`ai-issue-triage.yml`)、AI Weekly Summary (`ai-weekly-summary.yml`)、AI Release Drafter (`ai-release-drafter.yml`)、および **AI ChatOps** (`ai-chatops.yml`) は、GitHubが提供する無料の GitHub Models (gpt-4o-mini) を利用しています。追加のAPIキー設定は不要で、標準の `GITHUB_TOKEN` を用いて動作します。
+AI Issue Triage (`ai-issue-triage.yml`)、AI Weekly Summary (`ai-weekly-summary.yml`)、AI Release Drafter (`ai-release-drafter.yml`)、**AI ChatOps** (`ai-chatops.yml`)、および **AI PR Code Review** (`ai-pr-review.yml`) は、GitHubが提供する無料の GitHub Models (gpt-4o-mini) を利用しています。追加のAPIキー設定は不要で、標準の `GITHUB_TOKEN` を用いて動作します。
 
 **各ワークフローのトリガーと保護条件:**
 
