@@ -6,8 +6,8 @@ on:
 
 jobs:
   ai_chatops:
-    name: AI ChatOps Assistant
-    # PRへのコメントでのみ動作させる（Issueコメントは除外）、かつ /ai コマンドで始まる場合
+    name: Respond to AI Commands
+    # 実行対象は Pull Request に対するコメントのみ、かつ /ai コマンドで始まる場合
     # 公開リポジトリでのAbuse防止のため、権限を持つユーザーからのコメントのみ実行
     if: >
       github.event.issue.pull_request &&
@@ -20,21 +20,6 @@ jobs:
       issues: write
       models: read
     steps:
-      - name: Parse Command and Query
-        id: parse
-        env:
-          COMMENT_BODY: ${{ github.event.comment.body }}
-        run: |
-          # '/ai ' プレフィックスを削除してクエリを取得
-          QUERY=$(echo "$COMMENT_BODY" | sed 's/^\/ai //')
-
-          DELIMITER=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
-          {
-            echo "USER_QUERY<<$DELIMITER"
-            echo "$QUERY"
-            echo "$DELIMITER"
-          } >> "$GITHUB_ENV"
-
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
@@ -73,7 +58,7 @@ jobs:
           import base64
           from duckduckgo_search import DDGS
 
-          # Extract query after "/ai search " if it exists, else just use the prompt for context
+          # '/ai ' プレフィックスを削除して検索クエリを構築
           prompt = os.environ.get('USER_PROMPT', '')
           query = prompt.replace('/ai ', '').strip()
 
