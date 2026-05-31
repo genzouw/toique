@@ -13,7 +13,6 @@ jobs:
     if: contains(fromJSON('["OWNER","MEMBER","COLLABORATOR"]'), github.event.issue.author_association)
     permissions:
       issues: write
-      models: read
     concurrency:
       group: ai-issue-triage-${{ github.event.issue.number }}
       cancel-in-progress: false

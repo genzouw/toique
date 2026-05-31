@@ -32,16 +32,20 @@ Dependabotによるマイナー/パッチアップデートの自動マージ（
    - **Secret scanning push protection**
 4. 組織設定（Organization Settings）で Copilot の機能が有効化されている場合、Code scanning の設定内に **Copilot Autofix** のトグルが表示されるので、それを **On** にする。
 
-## 3. GitHub Models (Issue Triage, Weekly Summary, Release Drafter 用)
+## 3. GitHub Models (Issue Triage, Weekly Summary, Release Drafter, AI ChatOps, AI PR Code Review 用)
 
-AI Issue Triage (`ai-issue-triage.yml`)、AI Weekly Summary (`ai-weekly-summary.yml`)、AI Release Drafter (`ai-release-drafter.yml`) は、GitHubが提供する無料の GitHub Models (gpt-4o-mini) を利用しています。追加のAPIキー設定は不要で、標準の `GITHUB_TOKEN` を用いて動作します。
+AI Issue Triage (`ai-issue-triage.yml`)、AI Weekly Summary (`ai-weekly-summary.yml`)、AI Release Drafter (`ai-release-drafter.yml`)、**AI ChatOps** (`ai-chatops.yml`)、および **AI PR Code Review** (`ai-pr-review.yml`) は、GitHubが提供する無料の GitHub Models (gpt-4o-mini) を利用しています。追加のAPIキー設定は不要で、標準の `GITHUB_TOKEN` を用いて動作します。
 
 **各ワークフローのトリガーと保護条件:**
 
 - **AI Issue Triage** — Issue が作成された時にトリガー。`author_association` ガードにより権限を持つユーザー（OWNER, MEMBER, COLLABORATOR）が Issue を作成した場合のみ実行されます。
 - **AI Weekly Summary** — `schedule`（毎週月曜 00:00 UTC）および `workflow_dispatch`（手動実行）でトリガー。スケジュール起動のため `author_association` ガードは適用されません。
 - **AI Release Drafter** — `main` ブランチへの `push` でトリガー。push 権限を持つユーザーのみがトリガーできるため、`author_association` ガードは適用されません。
-- **AI PR Code Review** — Pull Requestの `opened`, `synchronize`, `reopened` 時にトリガー。PRのdiffを取得し、GitHub Models (gpt-4o-mini) が自動でレビューコメントを投稿します。設定不要で標準の `GITHUB_TOKEN` で動作しますが、ワークフローファイル内で `permissions` キーを使用して `pull-requests: write` 権限を明示的に付与してください（最小権限の原則に従い、リポジトリ全体の Actions 設定では `Read repository contents and packages permissions`（読み取り専用）のままにしておくことを推奨します）。
+- **AI PR Code Review** — Pull Requestの `opened`, `synchronize`, `reopened` 時にトリガー。PRのdiffを取得し、GitHub Models (gpt-4o-mini) と `duckduckgo-search` による Web 検索 (RAG) を用いて、自動でレビューコメントを投稿します。
+- **AI ChatOps** — Pull Request へのコメントが `/ai` で始まった時にトリガー。コメント内容と Web 検索 (RAG) を用いて回答や修正案を提示します。
+
+**権限の注意事項:**
+各ワークフローは設定不要で標準の `GITHUB_TOKEN` で動作しますが、ワークフローファイル内で `permissions` キーを使用して `issues: write` や `pull-requests: write` 権限を明示的に付与しています。最小権限の原則に従い、リポジトリ全体の Actions 設定では **`Read repository contents and packages permissions`（読み取り専用）のままにしておくことを推奨します。**
 
 ## 4. AIコードレビューの設定最適化
 
