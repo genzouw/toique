@@ -24,7 +24,8 @@ app.post('/', async (c) => {
   let event: Stripe.Event;
   try {
     event = stripe.webhooks.constructEvent(rawBody, sig, webhookSecret);
-  } catch {
+  } catch (error) {
+    logger.error('Stripe webhook signature verification failed:', error);
     return c.text('Invalid signature', 400);
   }
 
