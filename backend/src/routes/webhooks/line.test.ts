@@ -28,7 +28,7 @@ describe('Line Webhook Route', () => {
     vi.restoreAllMocks();
   });
 
-  it('processes multiple events concurrently', async () => {
+  it('processes multiple events sequentially', async () => {
     const handleLineEventSpy = vi.spyOn(eventHandler, 'handleLineEvent');
 
     // Simulate async processing
@@ -70,9 +70,11 @@ describe('Line Webhook Route', () => {
 
     expect(res.status).toBe(200);
 
-    // Both events should have started processing even though the first one is blocked
-    await vi.waitFor(() => expect(handleLineEventSpy).toHaveBeenCalledTimes(2));
+    // It processes sequentially, so it should only have been called once while blocked
+    await new Promise((r) => setTimeout(r, 50));
+    expect(handleLineEventSpy).toHaveBeenCalledTimes(1);
 
-    resolveFirstEvent(undefined); // Clean up
+    resolveFirstEvent(undefined); // Unblock the first one
+    await vi.waitFor(() => expect(handleLineEventSpy).toHaveBeenCalledTimes(2)); // Now it should reach 2
   });
 });
