@@ -10,9 +10,12 @@ function getAuthSecret() {
   const secret = process.env.BETTER_AUTH_SECRET;
   if (secret) return secret;
 
-  if (process.env.NODE_ENV === 'production') {
+  if (
+    process.env.NODE_ENV !== 'development' &&
+    process.env.NODE_ENV !== 'test'
+  ) {
     throw new Error(
-      'BETTER_AUTH_SECRET environment variable must be set in production',
+      'BETTER_AUTH_SECRET environment variable must be set in production or staging',
     );
   }
   return 'dev-only-secret-replace-in-production-min-32-chars';
