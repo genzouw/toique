@@ -14,3 +14,14 @@ engines:
   biome:
     exclude_paths:
       - '**'
+  # JSHint は本プロジェクトの TypeScript ファイルに対して ES5 ターゲット前提の
+  # 警告 (ES2015 modules forbidden / block-scoped variables forbidden / for-of
+  # forbidden 等) を大量に発生させる。本プロジェクトは ESLint + typescript-eslint
+  # を採用しており JSHint は導入していないため、TypeScript ソース全般を JSHint
+  # の解析対象から除外して、Quality Gate の恒常的な fail を防ぐ。
+  # (.js ファイルは将来 ESLint 経由で拾えば足りるため、必要になったら個別に
+  # exclude_paths を絞り込むこと)
+  jshint:
+    exclude_paths:
+      - '**/*.ts'
+      - '**/*.tsx'
