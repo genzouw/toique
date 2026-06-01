@@ -2,7 +2,7 @@ name: AI CI Failure Analyzer
 
 on:
   workflow_run:
-    workflows: ["CI"]
+    workflows: ['CI']
     types:
       - completed
 
@@ -34,12 +34,12 @@ jobs:
 
           if [ -z "$FAILED_JOB_ID" ]; then
             echo "No failed jobs found."
-            echo "LOGS_FOUND=false" >> $GITHUB_ENV
+            echo "LOGS_FOUND=false" >> "$GITHUB_ENV"
           else
             echo "Found failed job: $FAILED_JOB_ID"
 
             # Fetch logs for the failed job
-            LOGS=$(gh api /repos/${{ github.repository }}/actions/jobs/$FAILED_JOB_ID/logs || echo "Could not fetch logs")
+            LOGS=$(gh api "/repos/${{ github.repository }}/actions/jobs/${FAILED_JOB_ID}/logs" || echo "Could not fetch logs")
 
             # Tail the last 500 lines to fit into the prompt context
             TAILED_LOGS=$(echo "$LOGS" | tail -n 500)
@@ -50,7 +50,7 @@ jobs:
               echo "$TAILED_LOGS"
               echo "$DELIMITER"
               echo "LOGS_FOUND=true"
-            } >> $GITHUB_ENV
+            } >> "$GITHUB_ENV"
           fi
 
       - name: Find PR associated with the commit
@@ -60,14 +60,14 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           COMMIT_SHA: ${{ github.event.workflow_run.head_sha }}
         run: |
-          PR_NUMBER=$(gh api /repos/${{ github.repository }}/commits/$COMMIT_SHA/pulls --jq '.[0].number')
+          PR_NUMBER=$(gh api "/repos/${{ github.repository }}/commits/${COMMIT_SHA}/pulls" --jq '.[0].number')
 
           if [ -z "$PR_NUMBER" ] || [ "$PR_NUMBER" == "null" ]; then
             echo "No PR associated with this commit."
-            echo "PR_FOUND=false" >> $GITHUB_ENV
+            echo "PR_FOUND=false" >> "$GITHUB_ENV"
           else
-            echo "PR_FOUND=true" >> $GITHUB_ENV
-            echo "PR_NUMBER=$PR_NUMBER" >> $GITHUB_ENV
+            echo "PR_FOUND=true" >> "$GITHUB_ENV"
+            echo "PR_NUMBER=$PR_NUMBER" >> "$GITHUB_ENV"
           fi
 
       - name: Analyze logs and post comment
