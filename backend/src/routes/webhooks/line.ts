@@ -22,6 +22,10 @@ app.post('/:channelId', lineSignature, async (c) => {
 
   // 3秒ルール対策: 即座に200返却し、処理は非同期化
   queueMicrotask(async () => {
+    if (!payload || !Array.isArray(payload.events)) {
+      logger.error('[line-webhook] invalid payload events', { payload });
+      return;
+    }
     for (const event of payload.events) {
       try {
         await handleLineEvent(channel, event);
