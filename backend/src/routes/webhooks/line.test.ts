@@ -51,6 +51,7 @@ describe('Line Webhook Route', () => {
       c.set(
         'rawBody' as never,
         JSON.stringify({
+          destination: 'Utest',
           events: [{ replyToken: 'token-1' }, { replyToken: 'token-2' }],
         }),
       );
@@ -64,21 +65,22 @@ describe('Line Webhook Route', () => {
         'content-type': 'application/json',
       },
       body: JSON.stringify({
+        destination: 'Utest',
         events: [{ replyToken: 'token-1' }, { replyToken: 'token-2' }],
       }),
     });
 
     expect(res.status).toBe(200);
 
-    // The first event should have started processing
-    await vi.waitFor(() => expect(handleLineEventSpy).toHaveBeenCalledTimes(1));
+    // 直列処理のため、ブロック中は1回しか呼ばれない
+    await vi.waitFor(() => {
+      expect(handleLineEventSpy).toHaveBeenCalledTimes(1);
+    });
 
     // The second event should NOT have started processing because the first one is blocked
     expect(handleLineEventSpy).toHaveBeenCalledTimes(1);
 
-    resolveFirstEvent(undefined); // Unblock first event
-
-    // Now the second event should process
-    await vi.waitFor(() => expect(handleLineEventSpy).toHaveBeenCalledTimes(2));
+    resolveFirstEvent(undefined); // 1件目のブロックを解除
+    await vi.waitFor(() => expect(handleLineEventSpy).toHaveBeenCalledTimes(2)); // 解除後に2回目まで進む
   });
 });
