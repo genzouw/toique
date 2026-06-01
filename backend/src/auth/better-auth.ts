@@ -15,7 +15,7 @@ function getAuthSecret() {
     process.env.NODE_ENV !== 'test'
   ) {
     throw new Error(
-      'BETTER_AUTH_SECRET environment variable must be set in production or staging',
+      `BETTER_AUTH_SECRET environment variable must be set when NODE_ENV is not "development" or "test" (current: ${process.env.NODE_ENV})`,
     );
   }
   return 'dev-only-secret-replace-in-production-min-32-chars';
