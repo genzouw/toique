@@ -90,7 +90,7 @@ app.get('/export', async (c) => {
   for (const row of rows) {
     const answers = (row.answers ?? {}) as Record<string, unknown>;
     const values: string[] = [
-      escapeCsv(new Date(row.submittedAt).toISOString()),
+      escapeCsv(row.submittedAt.toISOString()),
       escapeCsv(row.status),
     ];
     for (const k of fieldKeys) {
