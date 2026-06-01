@@ -28,7 +28,7 @@ jobs:
         run: |
           # 差分を取得し、文字数が多すぎる場合は切り詰める (約10,000文字程度に制限)
           PR_NUMBER=${{ github.event.pull_request.number }}
-          DIFF=$(gh pr diff $PR_NUMBER || echo "Cannot fetch diff.")
+          DIFF=$(gh pr diff "$PR_NUMBER" || echo "Cannot fetch diff.")
           TRUNCATED_DIFF=$(echo "$DIFF" | head -c 10000)
 
           DELIMITER=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
@@ -56,7 +56,7 @@ jobs:
           from duckduckgo_search import DDGS
 
           title = os.environ.get('PR_TITLE', '')
-          query = f"{title} vulnerabilities OR bugs site:github.com OR site:stackoverflow.com"
+          query = f"{title} vulnerabilities OR bugs OR best practices site:github.com OR site:stackoverflow.com"
 
           try:
               results = DDGS().text(query, max_results=3)
@@ -106,7 +106,7 @@ jobs:
             【Pull Requestの説明】
             ${prBody}
 
-            【Web検索結果 (RAG用の最新技術情報・脆弱性情報参考)】
+            【Web検索結果 (RAG用の最新技術情報・脆弱性情報・ベストプラクティス参考)】
             ${searchResults}
 
             【コードの差分 (一部切り詰められている可能性があります)】
@@ -119,6 +119,7 @@ jobs:
             - パフォーマンス上の懸念（O(N)ループや無駄なデータベースクエリなど）
             - セキュリティの脆弱性（APIキーのハードコード、XSS、SQLインジェクションなど）。特にWeb検索結果に脆弱性情報がある場合は優先的に指摘してください。
             - コードの可読性や保守性
+            - Web検索結果から得られる最新のベストプラクティスに沿っているか
 
             ※ 差分に対して問題が見当たらない場合は、肯定的なフィードバック（LGTM等）を返してください。
             `;

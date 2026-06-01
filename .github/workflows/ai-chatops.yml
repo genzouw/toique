@@ -6,13 +6,18 @@ on:
 
 jobs:
   ai_chatops:
-    name: AI ChatOps Assistant
-    # PRへのコメントでのみ動作させる（Issueコメントは除外）、かつ /ai コマンドで始まる場合
-    if: github.event.issue.pull_request && startsWith(github.event.comment.body, '/ai ')
+    name: Respond to AI Commands
+    # 実行対象は Pull Request に対するコメントのみ、かつ /ai コマンドで始まる場合
+    # 公開リポジトリでのAbuse防止のため、権限を持つユーザーからのコメントのみ実行
+    if: >
+      github.event.issue.pull_request &&
+      startsWith(github.event.comment.body, '/ai ') &&
+      contains(fromJSON('["OWNER","MEMBER","COLLABORATOR"]'), github.event.comment.author_association)
     runs-on: ubuntu-latest
     permissions:
       contents: read
       pull-requests: write
+      issues: write
       models: read
     steps:
       - name: Checkout repository
@@ -53,7 +58,7 @@ jobs:
           import base64
           from duckduckgo_search import DDGS
 
-          # Extract query after "/ai search " if it exists, else just use the prompt for context
+          # '/ai ' プレフィックスを削除して検索クエリを構築
           prompt = os.environ.get('USER_PROMPT', '')
           query = prompt.replace('/ai ', '').strip()
 
