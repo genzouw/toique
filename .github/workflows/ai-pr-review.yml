@@ -11,7 +11,6 @@ jobs:
     permissions:
       contents: read
       pull-requests: write
-      models: read
     concurrency:
       group: ai-pr-review-${{ github.event.pull_request.number }}
       cancel-in-progress: true
@@ -44,7 +43,7 @@ jobs:
           python-version: '3.12'
 
       - name: Install DuckDuckGo Search
-        run: pip install "duckduckgo-search==8.1.1"
+        run: pip install "duckduckgo-search==8.1.1" --break-system-packages
 
       - name: Search DuckDuckGo (RAG prep)
         id: search_ddg
@@ -79,7 +78,7 @@ jobs:
         shell: python
 
       - name: Code Review with GitHub Models
-        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        uses: actions/github-script@v7.0.1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PR_DIFF: ${{ env.PR_DIFF }}
@@ -131,7 +130,7 @@ jobs:
                 'Authorization': `Bearer ${process.env.GITHUB_TOKEN}`
               },
               body: JSON.stringify({
-                model: 'openai/gpt-4o-mini',
+                model: 'openai/gpt-4o',
                 messages: [
                   { role: "system", content: "You are an expert software engineer performing code reviews. Answer in Japanese." },
                   { role: "user", content: prompt }
