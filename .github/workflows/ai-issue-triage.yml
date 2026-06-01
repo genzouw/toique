@@ -74,7 +74,7 @@ jobs:
         shell: python
 
       - name: Install DuckDuckGo Search
-        run: pip install "duckduckgo-search==8.1.1"
+        run: pip install "duckduckgo-search==8.1.1" --break-system-packages
 
       - name: Search DuckDuckGo (RAG prep)
         id: search_ddg
@@ -109,7 +109,7 @@ jobs:
         shell: python
 
       - name: Call GitHub Models for Issue Triage
-        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        uses: actions/github-script@v7.0.1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SEARCH_RESULTS: ${{ env.SEARCH_RESULTS }}
