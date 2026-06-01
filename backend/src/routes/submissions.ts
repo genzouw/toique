@@ -89,12 +89,14 @@ app.get('/export', async (c) => {
   const lines: string[] = [header.map(escapeCsv).join(',')];
   for (const row of rows) {
     const answers = (row.answers ?? {}) as Record<string, unknown>;
-    const values: CsvExportableValue[] = [
-      new Date(row.submittedAt).toISOString(),
-      row.status,
-      ...fieldKeys.map((k) => toCsvValue(answers[k])),
+    const values: string[] = [
+      escapeCsv(new Date(row.submittedAt).toISOString()),
+      escapeCsv(row.status),
     ];
-    lines.push(values.map(escapeCsv).join(','));
+    for (const k of fieldKeys) {
+      values.push(escapeCsv(toCsvValue(answers[k])));
+    }
+    lines.push(values.join(','));
   }
   const csv = '\uFEFF' + lines.join('\r\n');
 
