@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
-import { getStep, parseFormSchema, type FormSchema } from './types.js';
+import { getStep, parseFormSchema } from './types.js';
 
-const validSchema: FormSchema = {
+const validSchema = {
   startStep: 'q1',
   steps: {
     q1: {
