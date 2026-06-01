@@ -14,3 +14,26 @@ engines:
   biome:
     exclude_paths:
       - '**'
+  # Codacy がデフォルトで有効化している以下の lint 系 engine は、本プロジェクト
+  # (ESLint + typescript-eslint で型・構文を一貫してカバー) と方針が衝突し、
+  # ES5 ターゲット前提の誤検知 (ES2015 modules forbidden / block-scoped variables
+  # forbidden / for-of forbidden / await in loop 等) を大量に発生させ
+  # Quality Gate を恒常的に fail させていた。
+  #
+  # 本プロジェクト側で ESLint (eslint-9) を別途設定済みなので、レガシー engine は
+  # 一括して全ファイルから除外する。
+  tslint:
+    exclude_paths:
+      - '**'
+  jshint:
+    exclude_paths:
+      - '**'
+  eslint:
+    exclude_paths:
+      - '**'
+  jshint-7:
+    exclude_paths:
+      - '**'
+  eslint-8:
+    exclude_paths:
+      - '**'

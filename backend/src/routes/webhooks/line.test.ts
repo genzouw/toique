@@ -28,7 +28,7 @@ describe('Line Webhook Route', () => {
     vi.restoreAllMocks();
   });
 
-  it('processes multiple events concurrently', async () => {
+  it('processes multiple events sequentially', async () => {
     const handleLineEventSpy = vi.spyOn(eventHandler, 'handleLineEvent');
 
     // Simulate async processing
@@ -51,6 +51,7 @@ describe('Line Webhook Route', () => {
       c.set(
         'rawBody' as never,
         JSON.stringify({
+          destination: 'Utest',
           events: [{ replyToken: 'token-1' }, { replyToken: 'token-2' }],
         }),
       );
@@ -64,15 +65,19 @@ describe('Line Webhook Route', () => {
         'content-type': 'application/json',
       },
       body: JSON.stringify({
+        destination: 'Utest',
         events: [{ replyToken: 'token-1' }, { replyToken: 'token-2' }],
       }),
     });
 
     expect(res.status).toBe(200);
 
-    // Both events should have started processing even though the first one is blocked
-    await vi.waitFor(() => expect(handleLineEventSpy).toHaveBeenCalledTimes(2));
+    // 直列処理のため、ブロック中は1回しか呼ばれない
+    await vi.waitFor(() => {
+      expect(handleLineEventSpy).toHaveBeenCalledTimes(1);
+    });
 
-    resolveFirstEvent(undefined); // Clean up
+    resolveFirstEvent(undefined); // 1件目のブロックを解除
+    await vi.waitFor(() => expect(handleLineEventSpy).toHaveBeenCalledTimes(2)); // 解除後に2回目まで進む
   });
 });
