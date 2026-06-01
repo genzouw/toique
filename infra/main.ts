@@ -16,6 +16,7 @@ import { IamWorkloadIdentityPool } from '@cdktf/provider-google/lib/iam-workload
 import { IamWorkloadIdentityPoolProvider } from '@cdktf/provider-google/lib/iam-workload-identity-pool-provider';
 import { ServiceAccountIamMember } from '@cdktf/provider-google/lib/service-account-iam-member';
 import { ArtifactRegistryRepository } from '@cdktf/provider-google/lib/artifact-registry-repository';
+import { CloudRunDomainMapping } from '@cdktf/provider-google/lib/cloud-run-domain-mapping';
 
 class MyStack extends TerraformStack {
   constructor(scope: Construct, id: string) {
@@ -319,6 +320,30 @@ class MyStack extends TerraformStack {
       repositoryId: artifactRepoName,
       format: 'DOCKER',
       cleanupPolicies: loadCleanupPolicies(),
+    });
+
+    // --- Cloud Run カスタムドメインマッピング ---
+    // frontend (toique.genzouw.com / Cloudflare Pages) からは api.toique.genzouw.com を
+    // 叩く。Cookie の SameSite=Lax + crossSubDomainCookies が成立するよう、
+    // サブドメイン同士を *.toique.genzouw.com にそろえる必要がある (better-auth)。
+    //
+    // 親ドメイン genzouw.com は既に Google 所有確認済み (root TXT に
+    // google-site-verification トークン) なので、子サブドメインの追加検証は不要。
+    // certificateMode=AUTOMATIC により Google が ACME で TLS 証明書を自動発行する。
+    //
+    // 対応する DNS: genzouw.com 側 Route53 に
+    //   api.toique CNAME ghs.googlehosted.com.
+    // を別途追加 (terraform/environments/aws/main.tf の cname_records)。
+    new CloudRunDomainMapping(this, 'api-domain-mapping', {
+      location: region,
+      name: 'api.toique.genzouw.com',
+      metadata: {
+        namespace: projectId,
+      },
+      spec: {
+        routeName: process.env.CLOUD_RUN_SERVICE || 'toique-backend',
+        certificateMode: 'AUTOMATIC',
+      },
     });
   }
 }

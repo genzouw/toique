@@ -136,12 +136,12 @@ jobs:
             RESEND_API_KEY=RESEND_API_KEY:latest
             ADMIN_PASSWORD=ADMIN_PASSWORD:latest
 
-      - name: Set BETTER_AUTH_URL to deployed Cloud Run URL
+      - name: Set BETTER_AUTH_URL to public custom domain
         run: |
           gcloud run services update ${{ env.CLOUD_RUN_SERVICE }} \
             --region=${{ env.GCP_REGION }} \
             --project=${{ env.GCP_PROJECT_ID }} \
-            --update-env-vars "BETTER_AUTH_URL=${{ steps.deploy.outputs.url }}"
+            --update-env-vars "BETTER_AUTH_URL=https://api.toique.genzouw.com"
 
   deploy-backup:
     name: Backup Job (Cloud Run Jobs)
