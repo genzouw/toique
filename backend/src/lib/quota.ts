@@ -104,7 +104,7 @@ export async function getTenantUsage(
 ): Promise<TenantUsage> {
   const limits = getPlanLimits(plan);
 
-  const batchResults = await db.batch([
+  const batchResults = await Promise.all([
     buildLineChannelsCountQuery(tenantId),
     buildFormsCountQuery(tenantId),
     buildSubmissionsCountQuery(tenantId),
