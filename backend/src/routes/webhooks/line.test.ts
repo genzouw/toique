@@ -70,12 +70,12 @@ describe('Line Webhook Route', () => {
 
     expect(res.status).toBe(200);
 
-    // It processes sequentially, so it should only have been called once while blocked
+    // 直列処理のため、ブロック中は1回しか呼ばれない
     await vi.waitFor(() => {
       expect(handleLineEventSpy).toHaveBeenCalledTimes(1);
     });
 
-    resolveFirstEvent(undefined); // Unblock the first one
-    await vi.waitFor(() => expect(handleLineEventSpy).toHaveBeenCalledTimes(2)); // Now it should reach 2
+    resolveFirstEvent(undefined); // 1件目のブロックを解除
+    await vi.waitFor(() => expect(handleLineEventSpy).toHaveBeenCalledTimes(2)); // 解除後に2回目まで進む
   });
 });
