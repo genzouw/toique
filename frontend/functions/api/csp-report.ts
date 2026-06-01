@@ -74,7 +74,7 @@ export const onRequestPost = async (
     body: parsedBody,
   };
 
-  console.log(JSON.stringify(logEntry));
+  console.info(JSON.stringify(logEntry));
 
   // ブラウザの Reporting API は 204 を期待する。
   return new Response(null, { status: 204 });
