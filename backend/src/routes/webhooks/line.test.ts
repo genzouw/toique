@@ -77,6 +77,9 @@ describe('Line Webhook Route', () => {
       expect(handleLineEventSpy).toHaveBeenCalledTimes(1);
     });
 
+    // The second event should NOT have started processing because the first one is blocked
+    expect(handleLineEventSpy).toHaveBeenCalledTimes(1);
+
     resolveFirstEvent(undefined); // 1件目のブロックを解除
     await vi.waitFor(() => expect(handleLineEventSpy).toHaveBeenCalledTimes(2)); // 解除後に2回目まで進む
   });
