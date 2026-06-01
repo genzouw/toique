@@ -51,6 +51,7 @@ describe('Line Webhook Route', () => {
       c.set(
         'rawBody' as never,
         JSON.stringify({
+          destination: 'Utest',
           events: [{ replyToken: 'token-1' }, { replyToken: 'token-2' }],
         }),
       );
@@ -64,6 +65,7 @@ describe('Line Webhook Route', () => {
         'content-type': 'application/json',
       },
       body: JSON.stringify({
+        destination: 'Utest',
         events: [{ replyToken: 'token-1' }, { replyToken: 'token-2' }],
       }),
     });

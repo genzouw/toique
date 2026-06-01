@@ -13,6 +13,7 @@ type Channel = typeof lineChannels.$inferSelect;
 // ここでは「events が配列で各要素がオブジェクト」だけを最低限保証する。
 const lineWebhookEventSchema = z.object({}).passthrough();
 const lineWebhookPayloadSchema = z.object({
+  destination: z.string(),
   events: z.array(lineWebhookEventSchema),
 });
 
