@@ -14,18 +14,26 @@ engines:
   biome:
     exclude_paths:
       - '**'
-  # TSLint は公式に廃止された ESLint 以前の TypeScript 用 lint で、本プロジェクト
-  # では採用していない。Codacy が default 有効化している TSLint は ES5 ターゲット
-  # 前提の警告 (ES2015 modules forbidden / block-scoped variables forbidden /
-  # for-of forbidden 等) を大量に発生させ Quality Gate を恒常的に fail させる。
-  # 本プロジェクトは ESLint + typescript-eslint で型・構文を一貫してカバーして
-  # いるため、TSLint の解析は不要として全ファイルを除外する。
+  # Codacy がデフォルトで有効化している以下の lint 系 engine は、本プロジェクト
+  # (ESLint + typescript-eslint で型・構文を一貫してカバー) と方針が衝突し、
+  # ES5 ターゲット前提の誤検知 (ES2015 modules forbidden / block-scoped variables
+  # forbidden / for-of forbidden / await in loop 等) を大量に発生させ
+  # Quality Gate を恒常的に fail させていた。
+  #
+  # 本プロジェクト側で ESLint (eslint-9) を別途設定済みなので、レガシー engine は
+  # 一括して全ファイルから除外する。
   tslint:
     exclude_paths:
       - '**'
-  # JSHint も同様に旧来の JavaScript 向け lint で、ES5 既定で動作するため
-  # TypeScript / モダン ES module 構成の本プロジェクトでは誤検知の温床となる。
-  # ESLint が既に網羅しているため JSHint は無効化する。
   jshint:
+    exclude_paths:
+      - '**'
+  eslint:
+    exclude_paths:
+      - '**'
+  jshint-7:
+    exclude_paths:
+      - '**'
+  eslint-8:
     exclude_paths:
       - '**'
