@@ -19,6 +19,7 @@ env:
   ARTIFACT_REPO: ${{ vars.ARTIFACT_REPO || 'toique' }}
   CLOUD_RUN_JOB_BACKUP: ${{ vars.CLOUD_RUN_JOB_BACKUP || 'db-backup' }}
   CF_PAGES_PROJECT: ${{ vars.CF_PAGES_PROJECT || 'toique' }}
+  API_DOMAIN: ${{ vars.API_DOMAIN || 'api.toique.genzouw.com' }}
 
 jobs:
   deploy-backend:
@@ -141,7 +142,7 @@ jobs:
           gcloud run services update ${{ env.CLOUD_RUN_SERVICE }} \
             --region=${{ env.GCP_REGION }} \
             --project=${{ env.GCP_PROJECT_ID }} \
-            --update-env-vars "BETTER_AUTH_URL=https://api.toique.genzouw.com"
+            --update-env-vars "BETTER_AUTH_URL=https://${{ env.API_DOMAIN }}"
 
   deploy-backup:
     name: Backup Job (Cloud Run Jobs)
@@ -239,7 +240,7 @@ jobs:
           bun install --frozen-lockfile
           bun run build
         env:
-          VITE_API_URL: https://api.toique.genzouw.com
+          VITE_API_URL: https://${{ env.API_DOMAIN }}
           VITE_GA_TRACKING_ID: ${{ vars.VITE_GA_TRACKING_ID }}
       - name: Deploy to Cloudflare Pages
         uses: cloudflare/wrangler-action@ebbaa1584979971c8614a24965b4405ff95890e0 # v4.0.0
