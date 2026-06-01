@@ -40,6 +40,8 @@ class MyStack extends TerraformStack {
     // ArtifactRegistryRepository の repositoryId で共通利用する。
     // 既定値を変えると pull 先とリポジトリ作成先がズレるため両者で必ず同じ変数を参照する。
     const artifactRepoName = process.env.ARTIFACT_REPO || 'toique';
+    const DEFAULT_API_DOMAIN = 'api.toique.genzouw.com';
+    const apiDomain = process.env.API_DOMAIN || DEFAULT_API_DOMAIN;
     // WIF が認可する `<owner>/<repo>`。principal:// subject に展開される。
     // 誤値だと WIF binding 全体が意味を成さないため必須化。
     const githubRepository = requireEnv('GITHUB_REPOSITORY');
@@ -336,7 +338,7 @@ class MyStack extends TerraformStack {
     // を別途追加 (terraform/environments/aws/main.tf の cname_records)。
     new CloudRunDomainMapping(this, 'api-domain-mapping', {
       location: region,
-      name: 'api.toique.genzouw.com',
+      name: apiDomain,
       metadata: {
         namespace: projectId,
       },
