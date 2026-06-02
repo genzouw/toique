@@ -104,10 +104,7 @@ export async function getTenantUsage(
 ): Promise<TenantUsage> {
   const limits = getPlanLimits(plan);
 
-  // ⚡ Bolt Performance Optimization:
-  // Use Drizzle's db.batch() instead of concurrent Promise.all() to combine
-  // these 4 independent count() queries into a single database roundtrip.
-  // Impact: Reduces connection pool usage and network latency by grouping queries.
+  // 4つの独立したカウントクエリをバッチ処理で実行し、データベースへのラウンドトリップを削減します。
   const batchResults = await db.batch([
     buildLineChannelsCountQuery(tenantId),
     buildFormsCountQuery(tenantId),
