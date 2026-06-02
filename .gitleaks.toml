@@ -64,8 +64,8 @@ paths = [
 
 [[rules]]
 id = "custom-gcp-project-number"
-description = "Detects hardcoded 12-digit GCP Project Numbers in context"
-regex = '''(?i)(?:projects?\/|project_number\s*=?\s*|gcp_project_number\s*=?\s*)[0-9]{12}\b'''
+description = "Detects hardcoded GCP Project Numbers in context (int64 range)"
+regex = '''(?i)(?:projects?\/|project_number\s*=?\s*|gcp_project_number\s*=?\s*)[0-9]{1,19}\b'''
 tags = ["gcp", "project-number"]
 [rules.allowlist]
 paths = [
