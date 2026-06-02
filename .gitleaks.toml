@@ -61,3 +61,33 @@ paths = [
     '''infra/main\.ts''',
     '''SECURITY\.md'''
 ]
+
+[[rules]]
+id = "custom-gcp-project-number"
+description = "Detects hardcoded 12-digit GCP Project Numbers in context"
+regex = '''(?i)(?:projects?\/|project_number\s*=?\s*|gcp_project_number\s*=?\s*)[0-9]{12}\b'''
+tags = ["gcp", "project-number"]
+[rules.allowlist]
+paths = [
+    '''\.*github/workflows/.*.yml''',
+    '''backend/src/.*.test.ts''',
+    '''db/migrations/meta/.*.json''',
+    '''docs/fork-setup\.md''',
+    '''infra/README\.md'''
+]
+
+[[rules]]
+id = "custom-gcp-service-account"
+description = "Detects hardcoded GCP Service Account emails"
+regex = '''(?i)([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.iam\.gserviceaccount\.com)'''
+tags = ["gcp", "service-account"]
+[rules.allowlist]
+paths = [
+    '''\.*github/workflows/.*.yml''',
+    '''docs/fork-setup\.md''',
+    '''docs/backup\.md''',
+    '''docs/manual-deploy\.md''',
+    '''docs/public-release-risk-assessment\.md''',
+    '''infra/main\.ts''',
+    '''infra/README\.md'''
+]
