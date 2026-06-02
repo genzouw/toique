@@ -69,9 +69,9 @@ regex = '''(?i)(?:projects?\/|project_number\s*=?\s*|gcp_project_number\s*=?\s*)
 tags = ["gcp", "project-number"]
 [rules.allowlist]
 paths = [
-    '''\.*github/workflows/.*.yml''',
-    '''backend/src/.*.test.ts''',
-    '''db/migrations/meta/.*.json''',
+    '''\.github/workflows/[^/]*\.ya?ml''',
+    '''backend/src/[^/]*\.test\.ts''',
+    '''db/migrations/meta/[^/]*\.json''',
     '''docs/fork-setup\.md''',
     '''infra/README\.md'''
 ]
