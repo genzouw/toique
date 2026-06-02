@@ -174,7 +174,7 @@ class MyStack extends TerraformStack {
       },
     });
 
-    // CI (deploy.yml) は `gcloud run jobs deploy --image=<SHA>` で SHA タグ付き
+    // CI (deploy.yml) は `gcloud run jobs deploy --image=${SHA}` で SHA タグ付き
     // image を貼り直すため、本ファイルでは `:latest` のプレースホルダーを定義しつつ
     // image の実値は Terraform 管理外として扱う。これを無視しないと、毎回の
     // cdktf diff で image が「SHA → :latest」のフラップとして検出され、
