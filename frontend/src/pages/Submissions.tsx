@@ -128,6 +128,8 @@ export default function Submissions() {
             loading={downloading}
             disabled={!exportFormId}
             icon={Download}
+            title="選択したフォームのCSVをダウンロード"
+            aria-label="選択したフォームのCSVをダウンロード"
             className="inline-flex items-center gap-2 px-4 py-2 bg-slate-900 text-white text-sm rounded-md disabled:opacity-50 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-slate-900 focus-visible:ring-offset-2 transition-colors"
           >
             {downloading ? 'ダウンロード中…' : 'CSVダウンロード'}
