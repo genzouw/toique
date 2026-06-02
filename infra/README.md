@@ -146,13 +146,19 @@ bunx cdktf import \
   --resource-id "projects/$GCP_PROJECT_ID/serviceAccounts/github-deployer@$GCP_PROJECT_ID.iam.gserviceaccount.com roles/iam.workloadIdentityUser principal://iam.googleapis.com/projects/$GCP_PROJECT_NUMBER/locations/global/workloadIdentityPools/github-pool/subject/repo:$GITHUB_REPOSITORY:ref:refs/heads/main" \
   --resource-name github-deployer-wif-binding
 
-# 8. Secret Manager シークレット本体 (4件)
-for secret in BACKUP_POSTGRES_DB BACKUP_POSTGRES_USER BACKUP_POSTGRES_PASSWORD BACKUP_POSTGRES_HOST; do
-  bunx cdktf import \
-    --resource-type google_secret_manager_secret \
-    --resource-id "projects/$GCP_PROJECT_ID/secrets/$secret" \
-    --resource-name "backup-secret-$secret"
-done
+# 8. Secret Manager シークレット本体 (1件)
+#    アプリ用 DATABASE_URL とは別の direct connection 用接続文字列。
+#    値の作成手順は docs/backup.md を参照。
+bunx cdktf import \
+  --resource-type google_secret_manager_secret \
+  --resource-id "projects/$GCP_PROJECT_ID/secrets/BACKUP_DATABASE_URL" \
+  --resource-name "backup-secret-BACKUP_DATABASE_URL"
+
+# 8-iam. backup-job SA が BACKUP_DATABASE_URL を読めるようにする IAM binding
+bunx cdktf import \
+  --resource-type google_secret_manager_secret_iam_member \
+  --resource-id "projects/$GCP_PROJECT_ID/secrets/BACKUP_DATABASE_URL roles/secretmanager.secretAccessor serviceAccount:backup-job@$GCP_PROJECT_ID.iam.gserviceaccount.com" \
+  --resource-name "backup-sa-secret-BACKUP_DATABASE_URL"
 
 # 9. Artifact Registry リポジトリ
 bunx cdktf import \
@@ -223,15 +229,15 @@ gcloud run jobs get-iam-policy db-backup \
 
 ### Artifact Registry クリーンアップポリシー初回適用時の注意
 
-`infra/main.ts` で定義している `cleanupPolicies` は `cdktf deploy` の **適用と同時に評価され、条件にマッチしたバージョンを実削除する** 仕様（Cleanup Policy は Dry-run モードを明示しない限り即時削除モード）。本リポジトリでは以下の3ルールを設定している:
+`infra/main.ts` で定義している `cleanupPolicies` は `cdktf deploy` の **適用と同時に評価され、条件にマッチしたバージョンを実削除する** 仕様（Cleanup Policy は Dry-run モードを明示しない限り即時削除モード）。本リポジトリでは以下の 3 ルールを設定している:
 
-- `keep-latest-10` (KEEP): 最新10件は何があっても保持
-- `delete-untagged` (DELETE): タグなしイメージを1日後に削除
-- `delete-older-than-30-days` (DELETE): 30日経過したイメージを削除（KEEP > DELETE で評価されるため最新10件は守られる）
+- `keep-latest-10` (KEEP): 最新 10 件は何があっても保持
+- `delete-untagged` (DELETE): タグなしイメージを 1 日後に削除
+- `delete-older-than-30-days` (DELETE): 30 日経過したイメージを削除（KEEP > DELETE で評価されるため最新 10 件は守られる）
 
 **初回 `cdktf deploy` の挙動**:
 
-既存環境で 30 日以上前のタグ付きイメージが残っている場合、初回 apply の瞬間にそれらが（最新10件を除き）すべて削除される。ロールバック先として古いタグを参照していた場合は事前に対象を確認しておくこと。
+既存環境で 30 日以上前のタグ付きイメージが残っている場合、初回 apply の瞬間にそれらが（最新 10 件を除き）すべて削除される。ロールバック先として古いタグを参照していた場合は事前に対象を確認しておくこと。
 
 挙動を事前に確認したい場合は、`infra/main.ts` の `ArtifactRegistryRepository` リソースに一時的に `cleanupPolicyDryRun: true` を追加して apply し、Cloud Logging の `artifactregistry.googleapis.com/cleanup-policy-events` で削除候補をログ確認した上でフラグを外す二段階運用も可能（[Cleanup policy dry run](https://cloud.google.com/artifact-registry/docs/repositories/cleanup-policy#dry-run) 参照）。
 
