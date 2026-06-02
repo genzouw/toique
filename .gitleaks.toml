@@ -83,7 +83,7 @@ regex = '''(?i)([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.iam\.gserviceaccount\.com)'''
 tags = ["gcp", "service-account"]
 [rules.allowlist]
 paths = [
-    '''\.*github/workflows/.*.yml''',
+    '''\.github/workflows/[^/]*\.ya?ml''',
     '''docs/fork-setup\.md''',
     '''docs/backup\.md''',
     '''docs/manual-deploy\.md''',
