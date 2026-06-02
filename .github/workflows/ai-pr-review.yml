@@ -43,7 +43,7 @@ jobs:
           python-version: '3.12'
 
       - name: Install DuckDuckGo Search
-        run: pip install "duckduckgo-search==8.1.1" --break-system-packages
+        run: pip install "duckduckgo-search>=6.0.0" --break-system-packages
 
       - name: Search DuckDuckGo (RAG prep)
         id: search_ddg

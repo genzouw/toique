@@ -1,0 +1,141 @@
+name: AI Auto Fix
+
+on:
+  issue_comment:
+    types: [created]
+
+jobs:
+  ai_auto_fix:
+    name: Generate Code Fix
+    if: >
+      github.event.issue.pull_request &&
+      startsWith(github.event.comment.body, '/ai-fix ') &&
+      contains(fromJSON('["OWNER","MEMBER","COLLABORATOR"]'), github.event.comment.author_association)
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - name: Checkout PR Branch
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Checkout PR Branch Locally
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # Fetch PR head and switch to it. This assumes the workflow runs on the base repo and PR allows edits from maintainers.
+          gh pr checkout ${{ github.event.issue.number }}
+
+      - name: Generate Fix with GitHub Models
+        uses: actions/github-script@v7.0.1
+        env:
+          GITHUB_TOKEN: ${{ secrets.PAT_FOR_MODELS }}
+          USER_PROMPT: ${{ github.event.comment.body }}
+        with:
+          script: |
+            const fs = require('fs');
+            const promptInstruction = process.env.USER_PROMPT.replace('/ai-fix ', '').trim();
+            const prNumber = context.payload.issue.number;
+
+            // Optional: You might want to get the diff or file list to give context to the model
+            const prDiffCmd = `gh pr diff ${prNumber}`;
+            let prDiff = '';
+            try {
+              const { execSync } = require('child_process');
+              prDiff = execSync(prDiffCmd, { encoding: 'utf-8', env: { ...process.env, GH_TOKEN: process.env.GITHUB_TOKEN } });
+              // Truncate diff to avoid token limits
+              prDiff = prDiff.substring(0, 10000);
+            } catch(e) {
+              console.warn("Could not fetch PR diff for context");
+            }
+
+            const prompt = `
+            あなたはシニアソフトウェアエンジニアであり、AIアシスタントとしてPull Requestのコードを自動修正します。
+            以下の情報を元に、ユーザーの指示に従ってコードを修正してください。
+
+            【Pull Request の現在の差分 (一部)】
+            \`\`\`diff
+            ${prDiff}
+            \`\`\`
+
+            【ユーザーからの修正指示】
+            ${promptInstruction}
+
+            回答は、修正するファイルのパスと、そのファイルの「新しい完全な内容」を含む JSON の配列のみを出力してください。Markdown ブロックやその他の説明を含めないでください。
+
+            JSON Schema:
+            [
+              {
+                "filepath": "path/to/file.ts",
+                "content": "新しいファイルの完全な内容"
+              }
+            ]
+            `;
+
+            console.log("Calling GitHub Models...");
+            const response = await fetch('https://models.github.ai/inference/chat/completions', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${process.env.GITHUB_TOKEN}`
+              },
+              body: JSON.stringify({
+                model: 'openai/gpt-4o',
+                messages: [
+                  { role: "system", content: "You are an expert developer. Output strictly JSON array containing filepath and content." },
+                  { role: "user", content: prompt }
+                ]
+              })
+            });
+
+            if (!response.ok) {
+              const err = await response.text();
+              console.error(`GitHub Models API Error: status=${response.status} body=${err}`);
+              throw new Error(`GitHub Models API Error: ${response.status}`);
+            }
+
+            const data = await response.json();
+            if (data.error || !data.choices || data.choices.length === 0) {
+              console.error('GitHub Models API returned error or no choices');
+              throw new Error('API Error');
+            }
+
+            let reply = data.choices[0].message.content.trim();
+
+            // Remove markdown code block if model included it
+            if (reply.startsWith('```json')) {
+              reply = reply.replace(/^```json\n/, '').replace(/\n```$/, '');
+            } else if (reply.startsWith('```')) {
+              reply = reply.replace(/^```\n/, '').replace(/\n```$/, '');
+            }
+
+            let fixes = [];
+            try {
+              fixes = JSON.parse(reply);
+            } catch(e) {
+              console.error('Failed to parse model response as JSON:', reply);
+              throw new Error('JSON Parse Error');
+            }
+
+            for (const fix of fixes) {
+              if (fix.filepath && fix.content) {
+                console.log(`Writing changes to ${fix.filepath}`);
+                fs.writeFileSync(fix.filepath, fix.content);
+              }
+            }
+
+      - name: Commit and Push Changes
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add .
+
+          # Only commit and push if there are changes
+          if git diff --staged --quiet; then
+            echo "No changes to commit."
+          else
+            git commit -m "bot: auto-fix applied via /ai-fix"
+            git push origin HEAD
+          fi
