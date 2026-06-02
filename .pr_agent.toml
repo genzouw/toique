@@ -15,3 +15,6 @@ extra_instructions = """
 
 [pr_description]
 extra_instructions = "PRの要約や説明はすべて日本語で記述してください。"
+
+[pr_code_suggestions]
+extra_instructions = "可能であれば、具体的な修正コードの提案（スニペット）を含めてください。"

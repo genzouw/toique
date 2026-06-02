@@ -68,6 +68,11 @@ PRのコメント欄で `/ai <メッセージ>` を記述することで、GitHu
 - `/ai このPRのパフォーマンス上の懸念点を教えてください`
 - `/ai テストコードの作成を手伝ってください`
 
+### AI Auto-Fix (/ai-fix)
+
+PRのコメントで `/ai-fix <修正内容>` と入力すると、AIが対象のコードを修正し、自動的にPRブランチへコミット・プッシュします。
+**注意:** この機能はGitHub Modelsの推論APIを使用するため、リポジトリのSecretsに `PAT_FOR_MODELS` という名前で、GitHub ModelsおよびPull Requestへの書き込み権限を持ったPersonal Access Token (PAT) を手動で設定する必要があります。
+
 ### Semantic PR Title の適用
 
 リリースノートの自動生成（AI Release Drafter）の精度向上のため、PRのタイトルには **Conventional Commits** フォーマットを強制するチェック (`semantic-pr-title.yml`) が有効になっています。
