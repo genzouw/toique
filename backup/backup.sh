@@ -17,16 +17,17 @@ fi
 
 # ファイル名生成のため dbname だけ URL から抽出する。
 # 形式: postgresql://user:pass@host[:port]/dbname[?params]
-# パス部分が無い URL を弾かないと、`${url_tmp##*/}` が認証情報を含む全体を返し、
-# 後段の echo でパスワードがログに露出する。`%%[?]*` は ash 互換のためリテラル `?` を明示する。
-url_tmp="${DATABASE_URL#postgresql://}"
-url_tmp="${url_tmp#postgres://}"
-url_tmp="${url_tmp%%[?]*}"
-if [ "${url_tmp}" = "${url_tmp#*/}" ]; then
+# パスワードに `?` が含まれる場合、先に `%%[?]*` を適用するとパス部分ごと切り捨てられる。
+# そのため、先にパス（`/`）の存在を確認してから元の URL 末尾（`##*/`）を抽出し、
+# その後でクエリパラメータを除去する。`%%[?]*` は ash 互換のためリテラル `?` を明示する。
+url_without_scheme="${DATABASE_URL#postgresql://}"
+url_without_scheme="${url_without_scheme#postgres://}"
+if [ "${url_without_scheme}" = "${url_without_scheme#*/}" ]; then
   echo "Error: DATABASE_URL does not contain a database name path."
   exit 1
 fi
-POSTGRES_DB="${url_tmp##*/}"
+db_and_params="${DATABASE_URL##*/}"
+POSTGRES_DB="${db_and_params%%[?]*}"
 if [ -z "${POSTGRES_DB}" ]; then
   echo "Error: Extracted database name is empty."
   exit 1
