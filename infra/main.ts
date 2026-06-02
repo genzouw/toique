@@ -63,7 +63,15 @@ class MyStack extends TerraformStack {
     });
 
     // バックアップジョブが参照するシークレット定義（env 名と Secret Manager 上の名前のマッピング）
+    //
+    // Neon は pg_dump をアプリ用の pooler endpoint 経由で実行すると
+    // セッション制御の制約で失敗するケースがあるため、direct connection の
+    // 接続文字列をアプリ用 DATABASE_URL とは別の BACKUP_DATABASE_URL で管理する。
+    //
+    // 旧 POSTGRES_* 系は backup.sh の fallback 用に当面残し、
+    // 検証完了後に別 PR で削除する。
     const backupSecrets = [
+      { envName: 'DATABASE_URL', secretName: 'BACKUP_DATABASE_URL' },
       { envName: 'POSTGRES_DB', secretName: 'BACKUP_POSTGRES_DB' },
       { envName: 'POSTGRES_USER', secretName: 'BACKUP_POSTGRES_USER' },
       { envName: 'POSTGRES_PASSWORD', secretName: 'BACKUP_POSTGRES_PASSWORD' },
