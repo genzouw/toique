@@ -174,6 +174,23 @@ class MyStack extends TerraformStack {
       },
     });
 
+    // CI (deploy.yml) は `gcloud run jobs deploy --image=${SHA}` で SHA タグ付き
+    // image を貼り直すため、本ファイルでは `:latest` のプレースホルダーを定義しつつ
+    // image の実値は Terraform 管理外として扱う。これを無視しないと、毎回の
+    // cdktf diff で image が「SHA → :latest」のフラップとして検出され、
+    // 不用意な cdktf apply で実 image が `:latest`（存在しないタグ）に書き戻されて
+    // バックアップが pull 失敗で停止する事故につながる。
+    //
+    // `client` / `client_version` は gcloud or Terraform 等の更新クライアント名が
+    // 自動で記録される provider 側のメタデータで、書き戻す価値が無いため同じく無視する。
+    backupJob.lifecycle = {
+      ignoreChanges: [
+        'template[0].template[0].containers[0].image',
+        'client',
+        'client_version',
+      ],
+    };
+
     // backupSa は Cloud Scheduler が `db-backup` Job を発火するときの
     // OAuth identity として使われる (CloudSchedulerJob.httpTarget.oauthToken)。
     // 最小権限の原則 (PoLP) に基づき、権限をこの Job リソース単位に限定する。
