@@ -54,10 +54,10 @@ Cloud Run Jobs の環境変数として以下のシークレットを Secret Man
 
 ```bash
 # 接続情報を変数にセット (HOST は `-pooler` 無しの direct connection endpoint)
-PG_USER="<your-user>"
-PG_PASSWORD="<your-password>"
-PG_HOST="<your-direct-host>.neon.tech" # ⚠️ pooler endpoint ではなく direct を指定
-PG_DB="<your-database>"
+PG_USER='YOUR_USER'
+PG_PASSWORD='YOUR_PASSWORD'
+PG_HOST='YOUR_DIRECT_HOST.neon.tech' # ⚠️ pooler endpoint ではなく direct を指定
+PG_DB='YOUR_DATABASE'
 
 URL="postgresql://${PG_USER}:${PG_PASSWORD}@${PG_HOST}/${PG_DB}?sslmode=require"
 
