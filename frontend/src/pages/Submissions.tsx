@@ -3,7 +3,6 @@ import { Inbox, Download, RefreshCw } from 'lucide-react';
 import { api, type Submission, type FormListItem } from '../lib/api';
 import EmptyState from '../components/EmptyState';
 import LoadingButton from '../components/LoadingButton';
-import { ICON_SIZE } from '../lib/icon-size';
 
 const STATUS_LABEL: Record<Submission['status'], string> = {
   new: '新着',
@@ -124,14 +123,17 @@ export default function Submissions() {
               )}
             </select>
           </div>
-          <button
+          <LoadingButton
             onClick={handleDownload}
-            disabled={!exportFormId || downloading}
+            loading={downloading}
+            disabled={!exportFormId}
+            icon={Download}
+            title="選択したフォームのCSVをダウンロード"
+            aria-label="選択したフォームのCSVをダウンロード"
             className="inline-flex items-center gap-2 px-4 py-2 bg-slate-900 text-white text-sm rounded-md disabled:opacity-50 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-slate-900 focus-visible:ring-offset-2 transition-colors"
           >
-            <Download size={ICON_SIZE.sm} />
             {downloading ? 'ダウンロード中…' : 'CSVダウンロード'}
-          </button>
+          </LoadingButton>
         </div>
         <p className="text-xs text-slate-500 mt-2">
           選択したフォームのスキーマに応じたカラム構成のCSVを出力します (UTF-8 /
