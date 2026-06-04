@@ -1,8 +1,16 @@
 name: AI Auto Fix
 
 on:
-  issue_comment:
-    types: [created]
+  workflow_dispatch:
+    inputs:
+      pr_number:
+        description: 'Target Pull Request number (in this repository)'
+        required: true
+        type: string
+      instruction:
+        description: 'Instruction passed to the AI (formerly the text after `/ai-fix ` in a PR comment)'
+        required: true
+        type: string
 
 permissions:
   contents: read
@@ -10,10 +18,6 @@ permissions:
 jobs:
   ai_auto_fix:
     name: Generate Code Fix
-    if: >
-      github.event.issue.pull_request &&
-      startsWith(github.event.comment.body, '/ai-fix ') &&
-      contains(fromJSON('["OWNER","MEMBER","COLLABORATOR"]'), github.event.comment.author_association)
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -23,7 +27,7 @@ jobs:
         id: pr
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          PR_NUMBER: ${{ github.event.issue.number }}
+          PR_NUMBER: ${{ inputs.pr_number }}
         run: |
           set -euo pipefail
           DATA=$(gh api "repos/${GITHUB_REPOSITORY}/pulls/${PR_NUMBER}")
@@ -54,12 +58,13 @@ jobs:
         uses: actions/github-script@v7.0.1
         env:
           GITHUB_TOKEN: ${{ secrets.PAT_FOR_MODELS }}
-          USER_PROMPT: ${{ github.event.comment.body }}
+          USER_PROMPT: ${{ inputs.instruction }}
+          PR_NUMBER: ${{ inputs.pr_number }}
         with:
           script: |
             const fs = require('fs');
-            const promptInstruction = process.env.USER_PROMPT.replace('/ai-fix ', '').trim();
-            const prNumber = context.payload.issue.number;
+            const promptInstruction = process.env.USER_PROMPT.trim();
+            const prNumber = process.env.PR_NUMBER;
 
             // Optional: You might want to get the diff or file list to give context to the model
             const prDiffCmd = `gh pr diff ${prNumber}`;
@@ -162,7 +167,7 @@ jobs:
             exit 0
           fi
 
-          git commit -m "bot: auto-fix applied via /ai-fix"
+          git commit -m "bot: auto-fix applied via workflow_dispatch"
           # Push back to the PR head branch by name. Detached HEAD checkout requires
           # specifying the destination ref explicitly. Fast-forward only; if the branch
           # has moved while we ran, the push will fail safely.
