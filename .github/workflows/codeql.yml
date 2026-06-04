@@ -28,8 +28,9 @@ jobs:
       fail-fast: false
       matrix:
         include:
+          # JavaScript/TypeScript は CodeQL 2.25+ では autobuild モード非対応。none のみが有効。
           - language: javascript-typescript
-            build-mode: autobuild
+            build-mode: none
           # actions 言語のスキャンを追加することで、ワークフロー定義 (.github/workflows/*.yml) に対する
           # CodeQL ルール (例: actions/missing-workflow-permissions) を継続的に評価できるようにする。
           # actions はソースコードビルドを必要としないため build-mode は none 固定。
@@ -51,10 +52,6 @@ jobs:
           # queries: security-extended,security-and-quality
           # リポジトリ固有の false positive を suppress するための設定ファイル。
           config-file: ./.github/codeql/codeql-config.yml
-
-      - if: matrix.build-mode == 'autobuild'
-        name: Autobuild
-        uses: github/codeql-action/autobuild@7211b7c8077ea37d8641b6271f6a365a22a5fbfa # v4.36.0
 
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@7211b7c8077ea37d8641b6271f6a365a22a5fbfa # v4.36.0
