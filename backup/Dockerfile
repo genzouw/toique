@@ -15,4 +15,9 @@ RUN chmod +x backup.sh
 RUN adduser -D -u 1001 backup && chown -R backup:backup /app
 USER backup
 
+# Cloud Run Jobs での一回実行 (バッチ) コンテナのため、稼働中サービスを前提とする
+# HEALTHCHECK は概念上適用されない。`HEALTHCHECK NONE` でベースイメージから継承し得る
+# ヘルスチェックを明示的に無効化しつつ、Trivy DS-0026 (No HEALTHCHECK defined) を解消する。
+HEALTHCHECK NONE
+
 CMD ["./backup.sh"]
