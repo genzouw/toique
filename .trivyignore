@@ -25,7 +25,10 @@ CVE-2025-13465
 CVE-2025-64756
 
 # brace-expansion (2.0.1): DoS via zero step value (e.g. `{1..2..0}`)
+# GitHub Code Scanning (Trivy) は同一脆弱性を CVE-2026-33750 として報告し続けて
+# いるため、CVE-2024-33750 と併記して両方の ID で抑制する。
 CVE-2024-33750
+CVE-2026-33750
 
 # brace-expansion (2.0.1): ReDoS via crafted brace patterns (fixed in 2.0.2)
 CVE-2025-5889
