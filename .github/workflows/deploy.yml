@@ -10,6 +10,12 @@ concurrency:
   group: deploy-${{ github.ref }}
   cancel-in-progress: true
 
+# CodeQL actions/missing-workflow-permissions (#1) 対応。
+# ワークフロー全体で GITHUB_TOKEN を最小権限 (contents: read) に固定し、
+# 個別ジョブでさらに必要な権限 (id-token: write など) を追記する構成にする。
+permissions:
+  contents: read
+
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
   GCP_PROJECT_ID: ${{ vars.GCP_PROJECT_ID }}
