@@ -117,7 +117,7 @@ paths = [
 [[rules]]
 id = "custom-cloudflare-pages-url"
 description = "Detects Cloudflare Pages dev URLs"
-regex = '''(?i)(https?:\/\/[a-zA-Z0-9-]+\.pages\.dev)'''
+regex = '''(?i)\b((?:https?:\/\/)?(?:[a-z0-9-]+\.)+pages\.dev)\b'''
 tags = ["cloudflare", "pages", "url"]
 [rules.allowlist]
 paths = [
