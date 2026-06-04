@@ -1,43 +1,70 @@
 name: AI Auto Fix
 
 on:
-  issue_comment:
-    types: [created]
+  workflow_dispatch:
+    inputs:
+      pr_number:
+        description: 'Target Pull Request number (in this repository)'
+        required: true
+        type: string
+      instruction:
+        description: 'Instruction passed to the AI (formerly the text after `/ai-fix ` in a PR comment)'
+        required: true
+        type: string
+
+permissions:
+  contents: read
 
 jobs:
   ai_auto_fix:
     name: Generate Code Fix
-    if: >
-      github.event.issue.pull_request &&
-      startsWith(github.event.comment.body, '/ai-fix ') &&
-      contains(fromJSON('["OWNER","MEMBER","COLLABORATOR"]'), github.event.comment.author_association)
     runs-on: ubuntu-latest
     permissions:
       contents: write
       pull-requests: write
     steps:
-      - name: Checkout PR Branch
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Checkout PR Branch Locally
+      - name: Fetch PR metadata
+        id: pr
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ inputs.pr_number }}
         run: |
-          # Fetch PR head and switch to it. This assumes the workflow runs on the base repo and PR allows edits from maintainers.
-          gh pr checkout ${{ github.event.issue.number }}
+          set -euo pipefail
+          DATA=$(gh api "repos/${GITHUB_REPOSITORY}/pulls/${PR_NUMBER}")
+          HEAD_SHA=$(printf '%s' "$DATA" | jq -r '.head.sha')
+          HEAD_REF=$(printf '%s' "$DATA" | jq -r '.head.ref')
+          HEAD_REPO=$(printf '%s' "$DATA" | jq -r '.head.repo.full_name')
+          BASE_REPO=$(printf '%s' "$DATA" | jq -r '.base.repo.full_name')
+          {
+            echo "head_sha=$HEAD_SHA"
+            echo "head_ref=$HEAD_REF"
+            echo "head_repo=$HEAD_REPO"
+            echo "base_repo=$BASE_REPO"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Reject PRs from forks
+        if: steps.pr.outputs.head_repo != steps.pr.outputs.base_repo
+        run: |
+          echo "::error::AI auto-fix は同一リポジトリの PR のみで利用可能です (fork からの PR ではセキュリティ上利用できません)。"
+          exit 1
+
+      - name: Checkout PR head at immutable SHA
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ steps.pr.outputs.head_sha }}
+          fetch-depth: 0
 
       - name: Generate Fix with GitHub Models
         uses: actions/github-script@v7.0.1
         env:
           GITHUB_TOKEN: ${{ secrets.PAT_FOR_MODELS }}
-          USER_PROMPT: ${{ github.event.comment.body }}
+          USER_PROMPT: ${{ inputs.instruction }}
+          PR_NUMBER: ${{ inputs.pr_number }}
         with:
           script: |
             const fs = require('fs');
-            const promptInstruction = process.env.USER_PROMPT.replace('/ai-fix ', '').trim();
-            const prNumber = context.payload.issue.number;
+            const promptInstruction = process.env.USER_PROMPT.trim();
+            const prNumber = process.env.PR_NUMBER;
 
             // Optional: You might want to get the diff or file list to give context to the model
             const prDiffCmd = `gh pr diff ${prNumber}`;
@@ -127,15 +154,21 @@ jobs:
             }
 
       - name: Commit and Push Changes
+        env:
+          HEAD_REF: ${{ steps.pr.outputs.head_ref }}
         run: |
+          set -euo pipefail
           git config --global user.name "github-actions[bot]"
           git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add .
 
-          # Only commit and push if there are changes
           if git diff --staged --quiet; then
             echo "No changes to commit."
-          else
-            git commit -m "bot: auto-fix applied via /ai-fix"
-            git push origin HEAD
+            exit 0
           fi
+
+          git commit -m "bot: auto-fix applied via workflow_dispatch"
+          # Push back to the PR head branch by name. Detached HEAD checkout requires
+          # specifying the destination ref explicitly. Fast-forward only; if the branch
+          # has moved while we ran, the push will fail safely.
+          git push origin "HEAD:${HEAD_REF}"
