@@ -23,3 +23,6 @@ CVE-2025-13465
 
 # glob (10.4.5): CLI command injection (CLI は CDK 経由で実行されない)
 CVE-2025-64756
+
+# brace-expansion (2.0.1): DoS via zero step value (e.g. `{1..2..0}`)
+CVE-2026-33750
