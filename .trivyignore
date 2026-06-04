@@ -25,4 +25,4 @@ CVE-2025-13465
 CVE-2025-64756
 
 # brace-expansion (2.0.1): DoS via zero step value (e.g. `{1..2..0}`)
-CVE-2026-33750
+CVE-2024-33750
