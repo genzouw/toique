@@ -9,10 +9,15 @@ COPY backend/package.json backend/bun.lock ./
 RUN --mount=type=cache,target=/root/.bun,sharing=locked bun install --frozen-lockfile
 COPY backend/ .
 COPY .prettierrc .
+# 派生ステージ (dev / ci-check / ci-test / build) で `USER bun` に切り替えた際に
+# /app 配下への書き込み権限不足で失敗しないよう、所有権を bun ユーザーに揃える。
+# Codacy / DS-0002 (No User defined) 対応として、root 実行を避けるための準備。
+RUN chown -R bun:bun /app
 
 # ローカル開発用
 FROM base AS dev
 EXPOSE 3000
+USER bun
 # Trivy DS-0026 対応。`/health` エンドポイントは src/index.ts:48 で常時 200 を返す。
 # busybox wget は alpine ベースイメージに同梱されているため追加インストール不要。
 # `-O /dev/null` でレスポンスボディを破棄し、ディスクへの書き込みを防ぐ (PR #418 と同方針)。
@@ -22,16 +27,19 @@ CMD ["bun", "run", "dev"]
 
 # CI: lint + format + build
 FROM base AS ci-check
+USER bun
 RUN bun run format:check && bun run lint && bun run build
 
 # CI: test with coverage (DATABASE_URL は実行時に渡す)
 FROM base AS ci-test
-COPY db/migrations ./db/migrations
+COPY --chown=bun:bun db/migrations ./db/migrations
 ENV DRIZZLE_MIGRATIONS_DIR=./db/migrations
+USER bun
 CMD ["bun", "run", "test:coverage"]
 
 # 本番ビルド
 FROM base AS build
+USER bun
 RUN bun run build
 
 # 本番実行用
