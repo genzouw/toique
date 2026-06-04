@@ -17,6 +17,9 @@ CVE-2026-27904
 
 # lodash (4.17.21): Prototype Pollution / Code Injection
 CVE-2026-4800
+# lodash (4.17.21): Prototype Pollution via array path bypass in _.unset/_.omit
+CVE-2026-2950
+CVE-2025-13465
 
 # glob (10.4.5): CLI command injection (CLI は CDK 経由で実行されない)
 CVE-2025-64756
