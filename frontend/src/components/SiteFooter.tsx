@@ -11,7 +11,7 @@ export default function SiteFooter() {
             <Link
               key={item.to}
               to={item.to}
-              className="hover:text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-900 focus-visible:ring-offset-2 rounded-sm transition-colors"
+              className="hover:text-slate-900 focus-ring rounded-sm transition-colors"
             >
               {item.label}
             </Link>
