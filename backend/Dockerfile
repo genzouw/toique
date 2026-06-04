@@ -13,6 +13,11 @@ COPY .prettierrc .
 # ローカル開発用
 FROM base AS dev
 EXPOSE 3000
+# Trivy DS-0026 対応。`/health` エンドポイントは src/index.ts:48 で常時 200 を返す。
+# busybox wget は alpine ベースイメージに同梱されているため追加インストール不要。
+# `-O /dev/null` でレスポンスボディを破棄し、ディスクへの書き込みを防ぐ (PR #418 と同方針)。
+HEALTHCHECK --interval=30s --timeout=5s --start-period=30s --retries=3 \
+  CMD wget --quiet --tries=1 -O /dev/null http://127.0.0.1:3000/health || exit 1
 CMD ["bun", "run", "dev"]
 
 # CI: lint + format + build
