@@ -26,3 +26,6 @@ CVE-2025-64756
 
 # brace-expansion (2.0.1): DoS via zero step value (e.g. `{1..2..0}`)
 CVE-2024-33750
+
+# brace-expansion (2.0.1): ReDoS via crafted brace patterns (fixed in 2.0.2)
+CVE-2025-5889
