@@ -139,6 +139,7 @@ jobs:
             ${webSearchResults}
 
             上記検索結果も踏まえ、すでに解決済みの問題であれば解決策をより具体的に（可能であればコード例や設定手順などを交えて）提示し、未解決のバグや新規提案であればその旨をコメントに含めてください。また、DuckDuckGoなどのWeb検索結果やStackOverflowの検索結果にセキュリティ上の脆弱性や既知のエクスプロイトが含まれている場合は、重大な問題として優先的に指摘してください。さらに、報告者に対する感謝の言葉を添えてください。
+            回答は必ず日本語で、見やすいMarkdown形式で出力してください。
             `;
 
             // Use Structured Outputs (JSON Schema) for deterministic JSON response
