@@ -5,7 +5,11 @@ export default function SiteHeader() {
   return (
     <header className="border-b border-slate-200">
       <div className="max-w-5xl mx-auto px-6 h-14 flex items-center justify-between">
-        <NavLink to="/" end className="text-lg font-bold text-slate-900">
+        <NavLink
+          to="/"
+          end
+          className="text-lg font-bold text-slate-900 focus-ring rounded-sm transition-colors"
+        >
           Toique
         </NavLink>
         <div className="flex items-center gap-4">
@@ -15,9 +19,11 @@ export default function SiteHeader() {
               to={item.to}
               end={item.to === '/'}
               className={({ isActive }) =>
-                isActive
-                  ? 'text-sm text-slate-900 font-medium'
-                  : 'text-sm text-slate-700 hover:text-slate-900'
+                `focus-ring rounded-sm transition-colors ${
+                  isActive
+                    ? 'text-sm text-slate-900 font-medium'
+                    : 'text-sm text-slate-700 hover:text-slate-900'
+                }`
               }
             >
               {item.label}
@@ -25,7 +31,7 @@ export default function SiteHeader() {
           ))}
           <NavLink
             to={HEADER_CTA.to}
-            className="px-4 py-1.5 text-sm bg-slate-900 text-white rounded-md hover:bg-slate-800"
+            className="px-4 py-1.5 text-sm bg-slate-900 text-white rounded-md hover:bg-slate-800 focus-ring transition-colors"
           >
             {HEADER_CTA.label}
           </NavLink>

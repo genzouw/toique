@@ -8,7 +8,11 @@ export default function SiteFooter() {
         <span>Toique</span>
         <div className="flex gap-4">
           {FOOTER_NAV_ITEMS.map((item) => (
-            <Link key={item.to} to={item.to} className="hover:text-slate-900">
+            <Link
+              key={item.to}
+              to={item.to}
+              className="hover:text-slate-900 focus-ring rounded-sm transition-colors"
+            >
               {item.label}
             </Link>
           ))}
