@@ -27,7 +27,7 @@ EXPOSE 5173
 # busybox の wget で /index.html を叩くだけの軽量チェック。compose.yml の
 # `depends_on: condition: service_healthy` で待てるようにすることと、Trivy DS-0026 対応を兼ねる。
 HEALTHCHECK --interval=30s --timeout=5s --start-period=30s --retries=3 \
-  CMD wget --quiet --tries=1 --spider http://127.0.0.1:5173/ || exit 1
+  CMD wget --quiet --tries=1 -O /dev/null http://127.0.0.1:5173/ || exit 1
 CMD ["bun", "run", "dev"]
 
 # CI: lint + format + build
