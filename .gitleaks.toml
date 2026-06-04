@@ -95,7 +95,7 @@ paths = [
 [[rules]]
 id = "custom-neon-endpoint"
 description = "Detects hardcoded Neon Postgres endpoints"
-regex = '''(?i)(ep-[a-z0-9-]+[a-z0-9-.]*\.neon\.tech)'''
+regex = '''(?i)(ep-[a-z0-9-]+[a-z0-9.-]*\.neon\.tech)'''
 tags = ["neon", "database", "connection-string"]
 [rules.allowlist]
 paths = [
