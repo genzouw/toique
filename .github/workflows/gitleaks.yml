@@ -42,7 +42,28 @@ jobs:
           gitleaks version
 
       - name: Run gitleaks (Differential)
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          PUSH_BEFORE: ${{ github.event.before }}
+          PUSH_AFTER: ${{ github.sha }}
         run: |
+          set -euo pipefail
+
+          # 差分スキャンの範囲を決定 (gitleaks-action と同等のロジック)
+          # - pull_request: PR の base..head のコミットのみ
+          # - push:         直前のヘッド..今回のヘッドのコミットのみ (新規ブランチ初push時は HEAD のみ)
+          if [ "$EVENT_NAME" = "pull_request" ]; then
+            LOG_OPTS="--no-merges $PR_BASE_SHA..$PR_HEAD_SHA"
+          elif [ "$PUSH_BEFORE" = "0000000000000000000000000000000000000000" ]; then
+            LOG_OPTS="--no-merges $PUSH_AFTER^..$PUSH_AFTER"
+          else
+            LOG_OPTS="--no-merges $PUSH_BEFORE..$PUSH_AFTER"
+          fi
+
+          echo "Scanning with log-opts: $LOG_OPTS"
+
           gitleaks detect \
             --source . \
             --redact \
@@ -50,7 +71,8 @@ jobs:
             --no-banner \
             --exit-code 1 \
             --report-format sarif \
-            --report-path gitleaks.sarif
+            --report-path gitleaks.sarif \
+            --log-opts="$LOG_OPTS"
 
       - name: Upload SARIF
         if: always()
