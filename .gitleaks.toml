@@ -91,3 +91,36 @@ paths = [
     '''infra/main\.ts''',
     '''infra/README\.md'''
 ]
+
+[[rules]]
+id = "custom-neon-endpoint"
+description = "Detects hardcoded Neon Postgres endpoints"
+regex = '''(?i)(ep-[a-z0-9-]+[a-z0-9.-]*\.neon\.tech)'''
+tags = ["neon", "database", "connection-string"]
+[rules.allowlist]
+paths = [
+    '''docs/fork-setup\.md''',
+    '''README\.md'''
+]
+
+[[rules]]
+id = "custom-internal-ip"
+description = "Detects internal IP addresses (Private Network)"
+regex = '''\b(10\.(?:[0-9]{1,3}\.){2}[0-9]{1,3}|172\.(?:1[6-9]|2[0-9]|3[0-1])\.[0-9]{1,3}\.[0-9]{1,3}|192\.168\.[0-9]{1,3}\.[0-9]{1,3})\b'''
+tags = ["internal-ip", "network"]
+[rules.allowlist]
+paths = [
+    '''README\.md''',
+    '''compose\.yml'''
+]
+
+[[rules]]
+id = "custom-cloudflare-pages-url"
+description = "Detects Cloudflare Pages dev URLs"
+regex = '''(?i)\b((?:https?:\/\/)?(?:[a-z0-9-]+\.)+pages\.dev)\b'''
+tags = ["cloudflare", "pages", "url"]
+[rules.allowlist]
+paths = [
+    '''docs/manual-deploy\.md''',
+    '''infra/README\.md'''
+]
