@@ -1,6 +1,7 @@
 import type { ButtonHTMLAttributes, ElementType } from 'react';
 import { Loader2 } from 'lucide-react';
 import { ICON_SIZE } from '../lib/icon-size';
+import { cn } from '../lib/utils';
 
 interface LoadingButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   loading: boolean;
@@ -22,7 +23,10 @@ export default function LoadingButton({
     <button
       disabled={loading || disabled}
       aria-busy={loading}
-      className={className}
+      className={cn(
+        'focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-slate-900 focus-visible:ring-offset-2 transition-colors',
+        className,
+      )}
       {...rest}
     >
       {DisplayIcon && (
