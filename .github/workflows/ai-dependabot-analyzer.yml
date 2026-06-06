@@ -9,7 +9,8 @@ jobs:
   analyze_dependabot_pr:
     name: Analyze Dependabot Risk
     runs-on: ubuntu-latest
-    if: github.actor == 'dependabot[bot]'
+    # `github.actor` は再実行時に他ユーザに変わりうるため、PR 作成者を直接参照する
+    if: github.event.pull_request.user.login == 'dependabot[bot]'
     permissions:
       contents: read
       pull-requests: write
@@ -18,12 +19,13 @@ jobs:
       cancel-in-progress: true
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           fetch-depth: 0
+          persist-credentials: false
 
       - name: Setup Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@e797f83bcb11b83ae66e0230d6156d7c80228e7c # v6.0.0
         with:
           python-version: '3.12'
 
@@ -80,7 +82,7 @@ jobs:
                               if results:
                                   search_res = "\n\n".join([f"Title: {r.get('title')}\nURL: {r.get('href')}\nSnippet: {r.get('body')}" for r in results])
                                   break
-                          except Exception as inner_e:
+                          except Exception:
                               time.sleep(2)
                               continue
               except Exception as e:
@@ -97,7 +99,7 @@ jobs:
         shell: python
 
       - name: Analyze Risk with GitHub Models
-        uses: actions/github-script@v7.0.1
+        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
         env:
           GITHUB_TOKEN: ${{ secrets.PAT_FOR_MODELS }}
           WEB_SEARCH_RESULTS: ${{ env.WEB_SEARCH_RESULTS }}
