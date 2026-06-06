@@ -47,10 +47,11 @@ jobs:
           exit 1
 
       - name: Checkout PR head at immutable SHA
-        uses: actions/checkout@v4
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           ref: ${{ steps.pr.outputs.head_sha }}
           fetch-depth: 0
+          persist-credentials: false
 
       - name: Get PR Diff
         id: get_diff
@@ -69,7 +70,7 @@ jobs:
           } >> "$GITHUB_ENV"
 
       - name: Generate Tests with GitHub Models
-        uses: actions/github-script@v7.0.1
+        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
         env:
           GITHUB_TOKEN: ${{ secrets.PAT_FOR_MODELS }}
           PR_DIFF: ${{ env.PR_DIFF }}
@@ -161,6 +162,7 @@ jobs:
       - name: Commit and Push Test Changes
         env:
           HEAD_REF: ${{ steps.pr.outputs.head_ref }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -euo pipefail
           git config --global user.name "github-actions[bot]"
@@ -173,4 +175,5 @@ jobs:
           fi
 
           git commit -m "test: auto-generated tests via /ai-test"
-          git push origin "HEAD:${HEAD_REF}"
+          # checkout は persist-credentials: false で認証情報を残さないため、push 時に都度認証を渡す
+          git push "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" "HEAD:${HEAD_REF}"
