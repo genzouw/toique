@@ -25,10 +25,15 @@ export default function Submissions() {
   const [downloading, setDownloading] = useState(false);
   const selectId = useId();
 
-  const formsById = useMemo(
-    () => Object.fromEntries(forms.map((f) => [f.id, f])),
-    [forms],
-  );
+  // ⚡ Bolt: Use an explicit for...of loop instead of Object.fromEntries(forms.map(...))
+  // to avoid allocating an intermediate array of tuples, preventing unnecessary garbage collection.
+  const formsById = useMemo(() => {
+    const map: Record<string, FormListItem> = {};
+    for (const f of forms) {
+      map[f.id] = f;
+    }
+    return map;
+  }, [forms]);
 
   const refresh = useCallback(async () => {
     setLoading(true);
