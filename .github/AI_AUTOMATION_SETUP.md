@@ -72,7 +72,7 @@ PRのコメント欄で `/ai MESSAGE` を記述することで、`GitHub Models`
 
 ### AI Test Generator (/ai-test)
 
-PRのコメントで `/ai-test <メッセージ>` と入力すると、対象のコード差分と最新のテスト手法(RAG)を基に、AIがVitestやPlaywright等のテストコード案を生成しコメントで返信します。
+PRのコメントで `/ai-test MESSAGE` と入力すると、対象のコード差分と最新のテスト手法(RAG)を基に、AIが `Vitest` や `Playwright` 等のテストコード案を生成しコメントで返信します。
 例:
 
 - `/ai-test このコンポーネントの異常系のテストを作成して`
