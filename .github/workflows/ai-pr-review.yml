@@ -43,9 +43,9 @@ jobs:
           python-version: '3.12'
 
       - name: Install Search Dependencies
-        run: pip install "tavily-python>=0.3.3" "duckduckgo-search>=6.0.0" --break-system-packages
+        run: pip install "duckduckgo-search>=6.0.0" "tavily-python>=0.3.3" --break-system-packages
 
-      - name: Search Web (RAG prep)
+      - name: Search via Tavily or DuckDuckGo (RAG prep)
         id: search_web
         env:
           PR_TITLE: ${{ github.event.pull_request.title }}
@@ -57,24 +57,27 @@ jobs:
 
           title = os.environ.get('PR_TITLE', '')
           query = f"{title} (vulnerability OR bug OR best practices OR performance OR security OR accessibility)"
+          tavily_key = os.environ.get('TAVILY_API_KEY', '').strip()
 
           search_res = ""
-          tavily_api_key = os.environ.get('TAVILY_API_KEY', '').strip()
 
-          if tavily_api_key:
+          if tavily_key:
+              print("Using Tavily API for search...")
               try:
                   from tavily import TavilyClient
-                  tavily_client = TavilyClient(api_key=tavily_api_key)
+                  tavily_client = TavilyClient(api_key=tavily_key)
                   response = tavily_client.search(query=query, search_depth="basic", max_results=5)
                   results = response.get('results', [])
                   if results:
                       search_res = "\n\n".join([f"Title: {r.get('title')}\nURL: {r.get('url')}\nSnippet: {r.get('content')}" for r in results])
               except Exception as e:
-                  print(f"Tavily search failed: {e}. Falling back to DuckDuckGo.")
+                  print(f"Tavily search failed: {e}. Falling back to DuckDuckGo...")
+                  tavily_key = "" # Fallback
 
-          if not search_res:
+          if not tavily_key:
+              print("Using DuckDuckGo for search...")
+              from duckduckgo_search import DDGS
               try:
-                  from duckduckgo_search import DDGS
                   with DDGS() as ddgs:
                       # retry mechanism due to frequent rate limits
                       for _ in range(3):
@@ -87,7 +90,7 @@ jobs:
                               time.sleep(2)
                               continue
               except Exception as e:
-                  print(f"DuckDuckGo search failed: {e}")
+                  search_res = f"Web search failed: {e}"
 
           if not search_res:
               search_res = "No relevant Web search results found."

@@ -25,10 +25,14 @@ export default function Submissions() {
   const [downloading, setDownloading] = useState(false);
   const selectId = useId();
 
-  const formsById = useMemo(
-    () => Object.fromEntries(forms.map((f) => [f.id, f])),
-    [forms],
-  );
+  // 中間配列のアロケーションを避けるため明示的なループを使用
+  const formsById = useMemo(() => {
+    const map: Record<string, FormListItem> = {};
+    for (const f of forms) {
+      map[f.id] = f;
+    }
+    return map;
+  }, [forms]);
 
   const refresh = useCallback(async () => {
     setLoading(true);

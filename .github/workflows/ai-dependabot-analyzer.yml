@@ -1,62 +1,80 @@
-name: AI Dependabot Analyzer
+name: AI Dependabot Risk Analyzer
 
 on:
-  pull_request_target:
+  pull_request:
     types: [opened, synchronize, reopened]
+    branches: [main]
 
 jobs:
-  analyze_dependabot:
-    name: Analyze Dependabot PR
-    # DependabotからのPRのみ実行
-    if: github.actor == 'dependabot[bot]'
+  analyze_dependabot_pr:
+    name: Analyze Dependabot Risk
     runs-on: ubuntu-latest
+    # `github.actor` は再実行時に他ユーザに変わりうるため、PR 作成者を直接参照する
+    if: github.event.pull_request.user.login == 'dependabot[bot]'
     permissions:
       contents: read
       pull-requests: write
+    concurrency:
+      group: ai-dependabot-analyzer-${{ github.event.pull_request.number }}
+      cancel-in-progress: true
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           fetch-depth: 0
+          persist-credentials: false
 
       - name: Setup Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@e797f83bcb11b83ae66e0230d6156d7c80228e7c # v6.0.0
         with:
           python-version: '3.12'
 
       - name: Install Search Dependencies
-        run: pip install "tavily-python>=0.3.3" "duckduckgo-search>=6.0.0" --break-system-packages
+        run: pip install "duckduckgo-search>=6.0.0" "tavily-python>=0.3.3" --break-system-packages
 
-      - name: Search Web (RAG prep)
+      - name: Search for package issues via Tavily or DuckDuckGo (RAG prep)
         id: search_web
         env:
           PR_TITLE: ${{ github.event.pull_request.title }}
+          PR_BODY: ${{ github.event.pull_request.body }}
           TAVILY_API_KEY: ${{ secrets.TAVILY_API_KEY }}
         run: |
           import os
           import base64
           import time
+          import re
 
           title = os.environ.get('PR_TITLE', '')
-          query = f"{title} (breaking changes OR vulnerability OR known issues)"
+          # Try to extract package name from typical dependabot titles like "Bump <package> from X to Y"
+          package_name = ""
+          match = re.search(r'Bump ([^\s]+) from', title)
+          if match:
+              package_name = match.group(1)
+          else:
+              package_name = title
+
+          query = f"{package_name} issue OR breaking change OR vulnerability OR bug"
+          tavily_key = os.environ.get('TAVILY_API_KEY', '').strip()
 
           search_res = ""
-          tavily_api_key = os.environ.get('TAVILY_API_KEY', '').strip()
 
-          if tavily_api_key:
+          if tavily_key:
+              print(f"Using Tavily API for search query: {query}")
               try:
                   from tavily import TavilyClient
-                  tavily_client = TavilyClient(api_key=tavily_api_key)
+                  tavily_client = TavilyClient(api_key=tavily_key)
                   response = tavily_client.search(query=query, search_depth="basic", max_results=5)
                   results = response.get('results', [])
                   if results:
                       search_res = "\n\n".join([f"Title: {r.get('title')}\nURL: {r.get('url')}\nSnippet: {r.get('content')}" for r in results])
               except Exception as e:
-                  print(f"Tavily search failed: {e}. Falling back to DuckDuckGo.")
+                  print(f"Tavily search failed: {e}. Falling back to DuckDuckGo...")
+                  tavily_key = "" # Fallback
 
-          if not search_res:
+          if not tavily_key:
+              print(f"Using DuckDuckGo for search query: {query}")
+              from duckduckgo_search import DDGS
               try:
-                  from duckduckgo_search import DDGS
                   with DDGS() as ddgs:
                       for _ in range(3):
                           try:
@@ -64,14 +82,14 @@ jobs:
                               if results:
                                   search_res = "\n\n".join([f"Title: {r.get('title')}\nURL: {r.get('href')}\nSnippet: {r.get('body')}" for r in results])
                                   break
-                          except Exception as inner_e:
+                          except Exception:
                               time.sleep(2)
                               continue
               except Exception as e:
-                  print(f"DuckDuckGo search failed: {e}")
+                  search_res = f"Web search failed: {e}"
 
           if not search_res:
-              search_res = "No relevant Web search results found."
+              search_res = "No relevant Web search results found for package issues."
 
           delimiter = base64.b64encode(os.urandom(15)).decode('utf-8')
           with open(os.environ['GITHUB_ENV'], 'a') as f:
@@ -80,38 +98,40 @@ jobs:
               f.write(f"{delimiter}\n")
         shell: python
 
-      - name: Analyze Dependabot Update with GitHub Models
-        uses: actions/github-script@v7.0.1
+      - name: Analyze Risk with GitHub Models
+        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
         env:
-          # Dependabotワークフローではsecrets.GITHUB_TOKENは権限不足のため、専用のPATを使用する
           GITHUB_TOKEN: ${{ secrets.PAT_FOR_MODELS }}
           WEB_SEARCH_RESULTS: ${{ env.WEB_SEARCH_RESULTS }}
-          PR_TITLE: ${{ github.event.pull_request.title }}
-          PR_BODY: ${{ github.event.pull_request.body }}
         with:
           script: |
-            const prTitle = process.env.PR_TITLE || '';
-            const prBody = process.env.PR_BODY || '';
+            const prTitle = context.payload.pull_request.title || '';
+            const prBody = context.payload.pull_request.body || '';
             const searchResults = process.env.WEB_SEARCH_RESULTS || '';
 
             const prompt = `
-            あなたはシニアソフトウェアエンジニアです。
-            以下のDependabotのPull Request（依存関係のアップデート）を分析し、
-            Web検索から得られた最新情報をもとに、このアップデートによる「破壊的変更（Breaking Changes）」や「既知の脆弱性・不具合（Known Issues）」がないか調査・報告してください。
-            回答は必ず日本語で、Markdown形式で分かりやすく出力してください。
+            あなたはシニアソフトウェアエンジニアであり、依存関係の更新（DependabotのPull Request）に対するリスク分析を行います。
+            回答は必ず日本語で、Markdown形式で出力してください。
 
             【Pull Requestのタイトル】
             ${prTitle}
 
-            【Pull Requestの説明】
+            【Pull Requestの説明（Release notes, Changelog 等）】
             ${prBody}
 
-            【Web検索結果 (RAG用の最新技術情報・脆弱性情報参考)】
+            【Web検索結果 (RAG用の最新技術情報・脆弱性情報・既知の不具合参考)】
             ${searchResults}
 
-            特に影響がないと思われる場合は、「特に問題は見当たりません」と安心できるようなコメントを返してください。
+            以下の観点からリスクと影響範囲を分析し、マージするにあたっての推奨事項や注意点（破壊的変更がないかなど）を提示してください：
+            - バージョンアップによる破壊的変更（Breaking Changes）の有無やリスク
+            - Web検索結果から得られる既知の不具合や脆弱性情報
+            - 当リポジトリにおける動作への潜在的な影響
+            - 自動マージすべきか、あるいは手動での検証が必要かどうかの推奨
+
+            回答は簡潔かつ具体的に記述してください。
             `;
 
+            console.log("Calling GitHub Models for Dependabot Risk Analysis...");
             const response = await fetch('https://models.github.ai/inference/chat/completions', {
               method: 'POST',
               headers: {
@@ -119,9 +139,9 @@ jobs:
                 'Authorization': `Bearer ${process.env.GITHUB_TOKEN}`
               },
               body: JSON.stringify({
-                model: 'openai/gpt-4o-mini',
+                model: 'openai/gpt-4o',
                 messages: [
-                  { role: "system", content: "You are an expert software engineer analyzing dependency updates. Answer in Japanese." },
+                  { role: "system", content: "You are an expert software engineer analyzing dependency update risks. Answer in Japanese." },
                   { role: "user", content: prompt }
                 ]
               })
@@ -147,5 +167,5 @@ jobs:
               owner: context.repo.owner,
               repo: context.repo.repo,
               issue_number: context.issue.number,
-              body: "🤖 **AI Dependabot Analyzer (GitHub Models):**\n\n" + analysisComment
+              body: "🤖 **AI 依存関係リスク分析 (GitHub Models):**\n\n" + analysisComment
             });
