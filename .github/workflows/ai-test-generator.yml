@@ -1,0 +1,179 @@
+name: AI Test Generator
+
+on:
+  issue_comment:
+    types: [created]
+
+permissions:
+  contents: read
+
+jobs:
+  ai_test_generator:
+    name: Generate Test Code
+    # 実行対象は Pull Request に対するコメントのみ、かつ /ai-test コマンドで始まる場合
+    # 公開リポジトリでのAbuse防止のため、権限を持つユーザーからのコメントのみ実行
+    if: >
+      github.event.issue.pull_request &&
+      startsWith(github.event.comment.body, '/ai-test') &&
+      contains(fromJSON('["OWNER","MEMBER","COLLABORATOR"]'), github.event.comment.author_association)
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - name: Fetch PR metadata
+        id: pr
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ github.event.issue.number }}
+        run: |
+          set -euo pipefail
+          DATA=$(gh api "repos/${GITHUB_REPOSITORY}/pulls/${PR_NUMBER}")
+          HEAD_SHA=$(printf '%s' "$DATA" | jq -r '.head.sha')
+          HEAD_REF=$(printf '%s' "$DATA" | jq -r '.head.ref')
+          HEAD_REPO=$(printf '%s' "$DATA" | jq -r '.head.repo.full_name')
+          BASE_REPO=$(printf '%s' "$DATA" | jq -r '.base.repo.full_name')
+          {
+            echo "head_sha=$HEAD_SHA"
+            echo "head_ref=$HEAD_REF"
+            echo "head_repo=$HEAD_REPO"
+            echo "base_repo=$BASE_REPO"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Reject PRs from forks
+        if: steps.pr.outputs.head_repo != steps.pr.outputs.base_repo
+        run: |
+          echo "::error::AI test generator は同一リポジトリの PR のみで利用可能です (fork からの PR ではセキュリティ上利用できません)。"
+          exit 1
+
+      - name: Checkout PR head at immutable SHA
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          ref: ${{ steps.pr.outputs.head_sha }}
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Get PR Diff
+        id: get_diff
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ github.event.issue.number }}
+        run: |
+          PR_DIFF=$(gh pr diff "$PR_NUMBER" || echo "Cannot fetch diff.")
+          TRUNCATED_DIFF=$(echo "$PR_DIFF" | head -c 10000)
+
+          DELIMITER=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
+          {
+            echo "PR_DIFF<<$DELIMITER"
+            echo "$TRUNCATED_DIFF"
+            echo "$DELIMITER"
+          } >> "$GITHUB_ENV"
+
+      - name: Generate Tests with GitHub Models
+        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
+        env:
+          GITHUB_TOKEN: ${{ secrets.PAT_FOR_MODELS }}
+          PR_DIFF: ${{ env.PR_DIFF }}
+          USER_PROMPT: ${{ github.event.comment.body }}
+        with:
+          script: |
+            const fs = require('fs');
+            const promptInstruction = process.env.USER_PROMPT.replace('/ai-test', '').trim();
+            const prDiff = process.env.PR_DIFF || '';
+
+            const prompt = `
+            あなたはシニアソフトウェアエンジニアであり、AIアシスタントとしてPull Requestの変更差分を解析し、不足しているユニットテストコードを自動生成します。
+            以下の情報を元に、必要なテストコードを生成してください。
+            プロジェクトはTypeScript、React、Hono、Bun、Vitestを使用しています。適切なテストフレームワーク（Vitest推奨）を用いてテストを記述してください。
+
+            【Pull Request の現在の差分 (一部)】
+            \`\`\`diff
+            ${prDiff}
+            \`\`\`
+
+            【ユーザーからの追加指示（あれば）】
+            ${promptInstruction}
+
+            回答は、生成・修正するテストファイルのパスと、そのファイルの「新しい完全な内容」を含む JSON の配列のみを出力してください。Markdown ブロックやその他の説明を含めないでください。
+
+            JSON Schema:
+            [
+              {
+                "filepath": "path/to/test_file.test.ts",
+                "content": "新しいテストファイルの完全な内容"
+              }
+            ]
+            `;
+
+            console.log("Calling GitHub Models for Test Generation...");
+            const response = await fetch('https://models.github.ai/inference/chat/completions', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${process.env.GITHUB_TOKEN}`
+              },
+              body: JSON.stringify({
+                model: 'openai/gpt-4o',
+                messages: [
+                  { role: "system", content: "You are an expert developer specializing in software testing. Output strictly JSON array containing filepath and content." },
+                  { role: "user", content: prompt }
+                ]
+              })
+            });
+
+            if (!response.ok) {
+              const err = await response.text();
+              console.error(`GitHub Models API Error: status=${response.status} body=${err}`);
+              throw new Error(`GitHub Models API Error: ${response.status}`);
+            }
+
+            const data = await response.json();
+            if (data.error || !data.choices || data.choices.length === 0) {
+              console.error('GitHub Models API returned error or no choices');
+              throw new Error('API Error');
+            }
+
+            let reply = data.choices[0].message.content.trim();
+
+            if (reply.startsWith('```json')) {
+              reply = reply.replace(/^```json\n/, '').replace(/\n```$/, '');
+            } else if (reply.startsWith('```')) {
+              reply = reply.replace(/^```\n/, '').replace(/\n```$/, '');
+            }
+
+            let tests = [];
+            try {
+              tests = JSON.parse(reply);
+            } catch(e) {
+              console.error('Failed to parse model response as JSON:', reply);
+              throw new Error('JSON Parse Error');
+            }
+
+            for (const test of tests) {
+              if (test.filepath && test.content) {
+                console.log(`Writing test file to ${test.filepath}`);
+                // Ensure directory exists
+                const path = require('path');
+                fs.mkdirSync(path.dirname(test.filepath), { recursive: true });
+                fs.writeFileSync(test.filepath, test.content);
+              }
+            }
+
+      - name: Commit and Push Test Changes
+        env:
+          HEAD_REF: ${{ steps.pr.outputs.head_ref }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add .
+
+          if git diff --staged --quiet; then
+            echo "No test changes generated to commit."
+            exit 0
+          fi
+
+          git commit -m "test: auto-generated tests via /ai-test"
+          # checkout は persist-credentials: false で認証情報を残さないため、push 時に都度認証を渡す
+          git push "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" "HEAD:${HEAD_REF}"
