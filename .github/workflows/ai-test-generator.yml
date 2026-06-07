@@ -1,34 +1,35 @@
-name: AI PR Code Review
+name: AI Test Generator
 
 on:
-  pull_request:
-    types: [opened, synchronize, reopened]
+  issue_comment:
+    types: [created]
 
 jobs:
-  ai_review:
-    name: Automated PR Review
+  ai_test_generator:
+    name: Generate Tests for PR
+    if: >
+      github.event.issue.pull_request &&
+      startsWith(github.event.comment.body, '/ai-test ') &&
+      contains(fromJSON('["OWNER","MEMBER","COLLABORATOR"]'), github.event.comment.author_association)
     runs-on: ubuntu-latest
     permissions:
       contents: read
       pull-requests: write
-    concurrency:
-      group: ai-pr-review-${{ github.event.pull_request.number }}
-      cancel-in-progress: true
+      issues: write
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - name: Get PR Diff
-        id: get_diff
+      - name: Get PR Information
+        id: get_pr_info
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ github.event.issue.number }}
         run: |
-          # 差分を取得し、文字数が多すぎる場合は切り詰める (約10,000文字程度に制限)
-          PR_NUMBER=${{ github.event.pull_request.number }}
-          DIFF=$(gh pr diff "$PR_NUMBER" || echo "Cannot fetch diff.")
-          TRUNCATED_DIFF=$(echo "$DIFF" | head -c 10000)
+          PR_DIFF=$(gh pr diff "$PR_NUMBER" || echo "Cannot fetch diff.")
+          TRUNCATED_DIFF=$(echo "$PR_DIFF" | head -c 10000)
 
           DELIMITER=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
           {
@@ -48,15 +49,15 @@ jobs:
       - name: Search Web (RAG prep)
         id: search_web
         env:
-          PR_TITLE: ${{ github.event.pull_request.title }}
+          USER_PROMPT: ${{ github.event.comment.body }}
           TAVILY_API_KEY: ${{ secrets.TAVILY_API_KEY }}
         run: |
           import os
           import base64
           import time
 
-          title = os.environ.get('PR_TITLE', '')
-          query = f"{title} (vulnerability OR bug OR best practices OR performance OR security OR accessibility)"
+          prompt = os.environ.get('USER_PROMPT', '')
+          query = prompt.replace('/ai-test ', '').strip() + " testing best practices"
 
           search_res = ""
           tavily_api_key = os.environ.get('TAVILY_API_KEY', '').strip()
@@ -76,7 +77,6 @@ jobs:
               try:
                   from duckduckgo_search import DDGS
                   with DDGS() as ddgs:
-                      # retry mechanism due to frequent rate limits
                       for _ in range(3):
                           try:
                               results = list(ddgs.text(query, max_results=5))
@@ -99,53 +99,36 @@ jobs:
               f.write(f"{delimiter}\n")
         shell: python
 
-      - name: Code Review with GitHub Models
+      - name: Generate Tests with GitHub Models
         uses: actions/github-script@v7.0.1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PR_DIFF: ${{ env.PR_DIFF }}
+          USER_PROMPT: ${{ github.event.comment.body }}
           WEB_SEARCH_RESULTS: ${{ env.WEB_SEARCH_RESULTS }}
         with:
           script: |
+            const prompt = process.env.USER_PROMPT.replace('/ai-test ', '').trim();
             const prDiff = process.env.PR_DIFF || '';
-            const prTitle = context.payload.pull_request.title || '';
-            const prBody = context.payload.pull_request.body || '';
             const searchResults = process.env.WEB_SEARCH_RESULTS || '';
+            const author = context.payload.comment.user.login;
 
-            if (!prDiff || prDiff.trim() === 'Cannot fetch diff.') {
-              console.log('No valid diff to review. Skipping.');
-              return;
-            }
+            const systemPrompt = `
+            あなたはシニアソフトウェアエンジニア（QA/テスト自動化のエキスパート）です。
+            以下のPull Requestの差分と、最新のテストのベストプラクティスに関する情報を元に、
+            ユーザーから要求されたテストコード（Vitest, Playwright等）を提案してください。
+            回答は必ず日本語で、Markdown形式で出力し、具体的なテストコードのスニペットを含めてください。
 
-            const prompt = `
-            あなたはシニアソフトウェアエンジニアであり、以下のPull Requestのコードレビューを行います。
-            回答は必ず日本語で、Markdown形式で出力してください。
-
-            【Pull Requestのタイトル】
-            ${prTitle}
-
-            【Pull Requestの説明】
-            ${prBody}
-
-            【Web検索結果 (RAG用の最新技術情報・脆弱性情報・ベストプラクティス参考)】
-            ${searchResults}
-
-            【コードの差分 (一部切り詰められている可能性があります)】
+            【Pull Request の現在の差分 (一部)】
             \`\`\`diff
             ${prDiff}
             \`\`\`
 
-            以下の観点から徹底的にレビューを行い、問題点や具体的な改善コード（スニペット）を提示してください：
-            - バグの可能性やロジックの誤り
-            - **パフォーマンス**: O(N)ループの回避、N+1問題の防止、不要なデータベースクエリの削減など
-            - **セキュリティ**: APIキーや認証情報のハードコード・ログ漏洩の有無、XSS、SQLインジェクション、認可不足、不適切な権限設定、CORS/CSRFの設定崩れ。
-            - **AI固有の脆弱性**: プロンプトインジェクションへの対策、LLMに入力される外部コンテキストのサニタイズ漏れ。
-            - **アクセシビリティ**: ボタン等のアクション要素における具体的な対象を含んだ `aria-label` や `title` の付与、`role="tablist"` におけるキーボードナビゲーションのサポートなど。
-            - **テストカバレッジ**: 重要なロジックの変更や新機能追加に対して、適切なテスト（ユニットテストやE2Eテスト等）が追加されているか。
-            - コードの可読性や保守性、Web検索結果から得られる最新のベストプラクティスに沿っているか。
-
-            ※ 差分に対して問題が見当たらない場合は、肯定的なフィードバック（LGTM等）を返してください。
+            【Web検索結果 (RAG用の最新テスト手法・ベストプラクティス参考)】
+            ${searchResults}
             `;
+
+            const userMessage = `ユーザー（@${author}）からの要求:\n${prompt}`;
 
             const response = await fetch('https://models.github.ai/inference/chat/completions', {
               method: 'POST',
@@ -154,33 +137,36 @@ jobs:
                 'Authorization': `Bearer ${process.env.GITHUB_TOKEN}`
               },
               body: JSON.stringify({
-                model: 'openai/gpt-4o',
+                model: 'openai/gpt-4o-mini',
                 messages: [
-                  { role: "system", content: "You are an expert software engineer performing code reviews. Answer in Japanese." },
-                  { role: "user", content: prompt }
+                  { role: "system", content: systemPrompt },
+                  { role: "user", content: userMessage }
                 ]
               })
             });
 
             if (!response.ok) {
               console.error(`GitHub Models API Error: status=${response.status}`);
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body: `🤖 エラーが発生しました。AIモデルAPIの呼び出しに失敗しました (status: ${response.status})。`
+              });
               return;
             }
 
             const data = await response.json();
-            if (data.error) {
-              console.error('GitHub Models API Error:', data.error);
+            if (data.error || !data.choices || data.choices.length === 0) {
+              console.error('GitHub Models API returned error or no choices');
               return;
             }
-            if (!data.choices || data.choices.length === 0) {
-              console.error('GitHub Models API returned no choices:', JSON.stringify(data));
-              return;
-            }
-            const reviewComment = data.choices[0].message.content;
+
+            const reply = data.choices[0].message.content;
 
             await github.rest.issues.createComment({
               owner: context.repo.owner,
               repo: context.repo.repo,
               issue_number: context.issue.number,
-              body: "🤖 **AI コードレビュー (GitHub Models):**\n\n" + reviewComment
+              body: `> ${process.env.USER_PROMPT}\n\n🤖 **AI Test Generator 回答:**\n\n${reply}`
             });

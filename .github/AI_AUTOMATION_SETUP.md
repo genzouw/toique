@@ -63,11 +63,23 @@ AI Issue Triage (`ai-issue-triage.yml`)、AI Weekly Summary (`ai-weekly-summary.
 
 ### AI ChatOps の利用 (PRコメント)
 
-PRのコメント欄で `/ai <メッセージ>` を記述することで、GitHub Models (gpt-4o) と DuckDuckGo を用いたアシスタント機能が起動します。
+PRのコメント欄で `/ai <メッセージ>` を記述することで、GitHub Models (gpt-4o) と Tavily/DuckDuckGo を用いたアシスタント機能が起動します。
+より精度の高い検索結果を得るために、リポジトリのSecretsに `TAVILY_API_KEY` を設定することを推奨します。設定されていない場合はDuckDuckGoへフォールバックします。
 例:
 
 - `/ai このPRのパフォーマンス上の懸念点を教えてください`
-- `/ai テストコードの作成を手伝ってください`
+- `/ai セキュリティの観点からレビューしてください`
+
+### AI Test Generator (/ai-test)
+
+PRのコメントで `/ai-test <メッセージ>` と入力すると、対象のコード差分と最新のテスト手法(RAG)を基に、AIがVitestやPlaywright等のテストコード案を生成しコメントで返信します。
+例:
+- `/ai-test このコンポーネントの異常系のテストを作成して`
+
+### AI Dependabot Analyzer
+
+Dependabotによるプルリクエストが作成・更新された際に、GitHub Models (gpt-4o-mini) とWeb検索を用いて、アップデート対象のパッケージに関する破壊的変更や既知の脆弱性を自動で調査・報告します。
+**注意:** Dependabotがトリガーするワークフローはデフォルトの権限が制限されているため、この機能を動作させるにはリポジトリのSecretsに `PAT_FOR_MODELS` を設定する必要があります。
 
 ### AI Auto-Fix (/ai-fix)
 

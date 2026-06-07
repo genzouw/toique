@@ -1,41 +1,23 @@
-name: AI PR Code Review
+name: AI Dependabot Analyzer
 
 on:
-  pull_request:
+  pull_request_target:
     types: [opened, synchronize, reopened]
 
 jobs:
-  ai_review:
-    name: Automated PR Review
+  analyze_dependabot:
+    name: Analyze Dependabot PR
+    # DependabotからのPRのみ実行
+    if: github.actor == 'dependabot[bot]'
     runs-on: ubuntu-latest
     permissions:
       contents: read
       pull-requests: write
-    concurrency:
-      group: ai-pr-review-${{ github.event.pull_request.number }}
-      cancel-in-progress: true
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-
-      - name: Get PR Diff
-        id: get_diff
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          # 差分を取得し、文字数が多すぎる場合は切り詰める (約10,000文字程度に制限)
-          PR_NUMBER=${{ github.event.pull_request.number }}
-          DIFF=$(gh pr diff "$PR_NUMBER" || echo "Cannot fetch diff.")
-          TRUNCATED_DIFF=$(echo "$DIFF" | head -c 10000)
-
-          DELIMITER=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
-          {
-            echo "PR_DIFF<<$DELIMITER"
-            echo "$TRUNCATED_DIFF"
-            echo "$DELIMITER"
-          } >> "$GITHUB_ENV"
 
       - name: Setup Python
         uses: actions/setup-python@v5
@@ -56,7 +38,7 @@ jobs:
           import time
 
           title = os.environ.get('PR_TITLE', '')
-          query = f"{title} (vulnerability OR bug OR best practices OR performance OR security OR accessibility)"
+          query = f"{title} (breaking changes OR vulnerability OR known issues)"
 
           search_res = ""
           tavily_api_key = os.environ.get('TAVILY_API_KEY', '').strip()
@@ -76,7 +58,6 @@ jobs:
               try:
                   from duckduckgo_search import DDGS
                   with DDGS() as ddgs:
-                      # retry mechanism due to frequent rate limits
                       for _ in range(3):
                           try:
                               results = list(ddgs.text(query, max_results=5))
@@ -99,27 +80,25 @@ jobs:
               f.write(f"{delimiter}\n")
         shell: python
 
-      - name: Code Review with GitHub Models
+      - name: Analyze Dependabot Update with GitHub Models
         uses: actions/github-script@v7.0.1
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          PR_DIFF: ${{ env.PR_DIFF }}
+          # Dependabotワークフローではsecrets.GITHUB_TOKENは権限不足のため、専用のPATを使用する
+          GITHUB_TOKEN: ${{ secrets.PAT_FOR_MODELS }}
           WEB_SEARCH_RESULTS: ${{ env.WEB_SEARCH_RESULTS }}
+          PR_TITLE: ${{ github.event.pull_request.title }}
+          PR_BODY: ${{ github.event.pull_request.body }}
         with:
           script: |
-            const prDiff = process.env.PR_DIFF || '';
-            const prTitle = context.payload.pull_request.title || '';
-            const prBody = context.payload.pull_request.body || '';
+            const prTitle = process.env.PR_TITLE || '';
+            const prBody = process.env.PR_BODY || '';
             const searchResults = process.env.WEB_SEARCH_RESULTS || '';
 
-            if (!prDiff || prDiff.trim() === 'Cannot fetch diff.') {
-              console.log('No valid diff to review. Skipping.');
-              return;
-            }
-
             const prompt = `
-            あなたはシニアソフトウェアエンジニアであり、以下のPull Requestのコードレビューを行います。
-            回答は必ず日本語で、Markdown形式で出力してください。
+            あなたはシニアソフトウェアエンジニアです。
+            以下のDependabotのPull Request（依存関係のアップデート）を分析し、
+            Web検索から得られた最新情報をもとに、このアップデートによる「破壊的変更（Breaking Changes）」や「既知の脆弱性・不具合（Known Issues）」がないか調査・報告してください。
+            回答は必ず日本語で、Markdown形式で分かりやすく出力してください。
 
             【Pull Requestのタイトル】
             ${prTitle}
@@ -127,24 +106,10 @@ jobs:
             【Pull Requestの説明】
             ${prBody}
 
-            【Web検索結果 (RAG用の最新技術情報・脆弱性情報・ベストプラクティス参考)】
+            【Web検索結果 (RAG用の最新技術情報・脆弱性情報参考)】
             ${searchResults}
 
-            【コードの差分 (一部切り詰められている可能性があります)】
-            \`\`\`diff
-            ${prDiff}
-            \`\`\`
-
-            以下の観点から徹底的にレビューを行い、問題点や具体的な改善コード（スニペット）を提示してください：
-            - バグの可能性やロジックの誤り
-            - **パフォーマンス**: O(N)ループの回避、N+1問題の防止、不要なデータベースクエリの削減など
-            - **セキュリティ**: APIキーや認証情報のハードコード・ログ漏洩の有無、XSS、SQLインジェクション、認可不足、不適切な権限設定、CORS/CSRFの設定崩れ。
-            - **AI固有の脆弱性**: プロンプトインジェクションへの対策、LLMに入力される外部コンテキストのサニタイズ漏れ。
-            - **アクセシビリティ**: ボタン等のアクション要素における具体的な対象を含んだ `aria-label` や `title` の付与、`role="tablist"` におけるキーボードナビゲーションのサポートなど。
-            - **テストカバレッジ**: 重要なロジックの変更や新機能追加に対して、適切なテスト（ユニットテストやE2Eテスト等）が追加されているか。
-            - コードの可読性や保守性、Web検索結果から得られる最新のベストプラクティスに沿っているか。
-
-            ※ 差分に対して問題が見当たらない場合は、肯定的なフィードバック（LGTM等）を返してください。
+            特に影響がないと思われる場合は、「特に問題は見当たりません」と安心できるようなコメントを返してください。
             `;
 
             const response = await fetch('https://models.github.ai/inference/chat/completions', {
@@ -154,9 +119,9 @@ jobs:
                 'Authorization': `Bearer ${process.env.GITHUB_TOKEN}`
               },
               body: JSON.stringify({
-                model: 'openai/gpt-4o',
+                model: 'openai/gpt-4o-mini',
                 messages: [
-                  { role: "system", content: "You are an expert software engineer performing code reviews. Answer in Japanese." },
+                  { role: "system", content: "You are an expert software engineer analyzing dependency updates. Answer in Japanese." },
                   { role: "user", content: prompt }
                 ]
               })
@@ -176,11 +141,11 @@ jobs:
               console.error('GitHub Models API returned no choices:', JSON.stringify(data));
               return;
             }
-            const reviewComment = data.choices[0].message.content;
+            const analysisComment = data.choices[0].message.content;
 
             await github.rest.issues.createComment({
               owner: context.repo.owner,
               repo: context.repo.repo,
               issue_number: context.issue.number,
-              body: "🤖 **AI コードレビュー (GitHub Models):**\n\n" + reviewComment
+              body: "🤖 **AI Dependabot Analyzer (GitHub Models):**\n\n" + analysisComment
             });
