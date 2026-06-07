@@ -18,7 +18,7 @@ export function AuthLayout({ title, children }: AuthLayoutProps) {
         target="_blank"
         rel="noopener noreferrer"
         aria-label="使い方・ヘルプを見る（別タブで開きます）"
-        className="mt-6 text-xs text-slate-500 hover:text-slate-900 underline"
+        className="mt-6 text-xs text-slate-500 hover:text-slate-900 underline focus-ring focus-visible:outline-hidden rounded-sm transition-colors"
       >
         使い方・ヘルプを見る ↗
       </a>
