@@ -25,8 +25,7 @@ export default function Submissions() {
   const [downloading, setDownloading] = useState(false);
   const selectId = useId();
 
-  // ⚡ Bolt: Use an explicit for...of loop instead of Object.fromEntries(forms.map(...))
-  // to avoid allocating an intermediate array of tuples, preventing unnecessary garbage collection.
+  // 中間配列のアロケーションを避けるため明示的なループを使用
   const formsById = useMemo(() => {
     const map: Record<string, FormListItem> = {};
     for (const f of forms) {
