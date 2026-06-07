@@ -20,6 +20,8 @@ test('escapeCsv prevents formula injection', () => {
   expect(escapeCsv('\t=1+1')).toBe("'\t=" + '1+1');
   expect(escapeCsv('\r=1+1')).toBe('"\'' + '\r=' + '1+1"');
   expect(escapeCsv('\n=1+1')).toBe('"\'' + '\n=' + '1+1"');
+  expect(escapeCsv('  =1+1')).toBe("'  =1+1");
+  expect(escapeCsv('\t\t+1+1')).toBe("'\t\t+1+1");
 });
 
 test('escapeCsv handles primitives and quotes', () => {
