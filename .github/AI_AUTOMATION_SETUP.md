@@ -74,6 +74,29 @@ PRのコメント欄で `/ai <メッセージ>` を記述することで、GitHu
 PRのコメントで `/ai-fix [FIX_CONTENT]` と入力すると、AIが対象のコードを修正し、自動的にPRブランチへコミット・プッシュします。
 **注意:** この機能はGitHub Modelsの推論APIを使用するため、リポジトリのSecretsに `PAT_FOR_MODELS` という名前で、GitHub ModelsおよびPull Requestへの書き込み権限を持ったPersonal Access Token (PAT) を手動で設定する必要があります。
 
+### AI Test Generator (/ai-test)
+
+PRのコメントで `/ai-test [追加の指示]` と入力すると、AIがPRの変更差分を解析し、不足しているユニットテストコードを自動生成してPRブランチへコミット・プッシュします。
+これも `PAT_FOR_MODELS` シークレットの設定が必要です。
+
+### 高精度な Web 検索の有効化 (Tavily API)
+
+AI ChatOps、AI PR Review、AI Issue Triage の各機能において、AI が外部の最新情報を検索する (RAG) 際に、デフォルトの DuckDuckGo 検索に代わって、より高精度で安定した検索が可能な **Tavily API** を利用できます。
+**設定手順:**
+
+1. [Tavily](https://tavily.com/) の公式サイトで無料アカウントを作成し、API キーを取得します。
+2. GitHub リポジトリの **Settings → Secrets and variables → Actions** を開きます。
+3. **New repository secret** をクリックし、名前を `TAVILY_API_KEY` とし、取得した API キーを値として保存します。
+   ※ この設定を行わない場合は、自動的に無料の DuckDuckGo 検索にフォールバックされます。
+
+### AI Dependabot Risk Analyzer
+
+Dependabot による依存関係の更新 Pull Request が作成された際に、AIが自動的にリリースノートや既知の不具合を検索し、破壊的変更のリスクや影響範囲を分析してコメントを投稿します。
+**注意:** Dependabot が作成する Pull Request から起動される GitHub Actions ワークフローは、セキュリティ制限により通常の Actions シークレットへアクセスできません。この機能を利用するには、ワークフローのイベントトリガーを `pull_request_target` に変更するなどの対応が必要です。なお、**Settings → Secrets and variables → Dependabot** に登録したシークレット（Dependabot secrets）は Dependabot 自身のプライベートレジストリ等へのアクセスに使われるもので、Actions ワークフロー (`secrets.PAT_FOR_MODELS` 等) からは参照できない点にもご注意ください。
+
+- `PAT_FOR_MODELS`: GitHub Models API を呼び出すための Personal Access Token
+- `TAVILY_API_KEY`: (推奨) 高精度な Web 検索を行うための Tavily API キー
+
 ### Semantic PR Title の適用
 
 リリースノートの自動生成（AI Release Drafter）の精度向上のため、PRのタイトルには **Conventional Commits** フォーマットを強制するチェック (`semantic-pr-title.yml`) が有効になっています。
