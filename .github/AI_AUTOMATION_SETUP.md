@@ -63,7 +63,7 @@ AI Issue Triage (`ai-issue-triage.yml`)、AI Weekly Summary (`ai-weekly-summary.
 
 ### AI ChatOps の利用 (PRコメント)
 
-PRのコメント欄で `/ai <メッセージ>` を記述することで、GitHub Models (gpt-4o) と Tavily/DuckDuckGo を用いたアシスタント機能が起動します。
+PRのコメント欄で `/ai MESSAGE` を記述することで、`GitHub Models` (`gpt-4o`) と `Tavily`/`DuckDuckGo` を用いたアシスタント機能が起動します。
 より精度の高い検索結果を得るために、リポジトリのSecretsに `TAVILY_API_KEY` を設定することを推奨します。設定されていない場合はDuckDuckGoへフォールバックします。
 例:
 
@@ -74,6 +74,7 @@ PRのコメント欄で `/ai <メッセージ>` を記述することで、GitHu
 
 PRのコメントで `/ai-test <メッセージ>` と入力すると、対象のコード差分と最新のテスト手法(RAG)を基に、AIがVitestやPlaywright等のテストコード案を生成しコメントで返信します。
 例:
+
 - `/ai-test このコンポーネントの異常系のテストを作成して`
 
 ### AI Dependabot Analyzer
