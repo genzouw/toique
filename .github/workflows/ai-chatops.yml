@@ -20,7 +20,7 @@ jobs:
       issues: write
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           fetch-depth: 0
 
@@ -41,7 +41,7 @@ jobs:
           } >> "$GITHUB_ENV"
 
       - name: Setup Python
-        uses: actions/setup-python@v6
+        uses: actions/setup-python@e797f83bcb11b83ae66e0230d6156d7c80228e7c # v6.0.0
         with:
           python-version: '3.12'
 
@@ -83,15 +83,15 @@ jobs:
               from duckduckgo_search import DDGS
               try:
                   with DDGS() as ddgs:
-                      for _ in range(3):
+                      for attempt in range(3):
                           try:
                               results = list(ddgs.text(query, max_results=5))
                               if results:
                                   search_res = "\n\n".join([f"Title: {r.get('title')}\nURL: {r.get('href')}\nSnippet: {r.get('body')}" for r in results])
                                   break
                           except Exception as inner_e:
-                              time.sleep(2)
-                              continue
+                              pass
+                          time.sleep(2)
               except Exception as e:
                   search_res = f"Web search failed: {e}"
 
