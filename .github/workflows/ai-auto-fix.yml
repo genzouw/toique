@@ -53,6 +53,7 @@ jobs:
         with:
           ref: ${{ steps.pr.outputs.head_sha }}
           fetch-depth: 0
+          persist-credentials: false
 
       - name: Generate Fix with GitHub Models
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
@@ -157,6 +158,7 @@ jobs:
       - name: Commit and Push Changes
         env:
           HEAD_REF: ${{ steps.pr.outputs.head_ref }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -euo pipefail
           git config --global user.name "github-actions[bot]"
@@ -172,4 +174,5 @@ jobs:
           # Push back to the PR head branch by name. Detached HEAD checkout requires
           # specifying the destination ref explicitly. Fast-forward only; if the branch
           # has moved while we ran, the push will fail safely.
-          git push origin "HEAD:${HEAD_REF}"
+          # checkout は persist-credentials: false で認証情報を残さないため、push 時に都度認証を渡す
+          git push "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" "HEAD:${HEAD_REF}"
