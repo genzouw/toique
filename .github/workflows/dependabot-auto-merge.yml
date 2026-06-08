@@ -1,5 +1,9 @@
 name: Dependabot auto-merge
 
+# Dependabot 自動マージは PR の write 権限が必要で、fork からの pull_request では
+# secrets / write が付与されないため pull_request_target を使う必要がある。チェックアウト
+# は行わず、信頼できる base (main) のコンテキストのみで実行する設計のため、外部 PR 由来の
+# コード実行リスクは発生しない。抑制設定は .github/zizmor.yml で管理。
 on: pull_request_target
 
 permissions:
@@ -9,7 +13,9 @@ permissions:
 jobs:
   dependabot:
     runs-on: ubuntu-latest
-    if: github.actor == 'dependabot[bot]'
+    # `github.actor` は spoof 可能 (push 元/コメント主によって変わる) と zizmor が指摘するため、
+    # PR の payload に紐づき改竄できない `pull_request.user.login` でチェックする。
+    if: github.event.pull_request.user.login == 'dependabot[bot]'
     steps:
       - name: Dependabot metadata
         id: metadata

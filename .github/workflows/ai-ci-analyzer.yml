@@ -1,5 +1,10 @@
 name: AI CI Failure Analyzer
 
+# workflow_run は zizmor では dangerous-triggers として検知されるが、本ワークフローは
+# 失敗した CI ログを取得して PR にコメントを書く読み取り/コメント用途で、デプロイや
+# 書き込み権限のあるシークレットは扱わない。後続ステップでも head_sha 由来の任意コード
+# 実行は行わず、`gh api` 経由のメタデータ取得と AI コメントのみで完結する。
+# 抑制設定は .github/zizmor.yml で管理。
 on:
   workflow_run:
     workflows: ['CI']
@@ -18,65 +23,67 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
 
       - name: Get failing job logs
         id: get_logs
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RUN_ID: ${{ github.event.workflow_run.id }}
+          REPO: ${{ github.repository }}
         run: |
-          RUN_ID=${{ github.event.workflow_run.id }}
-
-          # Fetch jobs for the failed run
-          JOBS_JSON=$(gh api /repos/${{ github.repository }}/actions/runs/$RUN_ID/jobs)
+          JOBS_JSON=$(gh api "/repos/${REPO}/actions/runs/${RUN_ID}/jobs")
 
           # Find the first failed job ID
           FAILED_JOB_ID=$(echo "$JOBS_JSON" | jq -r '.jobs[] | select(.conclusion == "failure") | .id' | head -n 1)
 
           if [ -z "$FAILED_JOB_ID" ]; then
             echo "No failed jobs found."
-            echo "LOGS_FOUND=false" >> "$GITHUB_ENV"
+            echo "logs_found=false" >> "$GITHUB_OUTPUT"
           else
             echo "Found failed job: $FAILED_JOB_ID"
 
             # Fetch logs for the failed job
-            LOGS=$(gh api "/repos/${{ github.repository }}/actions/jobs/${FAILED_JOB_ID}/logs" || echo "Could not fetch logs")
+            LOGS=$(gh api "/repos/${REPO}/actions/jobs/${FAILED_JOB_ID}/logs" || echo "Could not fetch logs")
 
             # Tail the last 500 lines to fit into the prompt context
             TAILED_LOGS=$(echo "$LOGS" | tail -n 500)
 
             DELIMITER=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
             {
-              echo "FAILED_LOGS<<$DELIMITER"
+              echo "failed_logs<<$DELIMITER"
               echo "$TAILED_LOGS"
               echo "$DELIMITER"
-              echo "LOGS_FOUND=true"
-            } >> "$GITHUB_ENV"
+              echo "logs_found=true"
+            } >> "$GITHUB_OUTPUT"
           fi
 
       - name: Find PR associated with the commit
         id: find_pr
-        if: env.LOGS_FOUND == 'true'
+        if: steps.get_logs.outputs.logs_found == 'true'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           COMMIT_SHA: ${{ github.event.workflow_run.head_sha }}
+          REPO: ${{ github.repository }}
         run: |
-          PR_NUMBER=$(gh api "/repos/${{ github.repository }}/commits/${COMMIT_SHA}/pulls" --jq '.[0].number')
+          PR_NUMBER=$(gh api "/repos/${REPO}/commits/${COMMIT_SHA}/pulls" --jq '.[0].number')
 
           if [ -z "$PR_NUMBER" ] || [ "$PR_NUMBER" == "null" ]; then
             echo "No PR associated with this commit."
-            echo "PR_FOUND=false" >> "$GITHUB_ENV"
+            echo "pr_found=false" >> "$GITHUB_OUTPUT"
           else
-            echo "PR_FOUND=true" >> "$GITHUB_ENV"
-            echo "PR_NUMBER=$PR_NUMBER" >> "$GITHUB_ENV"
+            echo "pr_found=true" >> "$GITHUB_OUTPUT"
+            echo "pr_number=$PR_NUMBER" >> "$GITHUB_OUTPUT"
           fi
 
       - name: Analyze logs and post comment
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
-        if: env.LOGS_FOUND == 'true' && env.PR_FOUND == 'true'
+        if: steps.get_logs.outputs.logs_found == 'true' && steps.find_pr.outputs.pr_found == 'true'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          FAILED_LOGS: ${{ env.FAILED_LOGS }}
-          PR_NUMBER: ${{ env.PR_NUMBER }}
+          FAILED_LOGS: ${{ steps.get_logs.outputs.failed_logs }}
+          PR_NUMBER: ${{ steps.find_pr.outputs.pr_number }}
         with:
           script: |
             const failedLogs = process.env.FAILED_LOGS || '';

@@ -55,7 +55,9 @@ jobs:
       - name: Run actionlint (with shellcheck integration)
         # `-shellcheck` で `run:` ブロックのシェル検査を厳格化し、
         # `paths`/`if` 等の構文ミスや誤った expression を起動前に弾く
+        env:
+          ACTIONLINT: ${{ steps.actionlint.outputs.executable }}
         run: |
-          "${{ steps.actionlint.outputs.executable }}" \
+          "$ACTIONLINT" \
             -color \
             -shellcheck="$(command -v shellcheck)"

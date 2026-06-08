@@ -1,5 +1,9 @@
 name: Deploy
 
+# workflow_run は zizmor では dangerous-triggers として検知されるが、本ワークフローは
+# branches: [main] 限定で CI 成功後にのみ動作させる設計 (CI の品質ゲートを経た main の
+# 内容だけが Cloud Run / Cloudflare Pages にデプロイされる) のため、信頼できないコード
+# 由来の実行は発生しない。抑制設定は .github/zizmor.yml で管理。
 on:
   workflow_run:
     workflows: [CI]
