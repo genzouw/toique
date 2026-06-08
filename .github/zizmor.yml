@@ -1,0 +1,17 @@
+# zizmor configuration
+# Reference: https://docs.zizmor.sh/configuration/
+
+rules:
+  dangerous-triggers:
+    # `on:` ブロックは複数行に渡るため inline `# zizmor: ignore[...]` が効かない。
+    # 代わりにファイル単位で抑制し、抑制理由は各ワークフロー先頭のコメントに残す。
+    ignore:
+      # branches:[main] 限定の workflow_run。CI 成功した main の内容のみを
+      # Cloud Run / Cloudflare Pages にデプロイする設計で不正コード由来の実行はない。
+      - deploy.yml
+      # 失敗 CI ログを読み取り PR にコメントするだけで、デプロイ等の副作用や
+      # 書き込みシークレットを扱わない。head_sha 由来の任意コード実行も行わない。
+      - ai-ci-analyzer.yml
+      # PR write 権限が必要なため pull_request_target が必須。チェックアウトは行わず、
+      # `pull_request.user.login == 'dependabot[bot]'` で発火元を検証する。
+      - dependabot-auto-merge.yml

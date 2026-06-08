@@ -16,6 +16,9 @@ jobs:
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           fetch-depth: 0
+          # 後続の `gh release` は env.GH_TOKEN で個別に認証するため、checkout が
+          # 残す $HOME/.git-credentials は不要。永続クレデンシャルを無効化する。
+          persist-credentials: false
 
       - name: Get latest release tag
         id: get_latest_tag
