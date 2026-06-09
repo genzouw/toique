@@ -22,7 +22,7 @@ jobs:
 
       - name: Repomix でリポジトリをパックする
         # AIフレンドリーな形式（XML）でリポジトリ全体を1つのファイルにまとめる
-        uses: yamadashy/repomix/.github/actions/repomix@fc69dcc31357d5db934f67ceaff4150f67e4735c # v1.14.1
+        uses: yamadashy/repomix/.github/actions/repomix@a7b93adfcdb11be923a9a092cceb1cb6739ef8e1 # v1.14.1
         with:
           output: repomix-output.xml
           compress: true
