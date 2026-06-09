@@ -80,14 +80,14 @@ export default function Contact() {
         <div className="max-w-3xl mx-auto px-6 py-5 flex items-center justify-between">
           <Link
             to="/"
-            className="flex items-center gap-2 focus-ring rounded-sm transition-colors"
+            className="flex items-center gap-2 focus-ring rounded-sm transition"
           >
             <span className="text-xl font-bold text-slate-900">Toique</span>
             <span className="text-sm text-slate-500">お問い合わせ</span>
           </Link>
           <Link
             to="/login"
-            className="text-sm text-slate-600 hover:text-slate-900 focus-ring rounded-sm transition-colors"
+            className="text-sm text-slate-600 hover:text-slate-900 focus-ring rounded-sm transition"
           >
             ログイン
           </Link>
@@ -111,7 +111,7 @@ export default function Contact() {
           まずは{' '}
           <Link
             to="/faq"
-            className="font-semibold underline hover:no-underline focus-ring rounded-sm transition-colors"
+            className="font-semibold underline hover:no-underline focus-ring rounded-sm transition"
           >
             FAQ (よくある質問)
           </Link>{' '}
@@ -129,7 +129,7 @@ export default function Contact() {
             <div className="mt-4 flex gap-3 text-sm items-center">
               <Link
                 to="/"
-                className="underline text-slate-700 focus-ring rounded-sm transition-colors"
+                className="underline text-slate-700 focus-ring rounded-sm transition"
               >
                 トップへ戻る
               </Link>
@@ -275,7 +275,7 @@ export default function Contact() {
             よくある質問は{' '}
             <Link
               to="/help"
-              className="underline focus-ring rounded-sm transition-colors"
+              className="underline focus-ring rounded-sm transition"
             >
               ヘルプ
             </Link>{' '}
