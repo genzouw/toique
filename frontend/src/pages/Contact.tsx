@@ -78,13 +78,16 @@ export default function Contact() {
       />
       <header className="bg-white border-b border-slate-200">
         <div className="max-w-3xl mx-auto px-6 py-5 flex items-center justify-between">
-          <Link to="/" className="flex items-center gap-2">
+          <Link
+            to="/"
+            className="flex items-center gap-2 focus-ring rounded-sm transition"
+          >
             <span className="text-xl font-bold text-slate-900">Toique</span>
             <span className="text-sm text-slate-500">お問い合わせ</span>
           </Link>
           <Link
             to="/login"
-            className="text-sm text-slate-600 hover:text-slate-900"
+            className="text-sm text-slate-600 hover:text-slate-900 focus-ring rounded-sm transition"
           >
             ログイン
           </Link>
@@ -108,7 +111,7 @@ export default function Contact() {
           まずは{' '}
           <Link
             to="/faq"
-            className="font-semibold underline hover:no-underline"
+            className="font-semibold underline hover:no-underline focus-ring rounded-sm transition"
           >
             FAQ (よくある質問)
           </Link>{' '}
@@ -123,8 +126,11 @@ export default function Contact() {
             <p className="text-sm text-slate-600">
               お問い合わせありがとうございます。内容を確認のうえ、担当者よりご連絡いたします。
             </p>
-            <div className="mt-4 flex gap-3 text-sm">
-              <Link to="/" className="underline text-slate-700">
+            <div className="mt-4 flex gap-3 text-sm items-center">
+              <Link
+                to="/"
+                className="underline text-slate-700 focus-ring rounded-sm transition"
+              >
                 トップへ戻る
               </Link>
               <button
@@ -267,7 +273,10 @@ export default function Contact() {
         <section className="text-sm text-slate-600">
           <p>
             よくある質問は{' '}
-            <Link to="/help" className="underline">
+            <Link
+              to="/help"
+              className="underline focus-ring rounded-sm transition"
+            >
               ヘルプ
             </Link>{' '}
             にもまとめています。
