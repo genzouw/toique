@@ -132,6 +132,7 @@ export default function Layout() {
               className="ml-auto text-slate-400"
               aria-hidden="true"
             />
+            <span className="sr-only">（新しいウィンドウで開きます）</span>
           </a>
           {isOperator && (
             <Link
