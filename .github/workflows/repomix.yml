@@ -1,0 +1,36 @@
+name: Repomix
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  repomix:
+    name: Repomix でリポジトリをパックする
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: リポジトリのチェックアウト
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Repomix でリポジトリをパックする
+        # AIフレンドリーな形式（XML）でリポジトリ全体を1つのファイルにまとめる
+        uses: yamadashy/repomix/.github/actions/repomix@a7b93adfcdb11be923a9a092cceb1cb6739ef8e1 # v1.14.1
+        with:
+          output: repomix-output.xml
+          compress: true
+
+      - name: Repomix 出力アーティファクトのアップロード
+        # 生成されたXMLファイルを、AIツールなどで後から利用できるように保存
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: repomix-output
+          path: repomix-output.xml
+          retention-days: 30
