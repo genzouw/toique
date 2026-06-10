@@ -31,7 +31,11 @@ export default function AdminLayout() {
         menuButtonClassName="text-slate-300 hover:bg-slate-800"
         header={
           <div className="flex items-center gap-2">
-            <Shield size={ICON_SIZE.lg} className="text-amber-400" />
+            <Shield
+              size={ICON_SIZE.lg}
+              className="text-amber-400"
+              aria-hidden="true"
+            />
             <div className="text-lg font-bold">Toique</div>
             <div className="text-xs text-amber-400 mt-1 ml-1">運営者エリア</div>
           </div>
@@ -49,7 +53,11 @@ export default function AdminLayout() {
         sidebarHeader={
           <div>
             <div className="text-xl font-bold flex items-center gap-2">
-              <Shield size={ICON_SIZE.lg} className="text-amber-400" />
+              <Shield
+                size={ICON_SIZE.lg}
+                className="text-amber-400"
+                aria-hidden="true"
+              />
               Toique
             </div>
             <div className="text-xs text-amber-400 mt-0.5">運営者エリア</div>
@@ -72,7 +80,7 @@ export default function AdminLayout() {
                   )
                 }
               >
-                <Icon size={ICON_SIZE.md} />
+                <Icon size={ICON_SIZE.md} aria-hidden="true" />
                 {item.label}
               </NavLink>
             );
@@ -86,7 +94,7 @@ export default function AdminLayout() {
             onClick={handleSignOut}
             className="mt-2 w-full inline-flex items-center gap-2 px-2 py-1.5 text-xs text-slate-300 hover:bg-slate-800 rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 focus-visible:ring-offset-1 focus-visible:ring-offset-slate-900 transition-colors"
           >
-            <LogOut size={ICON_SIZE.xs} />
+            <LogOut size={ICON_SIZE.xs} aria-hidden="true" />
             ログアウト
           </button>
         </div>
