@@ -30,7 +30,7 @@ bun install
 - **osv-scanner / trivy**: 依存関係を通じたサプライチェーン攻撃（悪意あるパッケージによる環境変数の流出など）やインフラの構成ミスを検知します。
 
 これらの CI ジョブが失敗した場合は、エラーログ（および PR に付与されるアノテーション）を確認し、修正を行ってから再度 Push してください。
-※テスト用のダミー値などで偽陽性（False Positive）となった場合は、`docs/security/leak-prevention.md` に記載の手順に沿って例外登録を行ってください。
+※テスト用のダミー値などで偽陽性（False Positive）となった場合は、[docs/security/leak-prevention.md](docs/security/leak-prevention.md) に記載の手順に沿って例外登録を行ってください。
 
 ### 4. 万が一シークレットをコミットしてしまった場合
 
