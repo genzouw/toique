@@ -87,7 +87,7 @@ jobs:
           import time
 
           title = os.environ.get('ISSUE_TITLE', '')
-          query = f"{title} site:stackoverflow.com OR site:github.com"
+          query = f"{title} site:stackoverflow.com OR site:github.com OR site:zenn.dev OR site:qiita.com"
           tavily_key = os.environ.get('TAVILY_API_KEY', '').strip()
 
           search_res = ""
@@ -158,6 +158,7 @@ jobs:
 
             上記検索結果も踏まえ、すでに解決済みの問題であれば解決策をより具体的に（可能であればコード例や設定手順などを交えて）提示し、未解決のバグや新規提案であればその旨をコメントに含めてください。また、DuckDuckGoなどのWeb検索結果やStackOverflowの検索結果にセキュリティ上の脆弱性や既知のエクスプロイトが含まれている場合は、重大な問題として優先的に指摘してください。さらに、報告者に対する感謝の言葉を添えてください。
             回答は必ず日本語で、見やすいMarkdown形式で出力してください。
+            また、Cloudflare Pagesの制約としてconsole.logではなくconsole.infoを使うこと、パフォーマンスのため...map()ではなくfor...ofループを使うこと、アクセシビリティのため装飾アイコンにはaria-hidden="true"を付与することを考慮してください。
             `;
 
             // Use Structured Outputs (JSON Schema) for deterministic JSON response
