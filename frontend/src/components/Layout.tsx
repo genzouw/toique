@@ -114,7 +114,7 @@ export default function Layout() {
                   )
                 }
               >
-                <Icon size={ICON_SIZE.md} />
+                <Icon size={ICON_SIZE.md} aria-hidden="true" />
                 {item.label}
               </NavLink>
             );
@@ -125,12 +125,14 @@ export default function Layout() {
             rel="noopener noreferrer"
             className="flex items-center gap-2 px-3 py-2 rounded-md text-sm text-slate-700 hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-900 focus-visible:ring-offset-1 transition-colors"
           >
-            <HelpCircle size={ICON_SIZE.md} />
+            <HelpCircle size={ICON_SIZE.md} aria-hidden="true" />
             ヘルプ
             <ExternalLink
               size={ICON_SIZE.xs}
               className="ml-auto text-slate-400"
+              aria-hidden="true"
             />
+            <span className="sr-only">（新しいウィンドウで開きます）</span>
           </a>
           {isOperator && (
             <Link
@@ -152,7 +154,7 @@ export default function Layout() {
                 onClick={handleSignOut}
                 className="mt-2 w-full inline-flex items-center gap-2 px-2 py-1.5 text-xs text-slate-700 hover:bg-slate-100 rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-900 focus-visible:ring-offset-1 transition-colors"
               >
-                <LogOut size={ICON_SIZE.xs} />
+                <LogOut size={ICON_SIZE.xs} aria-hidden="true" />
                 ログアウト
               </button>
             </>
