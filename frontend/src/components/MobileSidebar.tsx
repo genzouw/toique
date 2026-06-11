@@ -33,7 +33,7 @@ export function MobileHeader({
           menuButtonClassName,
         )}
       >
-        <Menu size={ICON_SIZE.xl} />
+        <Menu size={ICON_SIZE.xl} aria-hidden="true" />
       </button>
     </div>
   );
@@ -98,7 +98,7 @@ export function SidebarPanel({
             closeButtonClassName,
           )}
         >
-          <X size={ICON_SIZE.xl} />
+          <X size={ICON_SIZE.xl} aria-hidden="true" />
         </button>
       </div>
       {children}
