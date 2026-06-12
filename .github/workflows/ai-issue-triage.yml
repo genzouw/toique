@@ -87,7 +87,7 @@ jobs:
           import time
 
           title = os.environ.get('ISSUE_TITLE', '')
-          query = f"{title} site:stackoverflow.com OR site:github.com OR site:zenn.dev OR site:qiita.com"
+          query = f"{title} (site:stackoverflow.com OR site:github.com OR site:zenn.dev OR site:qiita.com)"
           tavily_key = os.environ.get('TAVILY_API_KEY', '').strip()
 
           search_res = ""

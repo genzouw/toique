@@ -53,7 +53,7 @@ jobs:
           else:
               package_name = title
 
-          query = f"{package_name} issue OR breaking change OR vulnerability OR bug site:zenn.dev OR site:qiita.com OR site:github.com"
+          query = f"{package_name} (issue OR breaking change OR vulnerability OR bug) (site:zenn.dev OR site:qiita.com OR site:github.com)"
           tavily_key = os.environ.get('TAVILY_API_KEY', '').strip()
 
           search_res = ""
