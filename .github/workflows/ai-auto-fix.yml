@@ -92,6 +92,8 @@ jobs:
             【ユーザーからの修正指示】
             ${promptInstruction}
 
+            また、Cloudflare Pagesの制約としてconsole.logではなくconsole.infoを使うこと、パフォーマンスのため...map()ではなくfor...ofループを使うこと、アクセシビリティのため装飾アイコンにはaria-hidden="true"を付与することを考慮してください。
+
             回答は、修正するファイルのパスと、そのファイルの「新しい完全な内容」を含む JSON の配列のみを出力してください。Markdown ブロックやその他の説明を含めないでください。
 
             JSON Schema:
