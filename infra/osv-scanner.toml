@@ -1,0 +1,46 @@
+# OSV-Scanner 設定ファイル
+#
+# 検出された脆弱性のうち、即時対応が難しい transitive dependency を期限付きで許容する。
+# 期限到来後は再評価し、依存パッケージのアップデート可否を確認すること。
+#
+# 参考: https://google.github.io/osv-scanner/configuration/
+
+# brace-expansion 2.0.1 (cdktf -> archiver 経由) — GHSA-f886-m6hf-6m8v, GHSA-v6h2-p8h4-qcjw (ReDoS)
+[[PackageOverrides]]
+name = "brace-expansion"
+version = "2.0.1"
+ecosystem = "npm"
+vulnerability.ignore = true
+reason = "cdktf -> archiver の transitive dependency。直接の dependency 更新では解消できないため、cdktf 側の対応待ち。2026-12-12 に再評価すること。"
+
+# glob 10.4.5 (cdktf -> archiver -> archiver-utils 経由) — GHSA-5j98-mcp5-4vw2 (ReDoS)
+[[PackageOverrides]]
+name = "glob"
+version = "10.4.5"
+ecosystem = "npm"
+vulnerability.ignore = true
+reason = "cdktf -> archiver -> archiver-utils の transitive dependency。直接の dependency 更新では解消できないため、cdktf 側の対応待ち。2026-12-12 に再評価すること。"
+
+# lodash 4.17.21 (cdktf -> archiver-utils 経由) — GHSA-f23m-r3pf-42rh, GHSA-r5fr-rjxr-66jc, GHSA-xxjr-mmjv-4gpg (Prototype Pollution, Command Injection, ReDoS)
+[[PackageOverrides]]
+name = "lodash"
+version = "4.17.21"
+ecosystem = "npm"
+vulnerability.ignore = true
+reason = "cdktf -> archiver-utils の transitive dependency。lodash 4.x の修正版はリリースされていないため、cdktf 側の依存差し替え待ち。2026-12-12 に再評価すること。"
+
+# minimatch 5.1.6 (cdktf 経由) — GHSA-23c5-xmqv-rm74, GHSA-3ppc-4f35-3m26, GHSA-7r86-cg39-jmmj (ReDoS)
+[[PackageOverrides]]
+name = "minimatch"
+version = "5.1.6"
+ecosystem = "npm"
+vulnerability.ignore = true
+reason = "cdktf -> archiver 系の transitive dependency。直接の dependency 更新では解消できないため、cdktf 側の対応待ち。2026-12-12 に再評価すること。"
+
+# minimatch 9.0.5 (cdktf -> glob 経由) — GHSA-23c5-xmqv-rm74, GHSA-3ppc-4f35-3m26, GHSA-7r86-cg39-jmmj (ReDoS)
+[[PackageOverrides]]
+name = "minimatch"
+version = "9.0.5"
+ecosystem = "npm"
+vulnerability.ignore = true
+reason = "cdktf -> archiver 系の transitive dependency。直接の dependency 更新では解消できないため、cdktf 側の対応待ち。2026-12-12 に再評価すること。"
