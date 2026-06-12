@@ -1,5 +1,5 @@
 import { Link } from 'react-router';
-import { useEffect, useId, useState } from 'react';
+import { useEffect, useId, useRef, useState } from 'react';
 import { api, type ContactCategory } from '../lib/api';
 import { useSession } from '../lib/auth-client';
 import SEOMetadata from '../components/SEOMetadata';
@@ -26,6 +26,7 @@ export default function Contact() {
   const [submitting, setSubmitting] = useState(false);
   const [done, setDone] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const successHeadingRef = useRef<HTMLHeadingElement>(null);
 
   const websiteId = useId();
   const nameId = useId();
@@ -34,6 +35,12 @@ export default function Contact() {
   const subjectId = useId();
   const bodyId = useId();
   const urlId = useId();
+
+  useEffect(() => {
+    if (done) {
+      successHeadingRef.current?.focus();
+    }
+  }, [done]);
 
   // ログインユーザーの情報を自動入力
   useEffect(() => {
@@ -122,9 +129,12 @@ export default function Contact() {
           <section
             className="bg-white border border-slate-200 rounded-lg p-6"
             role="status"
-            aria-live="polite"
           >
-            <h2 className="text-lg font-semibold text-slate-900 mb-2">
+            <h2
+              ref={successHeadingRef}
+              tabIndex={-1}
+              className="text-lg font-semibold text-slate-900 mb-2 focus-visible:outline-none"
+            >
               送信しました
             </h2>
             <p className="text-sm text-slate-600">
