@@ -61,7 +61,7 @@ jobs:
 
           # '/ai ' プレフィックスを削除して検索クエリを構築
           prompt = os.environ.get('USER_PROMPT', '')
-          query = prompt.replace('/ai ', '').strip()
+          query = prompt.replace('/ai ', '').strip() + " site:zenn.dev OR site:qiita.com OR site:github.com"
           tavily_key = os.environ.get('TAVILY_API_KEY', '').strip()
 
           search_res = ""
@@ -132,6 +132,8 @@ jobs:
 
             【Web検索結果 (RAG用の最新技術情報参考)】
             ${searchResults}
+
+            また、Cloudflare Pagesの制約としてconsole.logではなくconsole.infoを使うこと、パフォーマンスのため...map()ではなくfor...ofループを使うこと、アクセシビリティのため装飾アイコンにはaria-hidden="true"を付与することを前提としてレビュー・提案を行ってください。
             `;
 
             const userMessage = `ユーザー（@${author}）からの要求:\n${prompt}`;
