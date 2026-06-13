@@ -74,7 +74,7 @@ export default function Dashboard() {
             {usageData.plan === 'free' ? (
               <Link
                 to="/pricing"
-                className="text-sm text-slate-600 hover:text-slate-900 underline"
+                className="text-sm text-slate-600 hover:text-slate-900 underline focus-ring rounded-sm transition-colors"
               >
                 Pro プランにアップグレード
               </Link>
@@ -92,7 +92,7 @@ export default function Dashboard() {
                     setManaging(false);
                   }
                 }}
-                className="inline-flex items-center gap-1 text-sm text-slate-600 hover:text-slate-900 underline disabled:opacity-50 disabled:cursor-not-allowed"
+                className="inline-flex items-center gap-1 text-sm text-slate-600 hover:text-slate-900 underline disabled:opacity-50 disabled:cursor-not-allowed rounded-sm"
               >
                 サブスクリプション管理
               </LoadingButton>
