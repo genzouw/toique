@@ -48,8 +48,8 @@ jobs:
         with:
           languages: ${{ matrix.language }}
           build-mode: ${{ matrix.build-mode }}
-          # クエリセットを指定してセキュリティ・品質チェックを強化可能
-          # queries: security-extended,security-and-quality
+          # security-and-quality は security-extended を包含する最も包括的なスイート
+          queries: security-and-quality
           # リポジトリ固有の false positive を suppress するための設定ファイル。
           config-file: ./.github/codeql/codeql-config.yml
 
