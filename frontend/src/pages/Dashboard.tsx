@@ -92,7 +92,7 @@ export default function Dashboard() {
                     setManaging(false);
                   }
                 }}
-                className="inline-flex items-center gap-1 text-sm text-slate-600 hover:text-slate-900 underline disabled:opacity-50 disabled:cursor-not-allowed focus-ring rounded-sm transition-colors"
+                className="inline-flex items-center gap-1 text-sm text-slate-600 hover:text-slate-900 underline disabled:opacity-50 disabled:cursor-not-allowed rounded-sm"
               >
                 サブスクリプション管理
               </LoadingButton>
