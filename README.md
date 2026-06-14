@@ -265,7 +265,7 @@ curl -s http://localhost:3000/api/v1/messages | jq
 | `PULL_REQUEST_TEMPLATE.md` | PR 説明の標準テンプレート                                                                                                                         |
 | `stale.yml`                | 最終更新から 14 日で `stale`、最終更新から 16 日で自動クローズ（= stale 付与から約 2 日後）。`WIP` / `do-not-close` / `dependencies` ラベルは除外 |
 | `pr_conflict_notify.yml`   | main push 時 / 日次で全 open PR のコンフリクト検出 → author へ通知                                                                                |
-| `dependabot.yml`           | npm / github-actions / docker を週次でグループ化 PR                                                                                               |
+| `dependabot.yml`           | npm / github-actions / docker を日次でグループ化 PR                                                                                               |
 | `CODEOWNERS`               | レビュー自動アサイン                                                                                                                              |
 
 ### ローカル開発時の品質ゲート
