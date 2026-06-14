@@ -57,7 +57,27 @@ AI Issue Triage (`ai-issue-triage.yml`)、AI Weekly Summary (`ai-weekly-summary.
 - パフォーマンス: O(N)ループの回避、N+1問題の防止、不要なDBクエリの削減など
 - アクセシビリティ: ボタン等のアクション要素における具体的な対象を含んだ aria-label や title の付与、role="tablist" におけるキーボードナビゲーションや roving tabIndex のサポートなど
 
-## 5. 新規導入した自動化ツールの運用ルール (2024年導入)
+## 5. GitHub Agentic Workflows (gh-aw) の導入 (2026年導入)
+
+従来のカスタムPython/ActionsスクリプトによるAIワークフローの一部を、公式の **GitHub Agentic Workflows** に移行・併用しています。これは Markdown ベースで定義され、サンドボックス環境やセーフアウトプットのゲートを備えた、より安全で統制されたAIエージェント実行環境を提供します。
+
+**設定とコンパイル手順（必須）:**
+
+1. 手元の環境に GitHub CLI 拡張機能 `gh-aw` をインストールします。
+   ```bash
+   gh extension install github/gh-aw
+   ```
+2. `.github/workflows/` ディレクトリ内に `.md` 拡張子でエージェントの定義（例: `ai-issue-triage-agent.md`, `ai-pr-review-agent.md`）を作成・編集します。
+3. コミットする前に、**必ずローカルでコンパイル**を実行し、対応する `.lock.yml` ファイルを生成・更新してください。
+   ```bash
+   gh aw compile
+   ```
+4. `.md` ファイルと生成された `.lock.yml` ファイルの両方をコミットしてプッシュします。
+
+**認証とコスト管理:**
+これらのワークフローは、GitHub Actions の標準の `GITHUB_TOKEN` および AI クレジットを利用して実行されます。特別なトークンの追加設定は不要です。
+
+## 6. 新規導入した自動化ツールの運用ルール (2024年導入)
 
 更なる開発効率化のため、以下の新しいAIツールおよびCI/CDの自動化パイプラインが追加されています。これらは標準で動作するように設定されていますが、運用上以下の点を留意してください。
 
