@@ -7,8 +7,7 @@ updates:
   - package-ecosystem: 'npm'
     directory: '/backend'
     schedule:
-      interval: 'weekly'
-      day: 'monday'
+      interval: 'daily'
       time: '09:00'
       timezone: 'Asia/Tokyo'
     # 直近リリース直後の不安定バージョンを掴まないため、最低 7 日待ってから更新 PR を作成する。
@@ -58,8 +57,7 @@ updates:
   - package-ecosystem: 'npm'
     directory: '/frontend'
     schedule:
-      interval: 'weekly'
-      day: 'monday'
+      interval: 'daily'
       time: '09:00'
       timezone: 'Asia/Tokyo'
     cooldown:
@@ -128,8 +126,7 @@ updates:
   - package-ecosystem: 'npm'
     directory: '/infra'
     schedule:
-      interval: 'weekly'
-      day: 'monday'
+      interval: 'daily'
       time: '09:00'
       timezone: 'Asia/Tokyo'
     cooldown:
@@ -160,8 +157,7 @@ updates:
   - package-ecosystem: 'github-actions'
     directory: '/'
     schedule:
-      interval: 'weekly'
-      day: 'monday'
+      interval: 'daily'
       time: '09:00'
       timezone: 'Asia/Tokyo'
     cooldown:
@@ -200,8 +196,7 @@ updates:
   - package-ecosystem: 'docker'
     directory: '/backend'
     schedule:
-      interval: 'weekly'
-      day: 'monday'
+      interval: 'daily'
       time: '09:00'
       timezone: 'Asia/Tokyo'
     cooldown:
@@ -226,8 +221,7 @@ updates:
   - package-ecosystem: 'docker'
     directory: '/frontend'
     schedule:
-      interval: 'weekly'
-      day: 'monday'
+      interval: 'daily'
       time: '09:00'
       timezone: 'Asia/Tokyo'
     cooldown:
@@ -252,8 +246,7 @@ updates:
   - package-ecosystem: 'docker'
     directory: '/backup'
     schedule:
-      interval: 'weekly'
-      day: 'monday'
+      interval: 'daily'
       time: '09:00'
       timezone: 'Asia/Tokyo'
     cooldown:
