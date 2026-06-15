@@ -34,7 +34,6 @@ jobs:
         with:
           scan-args: |-
             -r
-            --skip-git
             --format=sarif
             --output=results.sarif
             ./
