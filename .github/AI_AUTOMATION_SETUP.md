@@ -68,7 +68,7 @@ AI Issue Triage (`ai-issue-triage.yml`)、AI Weekly Summary (`ai-weekly-summary.
    gh extension install github/gh-aw
    ```
 2. `.github/workflows/` ディレクトリ内に `.md` 拡張子でエージェントの定義（例: `ai-issue-triage-agent.md`, `ai-pr-review-agent.md`）を作成・編集します。
-3. コミットする前に、**必ずローカルでコンパイル**を実行し、対応する `.lock.yml` ファイルを生成・更新してください。
+3. コミットする前に、リポジトリのルートディレクトリで**必ずローカルでコンパイル**を実行し、対応する `.lock.yml` ファイルを生成・更新してください。
    ```bash
    gh aw compile
    ```
