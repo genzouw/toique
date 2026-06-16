@@ -35,6 +35,7 @@ jobs:
           scan-args: |-
             -r
             --skip-git
+            --config=infra/osv-scanner.toml
             --format=sarif
             --output=results.sarif
             ./
