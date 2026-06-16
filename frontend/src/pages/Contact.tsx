@@ -1,5 +1,5 @@
 import { Link } from 'react-router';
-import { useEffect, useId, useState } from 'react';
+import { useEffect, useId, useRef, useState } from 'react';
 import { api, type ContactCategory } from '../lib/api';
 import { useSession } from '../lib/auth-client';
 import SEOMetadata from '../components/SEOMetadata';
@@ -26,6 +26,7 @@ export default function Contact() {
   const [submitting, setSubmitting] = useState(false);
   const [done, setDone] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const successHeadingRef = useRef<HTMLHeadingElement>(null);
 
   const websiteId = useId();
   const nameId = useId();
@@ -34,6 +35,12 @@ export default function Contact() {
   const subjectId = useId();
   const bodyId = useId();
   const urlId = useId();
+
+  useEffect(() => {
+    if (done) {
+      successHeadingRef.current?.focus();
+    }
+  }, [done]);
 
   // ログインユーザーの情報を自動入力
   useEffect(() => {
@@ -119,8 +126,15 @@ export default function Contact() {
         </section>
 
         {done ? (
-          <section className="bg-white border border-slate-200 rounded-lg p-6">
-            <h2 className="text-lg font-semibold text-slate-900 mb-2">
+          <section
+            className="bg-white border border-slate-200 rounded-lg p-6"
+            role="status"
+          >
+            <h2
+              ref={successHeadingRef}
+              tabIndex={-1}
+              className="text-lg font-semibold text-slate-900 mb-2 focus-visible:outline-none"
+            >
               送信しました
             </h2>
             <p className="text-sm text-slate-600">
@@ -234,8 +248,9 @@ export default function Contact() {
                 value={body}
                 onChange={(e) => setBody(e.target.value)}
                 className={inputCls}
+                aria-describedby={`${bodyId}-hint`}
               />
-              <p className="mt-1 text-xs text-slate-500">
+              <p id={`${bodyId}-hint`} className="mt-1 text-xs text-slate-500">
                 最大 5000 文字 ({body.length} / 5000)
               </p>
             </Field>
@@ -253,7 +268,10 @@ export default function Contact() {
             </Field>
 
             {error && (
-              <div className="text-sm text-red-700 bg-red-50 border border-red-200 rounded-md px-3 py-2">
+              <div
+                className="text-sm text-red-700 bg-red-50 border border-red-200 rounded-md px-3 py-2"
+                role="alert"
+              >
                 {error}
               </div>
             )}

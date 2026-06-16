@@ -39,7 +39,7 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
           persist-credentials: false
 
@@ -48,8 +48,8 @@ jobs:
         with:
           languages: ${{ matrix.language }}
           build-mode: ${{ matrix.build-mode }}
-          # クエリセットを指定してセキュリティ・品質チェックを強化可能
-          # queries: security-extended,security-and-quality
+          # security-and-quality は security-extended を包含する最も包括的なスイート
+          queries: security-and-quality
           # リポジトリ固有の false positive を suppress するための設定ファイル。
           config-file: ./.github/codeql/codeql-config.yml
 

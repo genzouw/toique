@@ -70,19 +70,22 @@ export default function Pricing() {
       {/* Header */}
       <header className="border-b border-slate-200">
         <div className="max-w-5xl mx-auto px-6 h-14 flex items-center justify-between">
-          <Link to="/" className="text-lg font-bold text-slate-900">
+          <Link
+            to="/"
+            className="text-lg font-bold text-slate-900 focus-ring rounded-sm transition-colors"
+          >
             Toique
           </Link>
           <div className="flex items-center gap-4">
             <Link
               to="/login"
-              className="text-sm text-slate-700 hover:text-slate-900"
+              className="text-sm text-slate-700 hover:text-slate-900 focus-ring rounded-sm transition-colors"
             >
               ログイン
             </Link>
             <Link
               to="/signup"
-              className="text-sm px-4 py-1.5 bg-slate-900 text-white rounded-md hover:bg-slate-800"
+              className="text-sm px-4 py-1.5 bg-slate-900 text-white rounded-md hover:bg-slate-800 focus-ring transition-colors"
             >
               無料で始める
             </Link>
@@ -151,7 +154,7 @@ export default function Pricing() {
               ) : (
                 <Link
                   to={plan.ctaTo}
-                  className={`mt-6 block text-center px-4 py-2.5 text-sm font-medium rounded-md ${
+                  className={`mt-6 block text-center px-4 py-2.5 text-sm font-medium rounded-md focus-ring transition-colors ${
                     plan.highlight
                       ? 'bg-slate-900 text-white hover:bg-slate-800'
                       : 'border border-slate-300 text-slate-700 hover:bg-slate-50'
@@ -179,7 +182,7 @@ export default function Pricing() {
               >
                 <Link
                   to={`/faq/${f.slug}`}
-                  className="flex items-center justify-between gap-3 px-4 py-3 hover:bg-slate-50 rounded-lg"
+                  className="flex items-center justify-between gap-3 px-4 py-3 hover:bg-slate-50 rounded-lg focus-ring transition-colors"
                 >
                   <span className="text-sm font-medium text-slate-900">
                     {f.question}
@@ -196,7 +199,7 @@ export default function Pricing() {
           <div className="mt-6 text-center">
             <Link
               to="/faq"
-              className="inline-flex items-center gap-1 text-sm font-medium text-slate-700 hover:text-slate-900"
+              className="inline-flex items-center gap-1 text-sm font-medium text-slate-700 hover:text-slate-900 focus-ring rounded-sm transition-colors"
             >
               すべての FAQ を見る
               <ArrowRight size={ICON_SIZE.sm} />
