@@ -67,6 +67,6 @@ skills-lock.json
 .env*
 
 # gemini-cli settings
-.gemini/
+.gemini/*
 !.gemini/commands/
 gha-creds-*.json
