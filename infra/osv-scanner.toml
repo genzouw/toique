@@ -44,3 +44,19 @@ version = "9.0.5"
 ecosystem = "npm"
 vulnerability.ignore = true
 reason = "cdktf -> archiver 系の transitive dependency。直接の dependency 更新では解消できないため、cdktf 側の対応待ち。2026-12-12 に再評価すること。"
+
+# @babel/core 7.29.0 (jest -> @jest/transform 経由) — GHSA-4x5r-pxfx-6jf8
+[[PackageOverrides]]
+name = "@babel/core"
+version = "7.29.0"
+ecosystem = "npm"
+vulnerability.ignore = true
+reason = "jest@29.7.0 -> @jest/core -> @jest/transform の transitive dependency。jest 29 系の peer range が patch (7.29.6) を取り込まないため、jest メジャー更新待ち。2026-12-12 に再評価すること。"
+
+# js-yaml 3.14.2 (jest -> babel-plugin-istanbul -> @istanbuljs/load-nyc-config 経由) — GHSA-h67p-54hq-rp68
+[[PackageOverrides]]
+name = "js-yaml"
+version = "3.14.2"
+ecosystem = "npm"
+vulnerability.ignore = true
+reason = "jest@29.7.0 -> @jest/transform -> babel-plugin-istanbul -> @istanbuljs/load-nyc-config の transitive dependency。js-yaml 4.x への移行は破壊的変更を伴うため、jest メジャー更新待ち。2026-12-12 に再評価すること。"
