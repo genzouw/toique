@@ -149,7 +149,15 @@ function UsageBar({
         </span>
       </div>
       {!isUnlimited && (
-        <div className="mt-2 h-2 bg-slate-100 rounded-full overflow-hidden">
+        <div
+          className="mt-2 h-2 bg-slate-100 rounded-full overflow-hidden"
+          role="progressbar"
+          aria-label={`${label}の利用状況`}
+          aria-valuenow={Math.min(current, limit)}
+          aria-valuemin={0}
+          aria-valuemax={limit}
+          aria-valuetext={`${current} / ${limit}`}
+        >
           <div
             className={`h-full rounded-full ${color}`}
             style={{ width: `${pct}%` }}
