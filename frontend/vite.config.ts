@@ -13,14 +13,8 @@ const SITE_ORIGIN_FALLBACK = 'https://example.com';
 // 関数フォームの defineConfig は plugins 配列の合併型 (Plugin<any> | Plugin<any>[])[]
 // を比較する際に深度上限に達し TS2321 を引き起こす。
 // オブジェクトフォームを使い、プラグインを事前に Plugin[] へ集約することで
-// 推論深度を浅くする。オブジェクトフォームはmodeを受け取れないため、
-// process.argv から --mode CLI 引数を手動でパースして loadEnv に渡す。
-const cliModeEq = process.argv
-  .find((arg) => arg.startsWith('--mode='))
-  ?.split('=')[1];
-const cliModeIdx = process.argv.indexOf('--mode');
-const cliMode = cliModeIdx >= 0 ? process.argv[cliModeIdx + 1] : undefined;
-const mode = cliModeEq ?? cliMode ?? process.env.NODE_ENV ?? 'development';
+// 推論深度を浅くする。mode は NODE_ENV から決定する。
+const mode = process.env.NODE_ENV ?? 'development';
 const env = loadEnv(mode, process.cwd(), 'VITE_');
 const siteOrigin = env.VITE_SITE_ORIGIN ?? SITE_ORIGIN_FALLBACK;
 
