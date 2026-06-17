@@ -1,6 +1,6 @@
 /// <reference types="vitest" />
 import { defineConfig } from 'vitest/config';
-import { loadEnv } from 'vite';
+import { loadEnv, type Plugin } from 'vite';
 import react from '@vitejs/plugin-react';
 import tailwindcss from '@tailwindcss/vite';
 import Sitemap from 'vite-plugin-sitemap';
@@ -61,7 +61,7 @@ export default defineConfig(({ mode }) => {
             ],
           },
         ],
-      }),
+      }) as unknown as Plugin,
     ],
     server: {
       host: true,
