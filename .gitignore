@@ -65,3 +65,8 @@ skills-lock.json
 *.key
 *credentials*.json
 .env*
+
+# Infrastructure State Files
+*.tfstate*
+cdktf.out/
+.terraform/

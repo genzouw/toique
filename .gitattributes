@@ -10,3 +10,6 @@
 .windsurf/ export-ignore
 .jules/ export-ignore
 .Jules/ export-ignore
+*.tfstate* export-ignore
+cdktf.out/ export-ignore
+.terraform/ export-ignore
