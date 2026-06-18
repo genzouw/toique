@@ -10,7 +10,10 @@
     "**/.aider*": true,
     "**/.windsurf": true,
     "**/.jules": true,
-    "**/.Jules": true
+    "**/.Jules": true,
+    "**/*.tfstate*": true,
+    "**/cdktf.out/**": true,
+    "**/.terraform/**": true
   },
   "files.exclude": {
     "**/*.env": true,
@@ -23,6 +26,9 @@
     "**/.aider*": true,
     "**/.windsurf": true,
     "**/.jules": true,
-    "**/.Jules": true
+    "**/.Jules": true,
+    "**/*.tfstate*": true,
+    "**/cdktf.out/**": true,
+    "**/.terraform/**": true
   }
 }

@@ -74,7 +74,7 @@ export default function Dashboard() {
             {usageData.plan === 'free' ? (
               <Link
                 to="/pricing"
-                className="text-sm text-slate-600 hover:text-slate-900 underline"
+                className="text-sm text-slate-600 hover:text-slate-900 underline focus-ring rounded-sm transition-colors"
               >
                 Pro プランにアップグレード
               </Link>
@@ -92,7 +92,7 @@ export default function Dashboard() {
                     setManaging(false);
                   }
                 }}
-                className="inline-flex items-center gap-1 text-sm text-slate-600 hover:text-slate-900 underline disabled:opacity-50 disabled:cursor-not-allowed"
+                className="inline-flex items-center gap-1 text-sm text-slate-600 hover:text-slate-900 underline disabled:opacity-50 disabled:cursor-not-allowed rounded-sm"
               >
                 サブスクリプション管理
               </LoadingButton>
@@ -149,7 +149,15 @@ function UsageBar({
         </span>
       </div>
       {!isUnlimited && (
-        <div className="mt-2 h-2 bg-slate-100 rounded-full overflow-hidden">
+        <div
+          className="mt-2 h-2 bg-slate-100 rounded-full overflow-hidden"
+          role="progressbar"
+          aria-label={`${label}の利用状況`}
+          aria-valuenow={Math.min(current, limit)}
+          aria-valuemin={0}
+          aria-valuemax={limit}
+          aria-valuetext={`${current} / ${limit}`}
+        >
           <div
             className={`h-full rounded-full ${color}`}
             style={{ width: `${pct}%` }}
