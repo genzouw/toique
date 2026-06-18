@@ -30,7 +30,7 @@ jobs:
           python-version: '3.12'
 
       - name: Install Search Dependencies
-        run: pip install "duckduckgo-search>=6.0.0" "tavily-python>=0.3.3" --break-system-packages
+        run: pip install "duckduckgo-search>=8.1.1" "tavily-python>=0.7.26" --break-system-packages
 
       - name: Search for package issues via Tavily or DuckDuckGo (RAG prep)
         id: search_web
