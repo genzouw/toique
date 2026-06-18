@@ -10,7 +10,7 @@ bunx lint-staged
 # `--diff-filter=d` で「削除 (Deleted)」を除外: リスクは「機密ファイルがリポジトリに
 # 含まれること」なので、すでにコミットされてしまった機密ファイルを `git rm` で
 # 削除しようとした際にこのチェックでブロックされないようにする。
-FORBIDDEN_FILES=$(git diff --cached --name-only --diff-filter=d | grep -E '(\.env.*|\.cursor/.*|\.claude/.*|\.aider.*|\.windsurf/.*|\.jules/.*|\.Jules/.*|.*credentials.*\.json|.*\.pem|.*\.key|.*\.tfstate(\..*)?|cdktf\.out(/.*)?|\.terraform(/.*)?)$' || true)
+FORBIDDEN_FILES=$(git diff --cached --name-only --diff-filter=d | grep -E '(\.env.*|\.cursor/.*|\.claude/.*|\.aider.*|\.windsurf/.*|\.jules/.*|\.Jules/.*|.*credentials.*\.json|.*\.pem|.*\.key|.*\.tfstate(\..*)?|(^|/)cdktf\.out(/.*)?|(^|/)\.terraform(/.*)?)$' || true)
 
 if [ -n "$FORBIDDEN_FILES" ]; then
   echo "🚨 [Security Error] The following sensitive files are staged for commit:"
@@ -121,6 +121,11 @@ if [ -n "$changed_workflows" ]; then
     if command -v shellcheck >/dev/null 2>&1; then
       shellcheck_opt="-shellcheck=$(command -v shellcheck)"
     fi
+    # `-pyflakes=` で pyflakes 統合を無効化。CI 側 runner には pyflakes が
+    # 入っていないため CI ではスキップされる挙動と揃えるための措置。
+    # ローカルだけ pyflakes が走ると CI を通っているコードがコミットできなく
+    # なるため、環境差異を排除して挙動を一致させる。
+    pyflakes_opt="-pyflakes="
     # `-no-color` は macOS ローカルで actionlint がハングする回避策
     # (一部環境で color 出力初期化が詰まる事例あり、CI 側は -color で別途実行)
     # NOTE: husky v9 は `sh -e` で hook を起動するため、actionlint が non-zero
@@ -128,7 +133,7 @@ if [ -n "$changed_workflows" ]; then
     # 判定・分岐する。失敗しなかった場合は `rc` 未設定なので `${rc:-0}` で補完。
     rc=0
     # shellcheck disable=SC2086
-    $timeout_cmd actionlint -no-color $shellcheck_opt $changed_workflows || rc=$?
+    $timeout_cmd actionlint -no-color $shellcheck_opt $pyflakes_opt $changed_workflows || rc=$?
     if [ "$rc" -ne 0 ]; then
       if [ "$rc" = "124" ]; then
         echo "⚠️  actionlint timed out locally (>60s) — skipping; CI will run the full check."

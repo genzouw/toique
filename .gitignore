@@ -56,6 +56,11 @@ skills-lock.json
 # Cloudflare Wrangler
 .wrangler/
 
+# Infra / Terraform
+*.tfstate
+*.tfstate.*
+cdktf.out/
+
 # Additional Security / AI agents
 .cursor/
 .aider*/

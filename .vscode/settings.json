@@ -12,7 +12,9 @@
     "**/.jules": true,
     "**/.Jules": true,
     "**/*.tfstate*": true,
+    "**/cdktf.out": true,
     "**/cdktf.out/**": true,
+    "**/.terraform": true,
     "**/.terraform/**": true
   },
   "files.exclude": {
@@ -28,7 +30,9 @@
     "**/.jules": true,
     "**/.Jules": true,
     "**/*.tfstate*": true,
+    "**/cdktf.out": true,
     "**/cdktf.out/**": true,
+    "**/.terraform": true,
     "**/.terraform/**": true
   }
 }
