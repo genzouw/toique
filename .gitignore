@@ -70,3 +70,9 @@ cdktf.out/
 *.key
 *credentials*.json
 .env*
+
+# Infrastructure State Files
+*.tfstate
+*.tfstate.*
+cdktf.out/
+.terraform/

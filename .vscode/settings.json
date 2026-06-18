@@ -11,9 +11,11 @@
     "**/.windsurf": true,
     "**/.jules": true,
     "**/.Jules": true,
-    "**/*.tfstate": true,
-    "**/*.tfstate.*": true,
-    "**/cdktf.out": true
+    "**/*.tfstate*": true,
+    "**/cdktf.out": true,
+    "**/cdktf.out/**": true,
+    "**/.terraform": true,
+    "**/.terraform/**": true
   },
   "files.exclude": {
     "**/*.env": true,
@@ -27,8 +29,10 @@
     "**/.windsurf": true,
     "**/.jules": true,
     "**/.Jules": true,
-    "**/*.tfstate": true,
-    "**/*.tfstate.*": true,
-    "**/cdktf.out": true
+    "**/*.tfstate*": true,
+    "**/cdktf.out": true,
+    "**/cdktf.out/**": true,
+    "**/.terraform": true,
+    "**/.terraform/**": true
   }
 }
