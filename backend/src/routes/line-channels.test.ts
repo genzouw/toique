@@ -77,17 +77,12 @@ describe('line-channels routes', () => {
     });
     const res = await app.request('/api/v1/line-channels');
     expect(res.status).toBe(200);
-    const body = (await res.json()) as Array<{
-      channelId: string;
-      tenantId: string;
-      channelSecret?: string;
-      channelAccessToken?: string;
-    }>;
+    const body = (await res.json()) as Array<Record<string, any>>;
     expect(body.length).toBe(1);
     expect(body[0].channelId).toBe(TEST_CHANNEL_ID);
     expect(body[0].tenantId).toBe(tenantId);
-    expect(body[0].channelSecret).toBeUndefined();
-    expect(body[0].channelAccessToken).toBeUndefined();
+    expect(body[0]).not.toHaveProperty('channelSecret');
+    expect(body[0]).not.toHaveProperty('channelAccessToken');
   });
 
   it('DELETE removes a channel by id', async () => {
