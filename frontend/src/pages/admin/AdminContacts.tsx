@@ -56,6 +56,7 @@ export default function AdminContacts() {
           value={filter}
           onChange={(e) => setFilter(e.target.value as ContactStatus | 'all')}
           className="text-sm rounded-md border border-slate-300 px-2 py-1"
+          aria-label="ステータスの絞り込み"
         >
           <option value="all">すべて</option>
           <option value="new">新着</option>
@@ -65,7 +66,12 @@ export default function AdminContacts() {
       </div>
 
       {error && (
-        <div className="text-sm text-red-700 bg-red-50 border border-red-200 rounded-md px-3 py-2">
+        <div
+          className="text-sm text-red-700 bg-red-50 border border-red-200 rounded-md px-3 py-2"
+          role="alert"
+          aria-live="assertive"
+          aria-atomic="true"
+        >
           {error}
         </div>
       )}
