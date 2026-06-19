@@ -56,7 +56,7 @@ describe('line-channels routes', () => {
       }),
     });
     expect(res.status).toBe(201);
-    const body = (await res.json()) as Record<string, any>;
+    const body = (await res.json()) as Record<string, unknown>;
     expect(body.channelId).toBe(TEST_CHANNEL_ID);
     expect(body.tenantId).toBe(tenantId);
     expect(body).not.toHaveProperty('channelSecret');
@@ -77,7 +77,7 @@ describe('line-channels routes', () => {
     });
     const res = await app.request('/api/v1/line-channels');
     expect(res.status).toBe(200);
-    const body = (await res.json()) as Array<Record<string, any>>;
+    const body = (await res.json()) as Array<Record<string, unknown>>;
     expect(body.length).toBe(1);
     expect(body[0].channelId).toBe(TEST_CHANNEL_ID);
     expect(body[0].tenantId).toBe(tenantId);
