@@ -9,7 +9,14 @@ const app = new Hono();
 app.get('/', async (c) => {
   const tenant = c.get('tenant');
   const rows = await db
-    .select()
+    .select({
+      id: lineChannels.id,
+      tenantId: lineChannels.tenantId,
+      channelId: lineChannels.channelId,
+      displayName: lineChannels.displayName,
+      isActive: lineChannels.isActive,
+      createdAt: lineChannels.createdAt,
+    })
     .from(lineChannels)
     .where(eq(lineChannels.tenantId, tenant.id));
   return c.json(rows);
@@ -51,7 +58,14 @@ app.post('/', async (c) => {
       channelAccessToken: body.channelAccessToken,
       displayName: body.displayName,
     })
-    .returning();
+    .returning({
+      id: lineChannels.id,
+      tenantId: lineChannels.tenantId,
+      channelId: lineChannels.channelId,
+      displayName: lineChannels.displayName,
+      isActive: lineChannels.isActive,
+      createdAt: lineChannels.createdAt,
+    });
 
   return c.json(created, 201);
 });
