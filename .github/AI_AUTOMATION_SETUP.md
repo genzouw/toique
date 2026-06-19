@@ -85,7 +85,7 @@ AI Issue Triage (`ai-issue-triage.yml`)、AI Weekly Summary (`ai-weekly-summary.
 
 ### AI ChatOps の利用 (PRコメント)
 
-PRのコメント欄で `/ai <メッセージ>` を記述することで、GitHub Models (o3-mini) と DuckDuckGo を用いたアシスタント機能が起動します。
+PRのコメント欄で `/ai [MESSAGE]` を記述することで、`GitHub Models (o3-mini)` と `DuckDuckGo` を用いたアシスタント機能が起動します。
 例:
 
 - `/ai このPRのパフォーマンス上の懸念点を教えてください`
