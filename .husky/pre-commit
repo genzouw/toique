@@ -102,7 +102,10 @@ fi
 
 # .github/workflows/ がステージされていれば actionlint をローカルで実行
 # (actionlint がインストールされていない環境はスキップして CI 側で拾う)
-changed_workflows=$(git diff --cached --name-only --diff-filter=ACMR -- '.github/workflows/' || true)
+# 対象は YAML ワークフローのみ。GitHub Agentic Workflows の prompt 定義
+# (`.github/workflows/*.md`) は `gh aw compile` で `.lock.yml` に変換される
+# ソースであり YAML ではないため、actionlint には渡さない。
+changed_workflows=$(git diff --cached --name-only --diff-filter=ACMR -- '.github/workflows/*.yml' '.github/workflows/*.yaml' || true)
 if [ -n "$changed_workflows" ]; then
   if command -v actionlint >/dev/null 2>&1; then
     echo "🔍 Running actionlint on staged workflows..."

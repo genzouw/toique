@@ -22,7 +22,7 @@
     "better-auth": "^1.6.9",
     "drizzle-orm": "^0.45.2",
     "hono": "^4.12.25",
-    "nodemailer": "^9.0.1",
+    "nodemailer": "^8.0.11",
     "postgres": "^3.4.0",
     "resend": "^6.12.3",
     "stripe": "^22.1.1",
