@@ -139,9 +139,9 @@ jobs:
                 'Authorization': `Bearer ${process.env.GITHUB_TOKEN}`
               },
               body: JSON.stringify({
-                model: 'openai/gpt-4o',
+                model: 'openai/o3-mini',
                 messages: [
-                  { role: "system", content: "You are an expert software engineer analyzing dependency update risks. Answer in Japanese." },
+                  { role: "developer", content: "You are an expert software engineer analyzing dependency update risks. Answer in Japanese." },
                   { role: "user", content: prompt }
                 ]
               })
