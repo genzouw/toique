@@ -56,16 +56,11 @@ describe('line-channels routes', () => {
       }),
     });
     expect(res.status).toBe(201);
-    const body = (await res.json()) as {
-      channelId: string;
-      tenantId: string;
-      channelSecret?: string;
-      channelAccessToken?: string;
-    };
+    const body = (await res.json()) as Record<string, any>;
     expect(body.channelId).toBe(TEST_CHANNEL_ID);
     expect(body.tenantId).toBe(tenantId);
-    expect(body.channelSecret).toBeUndefined();
-    expect(body.channelAccessToken).toBeUndefined();
+    expect(body).not.toHaveProperty('channelSecret');
+    expect(body).not.toHaveProperty('channelAccessToken');
   });
 
   it('GET returns only channels for the current tenant', async () => {
