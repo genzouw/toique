@@ -18,7 +18,6 @@ export default function EmptyState({
 }: EmptyStateProps) {
   return (
     <div
-      role="status"
       className={`flex flex-col items-center justify-center p-12 text-center ${className}`.trim()}
     >
       <div
@@ -27,8 +26,10 @@ export default function EmptyState({
       >
         <Icon className="text-slate-400" size={ICON_SIZE.xxl} />
       </div>
-      <h2 className="text-sm font-medium text-slate-900 mb-1">{title}</h2>
-      <p className="text-sm text-slate-500 max-w-sm">{description}</p>
+      <div role="status">
+        <h2 className="text-sm font-medium text-slate-900 mb-1">{title}</h2>
+        <p className="text-sm text-slate-500 max-w-sm">{description}</p>
+      </div>
       {action && <div className="mt-6">{action}</div>}
     </div>
   );
