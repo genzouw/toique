@@ -2,9 +2,6 @@ name: GitHub Actions Security Scanner (zizmor)
 
 on:
   push:
-    branches: ["main"]
-  pull_request:
-    branches: ["main"]
 
 jobs:
   zizmor:
