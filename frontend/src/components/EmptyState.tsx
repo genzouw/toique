@@ -18,6 +18,7 @@ export default function EmptyState({
 }: EmptyStateProps) {
   return (
     <div
+      role="status"
       className={`flex flex-col items-center justify-center p-12 text-center ${className}`.trim()}
     >
       <div
