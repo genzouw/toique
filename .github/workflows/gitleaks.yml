@@ -2,6 +2,7 @@ name: Gitleaks
 
 on:
   push:
+  pull_request:
   schedule:
     # 毎週月曜 05:00 JST (= 日曜 20:00 UTC) に履歴全体を再スキャン
     - cron: '0 20 * * 0'
@@ -17,7 +18,7 @@ permissions:
 jobs:
   gitleaks-push:
     name: Scan for leaked secrets (Push)
-    if: github.event_name == 'push'
+    if: github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name != github.repository)
     permissions:
       contents: read
       security-events: write
@@ -34,7 +35,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Upload SARIF
-        if: always()
+        if: always() && github.event_name != 'pull_request'
         uses: github/codeql-action/upload-sarif@8aad20d150bbac5944a9f9d289da16a4b0d87c1e # v4.36.2
         with:
           sarif_file: results.sarif
