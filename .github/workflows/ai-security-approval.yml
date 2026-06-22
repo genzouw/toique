@@ -67,9 +67,9 @@ jobs:
                 'Authorization': `Bearer ${process.env.GITHUB_TOKEN}`
               },
               body: JSON.stringify({
-                model: 'openai/gpt-4o-mini',
+                model: 'openai/o3-mini',
                 messages: [
-                  { role: "system", content: systemPrompt },
+                  { role: "developer", content: systemPrompt },
                   { role: "user", content: userPrompt }
                 ]
               })

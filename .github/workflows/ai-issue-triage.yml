@@ -189,19 +189,11 @@ jobs:
                 'Authorization': `Bearer ${process.env.GITHUB_TOKEN}`
               },
               body: JSON.stringify({
-                model: 'openai/gpt-4o-mini',
+                model: 'openai/o3-mini',
                 messages: [
-                  { role: "system", content: "You are a helpful AI assistant for an open source project. Always answer in Japanese." },
+                  { role: "developer", content: "You are a helpful AI assistant for an open source project. Always answer in Japanese. You MUST output your answer exactly as a JSON object matching the provided schema, with no markdown code blocks and no surrounding text." },
                   { role: "user", content: prompt }
-                ],
-                response_format: {
-                  type: "json_schema",
-                  json_schema: {
-                    name: "issue_triage",
-                    strict: true,
-                    schema: schema
-                  }
-                }
+                ]
               })
             });
 
@@ -220,6 +212,13 @@ jobs:
               return;
             }
             let textResult = data.choices[0].message.content;
+
+            if (textResult.startsWith('```json')) {
+              textResult = textResult.replace(/^```json\n/, '').replace(/\n```$/, '');
+            } else if (textResult.startsWith('```')) {
+              textResult = textResult.replace(/^```\n/, '').replace(/\n```$/, '');
+            }
+
             let result;
             try {
               result = JSON.parse(textResult);
