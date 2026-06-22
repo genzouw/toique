@@ -2,6 +2,7 @@ name: OSV-Scanner
 
 on:
   push:
+  pull_request:
   schedule:
     # 毎週月曜 06:30 JST (= 日曜 21:30 UTC) に実行
     - cron: '30 21 * * 0'
@@ -17,6 +18,7 @@ permissions:
 jobs:
   osv-scanner:
     name: Scan for vulnerabilities (OSV-Scanner)
+    if: github.event_name == 'push' || github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' || (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name != github.repository)
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -37,7 +39,7 @@ jobs:
             ./
 
       - name: Upload SARIF to GitHub Security
-        if: always()
+        if: always() && github.event_name != 'pull_request'
         uses: github/codeql-action/upload-sarif@8aad20d150bbac5944a9f9d289da16a4b0d87c1e # v4.36.2
         with:
           sarif_file: results.sarif

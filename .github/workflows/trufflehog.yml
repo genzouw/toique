@@ -2,6 +2,7 @@ name: TruffleHog
 
 on:
   push:
+  pull_request:
   schedule:
     # 毎週月曜 06:00 JST (= 日曜 21:00 UTC) に履歴全体を再スキャン
     - cron: '0 21 * * 0'
@@ -17,7 +18,10 @@ permissions:
 jobs:
   trufflehog:
     name: Scan for leaked secrets (TruffleHog)
+    if: github.event_name == 'push' || github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' || (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name != github.repository)
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
