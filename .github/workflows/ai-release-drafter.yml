@@ -80,9 +80,9 @@ jobs:
                 'Authorization': `Bearer ${process.env.GITHUB_TOKEN}`
               },
               body: JSON.stringify({
-                model: 'openai/gpt-4o-mini',
+                model: 'openai/o3-mini',
                 messages: [
-                  { role: "system", content: "You are a helpful AI assistant that writes clean, professional, and well-structured software release notes. Answer in Japanese." },
+                  { role: "developer", content: "You are a helpful AI assistant that writes clean, professional, and well-structured software release notes. Answer in Japanese." },
                   { role: "user", content: prompt }
                 ]
               })
