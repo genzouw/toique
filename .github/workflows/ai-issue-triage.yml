@@ -190,6 +190,15 @@ jobs:
               },
               body: JSON.stringify({
                 model: 'openai/o3-mini',
+                reasoning_effort: "medium",
+                response_format: {
+                  type: "json_schema",
+                  json_schema: {
+                    name: "triage_result",
+                    schema: schema,
+                    strict: true
+                  }
+                },
                 messages: [
                   { role: "developer", content: "You are a helpful AI assistant for an open source project. Always answer in Japanese. You MUST output your answer exactly as a JSON object matching the provided schema, with no markdown code blocks and no surrounding text." },
                   { role: "user", content: prompt }
@@ -212,12 +221,6 @@ jobs:
               return;
             }
             let textResult = data.choices[0].message.content;
-
-            if (textResult.startsWith('```json')) {
-              textResult = textResult.replace(/^```json\n/, '').replace(/\n```$/, '');
-            } else if (textResult.startsWith('```')) {
-              textResult = textResult.replace(/^```\n/, '').replace(/\n```$/, '');
-            }
 
             let result;
             try {
