@@ -184,7 +184,12 @@ export default function Channels() {
                         type="button"
                         onClick={() => handleCopy(ch.channelId, ch.id)}
                         className="px-2 py-1.5 text-slate-700 hover:bg-slate-100 rounded-md flex items-center gap-1 text-xs border border-slate-300 shrink-0 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-slate-900 focus-visible:ring-offset-1 transition-colors"
-                        aria-label={`Webhook URL をコピー: ${webhookUrl}`}
+                        aria-label={
+                          isCopied
+                            ? 'コピーしました'
+                            : `Webhook URL をコピー: ${webhookUrl}`
+                        }
+                        aria-live="polite"
                       >
                         {isCopied ? (
                           <>
