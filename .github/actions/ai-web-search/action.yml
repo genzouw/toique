@@ -1,0 +1,87 @@
+name: "AI Web Search (RAG prep)"
+description: "Searches the web via Tavily API or DuckDuckGo for RAG context."
+inputs:
+  search_query:
+    description: "The search query."
+    required: true
+  tavily_api_key:
+    description: "Tavily API Key (optional)."
+    required: false
+    default: ""
+  max_results:
+    description: "Maximum number of results to fetch."
+    required: false
+    default: "5"
+outputs:
+  search_results:
+    description: "The formatted search results."
+    value: ${{ steps.search.outputs.results }}
+
+runs:
+  using: "composite"
+  steps:
+    - name: Setup Python
+      uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
+      with:
+        python-version: '3.12'
+
+    - name: Install Search Dependencies
+      run: pip install "duckduckgo-search>=8.1.1" "tavily-python>=0.7.26" --break-system-packages
+      shell: bash
+
+    - name: Search Web
+      id: search
+      env:
+        SEARCH_QUERY: ${{ inputs.search_query }}
+        TAVILY_API_KEY: ${{ inputs.tavily_api_key }}
+        MAX_RESULTS: ${{ inputs.max_results }}
+      run: |
+        import os
+        import base64
+        import time
+
+        query = os.environ.get('SEARCH_QUERY', '')
+        tavily_key = os.environ.get('TAVILY_API_KEY', '').strip()
+        max_results = int(os.environ.get('MAX_RESULTS', '5'))
+
+        search_res = ""
+
+        if tavily_key:
+            print(f"Using Tavily API for search query: {query}")
+            try:
+                from tavily import TavilyClient
+                tavily_client = TavilyClient(api_key=tavily_key)
+                response = tavily_client.search(query=query, search_depth="basic", max_results=max_results)
+                results = response.get('results', [])
+                if results:
+                    search_res = "\n\n".join([f"Title: {r.get('title')}\nURL: {r.get('url')}\nSnippet: {r.get('content')}" for r in results])
+            except Exception as e:
+                print(f"Tavily search failed: {e}. Falling back to DuckDuckGo...")
+                tavily_key = "" # Fallback
+
+        if not tavily_key:
+            print(f"Using DuckDuckGo for search query: {query}")
+            from duckduckgo_search import DDGS
+            try:
+                with DDGS() as ddgs:
+                    for _ in range(3):
+                        try:
+                            results = list(ddgs.text(query, max_results=max_results))
+                            if results:
+                                search_res = "\n\n".join([f"Title: {r.get('title')}\nURL: {r.get('href')}\nSnippet: {r.get('body')}" for r in results])
+                                break
+                        except Exception:
+                            time.sleep(2)
+                            continue
+            except Exception as e:
+                search_res = f"Web search failed: {e}"
+
+        if not search_res:
+            search_res = "No relevant Web search results found."
+
+        delimiter = base64.b64encode(os.urandom(15)).decode('utf-8')
+        with open(os.environ['GITHUB_OUTPUT'], 'a') as f:
+            f.write(f"results<<{delimiter}\n")
+            f.write(f"{search_res}\n")
+            f.write(f"{delimiter}\n")
+      shell: python

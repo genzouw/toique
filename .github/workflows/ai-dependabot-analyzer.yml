@@ -24,85 +24,29 @@ jobs:
           fetch-depth: 0
           persist-credentials: false
 
-      - name: Setup Python
-        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
-        with:
-          python-version: '3.12'
-
-      - name: Install Search Dependencies
-        run: pip install "duckduckgo-search>=8.1.1" "tavily-python>=0.7.26" --break-system-packages
-
-      - name: Search for package issues via Tavily or DuckDuckGo (RAG prep)
-        id: search_web
+      - name: Extract Package Name
+        id: extract_package
         env:
           PR_TITLE: ${{ github.event.pull_request.title }}
-          PR_BODY: ${{ github.event.pull_request.body }}
-          TAVILY_API_KEY: ${{ secrets.TAVILY_API_KEY }}
         run: |
-          import os
-          import base64
-          import time
-          import re
+          PACKAGE_NAME=$(echo "$PR_TITLE" | sed -n -E 's/Bump ([^ ]+) from.*/\1/p')
+          if [ -z "$PACKAGE_NAME" ]; then
+            PACKAGE_NAME="$PR_TITLE"
+          fi
+          echo "query=$PACKAGE_NAME (issue OR breaking change OR vulnerability OR bug) (site:zenn.dev OR site:qiita.com OR site:github.com)" >> "$GITHUB_OUTPUT"
 
-          title = os.environ.get('PR_TITLE', '')
-          # Try to extract package name from typical dependabot titles like "Bump <package> from X to Y"
-          package_name = ""
-          match = re.search(r'Bump ([^\s]+) from', title)
-          if match:
-              package_name = match.group(1)
-          else:
-              package_name = title
-
-          query = f"{package_name} (issue OR breaking change OR vulnerability OR bug) (site:zenn.dev OR site:qiita.com OR site:github.com)"
-          tavily_key = os.environ.get('TAVILY_API_KEY', '').strip()
-
-          search_res = ""
-
-          if tavily_key:
-              print(f"Using Tavily API for search query: {query}")
-              try:
-                  from tavily import TavilyClient
-                  tavily_client = TavilyClient(api_key=tavily_key)
-                  response = tavily_client.search(query=query, search_depth="basic", max_results=5)
-                  results = response.get('results', [])
-                  if results:
-                      search_res = "\n\n".join([f"Title: {r.get('title')}\nURL: {r.get('url')}\nSnippet: {r.get('content')}" for r in results])
-              except Exception as e:
-                  print(f"Tavily search failed: {e}. Falling back to DuckDuckGo...")
-                  tavily_key = "" # Fallback
-
-          if not tavily_key:
-              print(f"Using DuckDuckGo for search query: {query}")
-              from duckduckgo_search import DDGS
-              try:
-                  with DDGS() as ddgs:
-                      for _ in range(3):
-                          try:
-                              results = list(ddgs.text(query, max_results=5))
-                              if results:
-                                  search_res = "\n\n".join([f"Title: {r.get('title')}\nURL: {r.get('href')}\nSnippet: {r.get('body')}" for r in results])
-                                  break
-                          except Exception:
-                              time.sleep(2)
-                              continue
-              except Exception as e:
-                  search_res = f"Web search failed: {e}"
-
-          if not search_res:
-              search_res = "No relevant Web search results found for package issues."
-
-          delimiter = base64.b64encode(os.urandom(15)).decode('utf-8')
-          with open(os.environ['GITHUB_ENV'], 'a') as f:
-              f.write(f"WEB_SEARCH_RESULTS<<{delimiter}\n")
-              f.write(f"{search_res}\n")
-              f.write(f"{delimiter}\n")
-        shell: python
-
+      - name: Search Web (RAG prep)
+        id: search_web
+        uses: ./.github/actions/ai-web-search
+        with:
+          search_query: "${{ steps.extract_package.outputs.query }}"
+          tavily_api_key: ${{ secrets.TAVILY_API_KEY }}
+          max_results: "5"
       - name: Analyze Risk with GitHub Models
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         env:
           GITHUB_TOKEN: ${{ secrets.PAT_FOR_MODELS }}
-          WEB_SEARCH_RESULTS: ${{ env.WEB_SEARCH_RESULTS }}
+          WEB_SEARCH_RESULTS: ${{ steps.search_web.outputs.search_results }}
         with:
           script: |
             const prTitle = context.payload.pull_request.title || '';
@@ -140,6 +84,7 @@ jobs:
               },
               body: JSON.stringify({
                 model: 'openai/o3-mini',
+                reasoning_effort: "high",
                 messages: [
                   { role: "developer", content: "You are an expert software engineer analyzing dependency update risks. Answer in Japanese." },
                   { role: "user", content: prompt }
