@@ -220,6 +220,8 @@ export const forms = pgTable(
   (t) => [
     // tenant_id によるフィルタリングの高速化
     index('forms_tenant_id_idx').on(t.tenantId),
+    // Added composite index on lineChannelId and status to speed up trigger keyword lookup in high-throughput webhook paths.
+    index('forms_line_channel_id_status_idx').on(t.lineChannelId, t.status),
   ],
 );
 

@@ -1,0 +1,1 @@
+CREATE INDEX "forms_line_channel_id_status_idx" ON "forms" USING btree ("line_channel_id","status");
