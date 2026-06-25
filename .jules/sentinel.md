@@ -1,0 +1,4 @@
+## 2024-06-24 - Data Exposure through unbounded `.select()`/`.returning()`
+**Vulnerability:** The LINE Channel creation (`POST /api/v1/line-channels`) and listing (`GET /api/v1/line-channels`) endpoints returned unbounded results from the database using Drizzle's `.select()` and `.returning()`. This leaked sensitive data such as `channelSecret` and `channelAccessToken` directly to the frontend response.
+**Learning:** Returning entire database objects natively via Drizzle without specifying particular safe columns defaults to selecting all columns, inadvertently exposing sensitive credentials alongside safe domain data.
+**Prevention:** Always explicitly define the safe projection payload in `.select({...})` and `.returning({...})` clauses when working with tables containing sensitive credentials or API keys to strictly control what is exposed over the API.

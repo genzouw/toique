@@ -59,9 +59,13 @@ describe('line-channels routes', () => {
     const body = (await res.json()) as {
       channelId: string;
       tenantId: string;
+      channelSecret?: string;
+      channelAccessToken?: string;
     };
     expect(body.channelId).toBe(TEST_CHANNEL_ID);
     expect(body.tenantId).toBe(tenantId);
+    expect(body.channelSecret).toBeUndefined();
+    expect(body.channelAccessToken).toBeUndefined();
   });
 
   it('GET returns only channels for the current tenant', async () => {
@@ -81,10 +85,14 @@ describe('line-channels routes', () => {
     const body = (await res.json()) as Array<{
       channelId: string;
       tenantId: string;
+      channelSecret?: string;
+      channelAccessToken?: string;
     }>;
     expect(body.length).toBe(1);
     expect(body[0].channelId).toBe(TEST_CHANNEL_ID);
     expect(body[0].tenantId).toBe(tenantId);
+    expect(body[0].channelSecret).toBeUndefined();
+    expect(body[0].channelAccessToken).toBeUndefined();
   });
 
   it('DELETE removes a channel by id', async () => {
