@@ -34,7 +34,7 @@ Dependabotによるマイナー/パッチアップデートの自動マージ（
 
 ## 3. GitHub Models (Issue Triage, Weekly Summary, Release Drafter, AI ChatOps, AI PR Code Review, AI PR Description Generator 用)
 
-AI Issue Triage (`ai-issue-triage.yml`)、AI Weekly Summary (`ai-weekly-summary.yml`)、AI Release Drafter (`ai-release-drafter.yml`) は、GitHubが提供する無料の GitHub Models (gpt-4o-mini) を利用しています。**AI ChatOps** (`ai-chatops.yml`)、**AI PR Code Review** (`ai-pr-review.yml`)、**AI PR Description Generator** (`ai-pr-description.yml`)、および **AI CI Failure Analyzer** (`ai-ci-analyzer.yml`)、**AI Threat Modeling** (`ai-threat-modeling.yml`) は、高度な推論機能を持つ 2025年最新モデルの GitHub Models (o3-mini) を利用しています。追加のAPIキー設定は不要で、標準の `GITHUB_TOKEN` を用いて動作します。
+AI Weekly Summary (`ai-weekly-summary.yml`)、AI Release Drafter (`ai-release-drafter.yml`) は、GitHubが提供する無料の GitHub Models (gpt-4o-mini) を利用しています。**AI Issue Triage** (`ai-issue-triage.yml`)、**AI ChatOps** (`ai-chatops.yml`)、**AI PR Code Review** (`ai-pr-review.yml`)、**AI PR Description Generator** (`ai-pr-description.yml`)、および **AI CI Failure Analyzer** (`ai-ci-analyzer.yml`)、**AI Threat Modeling** (`ai-threat-modeling.yml`) は、高度な推論機能を持つ最新モデルの GitHub Models (o3-mini) を利用しています。追加のAPIキー設定は不要で、標準の `GITHUB_TOKEN` を用いて動作します。
 
 **各ワークフローのトリガーと保護条件:**
 
