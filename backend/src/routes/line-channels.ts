@@ -6,7 +6,7 @@ import { checkQuota } from '../lib/quota.js';
 
 const app = new Hono();
 
-const lineChannelFields = {
+const publicLineChannelColumns = {
   id: lineChannels.id,
   tenantId: lineChannels.tenantId,
   channelId: lineChannels.channelId,
@@ -18,7 +18,7 @@ const lineChannelFields = {
 app.get('/', async (c) => {
   const tenant = c.get('tenant');
   const rows = await db
-    .select(lineChannelFields)
+    .select(publicLineChannelColumns)
     .from(lineChannels)
     .where(eq(lineChannels.tenantId, tenant.id));
   return c.json(rows);
@@ -60,7 +60,7 @@ app.post('/', async (c) => {
       channelAccessToken: body.channelAccessToken,
       displayName: body.displayName,
     })
-    .returning(lineChannelFields);
+    .returning(publicLineChannelColumns);
 
   return c.json(created, 201);
 });
