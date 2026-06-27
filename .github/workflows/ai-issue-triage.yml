@@ -220,7 +220,14 @@ jobs:
               console.error('GitHub Models API returned no choices:', JSON.stringify(data));
               return;
             }
-            let textResult = data.choices[0].message.content;
+            let textResult = (data.choices[0].message.content || '').trim();
+            // GitHub Models は json_schema の strict: true を保証しないため、
+            // 応答に Markdown コードフェンスや前後テキストが残ると JSON.parse が
+            // 失敗してトリアージが無言でスキップされる。防御的にフェンスを除去する。
+            const fenceMatch = textResult.match(/^```(?:json)?\s*([\s\S]*?)\s*```$/);
+            if (fenceMatch) {
+              textResult = fenceMatch[1].trim();
+            }
 
             let result;
             try {
