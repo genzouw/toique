@@ -96,15 +96,17 @@ jobs:
 
             また、Cloudflare Pagesの制約としてconsole.logではなくconsole.infoを使うこと、パフォーマンスのため...map()ではなくfor...ofループを使うこと、アクセシビリティのため装飾アイコンにはaria-hidden="true"を付与することを考慮してください。
 
-            回答は、生成・修正するテストファイルのパスと、そのファイルの「新しい完全な内容」を含む JSON の配列のみを出力してください。Markdown ブロックやその他の説明を含めないでください。
+            回答は、生成・修正するテストファイルのパスと、そのファイルの「新しい完全な内容」を含む `tests` 配列を持つ JSON オブジェクトのみを出力してください。Markdown ブロックやその他の説明を含めないでください。
 
             JSON Schema:
-            [
-              {
-                "filepath": "path/to/test_file.test.ts",
-                "content": "新しいテストファイルの完全な内容"
-              }
-            ]
+            {
+              "tests": [
+                {
+                  "filepath": "path/to/test_file.test.ts",
+                  "content": "新しいテストファイルの完全な内容"
+                }
+              ]
+            }
             `;
 
             console.log("Calling GitHub Models for Test Generation...");
