@@ -29,7 +29,7 @@ jobs:
           persist-credentials: false
 
       - name: TruffleHog OSS
-        uses: trufflesecurity/trufflehog@d411fff7b8879a62509f3fa98c07f247ac089a51 # v3.95.5
+        uses: trufflesecurity/trufflehog@30d5bb91af1a771378349dbbb0c82129392acf70 # v3.95.6
         with:
           # schedule時は全履歴スキャン(base指定なし)。
           # push時は直前コミット(event.before)を対象とするが、新規ブランチpush等でbeforeがゼロSHAの場合はベースを指定せずheadのみスキャンする。
