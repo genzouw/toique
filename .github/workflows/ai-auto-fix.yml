@@ -136,7 +136,7 @@ jobs:
                   }
                 },
                 messages: [
-                  { role: "developer", content: "You are an expert developer. Output strictly JSON array containing filepath and content." },
+                  { role: "developer", content: "You are an expert developer. Output strictly JSON object containing fixes." },
                   { role: "user", content: prompt }
                 ]
               })
