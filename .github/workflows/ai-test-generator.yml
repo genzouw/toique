@@ -96,15 +96,17 @@ jobs:
 
             また、Cloudflare Pagesの制約としてconsole.logではなくconsole.infoを使うこと、パフォーマンスのため...map()ではなくfor...ofループを使うこと、アクセシビリティのため装飾アイコンにはaria-hidden="true"を付与することを考慮してください。
 
-            回答は、生成・修正するテストファイルのパスと、そのファイルの「新しい完全な内容」を含む JSON の配列のみを出力してください。Markdown ブロックやその他の説明を含めないでください。
+            回答は、生成・修正するテストファイルのパスと、そのファイルの「新しい完全な内容」を含む `tests` 配列を持つ JSON オブジェクトのみを出力してください。Markdown ブロックやその他の説明を含めないでください。
 
             JSON Schema:
-            [
-              {
-                "filepath": "path/to/test_file.test.ts",
-                "content": "新しいテストファイルの完全な内容"
-              }
-            ]
+            {
+              "tests": [
+                {
+                  "filepath": "path/to/test_file.test.ts",
+                  "content": "新しいテストファイルの完全な内容"
+                }
+              ]
+            }
             `;
 
             console.log("Calling GitHub Models for Test Generation...");
@@ -116,8 +118,35 @@ jobs:
               },
               body: JSON.stringify({
                 model: 'openai/o3-mini',
+                reasoning_effort: "high",
+                response_format: {
+                  type: "json_schema",
+                  json_schema: {
+                    name: "test_files",
+                    schema: {
+                      type: "object",
+                      properties: {
+                        tests: {
+                          type: "array",
+                          items: {
+                            type: "object",
+                            properties: {
+                              filepath: { type: "string" },
+                              content: { type: "string" }
+                            },
+                            required: ["filepath", "content"],
+                            additionalProperties: false
+                          }
+                        }
+                      },
+                      required: ["tests"],
+                      additionalProperties: false
+                    },
+                    strict: true
+                  }
+                },
                 messages: [
-                  { role: "developer", content: "You are an expert developer specializing in software testing. Output strictly JSON array containing filepath and content." },
+                  { role: "developer", content: "You are an expert developer specializing in software testing. Output strictly JSON containing a tests array with filepath and content." },
                   { role: "user", content: prompt }
                 ]
               })
@@ -136,16 +165,10 @@ jobs:
             }
 
             let reply = data.choices[0].message.content.trim();
-
-            if (reply.startsWith('```json')) {
-              reply = reply.replace(/^```json\n/, '').replace(/\n```$/, '');
-            } else if (reply.startsWith('```')) {
-              reply = reply.replace(/^```\n/, '').replace(/\n```$/, '');
-            }
-
             let tests = [];
             try {
-              tests = JSON.parse(reply);
+              const parsed = JSON.parse(reply);
+              tests = parsed.tests || [];
             } catch(e) {
               console.error('Failed to parse model response as JSON:', reply);
               throw new Error('JSON Parse Error');
