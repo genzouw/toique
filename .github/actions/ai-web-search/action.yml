@@ -1,24 +1,24 @@
-name: "AI Web Search (RAG prep)"
-description: "Searches the web via Tavily API or DuckDuckGo for RAG context."
+name: 'AI Web Search (RAG prep)'
+description: 'Searches the web via Tavily API or DuckDuckGo for RAG context.'
 inputs:
   search_query:
-    description: "The search query."
+    description: 'The search query.'
     required: true
   tavily_api_key:
-    description: "Tavily API Key (optional)."
+    description: 'Tavily API Key (optional).'
     required: false
-    default: ""
+    default: ''
   max_results:
-    description: "Maximum number of results to fetch."
+    description: 'Maximum number of results to fetch.'
     required: false
-    default: "5"
+    default: '5'
 outputs:
   search_results:
-    description: "The formatted search results."
+    description: 'The formatted search results.'
     value: ${{ steps.search.outputs.results }}
 
 runs:
-  using: "composite"
+  using: 'composite'
   steps:
     - name: Setup Python
       uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
@@ -69,7 +69,7 @@ runs:
                             results = list(ddgs.text(query, max_results=max_results))
                             if results:
                                 search_res = "\n\n".join([f"Title: {r.get('title')}\nURL: {r.get('href')}\nSnippet: {r.get('body')}" for r in results])
-                                break
+                            break
                         except Exception:
                             time.sleep(2)
                             continue
