@@ -1,18 +1,19 @@
-name: AI Threat Modeling
+name: AI PR Summarizer
 
 on:
   pull_request:
-    types: [opened, synchronize, reopened]
+    types: [closed]
 
 jobs:
-  threat_modeling:
-    name: STRIDE Threat Modeling
+  summarize_merged_pr:
+    name: Generate Post-Merge PR Summary
     runs-on: ubuntu-latest
+    if: github.event.pull_request.merged == true
     permissions:
       contents: read
       pull-requests: write
     concurrency:
-      group: ai-threat-modeling-${{ github.event.pull_request.number }}
+      group: ai-pr-summary-${{ github.event.pull_request.number }}
       cancel-in-progress: true
     steps:
       - name: Checkout repository
@@ -21,14 +22,15 @@ jobs:
           fetch-depth: 0
           persist-credentials: false
 
-      - name: Get PR Diff
-        id: get_diff
+      - name: Get PR Information
+        id: get_pr_info
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
         run: |
-          PR_NUMBER=${{ github.event.pull_request.number }}
-          DIFF=$(gh pr diff "$PR_NUMBER" || echo "Cannot fetch diff.")
-          TRUNCATED_DIFF=$(echo "$DIFF" | head -c 15000)
+          # Fetch PR diff
+          PR_DIFF=$(gh pr diff "$PR_NUMBER" || echo "Cannot fetch diff.")
+          TRUNCATED_DIFF=$(echo "$PR_DIFF" | head -c 15000)
 
           DELIMITER=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
           {
@@ -37,7 +39,7 @@ jobs:
             echo "$DELIMITER"
           } >> "$GITHUB_ENV"
 
-      - name: STRIDE Threat Modeling with GitHub Models
+      - name: Generate PR Summary with GitHub Models
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -54,30 +56,25 @@ jobs:
             }
 
             const prompt = `
-            あなたはセキュリティ専門のシニアソフトウェアエンジニアです。以下のPull Requestの変更内容に対して、STRIDE脅威モデル（Spoofing, Tampering, Repudiation, Information Disclosure, Denial of Service, Elevation of Privilege）に基づいたセキュリティ脅威モデリング分析を実施してください。
-            結果は必ず日本語で、Markdown形式で出力し、具体的なコードの修正案や緩和策を提案してください。
+            あなたはシニアソフトウェアエンジニアです。
+            マージされた以下のPull Requestのコードの差分と説明を分析し、マージ後の記録のための構造化された要約（PR Summary）を作成してください。
+            この要約は後から他の開発者がこのPRの内容や影響範囲を素早く理解できるようにするためのものです。
+
+            回答は必ず日本語で、以下の構成に沿ったMarkdown形式で出力してください：
+            - **Scope (変更範囲)**: どの機能やモジュールが変更されたか
+            - **Impact (影響)**: パフォーマンス、セキュリティ、アクセシビリティなどに対する影響や特筆すべき点
+            - **Key Changes (主要な変更点)**: 箇条書きで具体的に
 
             【Pull Requestのタイトル】
             ${prTitle}
 
-            【Pull Requestの説明】
+            【現在のPull Requestの説明】
             ${prBody}
 
             【コードの差分 (一部切り詰められている可能性があります)】
             \`\`\`diff
             ${prDiff}
             \`\`\`
-
-            以下の観点から徹底的に脅威分析を行ってください：
-            1. なりすまし (Spoofing): 認証やセッション管理に不備はないか。
-            2. 改ざん (Tampering): データの検証不足、インジェクション（SQL, XSS, プロンプトインジェクション等）はないか。
-            3. 否認 (Repudiation): ログの記録漏れ、操作の追跡不能性はないか（特に本番環境でconsole.infoではなくconsole.logを使っていないか等）。
-            4. 情報漏洩 (Information Disclosure): APIキー、認証情報、機密データのログ漏洩や露出はないか。
-            5. サービス拒否 (Denial of Service): パフォーマンスの懸念（O(N)ループの悪用、N+1問題、不要な高負荷処理など）はないか。
-            6. 権限昇格 (Elevation of Privilege): 認可チェックの不備や、テナント境界（tenant_id等）の絞り込み漏れはないか。
-
-            また、生成AI活用特有の脆弱性（LLMに入力されるコンテキストのサニタイズ漏れなど）があれば併せて指摘してください。
-            差分に大きなセキュリティ上の懸念が見当たらない場合は、その旨を肯定的に伝えてください。
             `;
 
             const response = await fetch('https://models.github.ai/inference/chat/completions', {
@@ -89,7 +86,7 @@ jobs:
               body: JSON.stringify({
                 model: 'openai/o3-mini',
                 messages: [
-                  { role: "developer", content: "You are an expert security engineer performing STRIDE threat modeling. Answer in Japanese." },
+                  { role: "developer", content: "You are an expert software engineer generating pull request summaries. Answer in Japanese." },
                   { role: "user", content: prompt }
                 ]
               })
@@ -115,5 +112,5 @@ jobs:
               owner: context.repo.owner,
               repo: context.repo.repo,
               issue_number: context.issue.number,
-              body: "🛡️ **AI 脅威モデリング (STRIDE / GitHub Models):**\n\n" + reviewComment
+              body: "📦 **AI PR Summarizer (Post-Merge):**\n\nこのPRは無事にマージされました。後日の振り返りのための要約を残します。\n\n" + reviewComment
             });
