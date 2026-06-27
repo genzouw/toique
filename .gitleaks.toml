@@ -31,7 +31,7 @@ paths = [
 [[rules]]
 id = "custom-redis-url"
 description = "Detects explicit Redis connection strings"
-regex = '''(?i)(rediss?:\/\/(?:[a-zA-Z0-9_.-]+:)?(?:[a-zA-Z0-9_.-]+)@?[a-zA-Z0-9_.-]+(?::[0-9]+)?(?:\/[0-9]+)?)'''
+regex = '''(?i)(rediss?:\/\/(?:(?:[a-zA-Z0-9_.-]*:[^@\/\s]+)@)?[a-zA-Z0-9_.-]+(?::[0-9]+)?(?:\/[0-9]+)?)'''
 tags = ["redis", "database", "connection-string"]
 
 [[rules]]
