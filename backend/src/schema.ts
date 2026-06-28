@@ -220,7 +220,7 @@ export const forms = pgTable(
   (t) => [
     // tenant_id によるフィルタリングの高速化
     index('forms_tenant_id_idx').on(t.tenantId),
-    // ⚡ Bolt: Add index on lineChannelId to prevent sequential scans during high-throughput webhook processing
+    // line_channel_id によるフィルタリングの高速化
     index('forms_line_channel_id_idx').on(t.lineChannelId),
   ],
 );
