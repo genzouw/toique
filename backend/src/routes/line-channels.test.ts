@@ -62,6 +62,8 @@ describe('line-channels routes', () => {
     };
     expect(body.channelId).toBe(TEST_CHANNEL_ID);
     expect(body.tenantId).toBe(tenantId);
+    expect(body).not.toHaveProperty('channelSecret');
+    expect(body).not.toHaveProperty('channelAccessToken');
   });
 
   it('GET returns only channels for the current tenant', async () => {
@@ -85,6 +87,8 @@ describe('line-channels routes', () => {
     expect(body.length).toBe(1);
     expect(body[0].channelId).toBe(TEST_CHANNEL_ID);
     expect(body[0].tenantId).toBe(tenantId);
+    expect(body[0]).not.toHaveProperty('channelSecret');
+    expect(body[0]).not.toHaveProperty('channelAccessToken');
   });
 
   it('DELETE removes a channel by id', async () => {
