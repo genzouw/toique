@@ -192,6 +192,7 @@ export default function Channels() {
                             ? 'Webhook URL をコピーしました'
                             : `Webhook URL をコピー: ${webhookUrl}`
                         }
+                        aria-live="polite"
                       >
                         {isCopied ? (
                           <>
