@@ -201,7 +201,7 @@ PRマージ前に以下の作業を確認してください。
 
 - **実行タイミング:** 毎月1日の定期実行（`schedule`）および手動実行（`workflow_dispatch`）。
 - **仕組み:** `yamadashy/repomix` を用いてテストやビルドアーティファクトを除外したコードベースをXML化し、GitHub Models (o3-mini) によって `docs/architecture.md` を生成します。更新がある場合は自動的にPull Requestが作成されます。
-- **権限設定:** PRを作成・プッシュするため、GitHub Modelsへのアクセス権限およびリポジトリへの書き込み権限を持ったPersonal Access Token (PAT) を `PAT_FOR_MODELS` シークレットとして設定する必要があります。
+- **権限設定:** 自動生成されたドキュメントの更新PRにおいて、後続のCIワークフロー（テストやリントなど）を正常にトリガーさせるため、リポジトリへの書き込み権限（およびGitHub Modelsへのアクセス権限）を持ったPersonal Access Token (PAT) を `PAT_FOR_MODELS` シークレットとして設定する必要があります（標準の `GITHUB_TOKEN` でPRを作成した場合、セキュリティ制限により後続のActionsがトリガーされません）。
 
 ### AIパイプラインのセキュリティ強化 (プロンプトインジェクション対策)
 
