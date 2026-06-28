@@ -180,6 +180,9 @@ export default function Channels() {
                       >
                         {webhookUrl}
                       </code>
+                      <div className="sr-only" role="status">
+                        {isCopied ? 'Webhook URL をコピーしました' : ''}
+                      </div>
                       <button
                         type="button"
                         onClick={() => handleCopy(ch.channelId, ch.id)}
