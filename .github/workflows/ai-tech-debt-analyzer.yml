@@ -1,0 +1,113 @@
+name: AI Tech Debt Analyzer
+
+on:
+  schedule:
+    - cron: '0 0 1 * *' # Run at 00:00 on the 1st of every month
+  workflow_dispatch:
+
+jobs:
+  analyze_tech_debt:
+    name: Analyze Code Smells and Tech Debt
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Setup Node.js
+        uses: actions/setup-node@1d0ff469b7ec7b3cb9d8673fde0c81c44821de2a # v4.2.0
+        with:
+          node-version: '20'
+
+      - name: Run Repomix to pack the repository
+        uses: yamadashy/repomix/.github/actions/repomix@a7b93adfcdb11be923a9a092cceb1cb6739ef8e1 # v1.14.1
+        with:
+          output: repomix-output.xml
+          compress: true
+          # Exclude tests and build artifacts to keep context size manageable
+          ignore: "**/*.test.ts,**/*.spec.ts,**/dist/**,**/build/**,**/node_modules/**"
+
+      - name: Analyze Tech Debt with GitHub Models
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          script: |
+            const fs = require('fs');
+            let repoContext = '';
+            try {
+              repoContext = fs.readFileSync('repomix-output.xml', 'utf8');
+            } catch (err) {
+              console.error('Failed to read repomix-output.xml', err);
+              return;
+            }
+
+            // Truncate if too large, giving priority to the beginning (which often has project structure)
+            const MAX_LENGTH = 80000;
+            if (repoContext.length > MAX_LENGTH) {
+              repoContext = repoContext.substring(0, MAX_LENGTH) + '\n... (truncated due to length)';
+            }
+
+            const prompt = `
+            あなたはシニアソフトウェアアーキテクトです。
+            以下のリポジトリ全体のソースコード情報（XML形式）を分析し、技術的負債（Tech Debt）やコードスメル（Code Smells）を特定し、リファクタリングの提案を日本語のMarkdown形式で記述してください。
+
+            【リポジトリのコンテキスト】
+            \`\`\`xml
+            ${repoContext}
+            \`\`\`
+
+            以下の観点から分析を行ってください：
+            1. **アーキテクチャの課題**: コンポーネント間の密結合や、役割の不明確なモジュールがないか。
+            2. **パフォーマンス**: 非効率なデータ処理（N+1問題、O(N)ループによる辞書構築など）がないか。
+            3. **セキュリティ**: 潜在的な脆弱性パターンがないか。
+            4. **保守性**: DRY原則に反する重複コードや、過度に複雑な関数（Cyclomatic Complexityが高い等）がないか。
+
+            結果は、優先度（High, Medium, Low）を付けて具体的に（ファイル名や対象コードを明記して）記述し、最後に「次のステップ」として推奨アクションをまとめてください。
+            `;
+
+            console.log('Calling GitHub Models for Tech Debt Analysis...');
+            const response = await fetch('https://models.github.ai/inference/chat/completions', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${process.env.GITHUB_TOKEN}`
+              },
+              body: JSON.stringify({
+                model: 'openai/o3-mini',
+                messages: [
+                  { role: "developer", content: "You are an expert software architect analyzing code for technical debt and code smells. Answer in Japanese." },
+                  { role: "user", content: prompt }
+                ]
+              })
+            });
+
+            if (!response.ok) {
+              console.error(`GitHub Models API Error: status=${response.status}`);
+              return;
+            }
+
+            const data = await response.json();
+            if (data.error) {
+              console.error('GitHub Models API Error:', data.error);
+              return;
+            }
+            if (!data.choices || data.choices.length === 0) {
+              console.error('GitHub Models API returned no choices:', JSON.stringify(data));
+              return;
+            }
+            const analysisReport = data.choices[0].message.content;
+
+            const date = new Date().toISOString().split('T')[0];
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: `🤖 [AI Tech Debt Analysis] ${date}`,
+              body: "AI (GitHub Models) による定期的な技術的負債の分析結果です。\n\n" + analysisReport,
+              labels: ["documentation", "enhancement"]
+            });

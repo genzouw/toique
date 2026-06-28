@@ -178,3 +178,19 @@ PRマージ前に以下の作業を確認してください。
 
 1. **Qodo Merge / PR-Agent のインストール**: PR-Agent などの無料レビューツールを GitHub App として対象リポジトリにインストールし、適切な権限 (Issues: Write, Pull Requests: Write 等) を付与してください。
 2. **セキュリティスキャナの有効化確認**: `Gitleaks`, `Trufflehog` が適切に動作するよう、GitHub の設定 > Security から Secret Scanning と Push Protection が有効になっているか確認してください。また、`Zizmor` による解析結果が Code scanning alerts に適切に反映されるよう設定されているか確認してください。
+
+## 7. 共通化・最適化と最新AIツールの導入 (2025年最新)
+
+2025年の最新トレンド（AIを利用したDevSecOpsおよび継続的リファクタリング）に合わせ、さらにパイプラインの最適化と新規ワークフローの導入を行いました。
+
+### AI RAG検索ロジックの共通化
+
+複数のAIワークフロー（PRレビュー、ChatOps、Issueトリアージなど）で重複していたTavily/DuckDuckGoによる外部Web検索（RAG）のPythonスクリプトを、ローカルのComposite Action (`.github/actions/ai-web-search`) として共通化しました。これにより、ワークフローファイルの保守性が劇的に向上しました。
+
+### AI Tech Debt Analyzer の導入
+
+リポジトリ全体のソースコードを解析し、アーキテクチャの課題やパフォーマンスのボトルネック、コードスメルなどの技術的負債（Tech Debt）をAIが自動的に検出し、Issueとして報告するワークフロー (`ai-tech-debt-analyzer.yml`) を追加しました。
+
+- **実行タイミング:** 毎月1日の定期実行（`schedule`）および手動実行（`workflow_dispatch`）。
+- **仕組み:** `yamadashy/repomix` を用いてリポジトリ全体をXML形式にパッキングし、GitHub Models (o3-mini) に渡して全体構造の分析を行います。
+- **権限設定:** 特別なトークンは不要で、標準の `GITHUB_TOKEN` を用いて動作し、Issueを作成します。
