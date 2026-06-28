@@ -73,13 +73,13 @@ jobs:
                   f.write(f"{delimiter}\n")
         shell: python
 
-      - name: Search Web (RAG prep)
+      - name: Search via Tavily or DuckDuckGo (RAG prep)
         id: search_web
         uses: ./.github/actions/ai-web-search
         with:
-          search_query: "${{ github.event.issue.title }} (site:stackoverflow.com OR site:github.com OR site:zenn.dev OR site:qiita.com)"
+          search_query: '${{ github.event.issue.title }} (site:stackoverflow.com OR site:github.com OR site:zenn.dev OR site:qiita.com)'
           tavily_api_key: ${{ secrets.TAVILY_API_KEY }}
-          max_results: "3"
+          max_results: '3'
 
       - name: Call GitHub Models for Issue Triage
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
@@ -145,13 +145,13 @@ jobs:
               },
               body: JSON.stringify({
                 model: 'openai/o3-mini',
-                reasoning_effort: "high",
+                reasoning_effort: "medium",
                 response_format: {
                   type: "json_schema",
                   json_schema: {
-                    name: "ai_response",
-                    strict: true,
-                    schema: schema
+                    name: "triage_result",
+                    schema: schema,
+                    strict: true
                   }
                 },
                 messages: [
@@ -175,12 +175,13 @@ jobs:
               console.error('GitHub Models API returned no choices:', JSON.stringify(data));
               return;
             }
-            let textResult = data.choices[0].message.content;
-
-            if (textResult.startsWith('```json')) {
-              textResult = textResult.replace(/^```json\n/, '').replace(/\n```$/, '');
-            } else if (textResult.startsWith('```')) {
-              textResult = textResult.replace(/^```\n/, '').replace(/\n```$/, '');
+            let textResult = (data.choices[0].message.content || '').trim();
+            // GitHub Models は json_schema の strict: true を保証しないため、
+            // 応答に Markdown コードフェンスや前後テキストが残ると JSON.parse が
+            // 失敗してトリアージが無言でスキップされる。防御的にフェンスを除去する。
+            const fenceMatch = textResult.match(/^```(?:json)?\s*([\s\S]*?)\s*```$/);
+            if (fenceMatch) {
+              textResult = fenceMatch[1].trim();
             }
 
             let result;

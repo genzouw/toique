@@ -19,29 +19,33 @@ jobs:
       cancel-in-progress: true
     steps:
       - name: Checkout repository
-        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
           fetch-depth: 0
           persist-credentials: false
 
-      - name: Extract Package Name
-        id: extract_package
+      - name: Build Search Query
+        id: build_query
         env:
           PR_TITLE: ${{ github.event.pull_request.title }}
         run: |
-          PACKAGE_NAME=$(echo "$PR_TITLE" | sed -n -E 's/Bump ([^ ]+) from.*/\1/p')
-          if [ -z "$PACKAGE_NAME" ]; then
-            PACKAGE_NAME="$PR_TITLE"
+          TITLE="${PR_TITLE}"
+          # Try to extract package name from typical dependabot titles like "Bump <package> from X to Y"
+          PACKAGE_NAME=""
+          if [[ "$TITLE" =~ Bump\ ([^[:space:]]+)\ from ]]; then
+            PACKAGE_NAME="${BASH_REMATCH[1]}"
+          else
+            PACKAGE_NAME="$TITLE"
           fi
-          echo "query=$PACKAGE_NAME (issue OR breaking change OR vulnerability OR bug) (site:zenn.dev OR site:qiita.com OR site:github.com)" >> "$GITHUB_OUTPUT"
+          echo "query=${PACKAGE_NAME} (issue OR breaking change OR vulnerability OR bug) (site:zenn.dev OR site:qiita.com OR site:github.com)" >> "$GITHUB_OUTPUT"
 
-      - name: Search Web (RAG prep)
+      - name: Search for package issues via Tavily or DuckDuckGo (RAG prep)
         id: search_web
         uses: ./.github/actions/ai-web-search
         with:
-          search_query: "${{ steps.extract_package.outputs.query }}"
+          search_query: ${{ steps.build_query.outputs.query }}
           tavily_api_key: ${{ secrets.TAVILY_API_KEY }}
-          max_results: "5"
+          max_results: '5'
       - name: Analyze Risk with GitHub Models
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         env:

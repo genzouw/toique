@@ -47,7 +47,7 @@ jobs:
           exit 1
 
       - name: Checkout PR head at immutable SHA
-        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
           ref: ${{ steps.pr.outputs.head_sha }}
           fetch-depth: 0
@@ -96,7 +96,17 @@ jobs:
 
             また、Cloudflare Pagesの制約としてconsole.logではなくconsole.infoを使うこと、パフォーマンスのため...map()ではなくfor...ofループを使うこと、アクセシビリティのため装飾アイコンにはaria-hidden="true"を付与することを考慮してください。
 
-            回答は、生成・修正するテストファイルのパスと、そのファイルの「新しい完全な内容」を含むオブジェクトの配列（tests）をルートプロパティとして持つJSONを出力してください。Markdown ブロックやその他の説明を含めないでください。
+            回答は、生成・修正するテストファイルのパスと、そのファイルの「新しい完全な内容」を含む `tests` 配列を持つ JSON オブジェクトのみを出力してください。Markdown ブロックやその他の説明を含めないでください。
+
+            JSON Schema:
+            {
+              "tests": [
+                {
+                  "filepath": "path/to/test_file.test.ts",
+                  "content": "新しいテストファイルの完全な内容"
+                }
+              ]
+            }
             `;
 
             const schema = {
@@ -132,13 +142,31 @@ jobs:
                 response_format: {
                   type: "json_schema",
                   json_schema: {
-                    name: "ai_response",
-                    strict: true,
-                    schema: schema
+                    name: "test_files",
+                    schema: {
+                      type: "object",
+                      properties: {
+                        tests: {
+                          type: "array",
+                          items: {
+                            type: "object",
+                            properties: {
+                              filepath: { type: "string" },
+                              content: { type: "string" }
+                            },
+                            required: ["filepath", "content"],
+                            additionalProperties: false
+                          }
+                        }
+                      },
+                      required: ["tests"],
+                      additionalProperties: false
+                    },
+                    strict: true
                   }
                 },
                 messages: [
-                  { role: "developer", content: "You are an expert developer specializing in software testing. Output strictly JSON array containing filepath and content." },
+                  { role: "developer", content: "You are an expert developer specializing in software testing. Output strictly JSON containing a tests array with filepath and content." },
                   { role: "user", content: prompt }
                 ]
               })
@@ -157,16 +185,10 @@ jobs:
             }
 
             let reply = data.choices[0].message.content.trim();
-
-            if (reply.startsWith('```json')) {
-              reply = reply.replace(/^```json\n/, '').replace(/\n```$/, '');
-            } else if (reply.startsWith('```')) {
-              reply = reply.replace(/^```\n/, '').replace(/\n```$/, '');
-            }
-
             let tests = [];
             try {
-              tests = JSON.parse(reply).tests;
+              const parsed = JSON.parse(reply);
+              tests = parsed.tests || [];
             } catch(e) {
               console.error('Failed to parse model response as JSON:', reply);
               throw new Error('JSON Parse Error');

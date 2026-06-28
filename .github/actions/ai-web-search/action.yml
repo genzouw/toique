@@ -1,21 +1,21 @@
-name: 'AI Web Search (RAG prep)'
-description: 'Searches the web via Tavily API or DuckDuckGo for RAG context.'
+name: 'AI Web Search (RAG Prep)'
+description: 'Performs web search using Tavily API (if available) or DuckDuckGo for RAG context in AI workflows.'
 inputs:
   search_query:
-    description: 'The search query.'
+    description: 'The search query to execute.'
     required: true
   tavily_api_key:
-    description: 'Tavily API Key (optional).'
+    description: 'The Tavily API Key (optional). If not provided, DuckDuckGo is used.'
     required: false
     default: ''
   max_results:
-    description: 'Maximum number of results to fetch.'
+    description: 'Maximum number of search results to return.'
     required: false
     default: '5'
 outputs:
   search_results:
     description: 'The formatted search results.'
-    value: ${{ steps.search.outputs.results }}
+    value: ${{ steps.search_web.outputs.search_results }}
 
 runs:
   using: 'composite'
@@ -29,8 +29,8 @@ runs:
       run: pip install "duckduckgo-search>=8.1.1" "tavily-python>=0.7.26" --break-system-packages
       shell: bash
 
-    - name: Search Web
-      id: search
+    - name: Search via Tavily or DuckDuckGo
+      id: search_web
       env:
         SEARCH_QUERY: ${{ inputs.search_query }}
         TAVILY_API_KEY: ${{ inputs.tavily_api_key }}
@@ -81,7 +81,7 @@ runs:
 
         delimiter = base64.b64encode(os.urandom(15)).decode('utf-8')
         with open(os.environ['GITHUB_OUTPUT'], 'a') as f:
-            f.write(f"results<<{delimiter}\n")
+            f.write(f"search_results<<{delimiter}\n")
             f.write(f"{search_res}\n")
             f.write(f"{delimiter}\n")
       shell: python

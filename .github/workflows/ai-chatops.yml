@@ -20,7 +20,7 @@ jobs:
       issues: write
     steps:
       - name: Checkout repository
-        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
           fetch-depth: 0
           persist-credentials: false
@@ -41,19 +41,27 @@ jobs:
             echo "$DELIMITER"
           } >> "$GITHUB_ENV"
 
-      - name: Extract Query
-        id: extract_query
+      - name: Build Search Query
+        id: build_query
         env:
           USER_PROMPT: ${{ github.event.comment.body }}
         run: |
-          QUERY=$(echo "$USER_PROMPT" | sed 's|^/ai ||' | tr '\n' ' ' | xargs)
-          echo "query=$QUERY site:zenn.dev OR site:qiita.com OR site:github.com" >> "$GITHUB_OUTPUT"
+          # '/ai ' プレフィックスを削除して検索クエリを構築
+          PROMPT="${USER_PROMPT#/ai }"
+          # 余分な空白を削除
+          PROMPT="$(echo -e "${PROMPT}" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')"
+          DELIMITER=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
+          {
+            echo "query<<$DELIMITER"
+            echo "${PROMPT} site:zenn.dev OR site:qiita.com OR site:github.com"
+            echo "$DELIMITER"
+          } >> "$GITHUB_OUTPUT"
 
-      - name: Search Web (RAG prep)
+      - name: Search via Tavily or DuckDuckGo (RAG prep)
         id: search_web
         uses: ./.github/actions/ai-web-search
         with:
-          search_query: '${{ steps.extract_query.outputs.query }}'
+          search_query: ${{ steps.build_query.outputs.query }}
           tavily_api_key: ${{ secrets.TAVILY_API_KEY }}
           max_results: '5'
 
