@@ -49,7 +49,7 @@ jobs:
           exit 1
 
       - name: Checkout PR head at immutable SHA
-        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
           ref: ${{ steps.pr.outputs.head_sha }}
           fetch-depth: 0
@@ -113,9 +113,9 @@ jobs:
                 'Authorization': `Bearer ${process.env.GITHUB_TOKEN}`
               },
               body: JSON.stringify({
-                model: 'openai/gpt-4o',
+                model: 'openai/o3-mini',
                 messages: [
-                  { role: "system", content: "You are an expert developer. Output strictly JSON array containing filepath and content." },
+                  { role: "developer", content: "You are an expert developer. Output strictly JSON array containing filepath and content." },
                   { role: "user", content: prompt }
                 ]
               })
