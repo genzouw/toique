@@ -48,7 +48,11 @@ export default function Login() {
           value={password}
           onChange={setPassword}
         />
-        {error && <div className="text-red-600 text-sm">{error}</div>}
+        {error && (
+          <div className="text-red-600 text-sm" role="alert">
+            {error}
+          </div>
+        )}
         <LoadingButton
           type="submit"
           loading={submitting}

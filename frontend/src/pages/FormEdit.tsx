@@ -313,7 +313,10 @@ export default function FormEdit() {
       </div>
 
       {error && (
-        <div className="mt-4 p-3 rounded-md bg-red-50 text-red-700 text-sm">
+        <div
+          className="mt-4 p-3 rounded-md bg-red-50 text-red-700 text-sm"
+          role="alert"
+        >
           {error}
         </div>
       )}
