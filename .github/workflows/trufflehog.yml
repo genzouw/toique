@@ -2,9 +2,7 @@ name: TruffleHog
 
 on:
   push:
-    branches: [main]
   pull_request:
-    branches: [main]
   schedule:
     # 毎週月曜 06:00 JST (= 日曜 21:00 UTC) に履歴全体を再スキャン
     - cron: '0 21 * * 0'
@@ -20,17 +18,22 @@ permissions:
 jobs:
   trufflehog:
     name: Scan for leaked secrets (TruffleHog)
+    if: github.event_name == 'push' || github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' || (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name != github.repository)
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
-      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
           fetch-depth: 0
           persist-credentials: false
 
       - name: TruffleHog OSS
-        uses: trufflesecurity/trufflehog@d411fff7b8879a62509f3fa98c07f247ac089a51 # v3.95.5
+        uses: trufflesecurity/trufflehog@30d5bb91af1a771378349dbbb0c82129392acf70 # v3.95.6
         with:
-          # schedule時は全履歴スキャン(base指定なし)、push時は直前コミット(event.before)、PR時はターゲットブランチとの差分を対象とする。
-          base: ${{ github.event_name == 'push' && github.event.before || github.event_name == 'pull_request' && github.event.pull_request.base.sha || '' }}
+          # schedule時は全履歴スキャン(base指定なし)。
+          # push時は直前コミット(event.before)を対象とするが、新規ブランチpush等でbeforeがゼロSHAの場合はベースを指定せずheadのみスキャンする。
+          # PR時はターゲットブランチとの差分を対象とする。
+          base: ${{ github.event_name == 'push' && github.event.before != '0000000000000000000000000000000000000000' && github.event.before || github.event_name == 'pull_request' && github.event.pull_request.base.sha || '' }}
           head: ${{ github.sha }}
           extra_args: --debug --only-verified

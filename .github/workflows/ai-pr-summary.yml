@@ -1,18 +1,19 @@
-name: AI PR Description Generator
+name: AI PR Summarizer
 
 on:
   pull_request:
-    types: [opened, synchronize, reopened]
+    types: [closed]
 
 jobs:
-  generate_pr_description:
-    name: Generate PR Description
+  summarize_merged_pr:
+    name: Generate Post-Merge PR Summary
     runs-on: ubuntu-latest
+    if: github.event.pull_request.merged == true
     permissions:
       contents: read
       pull-requests: write
     concurrency:
-      group: ai-pr-description-${{ github.event.pull_request.number }}
+      group: ai-pr-summary-${{ github.event.pull_request.number }}
       cancel-in-progress: true
     steps:
       - name: Checkout repository
@@ -29,7 +30,7 @@ jobs:
         run: |
           # Fetch PR diff
           PR_DIFF=$(gh pr diff "$PR_NUMBER" || echo "Cannot fetch diff.")
-          TRUNCATED_DIFF=$(echo "$PR_DIFF" | head -c 10000)
+          TRUNCATED_DIFF=$(echo "$PR_DIFF" | head -c 15000)
 
           DELIMITER=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
           {
@@ -38,7 +39,7 @@ jobs:
             echo "$DELIMITER"
           } >> "$GITHUB_ENV"
 
-      - name: Generate PR Description with GitHub Models
+      - name: Generate PR Summary with GitHub Models
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -56,9 +57,13 @@ jobs:
 
             const prompt = `
             あなたはシニアソフトウェアエンジニアです。
-            以下のPull Requestのコードの差分を分析し、PRの説明文（Description）を自動生成または改善してください。
-            回答は必ず日本語で、分かりやすいMarkdown形式で出力してください。
-            目的、主な変更点、テストの観点などを整理して記述してください。
+            マージされた以下のPull Requestのコードの差分と説明を分析し、マージ後の記録のための構造化された要約（PR Summary）を作成してください。
+            この要約は後から他の開発者がこのPRの内容や影響範囲を素早く理解できるようにするためのものです。
+
+            回答は必ず日本語で、以下の構成に沿ったMarkdown形式で出力してください：
+            - **Scope (変更範囲)**: どの機能やモジュールが変更されたか
+            - **Impact (影響)**: パフォーマンス、セキュリティ、アクセシビリティなどに対する影響や特筆すべき点
+            - **Key Changes (主要な変更点)**: 箇条書きで具体的に
 
             【Pull Requestのタイトル】
             ${prTitle}
@@ -81,7 +86,7 @@ jobs:
               body: JSON.stringify({
                 model: 'openai/o3-mini',
                 messages: [
-                  { role: "developer", content: "You are an expert software engineer generating pull request descriptions. Answer in Japanese." },
+                  { role: "developer", content: "You are an expert software engineer generating pull request summaries. Answer in Japanese." },
                   { role: "user", content: prompt }
                 ]
               })
@@ -107,5 +112,5 @@ jobs:
               owner: context.repo.owner,
               repo: context.repo.repo,
               issue_number: context.issue.number,
-              body: "🤖 **AIによるPR説明文の提案 (GitHub Models):**\n\n" + reviewComment + "\n\n---\n*※この提案をコピーしてPRのDescriptionを更新することをおすすめします。*"
+              body: "📦 **AI PR Summarizer (Post-Merge):**\n\nこのPRは無事にマージされました。後日の振り返りのための要約を残します。\n\n" + reviewComment
             });
