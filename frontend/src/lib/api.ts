@@ -30,8 +30,6 @@ export type LineChannel = {
   id: string;
   tenantId: string;
   channelId: string;
-  channelSecret: string;
-  channelAccessToken: string;
   displayName: string;
   isActive: boolean;
   createdAt: string;
