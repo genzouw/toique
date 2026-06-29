@@ -10,7 +10,7 @@ bunx lint-staged
 # `--diff-filter=d` で「削除 (Deleted)」を除外: リスクは「機密ファイルがリポジトリに
 # 含まれること」なので、すでにコミットされてしまった機密ファイルを `git rm` で
 # 削除しようとした際にこのチェックでブロックされないようにする。
-FORBIDDEN_FILES=$(git diff --cached --name-only --diff-filter=d | grep -E '(\.env.*|\.cursor/.*|\.claude/.*|\.aider.*|\.windsurf/.*|\.jules/.*|\.Jules/.*|.*credentials.*\.json|.*\.pem|.*\.key|.*\.tfstate(\..*)?|(^|/)cdktf\.out(/.*)?|(^|/)\.terraform(/.*)?)$' || true)
+FORBIDDEN_FILES=$(git diff --cached --name-only --diff-filter=d | grep -E '(\.env.*|\.cursor/.*|\.claude/.*|\.aider.*|\.windsurf/.*|\.jules/.*|\.Jules/.*|.*credentials.*\.json|.*\.pem|.*\.key|.*\.p12|.*_rsa|.*\.sqlite|.*\.db|.*\.log|\.npmrc|\.netrc|.*\.tfstate(\..*)?|(^|/)cdktf\.out(/.*)?|(^|/)\.terraform(/.*)?)$' || true)
 
 if [ -n "$FORBIDDEN_FILES" ]; then
   echo "🚨 [Security Error] The following sensitive files are staged for commit:"

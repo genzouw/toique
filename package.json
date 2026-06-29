@@ -18,7 +18,7 @@
     "secretlint": "^13.0.2"
   },
   "lint-staged": {
-    "{**/*.{env*,pem,key},**/*credentials*.json,**/*.tfstate*,**/cdktf.out/**,**/.terraform/**,**/.{cursor,claude,aider*,windsurf,jules,Jules}/**}": [
+    "{**/*.{env*,pem,key,p12,sqlite,db,log},**/*_rsa,**/.npmrc,**/.netrc,**/*credentials*.json,**/*.tfstate*,**/cdktf.out/**,**/.terraform/**,**/.{cursor,claude,aider*,windsurf,jules,Jules}/**}": [
       "node -e \"console.error('[FATAL] Sensitive files or AI footprints detected:', process.argv.slice(1)); process.exit(1);\""
     ],
     "**/*": [

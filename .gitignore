@@ -68,8 +68,14 @@ cdktf.out/
 .windsurf/
 *.pem
 *.key
+*.p12
+*_rsa
 *credentials*.json
 .env*
+.npmrc
+.netrc
+*.sqlite
+*.db
 
 # Infrastructure State Files
 *.tfstate
