@@ -135,6 +135,7 @@ export default function Pricing() {
                     <Check
                       size={ICON_SIZE.sm}
                       className="text-emerald-600 shrink-0"
+                      aria-hidden="true"
                     />
                     <span>
                       {f.label}: <span className="font-medium">{f.value}</span>
