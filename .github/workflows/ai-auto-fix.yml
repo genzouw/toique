@@ -105,7 +105,10 @@ jobs:
                   items: {
                     type: "object",
                     properties: {
-                      filepath: { type: "string" },
+                      filepath: {
+                        type: "string",
+                        pattern: "^(?!/)(?!.*(?:^|/)\\.\\.(?:/|$)).+"
+                      },
                       content: { type: "string" }
                     },
                     required: ["filepath", "content"],
@@ -171,10 +174,15 @@ jobs:
               throw new Error('JSON Parse Error');
             }
 
+            const path = require('path');
             for (const fix of fixes) {
               if (fix.filepath && fix.content) {
-                console.log(`Writing changes to ${fix.filepath}`);
-                fs.writeFileSync(fix.filepath, fix.content);
+                const normalized = path.normalize(fix.filepath);
+                if (path.isAbsolute(normalized) || normalized.startsWith('..')) {
+                  throw new Error(`Invalid filepath from model: ${fix.filepath}`);
+                }
+                console.log(`Writing changes to ${normalized}`);
+                fs.writeFileSync(normalized, fix.content);
               }
             }
 
