@@ -27,7 +27,7 @@ export default function EmptyState({
       >
         <Icon className="text-slate-400" size={ICON_SIZE.xxl} />
       </div>
-      <div role="status">
+      <div>
         <h2 className="text-sm font-medium text-slate-900 mb-1">{title}</h2>
         <p className="text-sm text-slate-500 max-w-sm">{description}</p>
       </div>
