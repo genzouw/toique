@@ -1,5 +1,5 @@
 {
-  "id": "f135ad86-d1ae-4d33-8662-88432bf202e5",
+  "id": "b4db3a28-8cd6-42f1-9466-4257318045bf",
   "prevId": "bec11f11-13a5-4477-8dfe-f1bcd2cd9ab6",
   "version": "7",
   "dialect": "postgresql",
@@ -96,12 +96,8 @@
           "name": "accounts_user_id_users_id_fk",
           "tableFrom": "accounts",
           "tableTo": "users",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -211,12 +207,8 @@
           "name": "contacts_user_id_users_id_fk",
           "tableFrom": "contacts",
           "tableTo": "users",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "set null",
           "onUpdate": "no action"
         },
@@ -224,12 +216,8 @@
           "name": "contacts_tenant_id_tenants_id_fk",
           "tableFrom": "contacts",
           "tableTo": "tenants",
-          "columnsFrom": [
-            "tenant_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["tenant_id"],
+          "columnsTo": ["id"],
           "onDelete": "set null",
           "onUpdate": "no action"
         }
@@ -326,11 +314,17 @@
           "method": "btree",
           "with": {}
         },
-        "forms_line_channel_id_idx": {
-          "name": "forms_line_channel_id_idx",
+        "forms_line_channel_id_status_idx": {
+          "name": "forms_line_channel_id_status_idx",
           "columns": [
             {
               "expression": "line_channel_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "status",
               "isExpression": false,
               "asc": true,
               "nulls": "last"
@@ -347,12 +341,8 @@
           "name": "forms_tenant_id_tenants_id_fk",
           "tableFrom": "forms",
           "tableTo": "tenants",
-          "columnsFrom": [
-            "tenant_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["tenant_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -360,12 +350,8 @@
           "name": "forms_line_channel_id_line_channels_id_fk",
           "tableFrom": "forms",
           "tableTo": "line_channels",
-          "columnsFrom": [
-            "line_channel_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["line_channel_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -459,12 +445,8 @@
           "name": "inbound_messages_line_channel_id_line_channels_id_fk",
           "tableFrom": "inbound_messages",
           "tableTo": "line_channels",
-          "columnsFrom": [
-            "line_channel_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["line_channel_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -472,12 +454,8 @@
           "name": "inbound_messages_line_user_id_line_users_id_fk",
           "tableFrom": "inbound_messages",
           "tableTo": "line_users",
-          "columnsFrom": [
-            "line_user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["line_user_id"],
+          "columnsTo": ["id"],
           "onDelete": "set null",
           "onUpdate": "no action"
         }
@@ -566,12 +544,8 @@
           "name": "line_channels_tenant_id_tenants_id_fk",
           "tableFrom": "line_channels",
           "tableTo": "tenants",
-          "columnsFrom": [
-            "tenant_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["tenant_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -581,9 +555,7 @@
         "line_channels_channel_id_unique": {
           "name": "line_channels_channel_id_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "channel_id"
-          ]
+          "columns": ["channel_id"]
         }
       },
       "policies": {},
@@ -660,12 +632,8 @@
           "name": "line_sessions_line_user_id_line_users_id_fk",
           "tableFrom": "line_sessions",
           "tableTo": "line_users",
-          "columnsFrom": [
-            "line_user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["line_user_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -673,12 +641,8 @@
           "name": "line_sessions_form_id_forms_id_fk",
           "tableFrom": "line_sessions",
           "tableTo": "forms",
-          "columnsFrom": [
-            "form_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["form_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -688,10 +652,7 @@
         "line_sessions_user_form_key": {
           "name": "line_sessions_user_form_key",
           "nullsNotDistinct": false,
-          "columns": [
-            "line_user_id",
-            "form_id"
-          ]
+          "columns": ["line_user_id", "form_id"]
         }
       },
       "policies": {},
@@ -765,12 +726,8 @@
           "name": "line_users_line_channel_id_line_channels_id_fk",
           "tableFrom": "line_users",
           "tableTo": "line_channels",
-          "columnsFrom": [
-            "line_channel_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["line_channel_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -780,10 +737,7 @@
         "line_users_line_channel_id_line_user_id_unique": {
           "name": "line_users_line_channel_id_line_user_id_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "line_channel_id",
-            "line_user_id"
-          ]
+          "columns": ["line_channel_id", "line_user_id"]
         }
       },
       "policies": {},
@@ -852,12 +806,8 @@
           "name": "sessions_user_id_users_id_fk",
           "tableFrom": "sessions",
           "tableTo": "users",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -867,9 +817,7 @@
         "sessions_token_unique": {
           "name": "sessions_token_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "token"
-          ]
+          "columns": ["token"]
         }
       },
       "policies": {},
@@ -975,12 +923,8 @@
           "name": "submissions_tenant_id_tenants_id_fk",
           "tableFrom": "submissions",
           "tableTo": "tenants",
-          "columnsFrom": [
-            "tenant_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["tenant_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -988,12 +932,8 @@
           "name": "submissions_form_id_forms_id_fk",
           "tableFrom": "submissions",
           "tableTo": "forms",
-          "columnsFrom": [
-            "form_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["form_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -1001,12 +941,8 @@
           "name": "submissions_line_user_id_line_users_id_fk",
           "tableFrom": "submissions",
           "tableTo": "line_users",
-          "columnsFrom": [
-            "line_user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["line_user_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -1077,12 +1013,8 @@
           "name": "tenant_members_tenant_id_tenants_id_fk",
           "tableFrom": "tenant_members",
           "tableTo": "tenants",
-          "columnsFrom": [
-            "tenant_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["tenant_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -1090,12 +1022,8 @@
           "name": "tenant_members_user_id_users_id_fk",
           "tableFrom": "tenant_members",
           "tableTo": "users",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -1105,9 +1033,7 @@
         "tenant_members_user_id_key": {
           "name": "tenant_members_user_id_key",
           "nullsNotDistinct": false,
-          "columns": [
-            "user_id"
-          ]
+          "columns": ["user_id"]
         }
       },
       "policies": {},
@@ -1224,9 +1150,7 @@
         "users_email_unique": {
           "name": "users_email_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "email"
-          ]
+          "columns": ["email"]
         }
       },
       "policies": {},
