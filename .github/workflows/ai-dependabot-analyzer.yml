@@ -46,7 +46,6 @@ jobs:
           search_query: ${{ steps.build_query.outputs.query }}
           tavily_api_key: ${{ secrets.TAVILY_API_KEY }}
           max_results: '5'
-
       - name: Analyze Risk with GitHub Models
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         env:
@@ -89,6 +88,7 @@ jobs:
               },
               body: JSON.stringify({
                 model: 'openai/o3-mini',
+                reasoning_effort: "high",
                 messages: [
                   { role: "developer", content: "You are an expert software engineer analyzing dependency update risks. Answer in Japanese." },
                   { role: "user", content: prompt }

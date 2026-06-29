@@ -85,7 +85,10 @@ export default function Channels() {
       <h1 className="text-2xl font-bold text-slate-900">LINEチャネル管理</h1>
 
       {error && (
-        <div className="mt-4 p-3 rounded-md bg-red-50 text-red-700 text-sm">
+        <div
+          role="alert"
+          className="mt-4 p-3 rounded-md bg-red-50 text-red-700 text-sm"
+        >
           {error}
         </div>
       )}
@@ -189,9 +192,10 @@ export default function Channels() {
                         className="px-2 py-1.5 text-slate-700 hover:bg-slate-100 rounded-md flex items-center gap-1 text-xs border border-slate-300 shrink-0 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-slate-900 focus-visible:ring-offset-1 transition-colors"
                         aria-label={
                           isCopied
-                            ? 'Webhook URL をコピーしました'
-                            : `Webhook URL をコピー: ${webhookUrl}`
+                            ? `${ch.displayName} の Webhook URL をコピー済み`
+                            : `${ch.displayName} の Webhook URL をコピー: ${webhookUrl}`
                         }
+                        aria-live="polite"
                       >
                         {isCopied ? (
                           <>
