@@ -42,7 +42,7 @@ jobs:
         id: search_web
         uses: ./.github/actions/ai-web-search
         with:
-          search_query: "${{ github.event.pull_request.title }} (vulnerability OR bug OR best practices OR performance OR security OR accessibility) (site:zenn.dev OR site:qiita.com OR site:github.com)"
+          search_query: '${{ github.event.pull_request.title }} (vulnerability OR bug OR best practices OR performance OR security OR accessibility) (site:zenn.dev OR site:qiita.com OR site:github.com)'
           tavily_api_key: ${{ secrets.TAVILY_API_KEY }}
           max_results: '5'
 
@@ -104,6 +104,7 @@ jobs:
               },
               body: JSON.stringify({
                 model: 'openai/o3-mini',
+                reasoning_effort: "high",
                 messages: [
                   { role: "developer", content: "You are an expert software engineer performing code reviews. Answer in Japanese." },
                   { role: "user", content: prompt }
