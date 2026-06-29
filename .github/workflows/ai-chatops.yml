@@ -108,6 +108,7 @@ jobs:
               },
               body: JSON.stringify({
                 model: 'openai/o3-mini',
+                reasoning_effort: "high",
                 messages: [
                   { role: "developer", content: secureSystemPrompt },
                   { role: "user", content: userMessage }
