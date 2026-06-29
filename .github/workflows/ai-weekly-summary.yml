@@ -72,6 +72,7 @@ jobs:
               },
               body: JSON.stringify({
                 model: 'openai/o3-mini',
+                reasoning_effort: "high",
                 messages: [
                   { role: "developer", content: "You are a helpful AI assistant summarizing software development progress. Answer in Japanese." },
                   { role: "user", content: prompt }
