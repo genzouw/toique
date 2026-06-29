@@ -15,14 +15,14 @@ jobs:
       contents: read
     steps:
       - name: リポジトリのチェックアウト
-        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
           fetch-depth: 0
           persist-credentials: false
 
       - name: Repomix でリポジトリをパックする
         # AIフレンドリーな形式（XML）でリポジトリ全体を1つのファイルにまとめる
-        uses: yamadashy/repomix/.github/actions/repomix@a7b93adfcdb11be923a9a092cceb1cb6739ef8e1 # v1.14.1
+        uses: yamadashy/repomix/.github/actions/repomix@bb4ac4763faeb7fc3d31438f072a6946b5b290b9 # v1.15.0
         with:
           output: repomix-output.xml
           compress: true

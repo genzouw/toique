@@ -6,10 +6,19 @@ import { checkQuota } from '../lib/quota.js';
 
 const app = new Hono();
 
+const safeChannelColumns = {
+  id: lineChannels.id,
+  tenantId: lineChannels.tenantId,
+  channelId: lineChannels.channelId,
+  displayName: lineChannels.displayName,
+  isActive: lineChannels.isActive,
+  createdAt: lineChannels.createdAt,
+};
+
 app.get('/', async (c) => {
   const tenant = c.get('tenant');
   const rows = await db
-    .select()
+    .select(safeChannelColumns)
     .from(lineChannels)
     .where(eq(lineChannels.tenantId, tenant.id));
   return c.json(rows);
@@ -51,7 +60,7 @@ app.post('/', async (c) => {
       channelAccessToken: body.channelAccessToken,
       displayName: body.displayName,
     })
-    .returning();
+    .returning(safeChannelColumns);
 
   return c.json(created, 201);
 });

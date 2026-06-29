@@ -36,8 +36,6 @@ describe('Channels Page', () => {
       tenantId: 'tenant-1',
       channelId: 'channel-1',
       displayName: 'Test Channel 1',
-      channelSecret: 'secret-1',
-      channelAccessToken: 'token-1',
       isActive: true,
       createdAt: '2024-01-01T00:00:00.000Z',
     };
@@ -59,8 +57,6 @@ describe('Channels Page', () => {
       tenantId: 'tenant-1',
       channelId: '2001234567',
       displayName: 'Channel A',
-      channelSecret: 'secret',
-      channelAccessToken: 'token',
       isActive: true,
       createdAt: '2024-01-01T00:00:00.000Z',
     };
@@ -84,8 +80,6 @@ describe('Channels Page', () => {
       tenantId: 'tenant-1',
       channelId: '2001234567',
       displayName: 'Channel A',
-      channelSecret: 'secret',
-      channelAccessToken: 'token',
       isActive: true,
       createdAt: '2024-01-01T00:00:00.000Z',
     };
