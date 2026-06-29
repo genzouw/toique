@@ -76,6 +76,7 @@ cdktf.out/
 .netrc
 *.sqlite
 *.db
+*.log
 
 # Infrastructure State Files
 *.tfstate
