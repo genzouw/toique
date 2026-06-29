@@ -73,65 +73,20 @@ jobs:
                   f.write(f"{delimiter}\n")
         shell: python
 
-      - name: Install Search Dependencies
-        run: pip install "duckduckgo-search>=8.1.1" "tavily-python>=0.7.26" --break-system-packages
-
       - name: Search via Tavily or DuckDuckGo (RAG prep)
         id: search_web
-        env:
-          ISSUE_TITLE: ${{ github.event.issue.title }}
-          TAVILY_API_KEY: ${{ secrets.TAVILY_API_KEY }}
-        run: |
-          import os
-          import base64
-          import time
-
-          title = os.environ.get('ISSUE_TITLE', '')
-          query = f"{title} (site:stackoverflow.com OR site:github.com OR site:zenn.dev OR site:qiita.com)"
-          tavily_key = os.environ.get('TAVILY_API_KEY', '').strip()
-
-          search_res = ""
-
-          if tavily_key:
-              print("Using Tavily API for search...")
-              try:
-                  from tavily import TavilyClient
-                  tavily_client = TavilyClient(api_key=tavily_key)
-                  response = tavily_client.search(query=query, search_depth="basic", max_results=3)
-                  results = response.get('results', [])
-                  if results:
-                      search_res = "\n\n".join([f"Title: {r.get('title')}\nURL: {r.get('url')}\nSnippet: {r.get('content')}" for r in results])
-              except Exception as e:
-                  print(f"Tavily search failed: {e}. Falling back to DuckDuckGo...")
-                  tavily_key = "" # Fallback
-
-          if not tavily_key:
-              print("Using DuckDuckGo for search...")
-              from duckduckgo_search import DDGS
-              try:
-                  with DDGS() as ddgs:
-                      results = list(ddgs.text(query, max_results=3))
-                      if results:
-                          search_res = "\n\n".join([f"Title: {r.get('title')}\nURL: {r.get('href')}\nSnippet: {r.get('body')}" for r in results])
-              except Exception as e:
-                  search_res = f"Web search failed: {e}"
-
-          if not search_res:
-              search_res = "No relevant Web search results found."
-
-          delimiter = base64.b64encode(os.urandom(15)).decode('utf-8')
-          with open(os.environ['GITHUB_ENV'], 'a') as f:
-              f.write(f"WEB_SEARCH_RESULTS<<{delimiter}\n")
-              f.write(f"{search_res}\n")
-              f.write(f"{delimiter}\n")
-        shell: python
+        uses: ./.github/actions/ai-web-search
+        with:
+          search_query: '${{ github.event.issue.title }} (site:stackoverflow.com OR site:github.com OR site:zenn.dev OR site:qiita.com)'
+          tavily_api_key: ${{ secrets.TAVILY_API_KEY }}
+          max_results: '3'
 
       - name: Call GitHub Models for Issue Triage
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SEARCH_RESULTS: ${{ env.SEARCH_RESULTS }}
-          WEB_SEARCH_RESULTS: ${{ env.WEB_SEARCH_RESULTS }}
+          WEB_SEARCH_RESULTS: ${{ steps.search_web.outputs.search_results }}
         with:
           script: |
             const issueBody = context.payload.issue.body || '';
@@ -157,7 +112,7 @@ jobs:
             ${webSearchResults}
 
             上記検索結果も踏まえ、すでに解決済みの問題であれば解決策をより具体的に（可能であればコード例や設定手順などを交えて）提示し、未解決のバグや新規提案であればその旨をコメントに含めてください。また、DuckDuckGoなどのWeb検索結果やStackOverflowの検索結果にセキュリティ上の脆弱性や既知のエクスプロイトが含まれている場合は、重大な問題として優先的に指摘してください。さらに、報告者に対する感謝の言葉を添えてください。
-            回答は必ず日本語で、見やすいMarkdown形式で出力してください。
+            回答は必ず日本語で、見やすいMarkdown形式で出力してください。結果は指定されたJSONスキーマに従うルートオブジェクトとして出力してください。
             また、Cloudflare Pagesの制約としてconsole.logではなくconsole.infoを使うこと、パフォーマンスのため...map()ではなくfor...ofループを使うこと、アクセシビリティのため装飾アイコンにはaria-hidden="true"を付与することを考慮してください。
             `;
 
@@ -190,6 +145,15 @@ jobs:
               },
               body: JSON.stringify({
                 model: 'openai/o3-mini',
+                reasoning_effort: "medium",
+                response_format: {
+                  type: "json_schema",
+                  json_schema: {
+                    name: "triage_result",
+                    schema: schema,
+                    strict: true
+                  }
+                },
                 messages: [
                   { role: "developer", content: "You are a helpful AI assistant for an open source project. Always answer in Japanese. You MUST output your answer exactly as a JSON object matching the provided schema, with no markdown code blocks and no surrounding text." },
                   { role: "user", content: prompt }
@@ -211,12 +175,13 @@ jobs:
               console.error('GitHub Models API returned no choices:', JSON.stringify(data));
               return;
             }
-            let textResult = data.choices[0].message.content;
-
-            if (textResult.startsWith('```json')) {
-              textResult = textResult.replace(/^```json\n/, '').replace(/\n```$/, '');
-            } else if (textResult.startsWith('```')) {
-              textResult = textResult.replace(/^```\n/, '').replace(/\n```$/, '');
+            let textResult = (data.choices[0].message.content || '').trim();
+            // GitHub Models は json_schema の strict: true を保証しないため、
+            // 応答に Markdown コードフェンスや前後テキストが残ると JSON.parse が
+            // 失敗してトリアージが無言でスキップされる。防御的にフェンスを除去する。
+            const fenceMatch = textResult.match(/^```(?:json)?\s*([\s\S]*?)\s*```$/);
+            if (fenceMatch) {
+              textResult = fenceMatch[1].trim();
             }
 
             let result;
