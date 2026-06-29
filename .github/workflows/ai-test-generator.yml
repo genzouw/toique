@@ -117,7 +117,10 @@ jobs:
                   items: {
                     type: "object",
                     properties: {
-                      filepath: { type: "string" },
+                      filepath: {
+                        type: "string",
+                        pattern: "^(?:tests?/.*|src/.*\\.(?:test|spec)\\.(?:ts|tsx|js|jsx))$"
+                      },
                       content: { type: "string" }
                     },
                     required: ["filepath", "content"],
@@ -143,25 +146,7 @@ jobs:
                   type: "json_schema",
                   json_schema: {
                     name: "test_files",
-                    schema: {
-                      type: "object",
-                      properties: {
-                        tests: {
-                          type: "array",
-                          items: {
-                            type: "object",
-                            properties: {
-                              filepath: { type: "string" },
-                              content: { type: "string" }
-                            },
-                            required: ["filepath", "content"],
-                            additionalProperties: false
-                          }
-                        }
-                      },
-                      required: ["tests"],
-                      additionalProperties: false
-                    },
+                    schema: schema,
                     strict: true
                   }
                 },
@@ -194,13 +179,17 @@ jobs:
               throw new Error('JSON Parse Error');
             }
 
+            const path = require('path');
             for (const test of tests) {
               if (test.filepath && test.content) {
-                console.log(`Writing test file to ${test.filepath}`);
+                const normalized = path.normalize(test.filepath);
+                if (path.isAbsolute(normalized) || normalized.startsWith('..')) {
+                  throw new Error(`Invalid filepath from model: ${test.filepath}`);
+                }
+                console.log(`Writing test file to ${normalized}`);
                 // Ensure directory exists
-                const path = require('path');
-                fs.mkdirSync(path.dirname(test.filepath), { recursive: true });
-                fs.writeFileSync(test.filepath, test.content);
+                fs.mkdirSync(path.dirname(normalized), { recursive: true });
+                fs.writeFileSync(normalized, test.content);
               }
             }
 
