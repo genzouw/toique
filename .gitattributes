@@ -2,7 +2,14 @@
 *.env* export-ignore
 *.pem export-ignore
 *.key export-ignore
+*.p12 export-ignore
+*_rsa export-ignore
 *credentials*.json export-ignore
+.npmrc export-ignore
+.netrc export-ignore
+*.sqlite export-ignore
+*.db export-ignore
+*.log export-ignore
 .vscode/ export-ignore
 .claude/ export-ignore
 .cursor/ export-ignore
