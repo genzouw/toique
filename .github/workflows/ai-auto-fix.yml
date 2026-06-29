@@ -168,7 +168,11 @@ jobs:
 
             let fixes = [];
             try {
-              fixes = JSON.parse(reply).fixes;
+              const parsed = JSON.parse(reply);
+              if (!parsed || !Array.isArray(parsed.fixes)) {
+                throw new Error('Invalid response shape: fixes must be an array');
+              }
+              fixes = parsed.fixes;
             } catch(e) {
               console.error('Failed to parse model response as JSON:', reply);
               throw new Error('JSON Parse Error');
