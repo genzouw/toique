@@ -84,14 +84,14 @@ export default function Channels() {
     <div>
       <h1 className="text-2xl font-bold text-slate-900">LINEチャネル管理</h1>
 
-      {error && (
-        <div
-          role="alert"
-          className="mt-4 p-3 rounded-md bg-red-50 text-red-700 text-sm"
-        >
-          {error}
-        </div>
-      )}
+      <div
+        className={
+          error ? 'mt-4 p-3 rounded-md bg-red-50 text-red-700 text-sm' : ''
+        }
+        role="alert"
+      >
+        {error}
+      </div>
 
       <form
         onSubmit={handleSubmit}
