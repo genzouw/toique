@@ -20,12 +20,29 @@ paths = [
 
 [[rules]]
 id = "custom-ai-traces"
-description = "Detects left-over AI agent placeholders"
-regex = '''(?i)(YOUR_(REAL_)?(API_KEY|PROJECT_ID|PASSWORD))'''
+description = "Detects left-over AI agent placeholders and temporary values"
+regex = '''(?i)(YOUR_(REAL_)?(API_KEY|PROJECT_ID|PASSWORD)|<insert-[^>]+-here>|<your-[^>]+>|change-me|TODO:\s*.*(secret|password|token|key))'''
 tags = ["ai-trace"]
 [rules.allowlist]
 paths = [
     '''docs/public-release-risk-assessment\.md'''
+]
+
+[[rules]]
+id = "custom-redis-url"
+description = "Detects explicit Redis connection strings"
+regex = '''(?i)(rediss?:\/\/(?:(?:[a-zA-Z0-9_.-]*:[^@\/\s]+)@)?[a-zA-Z0-9_.-]+(?::[0-9]+)?(?:\/[0-9]+)?)'''
+tags = ["redis", "database", "connection-string"]
+
+[[rules]]
+id = "custom-cloud-run-url"
+description = "Detects Cloud Run internal/external URLs"
+regex = '''(?i)\b((?:https?:\/\/)?(?:[a-z0-9-]+\.)+run\.app)\b'''
+tags = ["gcp", "cloud-run", "url"]
+[rules.allowlist]
+paths = [
+    '''docs/manual-deploy\.md''',
+    '''infra/README\.md'''
 ]
 
 [[rules]]
