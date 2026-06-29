@@ -54,7 +54,9 @@ export default function Signup() {
           value={password}
           onChange={setPassword}
         />
-        {error && <div className="text-red-600 text-sm">{error}</div>}
+        <div className={error ? 'text-red-600 text-sm' : ''} role="alert">
+          {error}
+        </div>
         <LoadingButton
           type="submit"
           loading={submitting}
