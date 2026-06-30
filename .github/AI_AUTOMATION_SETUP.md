@@ -91,6 +91,11 @@ PRのコメント欄で `/ai [MESSAGE]` を記述することで、`GitHub Model
 - `/ai このPRのパフォーマンス上の懸念点を教えてください`
 - `/ai テストコードの作成を手伝ってください`
 
+### AI Issue Solver (/ai-solve)
+
+Issueのコメント欄で `/ai-solve [追加の指示]` と入力すると、AIがIssueの内容とリポジトリ全体を解析し、自動的に修正コードを生成してPull Requestを作成します。
+**注意:** この機能はGitHub Modelsの推論APIを使用し、PRを生成するため、リポジトリのSecretsに `PAT_FOR_MODELS` という名前で、GitHub ModelsおよびPull Requestへの書き込み権限を持ったPersonal Access Token (PAT) を手動で設定する必要があります。
+
 ### AI Auto-Fix (/ai-fix)
 
 PRのコメントで `/ai-fix [FIX_CONTENT]` と入力すると、AIが対象のコードを修正し、自動的にPRブランチへコミット・プッシュします。
