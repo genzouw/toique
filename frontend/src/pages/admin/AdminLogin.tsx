@@ -50,7 +50,7 @@ export default function AdminLogin() {
         </div>
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           {error && (
-            <div className="bg-red-50 text-red-600 p-3 rounded-md text-sm text-center">
+            <div className="bg-red-50 text-red-600 p-3 rounded-md text-sm text-center" role="alert">
               {error}
             </div>
           )}
