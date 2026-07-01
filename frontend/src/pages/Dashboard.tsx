@@ -43,11 +43,14 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {error && (
-        <div className="mt-4 p-3 rounded-md bg-red-50 text-red-700 text-sm" role="alert">
-          {error}
-        </div>
-      )}
+      <div
+        role="alert"
+        className={
+          error ? 'mt-4 p-3 rounded-md bg-red-50 text-red-700 text-sm' : ''
+        }
+      >
+        {error}
+      </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-6">
         <StatCard label="登録済みチャネル" value={channels} unit="件" />
