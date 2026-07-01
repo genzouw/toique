@@ -43,7 +43,11 @@ jobs:
           cache: 'bun'
 
       - name: Run Repomix to pack the repository
-        run: npx repomix --output repomix-output.xml --compress --ignore "**/*.test.ts,**/*.spec.ts,**/dist/**,**/build/**,**/node_modules/**"
+        uses: yamadashy/repomix/.github/actions/repomix@bb4ac4763faeb7fc3d31438f072a6946b5b290b9 # v1.15.0
+        with:
+          output: repomix-output.xml
+          compress: true
+          ignore: '**/*.test.ts,**/*.spec.ts,**/dist/**,**/build/**,**/node_modules/**'
 
       - name: Generate Fix with GitHub Models
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
