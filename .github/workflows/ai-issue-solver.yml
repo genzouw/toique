@@ -200,5 +200,7 @@ jobs:
         if: steps.create-pr.outputs.pull-request-number
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+          PR_URL: ${{ steps.create-pr.outputs.pull-request-url }}
         run: |
-          gh issue comment "${{ github.event.issue.number }}" --body "🤖 AI Issue Solver が修正案を生成し、Pull Requestを作成しました: ${{ steps.create-pr.outputs.pull-request-url }}"
+          gh issue comment "$ISSUE_NUMBER" --body "🤖 AI Issue Solver が修正案を生成し、Pull Requestを作成しました: $PR_URL"
