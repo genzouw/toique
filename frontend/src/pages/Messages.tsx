@@ -3,6 +3,7 @@ import { MessageSquare, RefreshCw } from 'lucide-react';
 import { api, type InboundMessageListItem } from '../lib/api';
 import LoadingButton from '../components/LoadingButton';
 import EmptyState from '../components/EmptyState';
+import ErrorAlert from '../components/ErrorAlert';
 
 export default function Messages() {
   const [items, setItems] = useState<InboundMessageListItem[]>([]);
@@ -40,14 +41,7 @@ export default function Messages() {
         </LoadingButton>
       </div>
 
-      <div
-        role="alert"
-        className={
-          error ? 'mt-4 p-3 rounded-md bg-red-50 text-red-700 text-sm' : ''
-        }
-      >
-        {error}
-      </div>
+      <ErrorAlert error={error} />
 
       <div className="mt-6 bg-white border border-slate-200 rounded-lg overflow-hidden">
         {loading ? (

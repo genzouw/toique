@@ -5,6 +5,7 @@ import { api } from '../../lib/api';
 import { ICON_SIZE } from '../../lib/icon-size';
 import LoadingButton from '../../components/LoadingButton';
 import { AuthField } from '../../components/AuthField';
+import ErrorAlert from '../../components/ErrorAlert';
 
 export default function AdminLogin() {
   const navigate = useNavigate();
@@ -49,16 +50,10 @@ export default function AdminLogin() {
           </h2>
         </div>
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-          <div
-            role="alert"
-            className={
-              error
-                ? 'bg-red-50 text-red-600 p-3 rounded-md text-sm text-center'
-                : ''
-            }
-          >
-            {error}
-          </div>
+          <ErrorAlert
+            error={error}
+            className="bg-red-50 text-red-600 p-3 rounded-md text-sm text-center"
+          />
           <div className="space-y-4">
             <AuthField
               label="ユーザーID"

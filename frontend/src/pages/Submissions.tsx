@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState, useId } from 'react';
 import { Inbox, Download, RefreshCw } from 'lucide-react';
 import { api, type Submission, type FormListItem } from '../lib/api';
 import EmptyState from '../components/EmptyState';
+import ErrorAlert from '../components/ErrorAlert';
 import LoadingButton from '../components/LoadingButton';
 
 const STATUS_LABEL: Record<Submission['status'], string> = {
@@ -93,14 +94,7 @@ export default function Submissions() {
         </LoadingButton>
       </div>
 
-      <div
-        role="alert"
-        className={
-          error ? 'mt-4 p-3 rounded-md bg-red-50 text-red-700 text-sm' : ''
-        }
-      >
-        {error}
-      </div>
+      <ErrorAlert error={error} />
 
       {/* CSV エクスポート */}
       <div className="mt-6 bg-white border border-slate-200 rounded-lg p-4">

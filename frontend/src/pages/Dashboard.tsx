@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router';
 import { api, type UsageResponse, type ResourceUsage } from '../lib/api';
 import LoadingButton from '../components/LoadingButton';
+import ErrorAlert from '../components/ErrorAlert';
 
 const RESOURCE_LABELS: Record<string, string> = {
   lineChannels: 'LINEチャネル',
@@ -43,14 +44,7 @@ export default function Dashboard() {
         </div>
       </div>
 
-      <div
-        role="alert"
-        className={
-          error ? 'mt-4 p-3 rounded-md bg-red-50 text-red-700 text-sm' : ''
-        }
-      >
-        {error}
-      </div>
+      <ErrorAlert error={error} />
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-6">
         <StatCard label="登録済みチャネル" value={channels} unit="件" />
