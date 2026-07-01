@@ -152,8 +152,7 @@ jobs:
             });
 
             if (!response.ok) {
-              const err = await response.text();
-              console.error(`GitHub Models API Error: status=${response.status} body=${err}`);
+              console.error(`GitHub Models API Error: status=${response.status}`);
               throw new Error(`GitHub Models API Error: ${response.status}`);
             }
 
@@ -169,7 +168,7 @@ jobs:
               const parsed = JSON.parse(reply);
               fixes = parsed.fixes || [];
             } catch(e) {
-              console.error('Failed to parse model response as JSON:', reply);
+              console.error('Failed to parse model response as JSON');
               throw new Error('JSON Parse Error');
             }
 
