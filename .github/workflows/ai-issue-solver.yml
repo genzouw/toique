@@ -14,7 +14,11 @@ jobs:
     # 公開リポジトリでのAbuse防止のため、権限を持つユーザーからのコメントのみ実行
     if: >
       !github.event.issue.pull_request &&
-      startsWith(github.event.comment.body, '/ai-solve') &&
+      (
+        github.event.comment.body == '/ai-solve' ||
+        startsWith(github.event.comment.body, '/ai-solve ') ||
+        startsWith(github.event.comment.body, '/ai-solve\n')
+      ) &&
       contains(fromJSON('["OWNER","MEMBER","COLLABORATOR"]'), github.event.comment.author_association)
     runs-on: ubuntu-latest
     permissions:
@@ -183,11 +187,11 @@ jobs:
         uses: peter-evans/create-pull-request@v6
         with:
           token: ${{ secrets.PAT_FOR_MODELS }}
-          commit-message: "feat: auto-generated fix for issue #${{ github.event.issue.number }} via /ai-solve"
-          title: "feat: auto-generated fix for issue #${{ github.event.issue.number }}"
-          body: "🤖 AI Issue Solver が生成した修正です。Issue #${{ github.event.issue.number }} を解決するための変更が含まれています。"
-          branch: "ai-solve-issue-${{ github.event.issue.number }}"
-          base: "main"
+          commit-message: 'feat: auto-generated fix for issue #${{ github.event.issue.number }} via /ai-solve'
+          title: 'feat: auto-generated fix for issue #${{ github.event.issue.number }}'
+          body: '🤖 AI Issue Solver が生成した修正です。Issue #${{ github.event.issue.number }} を解決するための変更が含まれています。'
+          branch: 'ai-solve-issue-${{ github.event.issue.number }}'
+          base: 'main'
 
       - name: Comment on Issue
         if: steps.create-pr.outputs.pull-request-number
