@@ -12,6 +12,7 @@
     "secretlint": "git ls-files -z | xargs -0 secretlint"
   },
   "devDependencies": {
+    "@secretlint/secretlint-formatter-sarif": "^13.0.2",
     "@secretlint/secretlint-rule-preset-recommend": "^13.0.2",
     "husky": "^9.1.0",
     "lint-staged": "^15.5.0",
