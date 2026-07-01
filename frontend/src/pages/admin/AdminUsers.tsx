@@ -3,6 +3,7 @@ import { Link } from 'react-router';
 import { Users } from 'lucide-react';
 import { api, type AdminUserListItem } from '../../lib/api';
 import EmptyState from '../../components/EmptyState';
+import ErrorAlert from '../../components/ErrorAlert';
 
 export default function AdminUsers() {
   const [rows, setRows] = useState<AdminUserListItem[] | null>(null);
@@ -26,11 +27,10 @@ export default function AdminUsers() {
         )}
       </div>
 
-      {error && (
-        <div className="text-sm text-red-700 bg-red-50 border border-red-200 rounded-md px-3 py-2">
-          {error}
-        </div>
-      )}
+      <ErrorAlert
+        error={error}
+        className="text-sm text-red-700 bg-red-50 border border-red-200 rounded-md px-3 py-2"
+      />
 
       {rows === null ? (
         <div className="text-sm text-slate-500">読み込み中…</div>
