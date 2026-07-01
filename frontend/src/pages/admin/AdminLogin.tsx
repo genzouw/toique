@@ -49,11 +49,16 @@ export default function AdminLogin() {
           </h2>
         </div>
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-          {error && (
-            <div className="bg-red-50 text-red-600 p-3 rounded-md text-sm text-center" role="alert">
-              {error}
-            </div>
-          )}
+          <div
+            role="alert"
+            className={
+              error
+                ? 'bg-red-50 text-red-600 p-3 rounded-md text-sm text-center'
+                : ''
+            }
+          >
+            {error}
+          </div>
           <div className="space-y-4">
             <AuthField
               label="ユーザーID"
