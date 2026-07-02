@@ -217,7 +217,7 @@ PRマージ前に以下の作業を確認してください。
 
 ### OpenSSF Scorecard の導入 (2025年最新)
 
-2025年のオープンソースプロジェクトにおけるサプライチェーンセキュリティのベストプラクティスとして、**OpenSSF Scorecard** を GitHub Actions ワークフロー (`.github/workflows/scorecard.yml`) に導入しました。
+2025年のオープンソースプロジェクトにおけるサプライチェーンセキュリティのベストプラクティスとして、`OpenSSF Scorecard` を GitHub Actions ワークフロー ([.github/workflows/scorecard.yml](workflows/scorecard.yml)) に導入しました。
 
 - **実行タイミング:** メインブランチへの `push` 時、および週末の定期実行（`schedule`）と手動実行（`workflow_dispatch`）。
 - **仕組み:** 公式の `ossf/scorecard-action` を使用してリポジトリのセキュリティヘルス（トークン権限、ブランチ保護、依存関係のピン留め等）をスキャンし、結果を SARIF 形式で GitHub の Code Scanning Alerts タブに自動アップロードします。
