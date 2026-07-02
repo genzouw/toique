@@ -327,7 +327,7 @@ export default function FormEdit() {
             id={nameInputId}
             value={name}
             onChange={(e) => setName(e.target.value)}
-            className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-900"
+            className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-slate-900 focus-visible:ring-offset-2"
           />
         </Field>
 
@@ -337,7 +337,7 @@ export default function FormEdit() {
             value={lineChannelId}
             onChange={(e) => setLineChannelId(e.target.value)}
             disabled={!isNew}
-            className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm disabled:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-900"
+            className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm disabled:bg-slate-50 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-slate-900 focus-visible:ring-offset-2"
           >
             <option value="">選択してください</option>
             {channels.map((ch) => (
@@ -358,7 +358,7 @@ export default function FormEdit() {
             id={statusInputId}
             value={status}
             onChange={(e) => setStatus(e.target.value as Form['status'])}
-            className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-900"
+            className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-slate-900 focus-visible:ring-offset-2"
           >
             <option value="draft">下書き</option>
             <option value="published">公開中</option>
@@ -375,7 +375,7 @@ export default function FormEdit() {
             value={triggerKeyword}
             onChange={(e) => setTriggerKeyword(e.target.value)}
             placeholder="例: 査定"
-            className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-900"
+            className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-slate-900 focus-visible:ring-offset-2"
           />
         </Field>
 
@@ -459,7 +459,7 @@ export default function FormEdit() {
               onChange={(e) => handleJsonChange(e.target.value)}
               rows={20}
               spellCheck={false}
-              className={`w-full px-3 py-2 border rounded-md text-xs font-mono bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-900 ${
+              className={`w-full px-3 py-2 border rounded-md text-xs font-mono bg-slate-50 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-slate-900 focus-visible:ring-offset-2 ${
                 jsonError ? 'border-red-400' : 'border-slate-300'
               }`}
             />

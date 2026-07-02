@@ -111,7 +111,7 @@ export default function Submissions() {
               value={exportFormId}
               onChange={(e) => setExportFormId(e.target.value)}
               disabled={forms.length === 0}
-              className="mt-1 w-full px-3 py-2 border border-slate-300 rounded-md text-sm disabled:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-900"
+              className="mt-1 w-full px-3 py-2 border border-slate-300 rounded-md text-sm disabled:bg-slate-50 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-slate-900 focus-visible:ring-offset-2"
             >
               {forms.length === 0 ? (
                 <option>フォームがありません</option>
