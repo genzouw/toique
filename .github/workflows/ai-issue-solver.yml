@@ -49,6 +49,14 @@ jobs:
           compress: true
           ignore: '**/*.test.ts,**/*.spec.ts,**/dist/**,**/build/**,**/node_modules/**'
 
+      - name: Search via Tavily or DuckDuckGo (RAG prep)
+        id: search_web
+        uses: ./.github/actions/ai-web-search
+        with:
+          search_query: '${{ github.event.issue.title }} (site:stackoverflow.com OR site:github.com OR site:zenn.dev OR site:qiita.com)'
+          tavily_api_key: ${{ secrets.TAVILY_API_KEY }}
+          max_results: '3'
+
       - name: Generate Fix with GitHub Models
         timeout-minutes: 10
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
@@ -57,12 +65,14 @@ jobs:
           ISSUE_TITLE: ${{ github.event.issue.title }}
           ISSUE_BODY: ${{ github.event.issue.body }}
           USER_PROMPT: ${{ github.event.comment.body }}
+          WEB_SEARCH_RESULTS: ${{ steps.search_web.outputs.search_results }}
         with:
           script: |
             const fs = require('fs');
             const promptInstruction = process.env.USER_PROMPT.replace('/ai-solve', '').trim();
             const issueTitle = process.env.ISSUE_TITLE || '';
             const issueBody = process.env.ISSUE_BODY || '';
+            const webSearchResults = process.env.WEB_SEARCH_RESULTS || '';
 
             let repoContext = '';
             try {
@@ -97,7 +107,10 @@ jobs:
             ${promptInstruction}
             </user_input>
 
-            修正を生成する際は、セキュリティ（認証情報の漏洩防止など）、パフォーマンス（N+1問題や不要なループの回避）、アクセシビリティ、AI固有の脆弱性対策を意識して、セキュアで品質の高いコードを出力してください。
+            【Web 検索結果 (参考)】
+            ${webSearchResults}
+
+            修正を生成する際は、上記Web検索結果の最新情報（2025年基準のベストプラクティスなど）も考慮に入れ、セキュリティ（認証情報の漏洩防止など）、パフォーマンス（N+1問題や不要なループの回避）、アクセシビリティ、AI固有の脆弱性対策を意識して、セキュアで品質の高いコードを出力してください。
             また、Cloudflare Pagesの制約としてconsole.logではなくconsole.infoを使うこと、パフォーマンスのため...map()ではなくfor...ofループを使うこと、アクセシビリティのため装飾アイコンにはaria-hidden="true"を付与することを考慮してください。
 
             回答は、修正・作成するファイルのパスと、そのファイルの「新しい完全な内容」を含むオブジェクトの配列（fixes）をルートプロパティとして持つJSONを出力してください。Markdown ブロックやその他の説明を含めないでください。

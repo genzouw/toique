@@ -32,13 +32,23 @@ jobs:
           # Exclude tests and build artifacts to keep context size manageable
           ignore: "**/*.test.ts,**/*.spec.ts,**/dist/**,**/build/**,**/node_modules/**"
 
+      - name: Search via Tavily or DuckDuckGo (RAG prep)
+        id: search_web
+        uses: ./.github/actions/ai-web-search
+        with:
+          search_query: 'latest software architecture and tech debt patterns best practices 2024 2025 (site:zenn.dev OR site:qiita.com OR site:github.com)'
+          tavily_api_key: ${{ secrets.TAVILY_API_KEY }}
+          max_results: '5'
+
       - name: Analyze Tech Debt with GitHub Models
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          WEB_SEARCH_RESULTS: ${{ steps.search_web.outputs.search_results }}
         with:
           script: |
             const fs = require('fs');
+            const webSearchResults = process.env.WEB_SEARCH_RESULTS || '';
             let repoContext = '';
             try {
               repoContext = fs.readFileSync('repomix-output.xml', 'utf8');
@@ -62,11 +72,15 @@ jobs:
             ${repoContext}
             \`\`\`
 
+            【Web 検索結果 (参考)】
+            ${webSearchResults}
+
             以下の観点から分析を行ってください：
             1. **アーキテクチャの課題**: コンポーネント間の密結合や、役割の不明確なモジュールがないか。
             2. **パフォーマンス**: 非効率なデータ処理（N+1問題、O(N)ループによる辞書構築など）がないか。
             3. **セキュリティ**: 潜在的な脆弱性パターンがないか。
             4. **保守性**: DRY原則に反する重複コードや、過度に複雑な関数（Cyclomatic Complexityが高い等）がないか。
+            5. **最新トレンドとの比較**: 検索結果（2024-2025年の最新ベストプラクティスなど）を考慮し、時代遅れになっている設計やライブラリの利用パターンがないか。
 
             結果は、優先度（High, Medium, Low）を付けて具体的に（ファイル名や対象コードを明記して）記述し、最後に「次のステップ」として推奨アクションをまとめてください。
             `;
