@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState, useId } from 'react';
 import { Inbox, Download, RefreshCw } from 'lucide-react';
 import { api, type Submission, type FormListItem } from '../lib/api';
 import EmptyState from '../components/EmptyState';
+import ErrorAlert from '../components/ErrorAlert';
 import LoadingButton from '../components/LoadingButton';
 
 const STATUS_LABEL: Record<Submission['status'], string> = {
@@ -93,11 +94,7 @@ export default function Submissions() {
         </LoadingButton>
       </div>
 
-      {error && (
-        <div className="mt-4 p-3 rounded-md bg-red-50 text-red-700 text-sm">
-          {error}
-        </div>
-      )}
+      <ErrorAlert error={error} />
 
       {/* CSV エクスポート */}
       <div className="mt-6 bg-white border border-slate-200 rounded-lg p-4">
@@ -114,7 +111,7 @@ export default function Submissions() {
               value={exportFormId}
               onChange={(e) => setExportFormId(e.target.value)}
               disabled={forms.length === 0}
-              className="mt-1 w-full px-3 py-2 border border-slate-300 rounded-md text-sm disabled:bg-slate-50"
+              className="mt-1 w-full px-3 py-2 border border-slate-300 rounded-md text-sm disabled:bg-slate-50 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-slate-900 focus-visible:ring-offset-2"
             >
               {forms.length === 0 ? (
                 <option>フォームがありません</option>

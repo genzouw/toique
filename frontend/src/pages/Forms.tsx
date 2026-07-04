@@ -3,6 +3,7 @@ import { Link } from 'react-router';
 import { Plus, FileText } from 'lucide-react';
 import { api, type FormListItem } from '../lib/api';
 import EmptyState from '../components/EmptyState';
+import ErrorAlert from '../components/ErrorAlert';
 import { ICON_SIZE } from '../lib/icon-size';
 
 const STATUS_LABEL: Record<FormListItem['status'], string> = {
@@ -52,11 +53,7 @@ export default function Forms() {
         </Link>
       </div>
 
-      {error && (
-        <div className="mt-4 p-3 rounded-md bg-red-50 text-red-700 text-sm">
-          {error}
-        </div>
-      )}
+      <ErrorAlert error={error} />
 
       <div className="mt-6 bg-white border border-slate-200 rounded-lg overflow-hidden">
         {loading ? (

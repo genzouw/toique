@@ -91,6 +91,11 @@ PRのコメント欄で `/ai [MESSAGE]` を記述することで、`GitHub Model
 - `/ai このPRのパフォーマンス上の懸念点を教えてください`
 - `/ai テストコードの作成を手伝ってください`
 
+### AI Issue Solver (/ai-solve)
+
+Issueのコメント欄で `/ai-solve [追加の指示]` と入力すると、AIがIssueの内容とリポジトリ全体を解析し、自動的に修正コードを生成してPull Requestを作成します。
+**注意:** この機能の実行には、後述の PAT_FOR_MODELS シークレットの設定が必要です。
+
 ### AI Auto-Fix (/ai-fix)
 
 PRのコメントで `/ai-fix [FIX_CONTENT]` と入力すると、AIが対象のコードを修正し、自動的にPRブランチへコミット・プッシュします。
@@ -215,3 +220,12 @@ PRマージ前に以下の作業を確認してください。
 サプライチェーン攻撃の防止および2025年のCI/CDベストプラクティスに従い、`.github/workflows/sbom-policy-check.yml` にてSBOM（SPDX-JSON形式）の自動生成とアーティファクト保存を導入しました。
 **手動確認作業:**
 Pull Requestをマージする前に、該当PRで実行された `SBOM Policy Check` ワークフローの実行結果から `sbom` アーティファクトをダウンロードし、依存関係に意図しないパッケージ（悪意のあるタイポスクワッティングなど）が含まれていないか、定期的に手動で内容を監査・確認してください。確認が完了するまではマージしないでください。なお、開発のボトルネック化を防ぐため、将来的にはCI上で自動スキャンツール（`osv-scanner` や `Socket` など）を用いた自動検知への移行を推奨します。
+
+### OpenSSF Scorecard の導入 (2025年最新)
+
+2025年のオープンソースプロジェクトにおけるサプライチェーンセキュリティのベストプラクティスとして、`OpenSSF Scorecard` を GitHub Actions ワークフロー ([.github/workflows/scorecard.yml](workflows/scorecard.yml)) に導入しました。
+
+- **実行タイミング:** メインブランチへの `push` 時、および週末の定期実行（`schedule`）と手動実行（`workflow_dispatch`）。
+- **仕組み:** 公式の `ossf/scorecard-action` を使用してリポジトリのセキュリティヘルス（トークン権限、ブランチ保護、依存関係のピン留め等）をスキャンし、結果を SARIF 形式で GitHub の Code Scanning Alerts タブに自動アップロードします。
+- **権限設定:** `publish_results: true` に設定されているため、GitHub OIDC トークンを発行して API と連携するための `id-token: write` 権限と、アラートをアップロードするための `security-events: write` 権限をワークフロー内で自動的に付与しています。
+- **手動確認:** この機能はパブリックリポジトリでは無料で使用できます。マージ後は GitHub リポジトリの **Security** -> **Code scanning** の画面から、Scorecard の分析結果が正常に表示されることを確認してください。

@@ -220,6 +220,8 @@ export const forms = pgTable(
   (t) => [
     // tenant_id によるフィルタリングの高速化
     index('forms_tenant_id_idx').on(t.tenantId),
+    // line_channel_id と status によるフィルタリング（Webhookでのトリガーワード検索など）の高速化
+    index('forms_line_channel_id_status_idx').on(t.lineChannelId, t.status),
   ],
 );
 

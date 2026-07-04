@@ -2,6 +2,17 @@
 # Codacy configuration
 # https://docs.codacy.com/repositories-configure/codacy-configuration-file/
 #
+# db/migrations/ 配下は Drizzle が生成する PostgreSQL マイグレーション SQL。
+# Codacy の SQL 解析エンジンは SQL Server (T-SQL) 前提のルール
+# (SET ANSI_NULLS ON / SET NOCOUNT ON / SET QUOTED_IDENTIFIER ON /
+#  SET TRANSACTION ISOLATION LEVEL READ UNCOMMITTED near top of file) を
+# Postgres ファイルに誤適用し、Quality Gate を恒常的に fail させる。これらは
+# Postgres では不要かつ有害なため、生成物であるマイグレーション SQL を解析対象
+# から除外する。マイグレーションの健全性は scripts/check-migrations.sh
+# (CREATE/DROP INDEX の冪等性 lint) が別途担保している。
+exclude_paths:
+  - 'db/migrations/**'
+#
 # 本プロジェクトのフロントエンドは ESLint + Prettier を採用しており、Biome は
 # 導入していない。Codacy がデフォルトで有効化している Biome 解析は二重解析と
 # なるだけでなく、`noReactSpecificProps` のようなルールが React プロジェクトの
