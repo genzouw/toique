@@ -99,7 +99,7 @@ export default function FaqHub() {
           </p>
           <Link
             to="/contact"
-            className="mt-6 inline-flex items-center gap-2 px-6 py-2.5 bg-slate-900 text-white text-sm font-medium rounded-md hover:bg-slate-800"
+            className="mt-6 inline-flex items-center gap-2 px-6 py-2.5 bg-slate-900 text-white text-sm font-medium rounded-md hover:bg-slate-800 focus-ring transition-colors"
           >
             お問い合わせはこちら
             <ArrowRight size={ICON_SIZE.sm} />
@@ -185,7 +185,7 @@ function SearchResults({
         </p>
         <p className="mt-2 text-sm text-slate-600">
           別のキーワードでお試しいただくか、
-          <Link to="/contact" className="underline text-slate-900">
+          <Link to="/contact" className="underline text-slate-900 focus-ring rounded-sm transition-colors">
             お問い合わせフォーム
           </Link>
           よりお寄せください。

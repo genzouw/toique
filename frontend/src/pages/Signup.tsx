@@ -67,7 +67,7 @@ export default function Signup() {
       </form>
       <div className="mt-4 text-sm text-slate-600">
         既にアカウントをお持ちの方は{' '}
-        <Link to="/login" className="text-slate-900 underline">
+        <Link to="/login" className="text-slate-900 underline focus-ring rounded-sm transition-colors">
           ログイン
         </Link>
       </div>

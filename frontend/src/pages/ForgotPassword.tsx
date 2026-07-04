@@ -64,7 +64,7 @@ export default function ForgotPassword() {
           </p>
           <Link
             to="/login"
-            className="block w-full text-center px-4 py-2 bg-slate-900 text-white rounded-md"
+            className="block w-full text-center px-4 py-2 bg-slate-900 text-white rounded-md focus-ring transition-colors"
           >
             ログイン画面へ
           </Link>
@@ -96,7 +96,7 @@ export default function ForgotPassword() {
         </LoadingButton>
       </form>
       <div className="mt-4 text-sm text-slate-600">
-        <Link to="/login" className="text-slate-900 underline">
+        <Link to="/login" className="text-slate-900 underline focus-ring rounded-sm transition-colors">
           ログインに戻る
         </Link>
       </div>
