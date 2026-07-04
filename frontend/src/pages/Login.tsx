@@ -61,12 +61,18 @@ export default function Login() {
       </form>
       <div className="mt-4 text-sm text-slate-600">
         アカウントをお持ちでない方は{' '}
-        <Link to="/signup" className="text-slate-900 underline focus-ring rounded-sm transition-colors">
+        <Link
+          to="/signup"
+          className="text-slate-900 underline focus-ring focus-visible:outline-hidden rounded-sm transition-colors"
+        >
           新規登録
         </Link>
       </div>
       <div className="mt-2 text-sm text-slate-600">
-        <Link to="/forgot-password" className="text-slate-900 underline focus-ring rounded-sm transition-colors">
+        <Link
+          to="/forgot-password"
+          className="text-slate-900 underline focus-ring focus-visible:outline-hidden rounded-sm transition-colors"
+        >
           パスワードを忘れた方
         </Link>
       </div>
