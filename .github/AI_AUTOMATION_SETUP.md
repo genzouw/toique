@@ -183,6 +183,9 @@ PRマージ前に以下の作業を確認してください。
 
 1. **Qodo Merge / PR-Agent のインストール**: PR-Agent などの無料レビューツールを GitHub App として対象リポジトリにインストールし、適切な権限 (Issues: Write, Pull Requests: Write 等) を付与してください。
 2. **セキュリティスキャナの有効化確認**: `Gitleaks`, `Trufflehog` が適切に動作するよう、GitHub の設定 > Security から Secret Scanning と Push Protection が有効になっているか確認してください。また、`Zizmor` による解析結果が Code scanning alerts に適切に反映されるよう設定されているか確認してください。
+3. **StepSecurity Harden-Runner のインストール**: 2025年の最新ベストプラクティスに基づき、AIコーディングエージェントからのクレデンシャル漏洩やサプライチェーン攻撃を防ぐため、主要なワークフローに `step-security/harden-runner` を導入しています。
+   - StepSecurity の GitHub App を対象リポジトリにインストールし、初期設定を行ってください（公開リポジトリは無料で利用可能です）。
+   - 現在はCIのダウンタイムを防ぐため `audit` モードで運用していますが、StepSecurity Dashboard 上で学習が完了し、必要な通信先リストが整備された段階で、ワークフローファイル側を `block` モードに変更（必要に応じて `allowed-endpoints` を追記）して完全なアウトバウンド通信の保護を有効化してください。
 
 ## 7. 共通化・最適化と最新AIツールの導入 (2025年最新)
 
