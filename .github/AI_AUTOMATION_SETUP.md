@@ -66,14 +66,18 @@ AI Weekly Summary (`ai-weekly-summary.yml`)、AI Release Drafter (`ai-release-dr
 **設定とコンパイル手順（必須）:**
 
 1. 手元の環境に GitHub CLI 拡張機能 `gh-aw` をインストールします。
+
    ```bash
    gh extension install github/gh-aw
    ```
+
 2. `.github/workflows/` ディレクトリ内に `.md` 拡張子でエージェントの定義（例: `ai-issue-triage-agent.md`, `ai-pr-review-agent.md`）を作成・編集します。
 3. コミットする前に、リポジトリのルートディレクトリで**必ずローカルでコンパイル**を実行し、対応する `.lock.yml` ファイルを生成・更新してください。
+
    ```bash
    gh aw compile
    ```
+
 4. `.md` ファイルと生成された `.lock.yml` ファイルの両方をコミットしてプッシュします。
 
 **認証とコスト管理:**
