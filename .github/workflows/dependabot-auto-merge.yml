@@ -17,6 +17,10 @@ jobs:
     # PR の payload に紐づき改竄できない `pull_request.user.login` でチェックする。
     if: github.event.pull_request.user.login == 'dependabot[bot]'
     steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@cb605e52c26070c328afc4562f0b4ada7c453151 # v2.10.4
+        with:
+          egress-policy: audit
       - name: Dependabot metadata
         id: metadata
         uses: dependabot/fetch-metadata@25dd0e34f4fe68f24cc83900b1fe3fe149efef98 # v3.1.0

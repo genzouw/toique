@@ -21,6 +21,10 @@ jobs:
       contents: write
       pull-requests: write
     steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@cb605e52c26070c328afc4562f0b4ada7c453151 # v2.10.4
+        with:
+          egress-policy: audit
       - name: Fetch PR metadata
         id: pr
         env:
