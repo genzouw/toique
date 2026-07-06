@@ -4,6 +4,7 @@ import { AuthLayout } from '../components/AuthLayout';
 import { AuthField } from '../components/AuthField';
 import SEOMetadata from '../components/SEOMetadata';
 import LoadingButton from '../components/LoadingButton';
+import ErrorAlert from '../components/ErrorAlert';
 import { API_BASE_URL } from '../lib/api-base-url';
 
 export default function ForgotPassword() {
@@ -86,7 +87,7 @@ export default function ForgotPassword() {
           value={email}
           onChange={setEmail}
         />
-        {error && <div className="text-red-600 text-sm">{error}</div>}
+        <ErrorAlert error={error} />
         <LoadingButton
           type="submit"
           loading={submitting}

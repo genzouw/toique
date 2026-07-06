@@ -5,6 +5,7 @@ import SEOMetadata from '../components/SEOMetadata';
 import LoadingButton from '../components/LoadingButton';
 import { AuthField } from '../components/AuthField';
 import { AuthLayout } from '../components/AuthLayout';
+import ErrorAlert from '../components/ErrorAlert';
 
 export default function Login() {
   const navigate = useNavigate();
@@ -48,9 +49,7 @@ export default function Login() {
           value={password}
           onChange={setPassword}
         />
-        <div className={error ? 'text-red-600 text-sm' : ''} role="alert">
-          {error}
-        </div>
+        <ErrorAlert error={error} />
         <LoadingButton
           type="submit"
           loading={submitting}
