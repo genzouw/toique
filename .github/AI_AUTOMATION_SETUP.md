@@ -236,3 +236,11 @@ Pull Requestをマージする前に、該当PRで実行された `SBOM Policy C
 - **仕組み:** 公式の `ossf/scorecard-action` を使用してリポジトリのセキュリティヘルス（トークン権限、ブランチ保護、依存関係のピン留め等）をスキャンし、結果を SARIF 形式で GitHub の Code Scanning Alerts タブに自動アップロードします。
 - **権限設定:** `publish_results: true` に設定されているため、GitHub OIDC トークンを発行して API と連携するための `id-token: write` 権限と、アラートをアップロードするための `security-events: write` 権限をワークフロー内で自動的に付与しています。
 - **手動確認:** この機能はパブリックリポジトリでは無料で使用できます。マージ後は GitHub リポジトリの **Security** -> **Code scanning** の画面から、Scorecard の分析結果が正常に表示されることを確認してください。
+
+### GitHub Actions セキュリティ強化 (Harden Runner)
+
+CI/CDパイプラインにおけるAIプロンプトインジェクションや認証情報の漏洩リスクを軽減するため、全てのアクションジョブ（`ubuntu-latest`で実行されるもの）に対して、`step-security/harden-runner` を `audit` モードで導入しています。これにより、意図しない外部へのネットワーク通信を検知・記録することができます。
+
+**手動作業に関する注意事項:**
+
+- `audit` モードでは実行自体はブロックされず監視のみ行われます。詳細なレポートを確認するには、StepSecurity のダッシュボードと連携するか、Actions のログから Egress リクエストの状況を確認してください。
