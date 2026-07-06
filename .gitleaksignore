@@ -1,0 +1,48 @@
+# gitleaks の履歴スキャン (--log-opts=--all) で検知された既存・歴史的な
+# 検知のベースライン。いずれも公開URL・テスト用IP・ドキュメント記載値であり
+# 実シークレットではないことを確認済み (2026-07-06)。
+# 新規の検知はこのファイルに追加せず、必ず内容を精査すること。
+17f7b338b0329e168cce92fb006e7e6db4980570:docs/backup.md:custom-ai-traces:58
+21994064c04c69f30023d6a6b9959b6f93bfa352:frontend/vite.config.ts:custom-cloudflare-pages-url:11
+2aea92764c1b98a7e1eaa3abc127df6666dd1288:frontend/src/pages/FaqArticle.tsx:custom-cloudflare-pages-url:12
+2aea92764c1b98a7e1eaa3abc127df6666dd1288:frontend/src/pages/FaqHub.tsx:custom-cloudflare-pages-url:17
+2fa16aad209cf88b00d2fff0e06787511875563a:.github/workflows/deploy.yml:custom-cloudflare-pages-url:80
+2fa16aad209cf88b00d2fff0e06787511875563a:.github/workflows/deploy.yml:custom-cloudflare-pages-url:82
+5784133425c40513f6655fc8e7271444393add8b:frontend/index.html:custom-cloudflare-pages-url:15
+5784133425c40513f6655fc8e7271444393add8b:frontend/index.html:custom-cloudflare-pages-url:27
+64996838cfa692079ee57b00ed35642bd9aaf5c8:frontend/public/robots.txt:custom-cloudflare-pages-url:10
+64996838cfa692079ee57b00ed35642bd9aaf5c8:frontend/public/sitemap.xml:custom-cloudflare-pages-url:14
+64996838cfa692079ee57b00ed35642bd9aaf5c8:frontend/public/sitemap.xml:custom-cloudflare-pages-url:19
+64996838cfa692079ee57b00ed35642bd9aaf5c8:frontend/public/sitemap.xml:custom-cloudflare-pages-url:4
+64996838cfa692079ee57b00ed35642bd9aaf5c8:frontend/public/sitemap.xml:custom-cloudflare-pages-url:9
+655173abf377882cde3ea9d6f66ee50f6e8c4a7a:docs/public-release-checklist.md:custom-cloudflare-pages-url:153
+655173abf377882cde3ea9d6f66ee50f6e8c4a7a:docs/public-release-checklist.md:custom-cloudflare-pages-url:171
+75565009eac119da4639d77bf12e7a89d5f729e6:frontend/src/pages/Tokushoho.tsx:custom-cloudflare-pages-url:72
+75565009eac119da4639d77bf12e7a89d5f729e6:frontend/src/pages/Tokushoho.tsx:custom-cloudflare-pages-url:75
+8cbbd0dae3ddc9892ff1eac8eae35d02c9d71b1f:frontend/src/pages/IndustryLanding.tsx:custom-cloudflare-pages-url:7
+9ac032e57bc48fc073d4ce87be9ed8950658a100:backend/src/lib/client-ip.test.ts:custom-internal-ip:25
+a1bf113809ee7d0ef7be649f28f8c53264caf2c7:.github/workflows/deploy.yml:custom-cloudflare-pages-url:94
+aedd0e1425c7726a4e3d90e9ad83e53eef185015:docs/csp-inventory.md:custom-cloud-run-url:107
+aedd0e1425c7726a4e3d90e9ad83e53eef185015:docs/csp-inventory.md:custom-cloud-run-url:32
+aedd0e1425c7726a4e3d90e9ad83e53eef185015:frontend/public/_headers:custom-cloud-run-url:2
+b74e7e2af15045fdbdff3544a3c04da76a5d45b7:frontend/public/_headers:custom-cloud-run-url:2
+bb7319de99cdd56e9cd2f214b3bbb6b1256240b6:frontend/public/_redirects:custom-cloudflare-pages-url:1
+bb7319de99cdd56e9cd2f214b3bbb6b1256240b6:frontend/public/_redirects:custom-cloudflare-pages-url:2
+bdb45469b9d7d16215444513e45bf4f892ca631c:frontend/public/_redirects:custom-cloudflare-pages-url:1
+c897d29ce2ce15b9d5f8aa880b83070e7ab2420a:docs/fork-setup.md:custom-cloudflare-pages-url:22
+c897d29ce2ce15b9d5f8aa880b83070e7ab2420a:frontend/public/_redirects:custom-ai-traces:7
+c897d29ce2ce15b9d5f8aa880b83070e7ab2420a:frontend/public/_redirects:custom-ai-traces:8
+ea2f485e4d212a43510fc8cdd8c9fb05b78fd91b:frontend/scripts/generate-sitemap.js:custom-cloudflare-pages-url:5
+ef6be419dcd19f7530b31da054baed4ac226cddf:frontend/index.html:custom-cloudflare-pages-url:30
+ef6be419dcd19f7530b31da054baed4ac226cddf:frontend/index.html:custom-cloudflare-pages-url:42
+ef6be419dcd19f7530b31da054baed4ac226cddf:frontend/public/sitemap.xml:custom-cloudflare-pages-url:10
+ef6be419dcd19f7530b31da054baed4ac226cddf:frontend/public/sitemap.xml:custom-cloudflare-pages-url:16
+ef6be419dcd19f7530b31da054baed4ac226cddf:frontend/public/sitemap.xml:custom-cloudflare-pages-url:22
+ef6be419dcd19f7530b31da054baed4ac226cddf:frontend/public/sitemap.xml:custom-cloudflare-pages-url:28
+ef6be419dcd19f7530b31da054baed4ac226cddf:frontend/public/sitemap.xml:custom-cloudflare-pages-url:34
+ef6be419dcd19f7530b31da054baed4ac226cddf:frontend/public/sitemap.xml:custom-cloudflare-pages-url:4
+ef6be419dcd19f7530b31da054baed4ac226cddf:frontend/src/lib/useSEO.ts:custom-cloudflare-pages-url:16
+ef6be419dcd19f7530b31da054baed4ac226cddf:frontend/src/lib/useSEO.ts:custom-cloudflare-pages-url:25
+ef6be419dcd19f7530b31da054baed4ac226cddf:frontend/src/pages/Landing.tsx:custom-cloudflare-pages-url:152
+ef6be419dcd19f7530b31da054baed4ac226cddf:frontend/src/pages/Landing.tsx:custom-cloudflare-pages-url:153
+faafa7be1ea93b8767d80b09c9f51cca056236cd:.github/workflows/pr_conflict_notify.yml:custom-ai-traces:172
