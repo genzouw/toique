@@ -2,18 +2,17 @@ name: markdownlint
 
 on:
   push:
-    branches: [main]
+    branches: [main, master]
     paths:
-      - '**/*.md'
-      - '.markdownlint-cli2.jsonc'
-      - '.github/workflows/markdownlint.yml'
+      - "**/*.md"
+      - ".markdownlint-cli2.jsonc"
+      - ".github/workflows/markdownlint.yml"
   pull_request:
-    branches: [main]
+    branches: [main, master]
     paths:
-      - '**/*.md'
-      - '.markdownlint-cli2.jsonc'
-      - '.github/workflows/markdownlint.yml'
-  workflow_dispatch:
+      - "**/*.md"
+      - ".markdownlint-cli2.jsonc"
+      - ".github/workflows/markdownlint.yml"
 
 concurrency:
   group: markdownlint-${{ github.ref }}
@@ -26,17 +25,18 @@ jobs:
   markdownlint:
     name: markdownlint-cli2
     runs-on: ubuntu-latest
+    # 既存ドキュメントの違反を片付けるまでは赤検知にしない。
+    # 整備完了後に continue-on-error を外して赤検知に切り替える。
+    continue-on-error: true
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
           persist-credentials: false
 
-      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
-        with:
-          node-version: '20'
-
       - name: Run markdownlint-cli2
-        # 既存ドキュメントの MD040/MD031 違反を片付けるまでは赤検知にしない。
-        # 整備完了後に continue-on-error を外して赤検知に切り替える。
-        continue-on-error: true
-        run: npx -y -p markdownlint-cli2@0.18.1 markdownlint-cli2 "**/*.md"
+        # v23.x 以降は Node.js 24 ランタイム要求のため startup_failure する。
+        # GitHub Actions runner が node24 を正式サポートするまで v22.0.0 で固定する。
+        uses: DavidAnson/markdownlint-cli2-action@07035fd053f7be764496c0f8d8f9f41f98305101 # v22.0.0
+        with:
+          config: ".markdownlint-cli2.jsonc"
+          globs: "**/*.md"

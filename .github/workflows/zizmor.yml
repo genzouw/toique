@@ -1,17 +1,24 @@
-name: GitHub Actions Security Scanner (zizmor)
+name: zizmor
 
 on:
   push:
+    branches: ["**"]
   pull_request:
+    branches: ["**"]
+
+concurrency:
+  group: zizmor-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
 
 jobs:
   zizmor:
-    name: zizmor latest via uv
-    if: github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name != github.repository)
+    name: zizmor
     runs-on: ubuntu-latest
     permissions:
       security-events: write
-      # required for workflows in private repositories
       contents: read
       actions: read
     steps:
@@ -21,19 +28,16 @@ jobs:
           persist-credentials: false
 
       - name: Install the latest version of uv
-        uses: astral-sh/setup-uv@fac544c07dec837d0ccb6301d7b5580bf5edae39 # v8.2.0
+        uses: astral-sh/setup-uv@d31148d669074a8d0a63714ba94f3201e7020bc3 # v8.3.0
 
       - name: Run zizmor 🌈
         run: uvx zizmor --format sarif . > results.sarif
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        continue-on-error: true
 
       - name: Upload SARIF file
-        if: always() && github.event_name != 'pull_request'
-        uses: github/codeql-action/upload-sarif@8aad20d150bbac5944a9f9d289da16a4b0d87c1e # v4.36.2
+        uses: github/codeql-action/upload-sarif@54f647b7e1bb85c95cddabcd46b0c578ec92bc1a # v4.36.3
         with:
-          # Path to SARIF file relative to the root of the repository
           sarif_file: results.sarif
-          # Optional category for the results
-          # Used to differentiate multiple results for one commit
           category: zizmor
