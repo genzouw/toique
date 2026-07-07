@@ -1,12 +1,14 @@
 # プロジェクトの技術スタックとコーディング規約
 
 ## 技術スタック
+
 - バックエンド: Bun, Hono, Drizzle ORM, PostgreSQL (17)
 - フロントエンド: React 19, Vite, Tailwind CSS 4
 - 認証: better-auth
 - クラウド/インフラ: Google Cloud (Cloud Run), Cloudflare Pages, CDKTF
 
 ## AI・コーディング向け共通規約
+
 1. **言語とコメント**: ソースコード内のコメントや説明はすべて**日本語**で記述してください。
 2. **パッケージ管理**: npmやpnpmではなく、**Bun** (`bun install`, `bun run ...`) を使用してください。
 3. **セキュリティとアクセス制御**:

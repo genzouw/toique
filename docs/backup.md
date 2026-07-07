@@ -11,7 +11,7 @@
 - **Workload Identity**: サービスアカウント (`backup-job@{PROJECT_ID}.iam.gserviceaccount.com`) による ADC 認証
 - **Secret Manager**: DB 接続情報の安全な管理
 
-```
+```text
 Cloud Scheduler (0 3 * * *) → Cloud Run Jobs → pg_dump → GCS バケット
 ```
 
@@ -110,14 +110,19 @@ docker compose exec db pg_dump -U toique toique | gzip > backup.sql.gz
 ## リストア手順
 
 1. GCS からバックアップファイルをダウンロードします。
+
    ```bash
    gcloud storage cp gs://<GCP_PROJECT_ID>-db-backups/<filename>.sql.gz ./
    ```
+
 2. gzip を解凍します。
+
    ```bash
    gunzip <filename>.sql.gz
    ```
+
 3. データベースにリストアします。
+
    ```bash
    psql -h <host> -p <port> -U <user> -d <db> -f <filename>.sql
    ```
