@@ -36,7 +36,7 @@ export default function ResetPassword() {
           </p>
           <Link
             to="/forgot-password"
-            className="block w-full text-center px-4 py-2 bg-slate-900 text-white rounded-md"
+            className="block w-full text-center px-4 py-2 bg-slate-900 text-white rounded-md focus-ring focus-visible:outline-hidden focus-visible:ring-offset-2 transition-colors"
           >
             再設定メールを再送
           </Link>
@@ -95,7 +95,7 @@ export default function ResetPassword() {
           <p>新しいパスワードでログインしてください。</p>
           <Link
             to="/login"
-            className="block w-full text-center px-4 py-2 bg-slate-900 text-white rounded-md"
+            className="block w-full text-center px-4 py-2 bg-slate-900 text-white rounded-md focus-ring focus-visible:outline-hidden focus-visible:ring-offset-2 transition-colors"
           >
             ログインへ
           </Link>
@@ -130,7 +130,10 @@ export default function ResetPassword() {
         </LoadingButton>
       </form>
       <div className="mt-4 text-sm text-slate-600">
-        <Link to="/login" className="text-slate-900 underline">
+        <Link
+          to="/login"
+          className="text-slate-900 underline focus-ring focus-visible:outline-hidden rounded-sm transition-colors"
+        >
           ログインに戻る
         </Link>
       </div>
