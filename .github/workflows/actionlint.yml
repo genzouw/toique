@@ -62,9 +62,12 @@ jobs:
       - name: Run actionlint (with shellcheck integration)
         # `-shellcheck` で `run:` ブロックのシェル検査を厳格化し、
         # `paths`/`if` 等の構文ミスや誤った expression を起動前に弾く
+        # gh-aw が生成する *.lock.yml はワークフローではないため除外する
         env:
           ACTIONLINT: ${{ steps.actionlint.outputs.executable }}
         run: |
+          mapfile -t WORKFLOWS < <(find .github/workflows -maxdepth 1 -name '*.yml' ! -name '*.lock.yml' | sort)
           "$ACTIONLINT" \
             -color \
-            -shellcheck="$(command -v shellcheck)"
+            -shellcheck="$(command -v shellcheck)" \
+            "${WORKFLOWS[@]}"
