@@ -15,6 +15,10 @@ jobs:
       group: ai-pr-review-${{ github.event.pull_request.number }}
       cancel-in-progress: true
     steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411 # v2.19.4
+        with:
+          egress-policy: audit
       - name: Checkout repository
         uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
@@ -82,10 +86,10 @@ jobs:
             ${prDiff}
             \`\`\`
 
-            以下の観点から徹底的にレビューを行い、問題点や具体的な改善コード（スニペット）を提示してください：
+            2025年の最新Web・セキュリティ標準に基づいて、以下の観点から徹底的にレビューを行い、問題点や具体的な改善コード（スニペット）を提示してください：
             - バグの可能性やロジックの誤り
             - **パフォーマンス**: O(N)ループの回避、N+1問題の防止、不要なデータベースクエリの削減など
-            - **セキュリティ**: APIキーや認証情報のハードコード・ログ漏洩の有無、XSS、SQLインジェクション、認可不足、不適切な権限設定、CORS/CSRFの設定崩れ。
+            - **セキュリティ**: APIキーや認証情報のハードコード・ログ漏洩の有無、XSS、SQLインジェクション、認可不足、不適切な権限設定、CORS/CSRFの設定崩れ、サプライチェーンセキュリティのリスク。
             - **AI固有の脆弱性**: プロンプトインジェクションへの対策、LLMに入力される外部コンテキストのサニタイズ漏れ。
             - **アクセシビリティ**: ボタン等のアクション要素における具体的な対象を含んだ \`aria-label\` や \`title\` の付与、\`role="tablist"\` におけるキーボードナビゲーションのサポートなど。
             - **テストカバレッジ**: 重要なロジックの変更や新機能追加に対して、適切なテスト（ユニットテストやE2Eテスト等）が追加されているか。

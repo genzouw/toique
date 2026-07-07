@@ -41,6 +41,10 @@ jobs:
       GH_TOKEN: ${{ github.token }}
       GH_REPO: ${{ github.repository }}
     steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411 # v2.19.4
+        with:
+          egress-policy: audit
       # 本 workflow はリポジトリのローカルファイルを参照しないため
       # actions/checkout は省略 (zizmor excessive-permissions 解消)。
       - name: Scan recent workflow runs

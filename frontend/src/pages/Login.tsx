@@ -5,6 +5,7 @@ import SEOMetadata from '../components/SEOMetadata';
 import LoadingButton from '../components/LoadingButton';
 import { AuthField } from '../components/AuthField';
 import { AuthLayout } from '../components/AuthLayout';
+import ErrorAlert from '../components/ErrorAlert';
 
 export default function Login() {
   const navigate = useNavigate();
@@ -48,9 +49,7 @@ export default function Login() {
           value={password}
           onChange={setPassword}
         />
-        <div className={error ? 'text-red-600 text-sm' : ''} role="alert">
-          {error}
-        </div>
+        <ErrorAlert error={error} />
         <LoadingButton
           type="submit"
           loading={submitting}
@@ -61,12 +60,18 @@ export default function Login() {
       </form>
       <div className="mt-4 text-sm text-slate-600">
         アカウントをお持ちでない方は{' '}
-        <Link to="/signup" className="text-slate-900 underline">
+        <Link
+          to="/signup"
+          className="text-slate-900 underline focus-ring focus-visible:outline-hidden rounded-sm transition-colors"
+        >
           新規登録
         </Link>
       </div>
       <div className="mt-2 text-sm text-slate-600">
-        <Link to="/forgot-password" className="text-slate-900 underline">
+        <Link
+          to="/forgot-password"
+          className="text-slate-900 underline focus-ring focus-visible:outline-hidden rounded-sm transition-colors"
+        >
           パスワードを忘れた方
         </Link>
       </div>
