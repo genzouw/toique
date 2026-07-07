@@ -4,6 +4,7 @@ import { AuthLayout } from '../components/AuthLayout';
 import { AuthField } from '../components/AuthField';
 import SEOMetadata from '../components/SEOMetadata';
 import LoadingButton from '../components/LoadingButton';
+import ErrorAlert from '../components/ErrorAlert';
 import { API_BASE_URL } from '../lib/api-base-url';
 
 export default function ResetPassword() {
@@ -120,7 +121,7 @@ export default function ResetPassword() {
           value={confirm}
           onChange={setConfirm}
         />
-        {error && <div className="text-red-600 text-sm">{error}</div>}
+        <ErrorAlert error={error} />
         <LoadingButton
           type="submit"
           loading={submitting}
