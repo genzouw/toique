@@ -36,6 +36,8 @@ app.get('/me', async (c) => {
   });
 });
 
+const MAX_TENANT_NAME_LENGTH = 100;
+
 // テナントを作成し、呼び出し元ユーザーを admin として登録
 app.post('/', async (c) => {
   const user = c.get('authUser');
@@ -43,7 +45,7 @@ app.post('/', async (c) => {
   if (!body.tenantName || body.tenantName.trim().length === 0) {
     return c.text('tenantName is required', 400);
   }
-  if (body.tenantName.length > 100) {
+  if (body.tenantName.trim().length > MAX_TENANT_NAME_LENGTH) {
     return c.text('tenantName is too long', 400);
   }
 
