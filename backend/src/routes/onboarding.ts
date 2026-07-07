@@ -43,6 +43,9 @@ app.post('/', async (c) => {
   if (!body.tenantName || body.tenantName.trim().length === 0) {
     return c.text('tenantName is required', 400);
   }
+  if (body.tenantName.length > 100) {
+    return c.text('tenantName is too long', 400);
+  }
 
   // 既に tenant_member がある場合は 409
   const existing = await db
