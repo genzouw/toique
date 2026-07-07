@@ -92,7 +92,7 @@ CSP は document（HTML）の取得時にブラウザが評価する。Cloudflar
 
 バックエンドが返すのは JSON のみだが、エラー時の HTML レスポンスや将来の SSR 導入時の保険として最小限の CSP を設定する。
 
-```
+```text
 default-src 'none';
 frame-ancestors 'none';
 ```
@@ -101,7 +101,7 @@ frame-ancestors 'none';
 
 `Content-Security-Policy-Report-Only` で最初に試すポリシー。観測結果に応じて緩和・厳格化する。
 
-```
+```text
 default-src 'self';
 script-src 'self' https://www.googletagmanager.com;
 connect-src 'self' __VITE_API_ORIGIN__ https://*.google-analytics.com https://*.analytics.google.com https://*.googletagmanager.com;

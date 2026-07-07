@@ -1,5 +1,8 @@
 FROM google/cloud-sdk:alpine
 
+# alpine はパッケージの旧バージョンをリポジトリから削除するため、バージョン固定すると
+# かえってビルドが壊れる。ベースイメージ更新で追随する方針とし DL3018 は抑止する。
+# hadolint ignore=DL3018
 RUN apk add --no-cache postgresql-client tzdata
 
 ENV TZ=Asia/Tokyo

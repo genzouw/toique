@@ -157,6 +157,7 @@
 - **状態**: 30 日 lifecycle delete のみ。Object Versioning、Bucket Lock、Retention Policy なし
 - **リスク**: backup-sa が奪われた場合 (C-3 経由想定) に過去 30 日分のバックアップを上書きできる
 - **対応**:
+
   ```typescript
   versioning: { enabled: true },
   retentionPolicy: { retentionPeriod: 30 * 86400, isLocked: true },

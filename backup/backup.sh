@@ -1,5 +1,7 @@
 #!/bin/sh
 set -eu
+# 実行環境 (google/cloud-sdk:alpine の busybox ash) は pipefail をサポートする
+# shellcheck disable=SC3040
 set -o pipefail
 
 # 環境変数のチェック
