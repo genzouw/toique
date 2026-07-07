@@ -6,12 +6,11 @@ name: Trivy Scan
 # 必須チェック (context: "trivy / Trivy filesystem scan") のため paths フィルタ禁止。
 on:
   push:
-    branches: [main, master]
   pull_request:
-    branches: [main, master]
   schedule:
     # 毎週月曜 04:00 JST (= 日曜 19:00 UTC) に再スキャンして新規 CVE を拾う
     - cron: '0 19 * * 0'
+  workflow_dispatch:
 
 concurrency:
   group: trivy-${{ github.ref }}
@@ -23,4 +22,5 @@ permissions:
 
 jobs:
   trivy:
+    if: github.event_name == 'push' || github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' || (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name != github.repository)
     uses: genzouw/ci-workflows/.github/workflows/trivy.yml@28d2b9b6f563eb1126e786f28e308390b2558a47 # v1.0.1
