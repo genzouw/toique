@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router';
 import { ArrowLeft } from 'lucide-react';
+import { formatDate } from '../../lib/format-date';
 import {
   api,
   type ContactCategory,
@@ -81,8 +82,7 @@ export default function AdminContactDetail() {
       <header className="space-y-1">
         <h1 className="text-xl font-bold text-slate-900">{detail.subject}</h1>
         <div className="text-sm text-slate-600">
-          {new Date(detail.createdAt).toLocaleString('ja-JP')} ・{' '}
-          {CATEGORY_LABEL[detail.category]}
+          {formatDate(detail.createdAt)} ・ {CATEGORY_LABEL[detail.category]}
         </div>
       </header>
 
