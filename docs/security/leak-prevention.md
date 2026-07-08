@@ -7,7 +7,7 @@
 1. **コミット前検知 (Pre-commit)**
    - **ツール:** `secretlint`, `gitleaks`, `lint-staged` (`package.json`) の厳格なフェイルファスト機構、Husky フックベースのファイルパスブロック、エディタ設定 (`.vscode/settings.json`)
    - **実行タイミング:** ローカルでの `git commit` 時（Husky を経由して実行）、およびエディタ上の操作時
-   - **役割:** 開発者や AI エージェントが誤ってシークレットを含むファイルをステージングし、コミットしようとした際に検知してブロックします。`package.json` の `lint-staged` には、すべてのディレクトリ配下の `**/*.env*`, `**/*.pem`, `**/*.p12`, `**/*_rsa`, `**/.npmrc`, `**/.netrc`, `**/*.sqlite`, `**/*.db`, `**/*.log`, `**/*credentials*.json` や AI エージェントの作業跡 (`**/.cursor/`, `**/.claude/` 等)、およびインフラストラクチャの完全な平文状態やシークレットを内包する **Terraform / CDKTF の状態ファイル（`**/*.tfstate*`, `**/cdktf.out/**`, `**/.terraform/**` 等）** を検出した場合に即座にコミットをリジェクトする、クロスプラットフォーム対応の厳格なフェイルファスト機構 (`node -e "..."`) が組み込まれており、遅いリンターの実行前に漏洩を防ぎます。また、エディタの検索・表示対象から `.env` や鍵ファイル、状態ファイルなどを外す除外設定（`.vscode/settings.json`）とルートの `.gitignore`を追加しています（機密管理の補助策であり、ファイルの読み込み自体を完全に防ぐセキュリティ制御ではありません）。Node.js に依存しているため、リポジトリを clone して`bun install`を実行すれば基本設定は一貫して動作します。ローカル環境に`gitleaks`がインストールされている場合、またはサポート対象 OS/ARCH（linux/darwin × x64/arm64）かつネットワーク到達可能な環境でオンラインの場合は、フック実行時に`~/.cache/gitleaks/`へ自動ダウンロード・チェックサム検証を経て、強力な内容ベースのシークレットスキャンが実行されます。オフライン環境・未対応 OS/ARCH・ダウンロード失敗・チェックサム不一致の場合はローカルスキャンをスキップし、コミット自体はブロックしません（CI での検知に委ねます）。ルール設定はリポジトリ直下の`.gitleaks.toml` で管理しており、デフォルトルールに加えてプロジェクト固有の漏洩リスク（ハードコードされた GCP Project ID・Project Number・Service Account、AI エージェントの一時プレースホルダや作業跡、PII としてのメールアドレス、Neon Postgres / Redis のエンドポイント、内部 IP アドレス、Cloudflare Pages / Cloud Run の未公開バックエンド URL）を検知するためのカスタムルールが定義されています。
+   - **役割:** 開発者や AI エージェントが誤ってシークレットを含むファイルをステージングし、コミットしようとした際に検知してブロックします。`package.json` の `lint-staged` には、すべてのディレクトリ配下の `**/*.env*`, `**/*.pem`, `**/*.p12`, `**/*_rsa`, `**/.npmrc`, `**/.netrc`, `**/*.sqlite`, `**/*.db`, `**/*.log`, `**/*credentials*.json` や AI エージェントの作業跡 (`**/.cursor/`, `**/.claude/` 等)、およびインフラストラクチャの完全な平文状態やシークレットを内包する **Terraform / CDKTF の状態ファイル（`**/_.tfstate_`, `**/cdktf.out/**`, `**/.terraform/**` 等）** を検出した場合に即座にコミットをリジェクトする、クロスプラットフォーム対応の厳格なフェイルファスト機構 (`node -e "..."`) が組み込まれており、遅いリンターの実行前に漏洩を防ぎます。また、エディタの検索・表示対象から `.env` や鍵ファイル、状態ファイルなどを外す除外設定（`.vscode/settings.json`）とルートの `.gitignore`を追加しています（機密管理の補助策であり、ファイルの読み込み自体を完全に防ぐセキュリティ制御ではありません）。Node.js に依存しているため、リポジトリを clone して`bun install`を実行すれば基本設定は一貫して動作します。ローカル環境に`gitleaks`がインストールされている場合、またはサポート対象 OS/ARCH（linux/darwin × x64/arm64）かつネットワーク到達可能な環境でオンラインの場合は、フック実行時に`~/.cache/gitleaks/`へ自動ダウンロード・チェックサム検証を経て、強力な内容ベースのシークレットスキャンが実行されます。オフライン環境・未対応 OS/ARCH・ダウンロード失敗・チェックサム不一致の場合はローカルスキャンをスキップし、コミット自体はブロックしません（CI での検知に委ねます）。ルール設定はリポジトリ直下の`.gitleaks.toml` で管理しており、デフォルトルールに加えてプロジェクト固有の漏洩リスク（ハードコードされた GCP Project ID・Project Number・Service Account、AI エージェントの一時プレースホルダや作業跡、PII としてのメールアドレス、Neon Postgres / Redis のエンドポイント、内部 IP アドレス、Cloudflare Pages / Cloud Run の未公開バックエンド URL）を検知するためのカスタムルールが定義されています。
 
 2. **CI 検知 (CI/CD)**
    - **ツール:** `gitleaks` (`gitleaks-action`), `trivy`, `TruffleHog`, `secretlint`, `osv-scanner`, `CodeQL`, `zizmor`
@@ -22,7 +22,11 @@
 ## 責任分界
 
 - **開発者（AIエージェント含む）:** コミット前にローカル環境で `secretlint` が正しく動作するように、必ず依存関係 (`bun install`) をインストールしておくこと。また、より強力な保護のためにローカル環境へ `gitleaks` をインストールすること（例: macOS では `brew install gitleaks`）。
-- **リポジトリ管理者:** GitHub Secret Scanning / Push Protection を有効にし、CIでの多層的なチェックを維持すること。手動でリポジトリの設定（Code security → Push protection）から有効化してください。
+- **リポジトリ管理者およびフォーク運用者:** **最も強力なゼロデイ防御である GitHub Secret Scanning / Push Protection を有効化**し、CI での多層的なチェックを維持してください。手動でリポジトリの Settings (Code security and analysis) から有効化する必要があります。
+
+**Push Protection について:**
+Push Protection は、ローカルの `pre-commit` フックをすり抜けたシークレットや、UI 経由での変更がリポジトリに到達する前に、GitHub のサーバーサイドで受信をブロックする強力な機能です。
+CI ランナーにシークレットが渡る前にブロックされるため、最も確実な漏洩防止層として機能します。本リポジトリへの PR を作成する際は、必ず有効化されていることを確認してください。
 
 ## 運用ルール
 

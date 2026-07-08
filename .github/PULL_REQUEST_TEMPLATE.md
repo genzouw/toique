@@ -33,6 +33,7 @@
 - [ ] DB マイグレーションがある場合、ロールバック手順を確認した
 - [ ] インデックス変更を含む場合、`CREATE INDEX` / `DROP INDEX` を `IF (NOT) EXISTS` で冪等化し、必要なら本番に CONCURRENTLY で先行適用した（`docs/migrations.md`）
 - [ ] secret / 個人情報を含むコードや設定が含まれていない
+- [ ] Push Protection の警告が出ていない（リポジトリ設定で GitHub Push Protection が有効化されていることを確認）
 
 ## デプロイ時の注意
 
