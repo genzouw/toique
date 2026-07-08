@@ -18,7 +18,7 @@
     "test:e2e:install": "playwright install --with-deps chromium"
   },
   "dependencies": {
-    "better-auth": "^1.6.5",
+    "better-auth": "^1.6.23",
     "clsx": "^2.1.1",
     "dompurify": "^3.4.11",
     "lucide-react": "^1.14.0",
