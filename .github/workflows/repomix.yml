@@ -35,7 +35,7 @@ jobs:
         # yamadashy/repomix Composite Action を許可していないため startup_failure が発生する。
         # 許可済みの github-owned アクション (actions/setup-node) + npm 経由での直接実行に切り替える。
         run: |
-          npm install --global repomix@latest
+          npm install --global repomix@1.16.0
           repomix --output repomix-output.xml --compress
 
       - name: Repomix 出力アーティファクトのアップロード
