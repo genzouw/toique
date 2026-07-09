@@ -26,7 +26,7 @@ runs:
         python-version: '3.12'
 
     - name: Install Search Dependencies
-      run: pip install "duckduckgo-search>=8.1.1" "tavily-python>=0.7.26" --break-system-packages
+      run: pip install "duckduckgo-search>=8.1.1" "tavily-python>=0.7.26" "googlesearch-python>=1.3.0" --break-system-packages
       shell: bash
 
     - name: Search via Tavily or DuckDuckGo
@@ -62,6 +62,7 @@ runs:
         if not tavily_key:
             print(f"Using DuckDuckGo for search query: {query}")
             from duckduckgo_search import DDGS
+            ddg_success = False
             try:
                 with DDGS() as ddgs:
                     for _ in range(3):
@@ -69,12 +70,25 @@ runs:
                             results = list(ddgs.text(query, max_results=max_results))
                             if results:
                                 search_res = "\n\n".join([f"Title: {r.get('title')}\nURL: {r.get('href')}\nSnippet: {r.get('body')}" for r in results])
+                                ddg_success = True
                             break
                         except Exception:
                             time.sleep(2)
                             continue
             except Exception as e:
-                search_res = f"Web search failed: {e}"
+                print(f"DuckDuckGo search failed: {e}. Falling back to Google Search...")
+
+            if not ddg_success:
+                print(f"Using Google Search for query: {query}")
+                try:
+                    from googlesearch import search as gsearch
+                    # googlesearch-python returns a generator of urls or objects if advanced=True
+                    # using advanced=True gets title, url, description
+                    g_results = list(gsearch(query, num_results=max_results, advanced=True))
+                    if g_results:
+                        search_res = "\n\n".join([f"Title: {r.title}\nURL: {r.url}\nSnippet: {r.description}" for r in g_results])
+                except Exception as e:
+                    search_res = f"Web search failed across all providers: {e}"
 
         if not search_res:
             search_res = "No relevant Web search results found."

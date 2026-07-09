@@ -1,0 +1,160 @@
+name: AI PR Labeler
+
+on:
+  pull_request:
+    types: [opened, synchronize]
+
+jobs:
+  label_pr:
+    name: Auto Label Pull Request
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+    concurrency:
+      group: ai-pr-labeler-${{ github.event.pull_request.number }}
+      cancel-in-progress: true
+    steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411 # v2.19.4
+        with:
+          egress-policy: audit
+
+      - name: Checkout repository
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Get PR Diff
+        id: get_diff
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          PR_NUMBER=${{ github.event.pull_request.number }}
+          DIFF=$(gh pr diff "$PR_NUMBER" || echo "")
+          TRUNCATED_DIFF=$(echo "$DIFF" | head -c 10000)
+
+          DELIMITER=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
+          {
+            echo "PR_DIFF<<$DELIMITER"
+            echo "$TRUNCATED_DIFF"
+            echo "$DELIMITER"
+          } >> "$GITHUB_ENV"
+
+      - name: Label PR with GitHub Models
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_DIFF: ${{ env.PR_DIFF }}
+        with:
+          script: |
+            const prDiff = process.env.PR_DIFF || '';
+            const prTitle = context.payload.pull_request.title || '';
+            const prBody = context.payload.pull_request.body || '';
+
+            if (!prDiff.trim()) {
+              console.log('No valid diff. Skipping.');
+              return;
+            }
+
+            const prompt = `
+            あなたはシニアソフトウェアエンジニアです。
+            以下のPull Requestのコードの差分やタイトル、説明文を分析し、適切なラベルを1つ以上推論してJSONで返してください。
+
+            【Pull Requestのタイトル】
+            ${prTitle}
+
+            【Pull Requestの説明】
+            ${prBody}
+
+            【コードの差分 (一部切り詰められている可能性があります)】
+            \`\`\`diff
+            ${prDiff}
+            \`\`\`
+            `;
+
+            const schema = {
+              type: "object",
+              properties: {
+                labels: {
+                  type: "array",
+                  items: {
+                    type: "string",
+                    enum: ["bug", "enhancement", "documentation", "dependencies", "refactor", "security", "performance", "test"]
+                  },
+                  description: "Pull Requestに付与すべきラベルの配列。"
+                }
+              },
+              required: ["labels"],
+              additionalProperties: false
+            };
+
+            const response = await fetch('https://models.inference.ai.azure.com/chat/completions', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${process.env.GITHUB_TOKEN}`
+              },
+              body: JSON.stringify({
+                model: 'openai/o3-mini',
+                reasoning_effort: "low",
+                response_format: {
+                  type: "json_schema",
+                  json_schema: {
+                    name: "pr_labels",
+                    schema: schema,
+                    strict: true
+                  }
+                },
+                messages: [
+                  { role: "developer", content: "You are an expert developer helping with PR triage. Output only a JSON object matching the provided schema." },
+                  { role: "user", content: prompt }
+                ]
+              })
+            });
+
+            if (!response.ok) {
+              console.error(`GitHub Models API Error: status=${response.status}`);
+              return;
+            }
+
+            const data = await response.json();
+            if (data.error) {
+              console.error('GitHub Models API Error:', data.error);
+              return;
+            }
+            if (!data.choices || data.choices.length === 0) {
+              console.error('GitHub Models API returned no choices:', JSON.stringify(data));
+              return;
+            }
+            let textResult = (data.choices[0].message.content || '').trim();
+            const fenceMatch = textResult.match(/^```(?:json)?\s*([\s\S]*?)\s*```$/);
+            if (fenceMatch) {
+              textResult = fenceMatch[1].trim();
+            }
+
+            let result;
+            try {
+              result = JSON.parse(textResult);
+            } catch (parseError) {
+              console.error('Failed to parse API response as JSON:', parseError, 'Raw response:', textResult);
+              return;
+            }
+
+            const labels = result.labels || [];
+            if (labels.length > 0) {
+              try {
+                await github.rest.issues.addLabels({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: context.issue.number,
+                  labels: labels
+                });
+                console.log(`Added labels: ${labels.join(', ')}`);
+              } catch (e) {
+                console.error(`Failed to add labels: ${e.message}`);
+              }
+            } else {
+              console.log('No labels inferred.');
+            }
