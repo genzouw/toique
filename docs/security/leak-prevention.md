@@ -22,7 +22,11 @@
 ## 責任分界
 
 - **開発者（AIエージェント含む）:** コミット前にローカル環境で `secretlint` が正しく動作するように、必ず依存関係 (`bun install`) をインストールしておくこと。また、より強力な保護のためにローカル環境へ `gitleaks` をインストールすること（例: macOS では `brew install gitleaks`）。
-- **リポジトリ管理者:** GitHub Secret Scanning / Push Protection を有効にし、CIでの多層的なチェックを維持すること。手動でリポジトリの設定（Code security → Push protection）から有効化してください。
+- **リポジトリ管理者およびフォーク運用者:** **最も強力なゼロデイ防御である GitHub Secret Scanning / Push Protection を有効化**し、CI での多層的なチェックを維持してください。手動でリポジトリの Settings (Code security and analysis) から有効化する必要があります。
+
+**Push Protection について:**
+Push Protection は、ローカルの `pre-commit` フックをすり抜けたシークレットや、UI 経由での変更がリポジトリに到達する前に、GitHub のサーバーサイドで受信をブロックする強力な機能です。
+CI ランナーにシークレットが渡る前にブロックされるため、最も確実な漏洩防止層として機能します。フォークから PR を作成する際は、フォーク元のリポジトリでも `Push Protection` が有効化されていることを確認（推奨）してください。
 
 ## 運用ルール
 
