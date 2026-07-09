@@ -20,7 +20,7 @@ bun install
 ### 2. GitHub Secret Scanning と Push Protection
 
 本リポジトリでは多層的な漏洩防止策を取っています。
-リポジトリ管理者（もしくはフォーク先の管理者）は、**必ずリポジトリの Settings から GitHub Secret Scanning および Push Protection を有効化**してください（Settings → Code security → Push protection）。
+リポジトリ管理者（もしくはフォーク先の管理者）は、**必ずリポジトリの Settings から GitHub Secret Scanning および Push Protection を有効化**してください（Settings > Security > Code security and analysis > Secret scanning > Push protection）。
 
 ### 3. CI における多層的な監査
 
