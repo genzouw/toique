@@ -5,6 +5,7 @@ import {
   api,
   type AdminUserDetail as AdminUserDetailType,
 } from '../../lib/api';
+import { formatDate } from '../../lib/format-date';
 
 export default function AdminUserDetail() {
   const { id } = useParams<{ id: string }>();
@@ -69,14 +70,8 @@ export default function AdminUserDetail() {
             </span>
           }
         />
-        <Info
-          label="登録日時"
-          value={new Date(detail.createdAt).toLocaleString('ja-JP')}
-        />
-        <Info
-          label="更新日時"
-          value={new Date(detail.updatedAt).toLocaleString('ja-JP')}
-        />
+        <Info label="登録日時" value={formatDate(detail.createdAt)} />
+        <Info label="更新日時" value={formatDate(detail.updatedAt)} />
       </section>
 
       <section className="bg-white border border-slate-200 rounded-lg p-4 space-y-3">
@@ -94,7 +89,7 @@ export default function AdminUserDetail() {
               label="テナント作成日時"
               value={
                 detail.tenantCreatedAt
-                  ? new Date(detail.tenantCreatedAt).toLocaleString('ja-JP')
+                  ? formatDate(detail.tenantCreatedAt)
                   : '—'
               }
             />

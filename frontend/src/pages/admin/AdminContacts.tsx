@@ -7,6 +7,7 @@ import {
   type ContactStatus,
   type ContactCategory,
 } from '../../lib/api';
+import { formatDate } from '../../lib/format-date';
 import EmptyState from '../../components/EmptyState';
 
 const STATUS_LABEL: Record<ContactStatus, string> = {
@@ -108,7 +109,7 @@ export default function AdminContacts() {
               {filtered.map((row) => (
                 <tr key={row.id} className="hover:bg-slate-50">
                   <td className="px-4 py-2 text-slate-600 whitespace-nowrap">
-                    {new Date(row.createdAt).toLocaleString('ja-JP')}
+                    {formatDate(row.createdAt)}
                   </td>
                   <td className="px-4 py-2 text-slate-700">
                     {CATEGORY_LABEL[row.category]}
