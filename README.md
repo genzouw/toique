@@ -285,4 +285,4 @@ curl -s http://localhost:3000/api/v1/messages | jq
 
 脆弱性やシークレット漏洩を発見した場合は、公開のIssue等で報告せず、速やかにプライベートな窓口（[`SECURITY.md`](SECURITY.md) 参照）へご報告ください。
 
-また、当プロジェクトでは開発者のローカル・リモートを問わず、シークレットの流出を防ぐための最終防壁として **GitHub Push Protection** の有効化を全コントリビューターに推奨・徹底しています。詳しくは [`docs/security/leak-prevention.md`](docs/security/leak-prevention.md) を参照してください。
+また、当プロジェクトでは開発者のローカル・リモートを問わず、シークレットの流出を防ぐための最終防壁として、本リポジトリ（およびフォーク先リポジトリ）での `GitHub Push Protection` の有効化を徹底しています。詳しくは [`docs/security/leak-prevention.md`](docs/security/leak-prevention.md) を参照してください。
