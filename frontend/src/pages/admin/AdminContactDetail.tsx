@@ -1,13 +1,13 @@
 import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router';
 import { ArrowLeft } from 'lucide-react';
+import { formatDate } from '../../lib/format-date';
 import {
   api,
   type ContactCategory,
   type ContactDetail,
   type ContactStatus,
 } from '../../lib/api';
-import { formatDate } from '../../lib/format-date';
 import { ICON_SIZE } from '../../lib/icon-size';
 
 const CATEGORY_LABEL: Record<ContactCategory, string> = {

@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router';
 import { Users } from 'lucide-react';
-import { api, type AdminUserListItem } from '../../lib/api';
 import { formatDate } from '../../lib/format-date';
+import { api, type AdminUserListItem } from '../../lib/api';
 import EmptyState from '../../components/EmptyState';
 import ErrorAlert from '../../components/ErrorAlert';
 

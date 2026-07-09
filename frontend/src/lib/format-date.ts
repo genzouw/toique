@@ -1,4 +1,8 @@
-const dateFormatter = new Intl.DateTimeFormat('ja-JP', {
+/**
+ * パフォーマンス向上のためにメモ化された Intl.DateTimeFormat。
+ * インスタンスを再利用することで、レンダリングのオーバーヘッドを削減します。
+ */
+const formatter = new Intl.DateTimeFormat('ja-JP', {
   year: 'numeric',
   month: 'numeric',
   day: 'numeric',
@@ -8,13 +12,20 @@ const dateFormatter = new Intl.DateTimeFormat('ja-JP', {
 });
 
 /**
- * Formats a date using a globally memoized Intl.DateTimeFormat instance
- * to prevent performance bottlenecks during list rendering.
+ * Formats a Date object or ISO date string to a Japanese format.
  */
-export function formatDate(date: string | number | Date): string {
-  const dateObj =
+export function formatDate(
+  date: string | number | Date | null | undefined,
+): string {
+  if (!date) {
+    return '—';
+  }
+  const d =
     typeof date === 'string' || typeof date === 'number'
       ? new Date(date)
       : date;
-  return dateFormatter.format(dateObj);
+  if (isNaN(d.getTime())) {
+    return '—';
+  }
+  return formatter.format(d);
 }

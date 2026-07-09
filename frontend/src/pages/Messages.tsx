@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { MessageSquare, RefreshCw } from 'lucide-react';
-import { api, type InboundMessageListItem } from '../lib/api';
 import { formatDate } from '../lib/format-date';
+import { api, type InboundMessageListItem } from '../lib/api';
 import LoadingButton from '../components/LoadingButton';
 import EmptyState from '../components/EmptyState';
 import ErrorAlert from '../components/ErrorAlert';

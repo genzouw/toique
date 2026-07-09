@@ -1,11 +1,11 @@
 import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router';
 import { ArrowLeft } from 'lucide-react';
+import { formatDate } from '../../lib/format-date';
 import {
   api,
   type AdminUserDetail as AdminUserDetailType,
 } from '../../lib/api';
-import { formatDate } from '../../lib/format-date';
 
 export default function AdminUserDetail() {
   const { id } = useParams<{ id: string }>();

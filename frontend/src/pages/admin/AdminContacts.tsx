@@ -1,13 +1,13 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router';
 import { Mail } from 'lucide-react';
+import { formatDate } from '../../lib/format-date';
 import {
   api,
   type ContactListItem,
   type ContactStatus,
   type ContactCategory,
 } from '../../lib/api';
-import { formatDate } from '../../lib/format-date';
 import EmptyState from '../../components/EmptyState';
 
 const STATUS_LABEL: Record<ContactStatus, string> = {
