@@ -34,8 +34,9 @@ jobs:
         # 注: リポジトリの Actions 設定 (selected actions) が個人アカウント提供の
         # yamadashy/repomix Composite Action を許可していないため startup_failure が発生する。
         # 許可済みの github-owned アクション (actions/setup-node) + npm 経由での直接実行に切り替える。
+        # バージョンは zizmor (adhoc-packages) 対策として latest ではなく固定値を指定する。
         run: |
-          npm install --global repomix@latest
+          npm install --global repomix@1.16.0
           repomix --output repomix-output.xml --compress
 
       - name: Repomix 出力アーティファクトのアップロード
