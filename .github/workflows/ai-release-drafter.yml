@@ -59,7 +59,7 @@ jobs:
       - name: Generate Release Notes with GitHub Models
         if: env.SKIP == 'false'
         id: generate_notes
-        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           COMMITS: ${{ env.COMMITS }}
