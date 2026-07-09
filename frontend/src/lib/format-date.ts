@@ -1,7 +1,6 @@
 /**
- * Memoized Intl.DateTimeFormat for performance.
- * Date.toLocaleString() is noticeably slow in JS, especially when rendered in loops.
- * Reusing a globally memoized Intl.DateTimeFormat instance provides an O(n) rendering speedup.
+ * パフォーマンス向上のためにメモ化された Intl.DateTimeFormat。
+ * インスタンスを再利用することで、レンダリングのオーバーヘッドを削減します。
  */
 const formatter = new Intl.DateTimeFormat('ja-JP', {
   year: 'numeric',
