@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router';
 import { Users } from 'lucide-react';
+import { formatDate } from '../../lib/format-date';
 import { api, type AdminUserListItem } from '../../lib/api';
 import EmptyState from '../../components/EmptyState';
 import ErrorAlert from '../../components/ErrorAlert';
@@ -65,7 +66,7 @@ export default function AdminUsers() {
               {rows.map((row) => (
                 <tr key={row.id} className="hover:bg-slate-50">
                   <td className="px-4 py-2 text-slate-600 whitespace-nowrap">
-                    {new Date(row.createdAt).toLocaleString('ja-JP')}
+                    {formatDate(row.createdAt)}
                   </td>
                   <td className="px-4 py-2">
                     <Link
