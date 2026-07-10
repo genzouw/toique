@@ -124,7 +124,7 @@ jobs:
                       },
                       suggestion: {
                         type: ["string", "null"],
-                        description: "具体的なコード修正案 (コードブロックを使用)。修正案がない場合はnull"
+                        description: "コードフェンスを含まない具体的な修正コード。修正案がない場合はnull"
                       }
                     },
                     required: ["category", "description", "suggestion"],
