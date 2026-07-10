@@ -265,7 +265,9 @@ gh aw compile
 \`\`\`
 
 ### AI PR Labeler
+
 Pull Requestが作成または更新された際に、AIが自動的に差分と説明を分析し、最適なラベル（bug, enhancement, documentationなど）を付与するワークフロー (`ai-pr-labeler.yml`) を追加しました。これにより、PRのトリアージがさらに自動化されます。特別な権限設定は不要で、標準の `GITHUB_TOKEN` (issues: write) で動作します。
 
 ### RAG 検索ロジックの改善 (Google Search フォールバック)
+
 Tavily API および DuckDuckGo での検索が失敗した場合に備えて、フォールバックとして `googlesearch-python` (Google Search) を追加しました (`ai-web-search` Action)。これにより、DuckDuckGoが頻繁なリクエストでブロックされた場合でも安定して RAG (Retrieval-Augmented Generation) コンテキストを取得できます。追加のAPIキーは不要です。
