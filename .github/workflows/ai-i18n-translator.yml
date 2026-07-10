@@ -1,0 +1,139 @@
+name: AI i18n Translator
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'README.md'
+      - 'docs/**/*.md'
+
+jobs:
+  translate_docs:
+    name: Translate Documentation to English
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@v2
+        with:
+          egress-policy: audit
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+          persist-credentials: false
+
+      - name: Get modified markdown files
+        id: changed-files
+        run: |
+          # Get list of added/modified markdown files
+          CHANGED_FILES=$(git diff --name-only HEAD^ HEAD | grep -E '\.md$' | grep -vE '\.en\.md$' || true)
+          echo "files<<EOF" >> "$GITHUB_OUTPUT"
+          echo "$CHANGED_FILES" >> "$GITHUB_OUTPUT"
+          echo "EOF" >> "$GITHUB_OUTPUT"
+
+          if [ -z "$CHANGED_FILES" ]; then
+            echo "No translation targets found."
+            echo "has_changes=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "has_changes=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Setup Node.js
+        if: steps.changed-files.outputs.has_changes == 'true'
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Translate Documents with GitHub Models
+        if: steps.changed-files.outputs.has_changes == 'true'
+        uses: actions/github-script@v7
+        env:
+          GITHUB_TOKEN: ${{ secrets.PAT_FOR_MODELS }}
+          CHANGED_FILES: ${{ steps.changed-files.outputs.files }}
+        with:
+          script: |
+            const fs = require('fs');
+            const path = require('path');
+
+            const files = process.env.CHANGED_FILES.split('\n').filter(f => f.trim() !== '');
+            if (files.length === 0) return;
+
+            for (const file of files) {
+              console.log(`Translating ${file}...`);
+              try {
+                const content = fs.readFileSync(file, 'utf8');
+
+                const prompt = `
+                以下の日本語のMarkdownドキュメントを、技術的に正確で自然な英語に翻訳してください。
+                Markdownの構文（見出し、リンク、コードブロック、リスト等）は崩さずにそのまま保持してください。
+                出力は翻訳されたMarkdownのテキストのみとしてください。
+
+                【元のドキュメント】
+                ${content}
+                `;
+
+                const response = await fetch('https://models.inference.ai.azure.com/chat/completions', {
+                  method: 'POST',
+                  headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${process.env.GITHUB_TOKEN}`
+                  },
+                  body: JSON.stringify({
+                    model: 'openai/o3-mini',
+                    reasoning_effort: "low",
+                    messages: [
+                      { role: "developer", content: "You are an expert technical translator. Translate the given Japanese Markdown to English. Output only the translated markdown content without any wrapper code blocks." },
+                      { role: "user", content: prompt }
+                    ]
+                  })
+                });
+
+                if (!response.ok) {
+                  console.error(`Failed to translate ${file}: status=${response.status}`);
+                  continue;
+                }
+
+                const data = await response.json();
+                let translatedContent = data.choices[0].message.content.trim();
+
+                // 防御的: もしモデルが ```markdown で囲んで出力してきた場合は除去する
+                if (translatedContent.startsWith('```markdown')) {
+                  translatedContent = translatedContent.substring('```markdown'.length).trim();
+                  if (translatedContent.endsWith('```')) {
+                    translatedContent = translatedContent.substring(0, translatedContent.length - 3).trim();
+                  }
+                } else if (translatedContent.startsWith('```')) {
+                  translatedContent = translatedContent.substring(3).trim();
+                  if (translatedContent.endsWith('```')) {
+                    translatedContent = translatedContent.substring(0, translatedContent.length - 3).trim();
+                  }
+                }
+
+                // Determine target file name (.en.md)
+                const ext = path.extname(file);
+                const basename = path.basename(file, ext);
+                const dirname = path.dirname(file);
+                const targetFile = path.join(dirname, `${basename}.en${ext}`);
+
+                fs.writeFileSync(targetFile, translatedContent);
+                console.log(`Successfully generated ${targetFile}`);
+
+              } catch (e) {
+                console.error(`Error processing ${file}: ${e}`);
+              }
+            }
+
+      - name: Create Pull Request with Translations
+        if: steps.changed-files.outputs.has_changes == 'true'
+        uses: peter-evans/create-pull-request@v7
+        with:
+          token: ${{ secrets.PAT_FOR_MODELS }}
+          commit-message: 'docs: auto-generate english translations via AI'
+          title: 'docs: AIによるドキュメントの英語翻訳更新'
+          body: '🤖 GitHub Models (o3-mini) によって、更新されたドキュメントの英語翻訳版 (\`*.en.md\`) が自動生成・更新されました。内容を確認してマージしてください。'
+          branch: 'ai-i18n-translation-update'
+          base: 'main'
