@@ -59,6 +59,13 @@ function rateLimited(ip: string): boolean {
 
   if (!history) {
     if (RATE_LIMIT_MAX <= 0) return true;
+    // Prevent OOM DoS by enforcing a maximum map size
+    if (rateBuckets.size >= 10000) {
+      const oldestKey = rateBuckets.keys().next().value;
+      if (oldestKey !== undefined) {
+        rateBuckets.delete(oldestKey);
+      }
+    }
     rateBuckets.set(ip, [now]);
     return false;
   }
