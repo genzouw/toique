@@ -55,11 +55,12 @@ runs:
                 results = response.get('results', [])
                 if results:
                     search_res = "\n\n".join([f"Title: {r.get('title')}\nURL: {r.get('url')}\nSnippet: {r.get('content')}" for r in results])
+                else:
+                    print("Tavily returned no results. Falling back to DuckDuckGo...")
             except Exception as e:
                 print(f"Tavily search failed: {e}. Falling back to DuckDuckGo...")
-                tavily_key = "" # Fallback
 
-        if not tavily_key:
+        if not search_res:
             print(f"Using DuckDuckGo for search query: {query}")
             from duckduckgo_search import DDGS
             ddg_success = False
