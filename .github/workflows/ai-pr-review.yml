@@ -205,7 +205,9 @@ jobs:
                 }
               }
             } else {
-              reviewComment += "特に指摘事項はありませんでした。LGTM! 🎉\n";
+              reviewComment += result.approval_recommendation === "Approve"
+                ? "特に指摘事項はありませんでした。LGTM! 🎉\n"
+                : "個別のレビュー指摘は生成されませんでした。\n";
             }
 
             reviewComment += `\n### 推奨アクション: **${result.approval_recommendation}**`;
