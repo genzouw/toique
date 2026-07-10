@@ -12,11 +12,15 @@ export const PLAN_PRICES: Record<PlanId, number> = {
   pro: 2980,
 };
 
+// ⚡ Bolt: Cache Intl.NumberFormat instance to avoid costly re-initialization on every function call.
+// This significantly reduces overhead when formatting prices frequently during renders (e.g. iterating over lists).
+const formatter = new Intl.NumberFormat('ja-JP');
+
 /**
  * マーケUI向け表記。例: `¥2,980`
  */
 export function formatPriceWithSymbol(amount: number): string {
-  return `¥${amount.toLocaleString('ja-JP')}`;
+  return `¥${formatter.format(amount)}`;
 }
 
 /**
@@ -24,5 +28,5 @@ export function formatPriceWithSymbol(amount: number): string {
  * 税込/税抜の明示は呼び出し側で結合する。
  */
 export function formatPriceWithUnit(amount: number): string {
-  return `${amount.toLocaleString('ja-JP')}円`;
+  return `${formatter.format(amount)}円`;
 }
