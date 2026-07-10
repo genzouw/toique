@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState, useId } from 'react';
 import { Inbox, Download, RefreshCw } from 'lucide-react';
+import { formatDate } from '../lib/format-date';
 import { api, type Submission, type FormListItem } from '../lib/api';
 import EmptyState from '../components/EmptyState';
 import ErrorAlert from '../components/ErrorAlert';
@@ -166,7 +167,7 @@ export default function Submissions() {
               {items.map((s) => (
                 <tr key={s.id} className="align-top">
                   <td className="px-4 py-2 text-slate-700 whitespace-nowrap">
-                    {new Date(s.submittedAt).toLocaleString('ja-JP')}
+                    {formatDate(s.submittedAt)}
                   </td>
                   <td className="px-4 py-2 text-slate-900 whitespace-nowrap">
                     {formsById[s.formId]?.name ?? s.formId.slice(0, 8)}

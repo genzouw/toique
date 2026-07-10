@@ -20,7 +20,7 @@ bun install
 ### 2. GitHub Secret Scanning と Push Protection
 
 本リポジトリでは多層的な漏洩防止策を取っています。
-リポジトリ管理者（もしくはフォーク先の管理者）は、**必ずリポジトリの Settings から GitHub Secret Scanning および Push Protection を有効化**してください（Settings → Code security → Push protection）。
+リポジトリ管理者（もしくはフォーク先の管理者）は、**必ずリポジトリの Settings から GitHub Secret Scanning および Push Protection を有効化**してください（Settings > Security > Code security and analysis > Secret scanning > Push protection）。
 
 ### 3. CI における多層的な監査
 
@@ -36,6 +36,16 @@ bun install
 
 - 速やかに該当のシークレットを無効化（ローテート）してください。
 - 履歴の改ざん（`force-push`）だけでは安全ではありません。必ずキー自体を無効化した上で、管理者へ報告してください。
+
+### 5. シークレットが含まれているとして Push がブロックされた場合の対処 (Push Protection)
+
+当リポジトリ（およびそのフォーク）では、CI 実行以前の層である **GitHub Push Protection** が有効化されている場合、シークレットを含むコミットを Push しようとすると、サーバーサイドで自動的に拒否されます（`remote: GitHub detected a secret` のようなエラーが出ます）。
+
+ブロックされた場合は、以下の手順で対応してください：
+
+1. 本当に機密情報を含んでいた場合、ただちにそのシークレットを無効化（ローテーション）してください。
+2. `Git` の履歴から該当のシークレットを完全に取り除くため、直前のコミットであれば `git commit --amend`、それ以前のコミットであれば `git rebase -i` を使用してコミットを修正し、シークレットを削除してから再 Push してください（履歴全体を書き換える必要がある場合は `BFG Repo-Cleaner` や `git filter-repo` を検討してください）。
+3. もしテスト用のダミー値などで誤検知（False Positive）となった場合は、Push 時にターミナルに表示される URL にアクセスし、誤検知としてブロックを解除（bypass）した上で Push してください。
 
 ## 開発フロー
 

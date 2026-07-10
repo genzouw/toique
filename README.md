@@ -281,6 +281,8 @@ curl -s http://localhost:3000/api/v1/messages | jq
 - **Pre-commit フック (`secretlint`, `gitleaks`)**: 開発者のローカル環境でコミット前にシークレットを検知します（`gitleaks` はローカルにインストールされている場合のみ実行され、検出時はコミットをブロック。未インストール時は警告のみでスキップし、CI 側の検知に委ねます）。
 - **CI / GitHub Actions**: `gitleaks` および `trivy` を使用して PR および push 時に二重チェックを行います。
 
-### セキュリティ報告窓口
+## セキュリティ報告窓口
 
 脆弱性やシークレット漏洩を発見した場合は、公開のIssue等で報告せず、速やかにプライベートな窓口（[`SECURITY.md`](SECURITY.md) 参照）へご報告ください。
+
+また、当プロジェクトでは開発者のローカル・リモートを問わず、シークレットの流出を防ぐための最終防壁として、本リポジトリ（およびフォーク先リポジトリ）での `GitHub Push Protection` の有効化を徹底しています。詳しくは [`docs/security/leak-prevention.md`](docs/security/leak-prevention.md) を参照してください。

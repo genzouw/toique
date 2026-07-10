@@ -15,3 +15,10 @@ rules:
       # PR write 権限が必要なため pull_request_target が必須。チェックアウトは行わず、
       # `pull_request.user.login == 'dependabot[bot]'` で発火元を検証する。
       - dependabot-auto-merge.yml
+  adhoc-packages:
+    ignore:
+      # repomix はこのワークフロー内でのみ使う単体CLIツールで、リポジトリの依存関係
+      # ではない。npm パッケージロックファイルを別途作る運用コストに見合わないため、
+      # `npm install --global` による導入を許容する。バージョンは 1.16.0 に固定済みで
+      # サプライチェーンリスクは許容範囲。
+      - repomix.yml
