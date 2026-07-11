@@ -81,6 +81,9 @@ function rateLimited(ip: string): boolean {
   }
 
   history.push(now);
+  // Map の挿入順序を最新化し、FIFO 削除が LRU として機能するようにする
+  rateBuckets.delete(ip);
+  rateBuckets.set(ip, history);
   return false;
 }
 
