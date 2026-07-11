@@ -1,0 +1,126 @@
+name: AI i18n Documentation Translator
+
+on:
+  pull_request:
+    paths:
+      - '**.md'
+    types: [opened, synchronize, reopened]
+
+jobs:
+  i18n_translate:
+    name: Automated i18n Translation
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411 # v2.19.4
+        with:
+          egress-policy: audit
+
+      - name: Checkout repository
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Get PR Diff for Markdown files
+        id: get_diff
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          REPO: ${{ github.repository }}
+        run: |
+          # Use GitHub CLI to get PR diff, filtering only for .md files
+          # Note: gh pr diff doesn't support path filtering natively, so we get the whole diff and rely on the AI to parse it,
+          # OR we just pass the full diff and the prompt handles it (paths trigger already limits this workflow to run when .md changes).
+          DIFF=$(gh pr diff "$PR_NUMBER" --repo "$REPO")
+          TRUNCATED_DIFF=$(echo "$DIFF" | head -n 8000)
+
+          DELIMITER=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
+          {
+            echo "diff<<$DELIMITER"
+            echo "$TRUNCATED_DIFF"
+            echo "$DELIMITER"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Translate with GitHub Models
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PAT_FOR_MODELS: ${{ secrets.PAT_FOR_MODELS }}
+          PR_DIFF: ${{ steps.get_diff.outputs.diff }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        with:
+          script: |
+            const prDiff = process.env.PR_DIFF || '';
+            const prNumber = parseInt(process.env.PR_NUMBER);
+
+            if (!process.env.PAT_FOR_MODELS) {
+              console.error("Missing PAT_FOR_MODELS secret. Cannot call GitHub Models API.");
+              return;
+            }
+
+            if (!prDiff) {
+              console.log("No diff found. Skipping translation.");
+              return;
+            }
+
+            const prompt = `
+            あなたはIT・ソフトウェア開発のドキュメント翻訳を専門とするAIアシスタントです。
+            以下のPull Requestの変更差分（diff）に含まれるMarkdownファイル（.md）の日本語の変更箇所を読み取り、
+            それに対応する高品質で自然な英語翻訳案を作成してください。
+
+            【翻訳の要件】
+            - 技術的な文脈（ソフトウェア開発、自動化、AI活用など）を考慮し、正確な用語を使用すること。
+            - 直訳ではなく、ネイティブのエンジニアが読んで違和感のない自然な表現（Fluent English）にすること。
+            - 変更された段落や文を中心に翻訳案を提示してください。
+            - 変更がない場合や、翻訳の必要がないと判断されるコードブロックなどの場合は、その旨を簡潔に伝えてください。
+
+            【指示】
+            翻訳案を日本語のMarkdown形式で（英語の翻訳テキストは引用またはコードブロックなど見やすく配置して）回答してください。
+
+            【差分】
+            \`\`\`diff
+            ${prDiff}
+            \`\`\`
+            `;
+
+            const response = await fetch('https://models.inference.ai.azure.com/chat/completions', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${process.env.PAT_FOR_MODELS}`
+              },
+              body: JSON.stringify({
+                model: 'openai/o3-mini',
+                reasoning_effort: "high",
+                messages: [
+                  { role: "developer", content: "You are an expert technical translator. Answer in Japanese." },
+                  { role: "user", content: `<user_input>${prompt}</user_input>` }
+                ]
+              })
+            });
+
+            if (!response.ok) {
+              console.error(`GitHub Models API Error: status=${response.status}`);
+              return;
+            }
+
+            const data = await response.json();
+            if (data.error) {
+              console.error('GitHub Models API Error:', data.error);
+              return;
+            }
+
+            const analysis = data.choices[0].message.content;
+
+            const commentBody = `🤖 **AI i18n Documentation Translator**\n\n${analysis}`;
+
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: prNumber,
+              body: commentBody
+            });
