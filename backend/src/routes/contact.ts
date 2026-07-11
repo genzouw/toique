@@ -23,6 +23,7 @@ const CATEGORIES = new Set([
 // 分散環境を考慮するなら Redis 等に置き換える。
 const RATE_LIMIT_WINDOW_MS = 60 * 60 * 1000;
 const RATE_LIMIT_MAX = 5;
+const MAX_BUCKETS = 10000; // Limit memory usage to prevent OOM DoS
 const rateBuckets = new Map<string, number[]>();
 
 // ソート済み配列の先頭から期限切れエントリ数をカウント
@@ -59,6 +60,15 @@ function rateLimited(ip: string): boolean {
 
   if (!history) {
     if (RATE_LIMIT_MAX <= 0) return true;
+
+    // Evict oldest entry if we reach the limit
+    if (rateBuckets.size >= MAX_BUCKETS) {
+      const oldestKey = rateBuckets.keys().next().value;
+      if (oldestKey !== undefined) {
+        rateBuckets.delete(oldestKey);
+      }
+    }
+
     rateBuckets.set(ip, [now]);
     return false;
   }
