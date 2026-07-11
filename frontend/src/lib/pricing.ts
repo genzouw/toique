@@ -12,8 +12,6 @@ export const PLAN_PRICES: Record<PlanId, number> = {
   pro: 2980,
 };
 
-// ⚡ Bolt: Cache Intl.NumberFormat instance to avoid costly re-initialization on every function call.
-// This significantly reduces overhead when formatting prices frequently during renders (e.g. iterating over lists).
 const formatter = new Intl.NumberFormat('ja-JP');
 
 /**
