@@ -284,4 +284,4 @@ Tavily API および DuckDuckGo での検索が失敗した場合に備えて、
 Markdownドキュメントの変更が含まれるPull Requestに対して、日本語の変更内容を読み取り、高品質で自然な英語の翻訳案（Fluent English）を自動的に提案するワークフロー（`ai-i18n-translator.yml`）を追加しました。
 
 - **実行タイミング:** `.md` ファイルが変更されたPull Requestの `opened`, `synchronize`, `reopened` 時。
-- **権限設定:** こちらも同様に GitHub Models API (`o3-mini`) を呼び出すため、リポジトリの Secrets に `PAT_FOR_MODELS` の設定が必須です。
+- **権限設定:** こちらも同様に GitHub Models API (`o3-mini`) を呼び出すため、リポジトリの Secrets に `PAT_FOR_MODELS` の設定が必須です。翻訳案のコメント投稿には標準の `GITHUB_TOKEN` (`pull-requests: write`) を使用します。
