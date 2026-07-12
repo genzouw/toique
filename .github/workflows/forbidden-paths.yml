@@ -1,0 +1,80 @@
+name: Forbidden Paths Check
+
+# ローカルの Husky (`.husky/pre-commit`) や `lint-staged` (`package.json`) に設定されている
+# 「存在自体がリスクとなるファイル（シークレットそのもの、インフラの状態ファイル、AIの作業跡など）」が、
+# `--no-verify` 等でバイパスされてコミット・プッシュされた場合に、
+# CI 上で確実に検知してマージをブロックするためのワークフローです。
+# 参考: docs/security/leak-prevention.md
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: forbidden-paths-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  check-forbidden-paths:
+    name: Check for forbidden file paths
+    # public リポジトリでの PR スキャン漏れを防ぎつつ、内部 PR の重複実行を防ぐ
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch' || (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name != github.repository)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411 # v2.19.4
+        with:
+          egress-policy: audit
+
+      - name: Checkout repository
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          # push 時は PR と異なり github.event.before が存在する（新規ブランチ時はゼロSHAなので注意）
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Check file paths
+        run: |
+          set -euo pipefail
+
+          # 対象とするコミットの差分を取得する
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            # PR の場合: PR のベースブランチと HEAD の差分
+            BASE_SHA="${{ github.event.pull_request.base.sha }}"
+            HEAD_SHA="${{ github.event.pull_request.head.sha }}"
+            echo "Checking files changed in PR (from $BASE_SHA to $HEAD_SHA)..."
+            CHANGED_FILES=$(git diff --name-only --diff-filter=d "$BASE_SHA" "$HEAD_SHA" || true)
+          else
+            # push 等の場合: 直前のコミットとの差分
+            BEFORE_SHA="${{ github.event.before }}"
+            # 新規ブランチの push の場合は before が all zero SHA になる
+            if [ "$BEFORE_SHA" = "0000000000000000000000000000000000000000" ] || [ -z "$BEFORE_SHA" ]; then
+              # 新規ブランチの場合は HEAD に含まれる全ファイル、もしくはツリー全体を検査
+              echo "New branch push detected or before SHA is empty. Checking all files in the current tree..."
+              CHANGED_FILES=$(git ls-files || true)
+            else
+              echo "Checking files changed in push (from $BEFORE_SHA to ${{ github.sha }})..."
+              CHANGED_FILES=$(git diff --name-only --diff-filter=d "$BEFORE_SHA" "${{ github.sha }}" || true)
+            fi
+          fi
+
+          if [ -z "$CHANGED_FILES" ]; then
+            echo "No files to check."
+            exit 0
+          fi
+
+          # 正規表現は .husky/pre-commit と同等のものを指定（削除ファイルは git diff --diff-filter=d で既に除外済み）
+          FORBIDDEN_FILES=$(echo "$CHANGED_FILES" | grep -E '(\.env.*|\.cursor/.*|\.claude/.*|\.aider.*|\.windsurf/.*|\.jules/.*|\.Jules/.*|.*credentials.*\.json|.*\.pem|.*\.key|.*\.p12|.*_rsa|.*\.sqlite|.*\.db|.*\.log|\.npmrc|\.netrc|.*\.tfstate(\..*)?|(^|/)cdktf\.out(/.*)?|(^|/)\.terraform(/.*)?)$' || true)
+
+          if [ -n "$FORBIDDEN_FILES" ]; then
+            echo "::error::🚨 [Security Error] The following sensitive files or AI footprints were detected in this change:"
+            echo "$FORBIDDEN_FILES"
+            echo "Please remove them and ensure they are added to .gitignore."
+            exit 1
+          fi
+
+          echo "✅ No forbidden paths found in the changed files."
