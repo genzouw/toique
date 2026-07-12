@@ -12,7 +12,7 @@ export const PLAN_PRICES: Record<PlanId, number> = {
   pro: 2980,
 };
 
-// globally cached formatter to avoid expensive re-initializations
+// 再初期化によるオーバーヘッドを避けるため、フォーマッタをグローバルにキャッシュ
 const numberFormatter = new Intl.NumberFormat('ja-JP');
 
 /**
