@@ -271,3 +271,17 @@ Pull Requestが作成または更新された際に、AIが自動的に差分と
 ### RAG 検索ロジックの改善 (Google Search フォールバック)
 
 Tavily API および DuckDuckGo での検索が失敗した場合に備えて、フォールバックとして `googlesearch-python` (Google Search) を追加しました (`ai-web-search` Action)。これにより、DuckDuckGoが頻繁なリクエストでブロックされた場合でも安定して RAG (Retrieval-Augmented Generation) コンテキストを取得できます。追加のAPIキーは不要です。
+
+### AI Accessibility Scanner (a11y) の導入
+
+フロントエンド（React/HTMLなど）のコード変更が含まれるPull Requestに対して、最新のアクセシビリティ（WCAG / WAI-ARIA）基準に基づき、`aria-label` の設定や適切な `role` の使用などを自動的に評価し、レビューコメントを投稿するワークフロー（`ai-a11y-scanner.yml`）を追加しました。
+
+- **実行タイミング:** フロントエンド関連のファイルが変更されたPull Requestの `opened`, `synchronize`, `reopened` 時。
+- **権限設定:** GitHub Models API (`o3-mini`) を利用するため、リポジトリの Secrets に `PAT_FOR_MODELS` (GitHub Models にアクセス可能な Personal Access Token) を設定する必要があります。PRへのコメント投稿には標準の `GITHUB_TOKEN` (pull-requests: write) を使用します。
+
+### AI i18n Documentation Translator の導入
+
+Markdownドキュメントの変更が含まれるPull Requestに対して、日本語の変更内容を読み取り、高品質で自然な英語の翻訳案（Fluent English）を自動的に提案するワークフロー（`ai-i18n-translator.yml`）を追加しました。
+
+- **実行タイミング:** `.md` ファイルが変更されたPull Requestの `opened`, `synchronize`, `reopened` 時。
+- **権限設定:** こちらも同様に GitHub Models API (`o3-mini`) を呼び出すため、リポジトリの Secrets に `PAT_FOR_MODELS` の設定が必須です。翻訳案のコメント投稿には標準の `GITHUB_TOKEN` (`pull-requests: write`) を使用します。
