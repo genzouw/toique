@@ -1,114 +1,109 @@
-name: AI Accessibility Scanner
+name: AI Accessibility Scanner (a11y)
 
 on:
   pull_request:
-    types: [opened, synchronize, reopened]
     paths:
       - 'frontend/src/**/*.tsx'
+      - 'frontend/src/**/*.ts'
       - 'frontend/src/**/*.jsx'
-      - 'frontend/src/**/*.html'
+      - 'frontend/src/**/*.js'
+      - 'frontend/index.html'
+    types: [opened, synchronize, reopened]
 
 jobs:
   a11y_review:
-    name: Accessibility Review
+    name: Automated A11y Review
     runs-on: ubuntu-latest
     permissions:
       contents: read
       pull-requests: write
-    concurrency:
-      group: ai-a11y-scanner-${{ github.event.pull_request.number }}
-      cancel-in-progress: true
     steps:
       - name: Harden Runner
-        uses: step-security/harden-runner@v2
+        uses: step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411 # v2.19.4
         with:
           egress-policy: audit
+
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
           fetch-depth: 0
           persist-credentials: false
 
-      - name: Get PR Diff for Frontend
+      - name: Get PR Diff
         id: get_diff
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          REPO: ${{ github.repository }}
         run: |
-          PR_NUMBER=${{ github.event.pull_request.number }}
-          # Filter diff to only UI related files
-          DIFF=$(gh pr diff "$PR_NUMBER" | grep -E '^\+\+\+ b/frontend/src/.*\.(tsx|jsx|html)' -A 500 || echo "Cannot fetch diff.")
-          TRUNCATED_DIFF=$(echo "$DIFF" | head -c 15000)
+          # Use GitHub CLI to get PR diff
+          DIFF=$(gh pr diff "$PR_NUMBER" --repo "$REPO")
+          # Limit diff to ~8000 lines to avoid blowing up the context window
+          TRUNCATED_DIFF=$(echo "$DIFF" | head -n 8000)
 
+          # Pass multiple lines to GITHUB_OUTPUT safely
           DELIMITER=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
           {
-            echo "PR_DIFF<<$DELIMITER"
+            echo "diff<<$DELIMITER"
             echo "$TRUNCATED_DIFF"
             echo "$DELIMITER"
-          } >> "$GITHUB_ENV"
+          } >> "$GITHUB_OUTPUT"
 
-      - name: Search via Tavily or DuckDuckGo (RAG prep)
-        id: search_web
-        uses: ./.github/actions/ai-web-search
-        with:
-          search_query: 'WCAG 2.1 accessibility best practices ARIA roles screen reader "React" (site:zenn.dev OR site:qiita.com OR site:github.com)'
-          tavily_api_key: ${{ secrets.TAVILY_API_KEY }}
-          max_results: '3'
-
-      - name: A11y Review with GitHub Models
-        uses: actions/github-script@v7
+      - name: Analyze A11y with GitHub Models
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         env:
-          GITHUB_TOKEN: ${{ secrets.PAT_FOR_MODELS }}
-          PR_DIFF: ${{ env.PR_DIFF }}
-          WEB_SEARCH_RESULTS: ${{ steps.search_web.outputs.search_results }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PAT_FOR_MODELS: ${{ secrets.PAT_FOR_MODELS }}
+          PR_DIFF: ${{ steps.get_diff.outputs.diff }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
         with:
           script: |
             const prDiff = process.env.PR_DIFF || '';
-            const prTitle = context.payload.pull_request.title || '';
-            const prBody = context.payload.pull_request.body || '';
-            const searchResults = process.env.WEB_SEARCH_RESULTS || '';
+            const prNumber = parseInt(process.env.PR_NUMBER);
 
-            if (!prDiff || prDiff.trim() === 'Cannot fetch diff.' || prDiff.trim() === '') {
-              console.log('No valid UI diff to review. Skipping.');
+            if (!process.env.PAT_FOR_MODELS) {
+              console.error("Missing PAT_FOR_MODELS secret. Cannot call GitHub Models API.");
+              return;
+            }
+
+            if (!prDiff) {
+              console.log("No diff found. Skipping review.");
               return;
             }
 
             const prompt = `
-            あなたはアクセシビリティ（a11y）を専門とするシニアフロントエンドエンジニアです。
-            以下のPull Requestのフロントエンドコードの差分を分析し、Web Content Accessibility Guidelines (WCAG) 基準に基づくアクセシビリティレビューを行ってください。
+            あなたはWCAG (Web Content Accessibility Guidelines) やWAI-ARIAのベストプラクティスに精通したシニアフロントエンドエンジニアです。
+            2025年の最新のアクセシビリティ基準に基づいて、以下のPull Requestの変更差分（diff）をレビューしてください。
 
-            【Pull Requestのタイトル】
-            ${prTitle}
+            【レビューの観点】
+            - \`<button>\` や \`<a>\` などのインタラクティブ要素に適切な \`aria-label\` またはテキストコンテンツが含まれているか。
+            - カスタムUI（例：divで作られたプログレスバーなど）に適切な \`role\`（例：\`role="progressbar"\`）やARIA属性が付与されているか。
+            - 状態の変化がスクリーンリーダーに伝わるよう、必要に応じて \`aria-live\` や \`role="status"\` が使われているか。
+            - キーボード操作（フォーカスインジケータ：\`focus-visible\` など）が適切に設定されているか。
+            - コントラスト比や、視覚情報のみに依存したUIになっていないか。
 
-            【Web検索結果 (最新のa11yベストプラクティス)】
-            ${searchResults}
+            【指示】
+            指摘すべきアクセシビリティの懸念事項があれば、具体的な修正コードの提案を含めて日本語のMarkdown形式で回答してください。
+            もし懸念事項が一つもなければ、「アクセシビリティ上の懸念事項は見当たりませんでした。👍」とだけ回答してください。
 
-            【コードの差分 (UI関連)】
+            【差分】
             \`\`\`diff
             ${prDiff}
             \`\`\`
-
-            以下の観点から徹底的にレビューを行い、問題点や具体的な改善コード（スニペット）を提示してください：
-            1. セマンティックHTML: 適切なタグ（button, nav, main等）が使われているか。
-            2. ARIA属性: aria-label, aria-hidden, aria-live, role などのWAI-ARIA属性が適切に設定されているか。特に装飾アイコンに aria-hidden="true" があるか。
-            3. キーボードナビゲーション: tabIndex や focus の管理が適切か（focus-visible などのスタイル含む）。
-            4. コントラストと視認性: 状態（エラー・ロード中・空状態）がスクリーンリーダーに伝わる実装になっているか。
-
-            回答は必ず日本語で、Markdown形式で出力してください。
-            特に問題がない場合は「アクセシビリティの観点から特に問題は見当たりませんでした」と返答してください。
             `;
 
             const response = await fetch('https://models.inference.ai.azure.com/chat/completions', {
               method: 'POST',
               headers: {
                 'Content-Type': 'application/json',
-                'Authorization': `Bearer ${process.env.GITHUB_TOKEN}`
+                'Authorization': `Bearer ${process.env.PAT_FOR_MODELS}`
               },
               body: JSON.stringify({
                 model: 'openai/o3-mini',
                 reasoning_effort: "high",
                 messages: [
-                  { role: "developer", content: "You are an expert frontend accessibility engineer. Answer in Japanese." },
-                  { role: "user", content: prompt }
+                  { role: "developer", content: "You are an expert accessibility (a11y) engineer. Answer in Japanese." },
+                  { role: "user", content: `<user_input>${prompt}</user_input>` }
                 ]
               })
             });
@@ -123,15 +118,14 @@ jobs:
               console.error('GitHub Models API Error:', data.error);
               return;
             }
-            if (!data.choices || data.choices.length === 0) {
-              console.error('GitHub Models API returned no choices:', JSON.stringify(data));
-              return;
-            }
-            const reviewComment = data.choices[0].message.content;
+
+            const analysis = data.choices[0].message.content;
+
+            const commentBody = `🤖 **AI Accessibility Scanner (a11y)**\n\n${analysis}`;
 
             await github.rest.issues.createComment({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              issue_number: context.issue.number,
-              body: "♿ **AI アクセシビリティ (a11y) レビュー (GitHub Models):**\n\n" + reviewComment
+              issue_number: prNumber,
+              body: commentBody
             });
