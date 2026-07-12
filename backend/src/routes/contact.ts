@@ -59,6 +59,13 @@ function rateLimited(ip: string): boolean {
 
   if (!history) {
     if (RATE_LIMIT_MAX <= 0) return true;
+    // Prevent OOM DoS by enforcing a maximum map size
+    if (rateBuckets.size >= 10000) {
+      const oldestKey = rateBuckets.keys().next().value;
+      if (oldestKey !== undefined) {
+        rateBuckets.delete(oldestKey);
+      }
+    }
     rateBuckets.set(ip, [now]);
     return false;
   }
@@ -74,6 +81,9 @@ function rateLimited(ip: string): boolean {
   }
 
   history.push(now);
+  // Map の挿入順序を最新化し、FIFO 削除が LRU として機能するようにする
+  rateBuckets.delete(ip);
+  rateBuckets.set(ip, history);
   return false;
 }
 
