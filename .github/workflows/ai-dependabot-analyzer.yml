@@ -53,7 +53,8 @@ jobs:
       - name: Analyze Risk with GitHub Models
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         env:
-          GITHUB_TOKEN: ${{ secrets.PAT_FOR_MODELS }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PAT_FOR_MODELS: ${{ secrets.PAT_FOR_MODELS }}
           WEB_SEARCH_RESULTS: ${{ steps.search_web.outputs.search_results }}
         with:
           script: |
@@ -88,7 +89,7 @@ jobs:
               method: 'POST',
               headers: {
                 'Content-Type': 'application/json',
-                'Authorization': `Bearer ${process.env.GITHUB_TOKEN}`
+                'Authorization': `Bearer ${process.env.PAT_FOR_MODELS}`
               },
               body: JSON.stringify({
                 model: 'openai/o3-mini',
