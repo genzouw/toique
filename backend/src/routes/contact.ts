@@ -79,6 +79,12 @@ function rateLimited(ip: string): boolean {
     history.splice(0, expiredCount);
   }
 
+  // Map の挿入順を最新に更新して LRU として機能させる。
+  // これを怠ると、アクティブな IP でも初回登録が古ければ
+  // MAX_BUCKETS 到達時に優先的に削除され、レート制限を回避されてしまう。
+  rateBuckets.delete(ip);
+  rateBuckets.set(ip, history);
+
   if (history.length >= RATE_LIMIT_MAX) {
     return true;
   }
