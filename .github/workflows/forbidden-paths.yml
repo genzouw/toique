@@ -74,7 +74,7 @@ jobs:
           fi
 
           # 正規表現は .husky/pre-commit と同等のものを指定（削除ファイルは git diff --diff-filter=d で既に除外済み）
-          FORBIDDEN_FILES=$(echo "$CHANGED_FILES" | grep -E '(\.env.*|\.cursor/.*|\.claude/.*|\.aider.*|\.windsurf/.*|\.jules/.*|\.Jules/.*|.*credentials.*\.json|.*\.pem|.*\.key|.*\.p12|.*_rsa|.*\.sqlite|.*\.db|.*\.log|\.npmrc|\.netrc|.*\.tfstate(\..*)?|(^|/)cdktf\.out(/.*)?|(^|/)\.terraform(/.*)?)$' || true)
+          FORBIDDEN_FILES=$(echo "$CHANGED_FILES" | grep -E '(\.env.*|\.cursor/.*|\.claude/.*|\.aider.*|\.windsurf/.*|\.jules/.*|\.Jules/.*|.*credentials.*\.json|.*\.pem|.*\.key|.*\.p12|.*_rsa|.*_ed25519|.*_ecdsa|.*\.sqlite|.*\.db|.*\.log|\.npmrc|\.netrc|.*\.tfstate(\..*)?|(^|/)cdktf\.out(/.*)?|(^|/)\.terraform(/.*)?)$' || true)
 
           if [ -n "$FORBIDDEN_FILES" ]; then
             echo "::error::🚨 [Security Error] The following sensitive files or AI footprints were detected in this change:"
