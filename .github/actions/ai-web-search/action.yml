@@ -25,7 +25,8 @@ runs:
         enable-cache: true
         python-version: '3.12'
     - name: Install Search Dependencies
-      run: |
+      run:
+        | # zizmor: ignore[github-env] -- GITHUB_PATH is set to a fixed, non-user-controlled path ($PWD/.venv/bin) so it cannot be leveraged for code execution.
         uv venv
         echo "$PWD/.venv/bin" >> "$GITHUB_PATH"
         uv pip install "duckduckgo-search>=8.1.1" "tavily-python>=0.7.26" "googlesearch-python>=1.3.0" "wikipedia>=1.4.0"
