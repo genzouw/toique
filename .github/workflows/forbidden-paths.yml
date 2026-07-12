@@ -47,7 +47,10 @@ jobs:
             BASE_SHA="${{ github.event.pull_request.base.sha }}"
             HEAD_SHA="${{ github.event.pull_request.head.sha }}"
             echo "Checking files changed in PR (from $BASE_SHA to $HEAD_SHA)..."
-            CHANGED_FILES=$(git diff --name-only --diff-filter=d "$BASE_SHA" "$HEAD_SHA" || true)
+            if ! CHANGED_FILES=$(git diff --name-only --diff-filter=d "$BASE_SHA" "$HEAD_SHA" 2>/dev/null); then
+              echo "::warning::git diff failed (base SHA may be unavailable). Falling back to checking all files..."
+              CHANGED_FILES=$(git ls-files)
+            fi
           else
             # push 等の場合: 直前のコミットとの差分
             BEFORE_SHA="${{ github.event.before }}"
@@ -55,10 +58,13 @@ jobs:
             if [ "$BEFORE_SHA" = "0000000000000000000000000000000000000000" ] || [ -z "$BEFORE_SHA" ]; then
               # 新規ブランチの場合は HEAD に含まれる全ファイル、もしくはツリー全体を検査
               echo "New branch push detected or before SHA is empty. Checking all files in the current tree..."
-              CHANGED_FILES=$(git ls-files || true)
+              CHANGED_FILES=$(git ls-files)
             else
               echo "Checking files changed in push (from $BEFORE_SHA to ${{ github.sha }})..."
-              CHANGED_FILES=$(git diff --name-only --diff-filter=d "$BEFORE_SHA" "${{ github.sha }}" || true)
+              if ! CHANGED_FILES=$(git diff --name-only --diff-filter=d "$BEFORE_SHA" "${{ github.sha }}" 2>/dev/null); then
+                echo "::warning::git diff failed (before SHA may be unavailable). Falling back to checking all files..."
+                CHANGED_FILES=$(git ls-files)
+              fi
             fi
           fi
 
