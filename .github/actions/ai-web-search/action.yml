@@ -98,17 +98,18 @@ runs:
                     search_res = f"Web search failed across all providers: {e}"
 
         # Wikipedia API integration for factual knowledge lookup
-        try:
-            import wikipedia
-            wikipedia.set_lang("ja")
-            wiki_results = wikipedia.search(query, results=1)
-            if wiki_results:
-                page = wikipedia.page(wiki_results[0])
-                wiki_text = f"\n\n--- Wikipedia Info ---\nTitle: {page.title}\nURL: {page.url}\nSummary: {page.summary[:500]}..."
-                search_res += wiki_text
-                print("Appended Wikipedia factual information.")
-        except Exception as e:
-            print(f"Wikipedia search failed or not found: {e}")
+        if query.strip():
+            try:
+                import wikipedia
+                wikipedia.set_lang("ja")
+                wiki_results = wikipedia.search(query, results=1)
+                if wiki_results:
+                    page = wikipedia.page(wiki_results[0])
+                    wiki_text = f"\n\n--- Wikipedia Info ---\nTitle: {page.title}\nURL: {page.url}\nSummary: {page.summary[:500]}..."
+                    search_res += wiki_text
+                    print("Appended Wikipedia factual information.")
+            except Exception as e:
+                print(f"Wikipedia search failed or not found: {e}")
 
         if not search_res:
             search_res = "No relevant Web search results found."
