@@ -16,7 +16,7 @@ jobs:
       cancel-in-progress: true
     steps:
       - name: Harden Runner
-        uses: step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411 # v2.19.4
+        uses: step-security/harden-runner@bf7454d06d71f1098171f2acdf0cd4708d7b5920 # v2.20.0
         with:
           egress-policy: audit
       - name: Checkout repository
@@ -46,6 +46,7 @@ jobs:
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PAT_FOR_MODELS: ${{ secrets.PAT_FOR_MODELS }}
           PR_DIFF: ${{ env.PR_DIFF }}
         with:
           script: |
@@ -80,7 +81,7 @@ jobs:
               method: 'POST',
               headers: {
                 'Content-Type': 'application/json',
-                'Authorization': `Bearer ${process.env.GITHUB_TOKEN}`
+                'Authorization': `Bearer ${process.env.PAT_FOR_MODELS}`
               },
               body: JSON.stringify({
                 model: 'openai/o3-mini',

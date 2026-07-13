@@ -14,7 +14,7 @@ jobs:
       pull-requests: write
     steps:
       - name: Harden Runner
-        uses: step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411 # v2.19.4
+        uses: step-security/harden-runner@bf7454d06d71f1098171f2acdf0cd4708d7b5920 # v2.20.0
         with:
           egress-policy: audit
       - name: Checkout repository
@@ -82,7 +82,7 @@ jobs:
               method: 'POST',
               headers: {
                 'Content-Type': 'application/json',
-                'Authorization': `Bearer ${process.env.GITHUB_TOKEN}`
+                'Authorization': `Bearer ${process.env.PAT_FOR_MODELS}`
               },
               body: JSON.stringify({
                 model: 'openai/o3-mini',
@@ -134,7 +134,7 @@ jobs:
 
       - name: Create Pull Request with generated Architecture Diagram
         env:
-          GH_TOKEN: ${{ secrets.PAT_FOR_MODELS }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -euo pipefail
           git config --global user.name "github-actions[bot]"

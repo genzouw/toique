@@ -22,7 +22,7 @@ jobs:
       actions: read
     steps:
       - name: Harden Runner
-        uses: step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411 # v2.19.4
+        uses: step-security/harden-runner@bf7454d06d71f1098171f2acdf0cd4708d7b5920 # v2.20.0
         with:
           egress-policy: audit
       - name: Checkout repository
@@ -86,6 +86,7 @@ jobs:
         if: steps.get_logs.outputs.logs_found == 'true' && steps.find_pr.outputs.pr_found == 'true'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PAT_FOR_MODELS: ${{ secrets.PAT_FOR_MODELS }}
           FAILED_LOGS: ${{ steps.get_logs.outputs.failed_logs }}
           PR_NUMBER: ${{ steps.find_pr.outputs.pr_number }}
         with:
@@ -115,7 +116,7 @@ jobs:
               method: 'POST',
               headers: {
                 'Content-Type': 'application/json',
-                'Authorization': `Bearer ${process.env.GITHUB_TOKEN}`
+                'Authorization': `Bearer ${process.env.PAT_FOR_MODELS}`
               },
               body: JSON.stringify({
                 model: 'openai/o3-mini',
