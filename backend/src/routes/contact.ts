@@ -23,7 +23,7 @@ const CATEGORIES = new Set([
 // 分散環境を考慮するなら Redis 等に置き換える。
 const RATE_LIMIT_WINDOW_MS = 60 * 60 * 1000;
 const RATE_LIMIT_MAX = 5;
-const MAX_BUCKETS = 10000; // Limit memory usage to prevent OOM DoS
+const MAX_BUCKETS = 10000; // メモリ使用量を制限し OOM DoS を防止
 const rateBuckets = new Map<string, number[]>();
 
 // ソート済み配列の先頭から期限切れエントリ数をカウント
