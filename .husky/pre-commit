@@ -10,7 +10,12 @@ bunx lint-staged
 # `--diff-filter=d` で「削除 (Deleted)」を除外: リスクは「機密ファイルがリポジトリに
 # 含まれること」なので、すでにコミットされてしまった機密ファイルを `git rm` で
 # 削除しようとした際にこのチェックでブロックされないようにする。
-FORBIDDEN_FILES=$(git diff --cached --name-only --diff-filter=d | grep -E '(\.env.*|\.cursor/.*|\.claude/.*|\.aider.*|\.windsurf/.*|\.jules/.*|\.Jules/.*|.*credentials.*\.json|.*\.pem|.*\.key|.*\.p12|.*_rsa|.*_ed25519|.*_ecdsa|.*\.sqlite|.*\.db|.*\.log|\.npmrc|\.netrc|.*\.tfstate(\..*)?|(^|/)cdktf\.out(/.*)?|(^|/)\.terraform(/.*)?)$' || true)
+# `.env.example` 等のテンプレート（機密値を含まない雛形）は正当にコミットされるため、
+# 2 段目の `grep -Ev` で明示的に許可リスト化して誤検知を防ぐ（CI 側 forbidden-paths.yml と揃える）。
+FORBIDDEN_FILES=$(git diff --cached --name-only --diff-filter=d \
+  | grep -E '(\.env.*|\.cursor/.*|\.claude/.*|\.aider.*|\.windsurf/.*|\.jules/.*|\.Jules/.*|.*credentials.*\.json|.*\.pem|.*\.key|.*\.p12|.*_rsa|.*_ed25519|.*_ecdsa|.*\.sqlite|.*\.db|.*\.log|\.npmrc|\.netrc|.*\.tfstate(\..*)?|(^|/)cdktf\.out(/.*)?|(^|/)\.terraform(/.*)?)$' \
+  | grep -Ev '(^|/)\.env\.(example|sample|template|dist)$' \
+  || true)
 
 if [ -n "$FORBIDDEN_FILES" ]; then
   echo "🚨 [Security Error] The following sensitive files are staged for commit:"
