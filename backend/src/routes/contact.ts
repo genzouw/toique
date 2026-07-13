@@ -23,6 +23,7 @@ const CATEGORIES = new Set([
 // 分散環境を考慮するなら Redis 等に置き換える。
 const RATE_LIMIT_WINDOW_MS = 60 * 60 * 1000;
 const RATE_LIMIT_MAX = 5;
+const MAX_BUCKETS = 10000; // メモリ使用量を制限し OOM DoS を防止
 const rateBuckets = new Map<string, number[]>();
 
 // ソート済み配列の先頭から期限切れエントリ数をカウント
@@ -59,13 +60,15 @@ function rateLimited(ip: string): boolean {
 
   if (!history) {
     if (RATE_LIMIT_MAX <= 0) return true;
-    // Prevent OOM DoS by enforcing a maximum map size
-    if (rateBuckets.size >= 10000) {
+
+    // Evict oldest entry if we reach the limit
+    if (rateBuckets.size >= MAX_BUCKETS) {
       const oldestKey = rateBuckets.keys().next().value;
       if (oldestKey !== undefined) {
         rateBuckets.delete(oldestKey);
       }
     }
+
     rateBuckets.set(ip, [now]);
     return false;
   }
@@ -76,14 +79,17 @@ function rateLimited(ip: string): boolean {
     history.splice(0, expiredCount);
   }
 
+  // Map の挿入順を最新に更新して LRU として機能させる。
+  // これを怠ると、アクティブな IP でも初回登録が古ければ
+  // MAX_BUCKETS 到達時に優先的に削除され、レート制限を回避されてしまう。
+  rateBuckets.delete(ip);
+  rateBuckets.set(ip, history);
+
   if (history.length >= RATE_LIMIT_MAX) {
     return true;
   }
 
   history.push(now);
-  // Map の挿入順序を最新化し、FIFO 削除が LRU として機能するようにする
-  rateBuckets.delete(ip);
-  rateBuckets.set(ip, history);
   return false;
 }
 
