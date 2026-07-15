@@ -47,13 +47,39 @@ jobs:
             | sed -E 's/.*uses:[[:space:]]*//' \
             | awk -F'@' '{split($1, parts, "/"); print parts[1] "/" parts[2] "@" $2}' \
             | sort -u)
+          # deptrustは認証なしでpublic registry/OSV/GitHub Advisory DBのAPIを直接叩くため、
+          # 参照数が多いワークフローではリクエストが連続しsecondary rate limit(HTTP 403)に
+          # ぶつかることがある。指数バックオフでのリトライとリクエスト間隔で緩和する。
+          check_with_retry() {
+            local repo="$1" sha="$2" attempt=1 max_attempts=5 wait=3
+            while true; do
+              if result=$(deptrust check --json github-actions "$repo" "$sha" 2>&1); then
+                echo "$result"
+                return 0
+              fi
+              if [ "$attempt" -ge "$max_attempts" ]; then
+                echo "$result" >&2
+                return 1
+              fi
+              echo "::warning::deptrust check failed for $repo@$sha (attempt $attempt/$max_attempts), retrying in ${wait}s..." >&2
+              sleep "$wait"
+              wait=$((wait * 2))
+              attempt=$((attempt + 1))
+            done
+          }
+
           fail=0
           while IFS= read -r ref; do
             [ -z "$ref" ] && continue
             repo=$(echo "$ref" | cut -d'@' -f1 | cut -d'/' -f1-2)
             sha=$(echo "$ref" | cut -d'@' -f2)
             echo "::group::Checking $repo@$sha"
-            result=$(deptrust check --json github-actions "$repo" "$sha")
+            if ! result=$(check_with_retry "$repo" "$sha"); then
+              echo "::endgroup::"
+              echo "::error::deptrust check failed for $repo@$sha after retries"
+              fail=1
+              continue
+            fi
             echo "$result"
             rec=$(echo "$result" | node -pe 'JSON.parse(require("fs").readFileSync(0,"utf8")).recommendation')
             echo "::endgroup::"
@@ -61,5 +87,6 @@ jobs:
               echo "::error::$repo@$sha recommendation=block"
               fail=1
             fi
+            sleep 1
           done <<< "$refs"
           exit $fail
