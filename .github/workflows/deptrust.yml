@@ -39,7 +39,14 @@ jobs:
           set -euo pipefail
           npx --yes @clidey/deptrust@latest install --yes
           export PATH="$HOME/.local/bin:$PATH"
-          refs=$(grep -rhoE '^[[:space:]]*-?[[:space:]]*uses:[[:space:]]*[A-Za-z0-9_.-]+/[A-Za-z0-9_./-]+@[A-Za-z0-9]+' .github/workflows/*.yml | sed -E 's/.*uses:[[:space:]]*//' | sort -u)
+          # 同一リポジトリ・同一SHAでもアクションのサブパス（/init, /analyze等）が異なると
+          # sort -u で重複排除されず、同じ repo@sha を複数回チェックしてしまう
+          # (GitHub Advisory DBへの無駄なAPIコールがsecondary rate limit/403を誘発する)ため、
+          # owner/repo@sha 単位で正規化してから重複排除する
+          refs=$(grep -rhoE '^[[:space:]]*-?[[:space:]]*uses:[[:space:]]*[A-Za-z0-9_.-]+/[A-Za-z0-9_./-]+@[A-Za-z0-9]+' .github/workflows/*.yml \
+            | sed -E 's/.*uses:[[:space:]]*//' \
+            | awk -F'@' '{split($1, parts, "/"); print parts[1] "/" parts[2] "@" $2}' \
+            | sort -u)
           fail=0
           while IFS= read -r ref; do
             [ -z "$ref" ] && continue
