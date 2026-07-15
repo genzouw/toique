@@ -1,0 +1,78 @@
+#!/bin/sh
+# husky v9 は内部で `sh -e` 起動するため実質的に既に有効だが、
+# 単体実行や将来の起動経路変更でも安全側に倒すため明示する。
+set -e
+
+# --- Security: Prevent pushing sensitive file paths and secrets ---
+# pre-commit フックを `--no-verify` でバイパスしてコミットされた機密ファイルやシークレットが、
+# 公開リポジトリ（リモート）へ Push されることを水際で防ぐ最終防衛ライン。
+
+z40=0000000000000000000000000000000000000000
+
+# Gitleaks の準備
+GITLEAKS_CMD="gitleaks"
+if ! command -v gitleaks >/dev/null 2>&1; then
+  # pre-commit でキャッシュにダウンロードされているか確認
+  GITLEAKS_CACHE_DIR="${XDG_CACHE_HOME:-$HOME/.cache}/gitleaks"
+  if [ -d "$GITLEAKS_CACHE_DIR" ]; then
+    GITLEAKS_BIN=$(ls -1 "$GITLEAKS_CACHE_DIR"/gitleaks-* 2>/dev/null | head -n 1)
+    if [ -n "$GITLEAKS_BIN" ] && [ -x "$GITLEAKS_BIN" ]; then
+      GITLEAKS_CMD="$GITLEAKS_BIN"
+    else
+      GITLEAKS_CMD=""
+    fi
+  else
+    GITLEAKS_CMD=""
+  fi
+fi
+
+while read -r local_ref local_sha remote_ref remote_sha || [ -n "$local_ref" ]
+do
+  if [ "$local_sha" = "$z40" ]; then
+    continue
+  fi
+
+  if [ "$remote_sha" = "$z40" ]; then
+    # 新規ブランチのプッシュ: 他のリモート追跡ブランチに存在しないコミットのみを対象にする。
+    # (origin/main を基準にすると、別リモートへの初回 Push で origin/main 以前の履歴が
+    #  スキャン対象から漏れるため、リモートを問わない --not --remotes を使う。
+    #  リモート追跡ブランチが1つも無い場合でも --not --remotes は no-op として安全に働き、
+    #  local_sha から到達可能な全履歴が対象になる)
+    RANGE="$local_sha --not --remotes"
+  else
+    RANGE="$remote_sha..$local_sha"
+  fi
+
+  echo "🔍 Checking commits in range: $RANGE"
+
+  # 1. 危険なファイルパスの検査
+  # `git diff` は範囲の両端のツリーしか比較しないため、範囲内で追加後に削除された
+  # 機密ファイルを見逃す。`git log --name-only` で範囲内の全コミットの変更パスを
+  # 個別に列挙し、途中経過のコミットも漏れなく検査する。
+  # shellcheck disable=SC2086 # RANGE は "<sha> --not --remotes" 等の複数トークンを意図的に含む
+  FORBIDDEN_FILES=$(git log --name-only --pretty=format: --diff-filter=d $RANGE \
+    | grep -E '((^|/)\.env.*|\.cursor/.*|\.claude/.*|\.aider.*|\.windsurf/.*|\.jules/.*|\.Jules/.*|.*credentials.*\.json|.*\.pem|.*\.key|.*\.p12|.*_rsa|.*_ed25519|.*_ecdsa|.*\.sqlite|.*\.db|.*\.log|\.npmrc|\.netrc|.*\.tfstate(\..*)?|(^|/)cdktf\.out(/.*)?|(^|/)\.terraform(/.*)?)$' \
+    | grep -Ev '(^|/)\.env\.(example|sample|template|dist)$' \
+    | sort -u \
+    || true)
+
+  if [ -n "$FORBIDDEN_FILES" ]; then
+    echo "🚨 [Security Error] The following sensitive files are about to be pushed:"
+    echo "$FORBIDDEN_FILES"
+    echo "Push is blocked to prevent leaking secrets to the public repository."
+    echo "Please remove them from your commits (e.g., via 'git rebase -i') before pushing."
+    exit 1
+  fi
+
+  # 2. Gitleaks による内容のスキャン
+  if [ -n "$GITLEAKS_CMD" ]; then
+    echo "🔍 Running gitleaks on commits to be pushed..."
+    if ! "$GITLEAKS_CMD" detect --log-opts="$RANGE" --redact --verbose --no-banner; then
+      echo "🚨 [Security Error] gitleaks detected secrets in the commits about to be pushed."
+      echo "Push is blocked. Please remove the secrets from your git history before pushing."
+      exit 1
+    fi
+  else
+    echo "⚠️  gitleaks is not available locally. Skipping content scan for pre-push."
+  fi
+done
