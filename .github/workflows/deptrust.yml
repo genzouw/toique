@@ -33,5 +33,26 @@ jobs:
           node-version: '20'
 
       - name: Run DepTrust to check GitHub Actions dependencies
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          npx deptrust@latest check github-actions
+          set -euo pipefail
+          npx --yes @clidey/deptrust@latest install --yes
+          export PATH="$HOME/.local/bin:$PATH"
+          refs=$(grep -rhoE '^[[:space:]]*-?[[:space:]]*uses:[[:space:]]*[A-Za-z0-9_.-]+/[A-Za-z0-9_./-]+@[A-Za-z0-9]+' .github/workflows/*.yml | sed -E 's/.*uses:[[:space:]]*//' | sort -u)
+          fail=0
+          while IFS= read -r ref; do
+            [ -z "$ref" ] && continue
+            repo=$(echo "$ref" | cut -d'@' -f1 | cut -d'/' -f1-2)
+            sha=$(echo "$ref" | cut -d'@' -f2)
+            echo "::group::Checking $repo@$sha"
+            result=$(deptrust check --json github-actions "$repo" "$sha")
+            echo "$result"
+            rec=$(echo "$result" | node -pe 'JSON.parse(require("fs").readFileSync(0,"utf8")).recommendation')
+            echo "::endgroup::"
+            if [ "$rec" = "block" ]; then
+              echo "::error::$repo@$sha recommendation=block"
+              fail=1
+            fi
+          done <<< "$refs"
+          exit $fail
