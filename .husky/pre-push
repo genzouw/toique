@@ -26,17 +26,19 @@ if ! command -v gitleaks >/dev/null 2>&1; then
   fi
 fi
 
-while read local_ref local_sha remote_ref remote_sha
+while read -r local_ref local_sha remote_ref remote_sha || [ -n "$local_ref" ]
 do
   if [ "$local_sha" = "$z40" ]; then
     continue
   fi
 
   if [ "$remote_sha" = "$z40" ]; then
-    RANGE="$local_sha"
-    if git rev-parse origin/main >/dev/null 2>&1; then
-      RANGE="origin/main..$local_sha"
-    fi
+    # 新規ブランチのプッシュ: 他のリモート追跡ブランチに存在しないコミットのみを対象にする。
+    # (origin/main を基準にすると、別リモートへの初回 Push で origin/main 以前の履歴が
+    #  スキャン対象から漏れるため、リモートを問わない --not --remotes を使う。
+    #  リモート追跡ブランチが1つも無い場合でも --not --remotes は no-op として安全に働き、
+    #  local_sha から到達可能な全履歴が対象になる)
+    RANGE="$local_sha --not --remotes"
   else
     RANGE="$remote_sha..$local_sha"
   fi
@@ -44,9 +46,14 @@ do
   echo "🔍 Checking commits in range: $RANGE"
 
   # 1. 危険なファイルパスの検査
-  FORBIDDEN_FILES=$(git diff --name-only --diff-filter=d "$RANGE" \
+  # `git diff` は範囲の両端のツリーしか比較しないため、範囲内で追加後に削除された
+  # 機密ファイルを見逃す。`git log --name-only` で範囲内の全コミットの変更パスを
+  # 個別に列挙し、途中経過のコミットも漏れなく検査する。
+  # shellcheck disable=SC2086 # RANGE は "<sha> --not --remotes" 等の複数トークンを意図的に含む
+  FORBIDDEN_FILES=$(git log --name-only --pretty=format: --diff-filter=d $RANGE \
     | grep -E '((^|/)\.env.*|\.cursor/.*|\.claude/.*|\.aider.*|\.windsurf/.*|\.jules/.*|\.Jules/.*|.*credentials.*\.json|.*\.pem|.*\.key|.*\.p12|.*_rsa|.*_ed25519|.*_ecdsa|.*\.sqlite|.*\.db|.*\.log|\.npmrc|\.netrc|.*\.tfstate(\..*)?|(^|/)cdktf\.out(/.*)?|(^|/)\.terraform(/.*)?)$' \
     | grep -Ev '(^|/)\.env\.(example|sample|template|dist)$' \
+    | sort -u \
     || true)
 
   if [ -n "$FORBIDDEN_FILES" ]; then
