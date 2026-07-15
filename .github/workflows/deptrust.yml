@@ -53,7 +53,7 @@ jobs:
           check_with_retry() {
             local repo="$1" sha="$2" attempt=1 max_attempts=5 wait=3
             while true; do
-              if result=$(deptrust check --json github-actions "$repo" "$sha" 2>&1); then
+              if result=$(deptrust check --json github-actions "$repo" "$sha"); then
                 echo "$result"
                 return 0
               fi
