@@ -290,3 +290,19 @@ Markdownドキュメントの変更が含まれるPull Requestに対して、日
 
 - `astral-sh/setup-uv` を用いた高速な依存解決に移行しました。
 - `wikipedia` ライブラリを追加し、事実確認時のコンテキスト補強を行いました。
+
+### AI DevRel Blog Generator の導入 (2025年最新)
+
+2025年の「Markdown-First AI Content Workflow」およびDevRel自動化のトレンドに基づき、過去1週間にマージされたPull Requestから技術ブログ記事を自動生成するワークフロー (`ai-blog-generator.yml`) を追加しました。
+
+- **実行タイミング:** 毎週月曜日の朝8時の定期実行（`schedule`）および手動実行（`workflow_dispatch`）。
+- **仕組み:** `yamadashy/repomix` を用いてリポジトリをXML化し、`gh pr list` で取得した過去1週間のマージ済みPR情報をGitHub Models (o3-mini) に渡して、`docs/blog/` ディレクトリにMarkdown形式のブログ記事を自動作成し、PRを生成します。
+- **権限設定:** 記事生成PRを作成するため、リポジトリの Secrets に `PAT_FOR_MODELS` の設定が必須です（他のワークフローと共通）。
+
+### AI Auto-Documenter (JSDoc/TSDoc) の導入
+
+コードの品質向上とドキュメンテーションの自動化のため、Pull Request内で変更されたTypeScriptコードを解析し、欠落しているJSDoc/TSDocをAIが自動提案するワークフロー (`ai-auto-documenter.yml`) を追加しました。
+
+- **実行タイミング:** `.ts` または `.tsx` ファイルが変更されたPull Requestの `opened`, `synchronize`, `reopened` 時。
+- **仕組み:** 変更差分をGitHub Models (o3-mini) に渡し、ドキュメントが不足している重要な関数やコンポーネントに対して、適切なJSDocを日本語で提案し、PRのレビューコメントとして投稿します。
+- **権限設定:** こちらも同様に GitHub Models API (`o3-mini`) を呼び出すため、リポジトリの Secrets に `PAT_FOR_MODELS` の設定が必須です。コメント投稿には標準の `GITHUB_TOKEN` (`pull-requests: write`) を使用します。
