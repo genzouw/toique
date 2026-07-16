@@ -295,7 +295,7 @@ Markdownドキュメントの変更が含まれるPull Requestに対して、日
 
 2025年の「Markdown-First AI Content Workflow」およびDevRel自動化のトレンドに基づき、過去1週間にマージされたPull Requestから技術ブログ記事を自動生成するワークフロー (`ai-blog-generator.yml`) を追加しました。
 
-- **実行タイミング:** 毎週月曜日の朝8時の定期実行（`schedule`）および手動実行（`workflow_dispatch`）。
+- **実行タイミング:** 毎週月曜日 UTC 8:00（日本時間 17:00）の定期実行（`schedule`）および手動実行（`workflow_dispatch`）。
 - **仕組み:** `yamadashy/repomix` を用いてリポジトリをXML化し、`gh pr list` で取得した過去1週間のマージ済みPR情報をGitHub Models (o3-mini) に渡して、`docs/blog/` ディレクトリにMarkdown形式のブログ記事を自動作成し、PRを生成します。
 - **権限設定:** 記事生成PRを作成するため、リポジトリの Secrets に `PAT_FOR_MODELS` の設定が必須です（他のワークフローと共通）。
 

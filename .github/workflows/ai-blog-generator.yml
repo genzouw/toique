@@ -2,7 +2,7 @@ name: AI DevRel Blog Generator
 
 on:
   schedule:
-    - cron: '0 8 * * 1' # 毎週月曜日の朝8時に実行
+    - cron: '0 8 * * 1' # 毎週月曜日 UTC 8:00（日本時間 17:00）に実行
   workflow_dispatch:
 
 jobs:
