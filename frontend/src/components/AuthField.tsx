@@ -25,6 +25,7 @@ export interface AuthFieldProps {
   onChange: (v: string) => void;
   type?: string;
   variant?: AuthFieldVariant;
+  autoComplete?: string;
 }
 
 export function AuthField({
@@ -33,6 +34,7 @@ export function AuthField({
   value,
   onChange,
   variant = 'user',
+  autoComplete,
 }: AuthFieldProps) {
   const id = useId();
   const [showPassword, setShowPassword] = useState(false);
@@ -51,6 +53,7 @@ export function AuthField({
           value={value}
           onChange={(e) => onChange(e.target.value)}
           required
+          autoComplete={autoComplete}
           className={`w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none ${inputClassByVariant[variant]} ${isPassword ? 'pr-10' : ''}`}
         />
         {isPassword && (
