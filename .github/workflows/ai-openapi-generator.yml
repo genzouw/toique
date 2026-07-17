@@ -116,14 +116,14 @@ jobs:
             console.log("Successfully wrote docs/openapi.yaml");
 
       - name: Create Pull Request if changed
-        uses: peter-evans/create-pull-request@v6
+        uses: peter-evans/create-pull-request@5f6978faf089d4d20b00c7766989d076bb2fc7f1 # v8.1.1
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          commit-message: "docs: auto-update OpenAPI spec based on recent backend changes"
-          title: "docs: [AI] Auto-update OpenAPI specification"
+          commit-message: 'docs: auto-update OpenAPI spec based on recent backend changes'
+          title: 'docs: [AI] Auto-update OpenAPI specification'
           body: |
             バックエンドのコード変更を検知し、AI が自動的に `docs/openapi.yaml` を生成・更新しました。
             OpenAPI の仕様に間違いがないか確認してください。
-          branch: "ai/openapi-update"
+          branch: 'ai/openapi-update'
           base: main
-          labels: "documentation, ai-generated"
+          labels: 'documentation, ai-generated'
