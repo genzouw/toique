@@ -306,3 +306,34 @@ Markdownドキュメントの変更が含まれるPull Requestに対して、日
 - **実行タイミング:** `.ts` または `.tsx` ファイルが変更されたPull Requestの `opened`, `synchronize`, `reopened` 時。
 - **仕組み:** 変更差分をGitHub Models (o3-mini) に渡し、ドキュメントが不足している重要な関数やコンポーネントに対して、適切なJSDocを日本語で提案し、PRのレビューコメントとして投稿します。
 - **権限設定:** こちらも同様に GitHub Models API (`o3-mini`) を呼び出すため、リポジトリの Secrets に `PAT_FOR_MODELS` の設定が必須です。コメント投稿には標準の `GITHUB_TOKEN` (`pull-requests: write`) を使用します。
+
+### AI OpenAPI Generator の導入 (2025年最新)
+
+2025年のAPIエコシステムにおける自動化のトレンドに基づき、バックエンド (Hono/Drizzle) の変更を検知して自動的に `docs/openapi.yaml` を生成・更新するワークフロー (`ai-openapi-generator.yml`) を追加しました。
+
+- **実行タイミング:** `backend/src/routes/**` または `backend/src/schema.ts` の変更が main ブランチに push された時、および手動実行（`workflow_dispatch`）。
+- **仕組み:** `yamadashy/repomix` を用いてバックエンドのソースコードをバンドルし、GitHub Models (o3-mini, `reasoning_effort: high`) に渡すことで、ルーティング設定やスキーマから OpenAPI 3.0.3 の仕様書を推論・生成し、自動的にPull Requestを作成します。
+- **権限設定:** ワークフロー内で生成・更新PRを作成するため、リポジトリの Secrets に `PAT_FOR_MODELS` (GitHub Models へのアクセス権限およびリポジトリへの書き込み権限を持ったトークン) の設定が必須です。
+
+### MCP (Model Context Protocol) サーバーの導入 (ローカル用)
+
+AI エージェント（Cursor, Claude Desktop など）が開発プロジェクトのコンテキストを直接理解しやすくするため、ローカルで動作する MCP サーバー (`scripts/mcp-server.ts`) を導入しました。これにより、データベーススキーマやAPIルーティング情報をAIがダイナミックに読み取ることが可能になります。
+
+**設定手順 (Claude Desktop の場合):**
+1. 開発環境のルートで `cd backend && bun install` を実行し、`@modelcontextprotocol/sdk` がインストールされていることを確認します。
+2. `~/Library/Application Support/Claude/claude_desktop_config.json` (Mac の場合) に以下の設定を追加します:
+
+```json
+{
+  "mcpServers": {
+    "toique-backend": {
+      "command": "bun",
+      "args": [
+        "run",
+        "/path/to/your/repo/scripts/mcp-server.ts"
+      ]
+    }
+  }
+}
+```
+3. Claude Desktop を再起動すると、`get_db_schema` や `get_api_routes` ツールが使えるようになり、バックエンド構造を正確に踏まえたコード生成が可能になります。
