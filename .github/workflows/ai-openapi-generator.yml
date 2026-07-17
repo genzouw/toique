@@ -35,7 +35,8 @@ jobs:
           node-version: '22'
 
       - name: Install Repomix
-        run: npm install -g repomix
+        # バージョンは zizmor (adhoc-packages) 対策として latest ではなく固定値を指定する。
+        run: npm install --global repomix@1.16.0
 
       - name: Bundle backend with Repomix
         run: |
