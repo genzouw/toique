@@ -46,14 +46,22 @@ const getExpectedHash = (val: string | undefined) =>
 const expectedUsernameHash = getExpectedHash(process.env.ADMIN_USERNAME);
 const expectedPasswordHash = getExpectedHash(process.env.ADMIN_PASSWORD);
 
+let cachedRawOperatorEmails: string | undefined;
+let cachedOperatorEmailSet: ReadonlySet<string> | undefined;
+
 function getOperatorEmailSet(): ReadonlySet<string> {
   const raw = process.env.OPERATOR_EMAILS ?? '';
-  return new Set(
+  if (cachedOperatorEmailSet && cachedRawOperatorEmails === raw) {
+    return cachedOperatorEmailSet;
+  }
+  cachedRawOperatorEmails = raw;
+  cachedOperatorEmailSet = new Set(
     raw
       .split(',')
       .map((s) => s.trim().toLowerCase())
       .filter(Boolean),
   );
+  return cachedOperatorEmailSet;
 }
 
 export function isOperatorEmail(email: string | null | undefined): boolean {

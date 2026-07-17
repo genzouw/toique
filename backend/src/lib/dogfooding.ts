@@ -13,14 +13,22 @@ import { tenantMembers, users } from '../schema.js';
  * Public 化したリポジトリでハードコードを避けるための実装で、本番用の email は
  * GitHub Actions Secrets で管理して Cloud Run env として渡す。
  */
+let cachedRawDogfoodingEmails: string | undefined;
+let cachedDogfoodingEmailSet: ReadonlySet<string> | undefined;
+
 function getDogfoodingEmailSet(): ReadonlySet<string> {
   const raw = process.env.DOGFOODING_EMAILS ?? '';
-  return new Set(
+  if (cachedDogfoodingEmailSet && cachedRawDogfoodingEmails === raw) {
+    return cachedDogfoodingEmailSet;
+  }
+  cachedRawDogfoodingEmails = raw;
+  cachedDogfoodingEmailSet = new Set(
     raw
       .split(',')
       .map((e) => e.trim().toLowerCase())
       .filter(Boolean),
   );
+  return cachedDogfoodingEmailSet;
 }
 
 export function isDogfoodingEmail(email: string | null | undefined): boolean {
