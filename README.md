@@ -250,6 +250,8 @@ curl -s http://localhost:3000/api/v1/messages | jq
 - **AI Issue Triage** (`ai-issue-triage.yml`): `actions/github-script` を用いて、Issueが作成された際に自動で GitHub Models を呼び出し、トリアージを行う仕組みです。
 - **AI ChatOps** (`ai-chatops.yml`): PRのコメントで `/ai fix` などのコマンドを受け取り、GitHub Models と Web検索 (RAG) を活用して自動で回答や修正案を提示します。
 - **AI PR Code Review** (`ai-pr-review.yml`): PR作成時等に、コード差分とWeb検索から得たベストプラクティスに基づき、GitHub Modelsが自動レビューを行います。
+- **AI DevRel Blog Generator** (`ai-blog-generator.yml`): 毎週定期的に、マージ済みのPR情報を収集し、DevRel向けの技術ブログ記事（Markdown）を自動生成します。
+- **AI Auto-Documenter** (`ai-auto-documenter.yml`): PRの変更差分からTypeScriptコードを解析し、欠落しているJSDoc/TSDocをAIが自動で提案します。
 
 > [!NOTE]
 > **導入のための手動事前作業:**
