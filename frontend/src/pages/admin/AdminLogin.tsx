@@ -61,6 +61,7 @@ export default function AdminLogin() {
               value={username}
               onChange={setUsername}
               variant="admin"
+              autoComplete="username"
             />
             <AuthField
               label="パスワード"
@@ -68,6 +69,7 @@ export default function AdminLogin() {
               value={password}
               onChange={setPassword}
               variant="admin"
+              autoComplete="current-password"
             />
           </div>
           <div>

@@ -86,6 +86,7 @@ export default function ForgotPassword() {
           type="email"
           value={email}
           onChange={setEmail}
+          autoComplete="email"
         />
         <ErrorAlert error={error} />
         <LoadingButton

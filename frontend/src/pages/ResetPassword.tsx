@@ -114,12 +114,14 @@ export default function ResetPassword() {
           type="password"
           value={password}
           onChange={setPassword}
+          autoComplete="new-password"
         />
         <AuthField
           label="新しいパスワード (確認)"
           type="password"
           value={confirm}
           onChange={setConfirm}
+          autoComplete="new-password"
         />
         <ErrorAlert error={error} />
         <LoadingButton

@@ -30,7 +30,12 @@ export default function Onboarding() {
         Toique を利用する組織名 (会社名・屋号など) を入力してください。
       </p>
       <form onSubmit={handleSubmit} className="space-y-4">
-        <AuthField label="組織名" value={tenantName} onChange={setTenantName} />
+        <AuthField
+          label="組織名"
+          value={tenantName}
+          onChange={setTenantName}
+          autoComplete="organization"
+        />
         {error && <div className="text-red-600 text-sm">{error}</div>}
         <LoadingButton
           type="submit"
