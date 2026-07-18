@@ -1,4 +1,5 @@
 import { useState, useId } from 'react';
+import type { InputHTMLAttributes } from 'react';
 import { Eye, EyeOff } from 'lucide-react';
 import { ICON_SIZE } from '../lib/icon-size';
 
@@ -25,7 +26,7 @@ export interface AuthFieldProps {
   onChange: (v: string) => void;
   type?: string;
   variant?: AuthFieldVariant;
-  autoComplete?: string;
+  autoComplete?: InputHTMLAttributes<HTMLInputElement>['autoComplete'];
 }
 
 export function AuthField({
