@@ -13,25 +13,14 @@ import { tenantMembers, users } from '../schema.js';
  * Public 化したリポジトリでハードコードを避けるための実装で、本番用の email は
  * GitHub Actions Secrets で管理して Cloud Run env として渡す。
  */
-let cachedRawDogfoodingEmails = '';
-let cachedDogfoodingEmailSet: ReadonlySet<string> | null = null;
-
 function getDogfoodingEmailSet(): ReadonlySet<string> {
   const raw = process.env.DOGFOODING_EMAILS ?? '';
-  // ⚡ Bolt: Memoize parsed environment variables using a raw string comparison.
-  // This allows unit tests (e.g., using `vi.stubEnv`) to invalidate the cache.
-  if (cachedDogfoodingEmailSet !== null && raw === cachedRawDogfoodingEmails) {
-    return cachedDogfoodingEmailSet;
-  }
-
-  cachedRawDogfoodingEmails = raw;
-  cachedDogfoodingEmailSet = new Set(
+  return new Set(
     raw
       .split(',')
       .map((e) => e.trim().toLowerCase())
       .filter(Boolean),
   );
-  return cachedDogfoodingEmailSet;
 }
 
 export function isDogfoodingEmail(email: string | null | undefined): boolean {
