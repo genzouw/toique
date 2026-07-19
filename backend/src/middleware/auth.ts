@@ -46,26 +46,14 @@ const getExpectedHash = (val: string | undefined) =>
 const expectedUsernameHash = getExpectedHash(process.env.ADMIN_USERNAME);
 const expectedPasswordHash = getExpectedHash(process.env.ADMIN_PASSWORD);
 
-let cachedRawOperatorEmails = '';
-let cachedOperatorEmailSet: ReadonlySet<string> | null = null;
-
 function getOperatorEmailSet(): ReadonlySet<string> {
   const raw = process.env.OPERATOR_EMAILS ?? '';
-  // ⚡ Bolt: Use a raw string comparison for memoization.
-  // This prevents unnecessary parsing on every request while ensuring
-  // unit tests can still dynamically update `process.env`.
-  if (cachedOperatorEmailSet !== null && raw === cachedRawOperatorEmails) {
-    return cachedOperatorEmailSet;
-  }
-
-  cachedRawOperatorEmails = raw;
-  cachedOperatorEmailSet = new Set(
+  return new Set(
     raw
       .split(',')
       .map((s) => s.trim().toLowerCase())
       .filter(Boolean),
   );
-  return cachedOperatorEmailSet;
 }
 
 export function isOperatorEmail(email: string | null | undefined): boolean {
