@@ -118,6 +118,9 @@ updates:
       interval: 'daily'
       time: '09:00'
       timezone: 'Asia/Tokyo'
+    # 直近リリース直後の不安定バージョンを掴まないため、最低 7 日待ってから更新 PR を作成する。
+    cooldown:
+      default-days: 7
     open-pull-requests-limit: 10
     target-branch: 'main'
     reviewers:
