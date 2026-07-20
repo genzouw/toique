@@ -1,4 +1,5 @@
 import { useState, useId } from 'react';
+import type { InputHTMLAttributes } from 'react';
 import { Eye, EyeOff } from 'lucide-react';
 import { ICON_SIZE } from '../lib/icon-size';
 
@@ -25,6 +26,7 @@ export interface AuthFieldProps {
   onChange: (v: string) => void;
   type?: string;
   variant?: AuthFieldVariant;
+  autoComplete?: InputHTMLAttributes<HTMLInputElement>['autoComplete'];
 }
 
 export function AuthField({
@@ -33,6 +35,7 @@ export function AuthField({
   value,
   onChange,
   variant = 'user',
+  autoComplete,
 }: AuthFieldProps) {
   const id = useId();
   const [showPassword, setShowPassword] = useState(false);
@@ -51,6 +54,7 @@ export function AuthField({
           value={value}
           onChange={(e) => onChange(e.target.value)}
           required
+          autoComplete={autoComplete}
           className={`w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none ${inputClassByVariant[variant]} ${isPassword ? 'pr-10' : ''}`}
         />
         {isPassword && (

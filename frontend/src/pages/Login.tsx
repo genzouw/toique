@@ -42,12 +42,14 @@ export default function Login() {
           type="email"
           value={email}
           onChange={setEmail}
+          autoComplete="email"
         />
         <AuthField
           label="パスワード"
           type="password"
           value={password}
           onChange={setPassword}
+          autoComplete="current-password"
         />
         <ErrorAlert error={error} />
         <LoadingButton

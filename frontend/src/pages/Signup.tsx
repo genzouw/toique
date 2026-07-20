@@ -42,18 +42,25 @@ export default function Signup() {
         description="Toiqueの無料アカウント登録ページ。LINE公式アカウント連携と対話フォームによる問い合わせ自動受付を今すぐ始められます。"
       />
       <form onSubmit={handleSubmit} className="space-y-4">
-        <AuthField label="お名前" value={name} onChange={setName} />
+        <AuthField
+          label="お名前"
+          value={name}
+          onChange={setName}
+          autoComplete="name"
+        />
         <AuthField
           label="メールアドレス"
           type="email"
           value={email}
           onChange={setEmail}
+          autoComplete="email"
         />
         <AuthField
           label="パスワード (8文字以上)"
           type="password"
           value={password}
           onChange={setPassword}
+          autoComplete="new-password"
         />
         <ErrorAlert error={error} />
         <LoadingButton
