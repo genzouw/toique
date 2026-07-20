@@ -111,6 +111,28 @@ updates:
     allow:
       - dependency-type: 'all'
 
+  # ルートの Node.js 依存関係 (Root Node.js dependencies)
+  - package-ecosystem: 'npm'
+    directory: '/'
+    schedule:
+      interval: 'daily'
+      time: '09:00'
+      timezone: 'Asia/Tokyo'
+    open-pull-requests-limit: 10
+    target-branch: 'main'
+    reviewers:
+      - 'genzouw'
+    labels:
+      - 'dependencies'
+      - 'root'
+    commit-message:
+      prefix: 'chore'
+      include: 'scope'
+    pull-request-branch-name:
+      separator: '/'
+    allow:
+      - dependency-type: 'all'
+
   # Infra (CDKTF) Node.js dependencies
   # version update の自動 PR は受けず、security updates のみ対象とする
   # (open-pull-requests-limit: 0 で version updates を停止)。
