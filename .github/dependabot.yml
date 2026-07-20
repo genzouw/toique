@@ -130,6 +130,7 @@ updates:
       - 'root'
     commit-message:
       prefix: 'chore'
+      prefix-development: 'chore'
       include: 'scope'
     pull-request-branch-name:
       separator: '/'
