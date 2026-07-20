@@ -85,7 +85,7 @@ jobs:
             差分に大きなセキュリティ上の懸念が見当たらない場合は、その旨を肯定的に伝えてください。
             `;
 
-            const response = await fetch('https://models.inference.ai.azure.com/chat/completions', {
+            const response = await fetch('https://models.github.ai/inference/chat/completions', {
               method: 'POST',
               headers: {
                 'Content-Type': 'application/json',
