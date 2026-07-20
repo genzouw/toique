@@ -320,20 +320,19 @@ Markdownドキュメントの変更が含まれるPull Requestに対して、日
 AI エージェント（Cursor, Claude Desktop など）が開発プロジェクトのコンテキストを直接理解しやすくするため、ローカルで動作する MCP サーバー (`scripts/mcp-server.ts`) を導入しました。これにより、データベーススキーマやAPIルーティング情報をAIがダイナミックに読み取ることが可能になります。
 
 **設定手順 (Claude Desktop の場合):**
+
 1. 開発環境のルートで `cd backend && bun install` を実行し、`@modelcontextprotocol/sdk` がインストールされていることを確認します。
 2. `~/Library/Application Support/Claude/claude_desktop_config.json` (Mac の場合) に以下の設定を追加します:
 
-```json
-{
-  "mcpServers": {
-    "toique-backend": {
-      "command": "bun",
-      "args": [
-        "run",
-        "/path/to/your/repo/scripts/mcp-server.ts"
-      ]
-    }
-  }
-}
-```
+   ```json
+   {
+     "mcpServers": {
+       "toique-backend": {
+         "command": "bun",
+         "args": ["run", "/path/to/your/repo/scripts/mcp-server.ts"]
+       }
+     }
+   }
+   ```
+
 3. Claude Desktop を再起動すると、`get_db_schema` や `get_api_routes` ツールが使えるようになり、バックエンド構造を正確に踏まえたコード生成が可能になります。
