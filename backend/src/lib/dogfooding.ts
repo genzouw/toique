@@ -1,6 +1,7 @@
 import { eq } from 'drizzle-orm';
 import db from '../db.js';
 import { tenantMembers, users } from '../schema.js';
+import { createEnvSetReader } from './env-set.js';
 
 /**
  * Stripe による課金なしで Pro 相当として扱う、運営ドッグフーディング用のメールアドレス。
@@ -13,23 +14,7 @@ import { tenantMembers, users } from '../schema.js';
  * Public 化したリポジトリでハードコードを避けるための実装で、本番用の email は
  * GitHub Actions Secrets で管理して Cloud Run env として渡す。
  */
-let cachedRawDogfoodingEmails: string | undefined;
-let cachedDogfoodingEmailSet: ReadonlySet<string> | undefined;
-
-function getDogfoodingEmailSet(): ReadonlySet<string> {
-  const raw = process.env.DOGFOODING_EMAILS ?? '';
-  if (cachedDogfoodingEmailSet && cachedRawDogfoodingEmails === raw) {
-    return cachedDogfoodingEmailSet;
-  }
-  cachedRawDogfoodingEmails = raw;
-  cachedDogfoodingEmailSet = new Set(
-    raw
-      .split(',')
-      .map((e) => e.trim().toLowerCase())
-      .filter(Boolean),
-  );
-  return cachedDogfoodingEmailSet;
-}
+const getDogfoodingEmailSet = createEnvSetReader('DOGFOODING_EMAILS');
 
 export function isDogfoodingEmail(email: string | null | undefined): boolean {
   if (!email) return false;
