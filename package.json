@@ -12,6 +12,8 @@
     "secretlint": "git ls-files -z | xargs -0 secretlint"
   },
   "devDependencies": {
+    "@commitlint/cli": "^21.2.1",
+    "@commitlint/config-conventional": "^21.2.0",
     "@secretlint/secretlint-formatter-sarif": "^13.0.2",
     "@secretlint/secretlint-rule-preset-recommend": "^13.0.2",
     "husky": "^9.1.0",
