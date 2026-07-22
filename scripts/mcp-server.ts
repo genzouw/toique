@@ -74,9 +74,13 @@ server.tool(
   },
   async ({ target }) => {
     try {
+      const routesDir = path.resolve(rootDir, 'backend/src/routes');
       let routePath = '';
       if (target) {
-        routePath = path.join(rootDir, `backend/src/routes/${target}`);
+        routePath = path.resolve(routesDir, target);
+        if (!routePath.startsWith(`${routesDir}${path.sep}`)) {
+          throw new Error('無効なルートファイルの指定です');
+        }
       } else {
         routePath = path.join(rootDir, 'backend/src/index.ts');
       }
