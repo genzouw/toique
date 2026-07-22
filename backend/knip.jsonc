@@ -4,9 +4,6 @@
   "ignoreDependencies": [
     // esbuild は overrides 経由で再ピン留めしているだけで直接 import しない
     "esbuild",
-    // @modelcontextprotocol/sdk は backend/src 配下ではなく、リポジトリルートの
-    // scripts/mcp-server.ts（ローカル用 MCP サーバー）から利用される依存関係
-    "@modelcontextprotocol/sdk",
   ],
   "rules": {
     "files": "error",

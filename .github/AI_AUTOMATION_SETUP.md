@@ -321,7 +321,7 @@ AI エージェント（Cursor, Claude Desktop など）が開発プロジェク
 
 **設定手順 (Claude Desktop の場合):**
 
-1. 開発環境のルートで `cd backend && bun install` を実行し、`@modelcontextprotocol/sdk` がインストールされていることを確認します。
+1. 開発環境のリポジトリルートで `bun install` を実行し、`@modelcontextprotocol/sdk` がインストールされていることを確認します（`scripts/mcp-server.ts` はリポジトリルート起点で起動するため、依存関係もルートの `package.json` に定義しています）。
 2. `~/Library/Application Support/Claude/claude_desktop_config.json` (Mac の場合) に以下の設定を追加します:
 
    ```json
