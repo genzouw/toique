@@ -68,27 +68,3 @@ version = "3.14.2"
 ecosystem = "npm"
 vulnerability.ignore = true
 reason = "infra の transitive dependency。開発ツールのみで利用し、プロダクション環境には影響しない。親パッケージの更新待ち。2026-12-17 に再評価すること。"
-
-# js-yaml 4.2.0 (root bun.lock: @textlint/linter-formatter, rc-config-loader 経由) — GHSA-52cp-r559-cp3m (DoS)
-[[PackageOverrides]]
-name = "js-yaml"
-version = "4.2.0"
-ecosystem = "npm"
-vulnerability.ignore = true
-reason = "root の開発ツーリング transitive dependency。プロダクション環境には影響しない。修正版 4.3.0 が存在するが、本 PR は backend の MCP 変更に限定するため依存更新は別 PR で対応する。2026-10-21 に再評価すること。"
-
-# brace-expansion 5.0.6 (frontend/bun.lock 経由) — GHSA-3jxr-9vmj-r5cp (ReDoS)
-[[PackageOverrides]]
-name = "brace-expansion"
-version = "5.0.6"
-ecosystem = "npm"
-vulnerability.ignore = true
-reason = "frontend の transitive dependency。修正版 5.0.7 が存在するが、本 PR は backend の MCP 変更に限定するため frontend ロックファイルの更新は別 PR で対応する。2026-10-21 に再評価すること。"
-
-# brace-expansion 1.1.14 (infra/package-lock.json の devDependency 経由) — GHSA-3jxr-9vmj-r5cp (ReDoS)
-[[PackageOverrides]]
-name = "brace-expansion"
-version = "1.1.14"
-ecosystem = "npm"
-vulnerability.ignore = true
-reason = "infra の devDependency transitive。開発ツールのみで利用し、プロダクション環境には影響しない。修正版 1.1.16 が存在するが、本 PR は backend の MCP 変更に限定するため依存更新は別 PR で対応する。2026-10-21 に再評価すること。"
