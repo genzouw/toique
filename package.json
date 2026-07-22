@@ -11,6 +11,9 @@
     "knip": "bun --cwd backend run knip && bun --cwd frontend run knip",
     "secretlint": "git ls-files -z | xargs -0 secretlint"
   },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.29.0"
+  },
   "devDependencies": {
     "@secretlint/secretlint-formatter-sarif": "^13.0.2",
     "@secretlint/secretlint-rule-preset-recommend": "^13.0.2",
@@ -33,5 +36,10 @@
       "bun --cwd frontend run lint --fix",
       "bun --cwd frontend run format"
     ]
+  },
+  "overrides": {
+    "fast-uri": "3.1.4",
+    "js-yaml": "4.3.0",
+    "@hono/node-server": "^2.0.10"
   }
 }
