@@ -50,11 +50,10 @@ server.tool(
       return {
         content: [{ type: 'text', text: content }],
       };
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
       return {
-        content: [
-          { type: 'text', text: `Error reading schema: ${error.message}` },
-        ],
+        content: [{ type: 'text', text: `Error reading schema: ${message}` }],
         isError: true,
       };
     }
@@ -85,11 +84,10 @@ server.tool(
       return {
         content: [{ type: 'text', text: content }],
       };
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
       return {
-        content: [
-          { type: 'text', text: `Error reading routes: ${error.message}` },
-        ],
+        content: [{ type: 'text', text: `Error reading routes: ${message}` }],
         isError: true,
       };
     }
