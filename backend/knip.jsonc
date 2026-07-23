@@ -3,7 +3,7 @@
   "project": ["src/**/*.ts"],
   "ignoreDependencies": [
     // esbuild は overrides 経由で再ピン留めしているだけで直接 import しない
-    "esbuild"
+    "esbuild",
   ],
   "rules": {
     "files": "error",
@@ -11,6 +11,6 @@
     "unlisted": "error",
     "unresolved": "error",
     "exports": "warn",
-    "types": "warn"
-  }
+    "types": "warn",
+  },
 }

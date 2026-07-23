@@ -22,3 +22,6 @@ rules:
       # `npm install --global` による導入を許容する。バージョンは 1.16.0 に固定済みで
       # サプライチェーンリスクは許容範囲。
       - repomix.yml
+      # ai-openapi-generator.yml も同様に repomix を単体CLIツールとして使うのみで、
+      # リポジトリの依存関係ではない。理由は repomix.yml と同じ。
+      - ai-openapi-generator.yml
