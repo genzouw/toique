@@ -114,9 +114,14 @@ function StatCard({
     <div className="bg-white border border-slate-200 rounded-lg p-5">
       <div className="text-sm text-slate-500">{label}</div>
       <div className="mt-2 flex items-baseline gap-1">
-        <span className="text-3xl font-bold text-slate-900">
-          {value ?? '—'}
-        </span>
+        {value === null ? (
+          <>
+            <span className="inline-block h-8 w-16 bg-slate-200 animate-pulse rounded" />
+            <span className="sr-only">読み込み中</span>
+          </>
+        ) : (
+          <span className="text-3xl font-bold text-slate-900">{value}</span>
+        )}
         <span className="text-sm text-slate-500">{unit}</span>
       </div>
     </div>
