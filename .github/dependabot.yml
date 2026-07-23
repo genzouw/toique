@@ -104,6 +104,14 @@ updates:
           - 'vite'
           - '@vitejs/*'
           - 'vite-plugin-*'
+    # TypeScript 7 系は typescript-eslint がまだ非対応 (peer dependency の上限が
+    # `typescript: <6.1.0`) で、TS7 に上げると `bun run lint` が
+    # `@typescript-eslint/typescript-estree` の内部で TypeError クラッシュし CI が
+    # 必ず失敗する (PR #573)。typescript-eslint が TS7 対応版を公開するまで
+    # semver-major を ignore し、TS6 系の minor / patch は引き続き自動 PR で受け取る。
+    ignore:
+      - dependency-name: 'typescript'
+        update-types: ['version-update:semver-major']
     allow:
       - dependency-type: 'all'
 
