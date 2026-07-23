@@ -1,3 +1,0 @@
-## 2025-02-28 - Caching parsed environment variables (Sets/Arrays)
-**Learning:** In frequently called backend helpers like `getDogfoodingEmailSet()` or `getOperatorEmailSet()`, repeatedly parsing (splitting and mapping) environment variables like `process.env.OPERATOR_EMAILS` into Sets/Arrays on every call introduces measurable overhead and unnecessary memory allocation.
-**Action:** Implement memoization by caching the constructed Set alongside the raw unparsed string (e.g., `process.env.VAR === cachedRawVar`). This ensures overhead is minimized on subsequent calls while properly invalidating the cache during unit tests where environment variables may be dynamically stubbed (e.g., via `vi.stubEnv`).
