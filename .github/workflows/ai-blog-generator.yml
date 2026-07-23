@@ -46,7 +46,7 @@ jobs:
           } >> "$GITHUB_ENV"
 
       - name: Run Repomix to pack the repository (Context)
-        uses: yamadashy/repomix/.github/actions/repomix@912bd733df35caa5fd9fa120a5c32b5545264827 # v1.16.1
+        uses: yamadashy/repomix/.github/actions/repomix@9cfeac741dd6d788ea232f50c28c410d32120377 # v1.17.0
         with:
           output: repomix-output.xml
           compress: true
