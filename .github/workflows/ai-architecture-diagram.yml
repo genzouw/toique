@@ -18,7 +18,7 @@ jobs:
         with:
           egress-policy: audit
       - name: Checkout repository
-        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
           persist-credentials: false
@@ -29,7 +29,7 @@ jobs:
           node-version: '20'
 
       - name: Run Repomix to pack the repository
-        uses: yamadashy/repomix/.github/actions/repomix@e98afd55061dce37dc6070fc98bb61218939fdf8 # v1.16.0
+        uses: yamadashy/repomix/.github/actions/repomix@912bd733df35caa5fd9fa120a5c32b5545264827 # v1.16.1
         with:
           output: repomix-output.xml
           compress: true
@@ -78,7 +78,7 @@ jobs:
             `;
 
             console.log('Calling GitHub Models for Architecture Diagram Generation...');
-            const response = await fetch('https://models.inference.ai.azure.com/chat/completions', {
+            const response = await fetch('https://models.github.ai/inference/chat/completions', {
               method: 'POST',
               headers: {
                 'Content-Type': 'application/json',
