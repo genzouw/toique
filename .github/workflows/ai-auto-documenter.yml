@@ -21,7 +21,7 @@ jobs:
           egress-policy: audit
 
       - name: Checkout repository
-        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
           persist-credentials: false
@@ -32,9 +32,18 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
           REPO: ${{ github.repository }}
+          BASE_REF: ${{ github.event.pull_request.base.ref }}
         run: |
-          DIFF=$(gh pr diff "$PR_NUMBER" --repo "$REPO")
-          TRUNCATED_DIFF=$(echo "$DIFF" | head -n 10000)
+          # Restrict the diff to TypeScript/TSX files using git directly so the
+          # environment variable passed to the next step (and thus the node
+          # process argv/envp size) never balloons with unrelated changes such
+          # as large lockfile churn. Previously `gh pr diff` fetched the whole
+          # PR diff, which could exceed the OS argument/environment size limit
+          # and fail node startup with "Argument list too long".
+          git fetch origin "$BASE_REF" --depth=1
+          DIFF=$(git diff "origin/$BASE_REF...HEAD" -- '*.ts' '*.tsx')
+          # Cap by bytes, not lines, since a single long line can still blow past ARG_MAX.
+          TRUNCATED_DIFF=$(echo "$DIFF" | head -c 40000)
 
           DELIMITER=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
           {
@@ -80,7 +89,7 @@ jobs:
             \`\`\`
             `;
 
-            const response = await fetch('https://models.inference.ai.azure.com/chat/completions', {
+            const response = await fetch('https://models.github.ai/inference/chat/completions', {
               method: 'POST',
               headers: {
                 'Content-Type': 'application/json',

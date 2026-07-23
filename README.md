@@ -288,3 +288,8 @@ curl -s http://localhost:3000/api/v1/messages | jq
 脆弱性やシークレット漏洩を発見した場合は、公開のIssue等で報告せず、速やかにプライベートな窓口（[`SECURITY.md`](SECURITY.md) 参照）へご報告ください。
 
 また、当プロジェクトでは開発者のローカル・リモートを問わず、シークレットの流出を防ぐための最終防壁として、本リポジトリ（およびフォーク先リポジトリ）での `GitHub Push Protection` の有効化を徹底しています。詳しくは [`docs/security/leak-prevention.md`](docs/security/leak-prevention.md) を参照してください。
+
+### AI / 自動化機能の強化 (2025)
+
+- **MCP (Model Context Protocol)**: `scripts/mcp-server.ts` を用いて、Claude Desktop や Cursor 等のローカル AI ツールから直接 Hono ルーティングや Drizzle DB スキーマを読み取れる仕組みを導入しています。詳細は `.github/AI_AUTOMATION_SETUP.md` を参照してください。
+- **AI OpenAPI Generator**: バックエンドのルーティングやスキーマ変更を検知して、`docs/openapi.yaml` を自動生成する GitHub Action ワークフローを導入しています。
