@@ -11,8 +11,6 @@ updates:
       time: '09:00'
       timezone: 'Asia/Tokyo'
     # 直近リリース直後の不安定バージョンを掴まないため、最低 7 日待ってから更新 PR を作成する。
-    cooldown:
-      default-days: 7
     open-pull-requests-limit: 10
     target-branch: 'main'
     reviewers:
@@ -60,8 +58,6 @@ updates:
       interval: 'daily'
       time: '09:00'
       timezone: 'Asia/Tokyo'
-    cooldown:
-      default-days: 7
     open-pull-requests-limit: 10
     target-branch: 'main'
     reviewers:
@@ -111,6 +107,30 @@ updates:
     allow:
       - dependency-type: 'all'
 
+  # ルートの Node.js 依存関係 (Root Node.js dependencies)
+  - package-ecosystem: 'npm'
+    directory: '/'
+    schedule:
+      interval: 'daily'
+      time: '09:00'
+      timezone: 'Asia/Tokyo'
+    # 直近リリース直後の不安定バージョンを掴まないため、最低 7 日待ってから更新 PR を作成する。
+    open-pull-requests-limit: 10
+    target-branch: 'main'
+    reviewers:
+      - 'genzouw'
+    labels:
+      - 'dependencies'
+      - 'root'
+    commit-message:
+      prefix: 'chore'
+      prefix-development: 'chore'
+      include: 'scope'
+    pull-request-branch-name:
+      separator: '/'
+    allow:
+      - dependency-type: 'all'
+
   # Infra (CDKTF) Node.js dependencies
   # version update の自動 PR は受けず、security updates のみ対象とする
   # (open-pull-requests-limit: 0 で version updates を停止)。
@@ -129,8 +149,6 @@ updates:
       interval: 'daily'
       time: '09:00'
       timezone: 'Asia/Tokyo'
-    cooldown:
-      default-days: 7
     open-pull-requests-limit: 0
     target-branch: 'main'
     reviewers:
@@ -160,8 +178,6 @@ updates:
       interval: 'daily'
       time: '09:00'
       timezone: 'Asia/Tokyo'
-    cooldown:
-      default-days: 7
     open-pull-requests-limit: 5
     target-branch: 'main'
     reviewers:
@@ -199,8 +215,6 @@ updates:
       interval: 'daily'
       time: '09:00'
       timezone: 'Asia/Tokyo'
-    cooldown:
-      default-days: 7
     open-pull-requests-limit: 3
     target-branch: 'main'
     reviewers:
@@ -224,8 +238,6 @@ updates:
       interval: 'daily'
       time: '09:00'
       timezone: 'Asia/Tokyo'
-    cooldown:
-      default-days: 7
     open-pull-requests-limit: 3
     target-branch: 'main'
     reviewers:
@@ -249,8 +261,6 @@ updates:
       interval: 'daily'
       time: '09:00'
       timezone: 'Asia/Tokyo'
-    cooldown:
-      default-days: 7
     open-pull-requests-limit: 3
     target-branch: 'main'
     reviewers:

@@ -5,6 +5,7 @@ import db from '../db.js';
 import { tenantMembers, tenants } from '../schema.js';
 import { auth } from '../auth/better-auth.js';
 import { isDogfoodingEmail } from '../lib/dogfooding.js';
+import { createEnvSetReader } from '../lib/env-set.js';
 
 type AuthUser = {
   id: string;
@@ -46,15 +47,7 @@ const getExpectedHash = (val: string | undefined) =>
 const expectedUsernameHash = getExpectedHash(process.env.ADMIN_USERNAME);
 const expectedPasswordHash = getExpectedHash(process.env.ADMIN_PASSWORD);
 
-function getOperatorEmailSet(): ReadonlySet<string> {
-  const raw = process.env.OPERATOR_EMAILS ?? '';
-  return new Set(
-    raw
-      .split(',')
-      .map((s) => s.trim().toLowerCase())
-      .filter(Boolean),
-  );
-}
+const getOperatorEmailSet = createEnvSetReader('OPERATOR_EMAILS');
 
 export function isOperatorEmail(email: string | null | undefined): boolean {
   if (!email) return false;
