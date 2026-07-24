@@ -69,13 +69,15 @@ ecosystem = "npm"
 vulnerability.ignore = true
 reason = "infra の transitive dependency。開発ツールのみで利用し、プロダクション環境には影響しない。親パッケージの更新待ち。2026-12-17 に再評価すること。"
 
-# brace-expansion 1.1.16 (infra/package-lock.json: jest -> test-exclude / glob / minimatch@3.1.5 経由) — GHSA-mh99-v99m-4gvg / CVE-2026-14257 (DoS via unbounded expansion length)
-# vulnerability.ignore = true は package+version 単位で全脆弱性を抑制するため、この 1 エントリで両IDをまとめて許容する。
+# brace-expansion 1.1.16 (infra/package-lock.json: jest -> test-exclude / glob / minimatch@3.1.5 経由) — GHSA-mh99-v99m-4gvg / CVE-2026-14257 (DoS via unbounded expansion length) を GHSA単位で個別に許容し、ignoreUntil 到来後は自動的にスキャン失敗として再評価される
 # 修正版は 5.0.8 のみで、5.x は `exports.expand` の named export に書き換えられており、
 # minimatch@3.1.5 が期待する `module.exports = expand`（関数直呼び出し）と非互換のためバージョン差し替えでは解消できない。
-[[PackageOverrides]]
-name = "brace-expansion"
-version = "1.1.16"
-ecosystem = "npm"
-vulnerability.ignore = true
-reason = "jest (test-exclude, glob, minimatch@3.1.5) の transitive dependency で ^1.1.7 に固定されている。修正版は 5.0.8 のみで、破壊的なexport形式変更により minimatch@3.1.5 と非互換のため適用不可。brace-expansion 1.x 系に同等パッチは未リリースで、解消には jest のメジャーアップデートが必要。開発ツール（テストカバレッジ計測）のみで利用し、プロダクション環境には影響しない。2026-12-25 に再評価すること。"
+[[IgnoredVulns]]
+id = "GHSA-mh99-v99m-4gvg"
+ignoreUntil = 2026-12-25
+reason = "brace-expansion@1.1.16 は jest (test-exclude, glob, minimatch@3.1.5) の transitive dependency で ^1.1.7 に固定されている。修正版は 5.0.8 のみで、破壊的なexport形式変更により minimatch@3.1.5 と非互換のため適用不可。brace-expansion 1.x 系に同等パッチは未リリースで、解消には jest のメジャーアップデートが必要。開発ツール（テストカバレッジ計測）のみで利用し、プロダクション環境には影響しない。"
+
+[[IgnoredVulns]]
+id = "CVE-2026-14257"
+ignoreUntil = 2026-12-25
+reason = "brace-expansion@1.1.16 は jest (test-exclude, glob, minimatch@3.1.5) の transitive dependency で ^1.1.7 に固定されている。修正版は 5.0.8 のみで、破壊的なexport形式変更により minimatch@3.1.5 と非互換のため適用不可。brace-expansion 1.x 系に同等パッチは未リリースで、解消には jest のメジャーアップデートが必要。開発ツール（テストカバレッジ計測）のみで利用し、プロダクション環境には影響しない。"
