@@ -69,10 +69,8 @@ ecosystem = "npm"
 vulnerability.ignore = true
 reason = "infra の transitive dependency。開発ツールのみで利用し、プロダクション環境には影響しない。親パッケージの更新待ち。2026-12-17 に再評価すること。"
 
-# brace-expansion 1.1.16 (infra/package-lock.json: jest -> test-exclude / glob 経由) — GHSA-mh99-v99m-4gvg (DoS via unbounded expansion length)
-[[PackageOverrides]]
-name = "brace-expansion"
-version = "1.1.16"
-ecosystem = "npm"
-vulnerability.ignore = true
-reason = "jest (test-exclude, glob) の transitive dependency で ^1.1.7 に固定されている。修正版は 5.0.8 のみで brace-expansion 1.x 系に修正版はリリースされていないため、jest のメジャーアップデートが必要。開発ツール（テストカバレッジ計測）のみで利用し、プロダクション環境には影響しない。2026-12-25 に再評価すること。"
+# brace-expansion 1.1.16 (infra/package-lock.json: jest -> test-exclude / glob 経由) — GHSA-mh99-v99m-4gvg (DoS via unbounded expansion length) のみを対象とし、ignoreUntil 到来後は自動的にスキャン失敗として再評価される
+[[IgnoredVulns]]
+id = "GHSA-mh99-v99m-4gvg"
+ignoreUntil = 2026-12-25
+reason = "brace-expansion@1.1.16 は jest (test-exclude, glob) の transitive dependency で ^1.1.7 に固定されている。修正版は 5.0.8 のみで brace-expansion 1.x 系に修正版はリリースされていないため、jest のメジャーアップデートが必要。開発ツール（テストカバレッジ計測）のみで利用し、プロダクション環境には影響しない。"
