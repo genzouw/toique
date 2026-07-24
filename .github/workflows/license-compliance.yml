@@ -41,7 +41,7 @@ jobs:
         run: bun install --frozen-lockfile
 
       - name: Check Licenses (Root)
-        run: bun x license-checker-rseidelsohn --failOn "GPL;AGPL" --summary
+        run: bun x license-checker-rseidelsohn@4.4.2 --failOn "GPL-1.0-only;GPL-1.0-or-later;GPL-2.0-only;GPL-2.0-or-later;GPL-3.0-only;GPL-3.0-or-later;AGPL-1.0-only;AGPL-1.0-or-later;AGPL-3.0-only;AGPL-3.0-or-later" --summary
 
       - name: Install dependencies (Backend)
         working-directory: backend
@@ -49,7 +49,7 @@ jobs:
 
       - name: Check Licenses (Backend)
         working-directory: backend
-        run: bun x license-checker-rseidelsohn --failOn "GPL;AGPL" --summary
+        run: bun x license-checker-rseidelsohn@4.4.2 --failOn "GPL-1.0-only;GPL-1.0-or-later;GPL-2.0-only;GPL-2.0-or-later;GPL-3.0-only;GPL-3.0-or-later;AGPL-1.0-only;AGPL-1.0-or-later;AGPL-3.0-only;AGPL-3.0-or-later" --summary
 
       - name: Install dependencies (Frontend)
         working-directory: frontend
@@ -57,7 +57,7 @@ jobs:
 
       - name: Check Licenses (Frontend)
         working-directory: frontend
-        run: bun x license-checker-rseidelsohn --failOn "GPL;AGPL" --summary
+        run: bun x license-checker-rseidelsohn@4.4.2 --failOn "GPL-1.0-only;GPL-1.0-or-later;GPL-2.0-only;GPL-2.0-or-later;GPL-3.0-only;GPL-3.0-or-later;AGPL-1.0-only;AGPL-1.0-or-later;AGPL-3.0-only;AGPL-3.0-or-later" --summary
 
       - name: Install dependencies (Infra)
         working-directory: infra
@@ -65,4 +65,4 @@ jobs:
 
       - name: Check Licenses (Infra)
         working-directory: infra
-        run: bun x license-checker-rseidelsohn --failOn "GPL;AGPL" --summary
+        run: bun x license-checker-rseidelsohn@4.4.2 --failOn "GPL-1.0-only;GPL-1.0-or-later;GPL-2.0-only;GPL-2.0-or-later;GPL-3.0-only;GPL-3.0-or-later;AGPL-1.0-only;AGPL-1.0-or-later;AGPL-3.0-only;AGPL-3.0-or-later" --summary
