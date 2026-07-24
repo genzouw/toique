@@ -47,8 +47,18 @@ export default function Dashboard() {
       <ErrorAlert error={error} />
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-6">
-        <StatCard label="登録済みチャネル" value={channels} unit="件" />
-        <StatCard label="受信メッセージ (累計)" value={messages} unit="件" />
+        <StatCard
+          label="登録済みチャネル"
+          value={channels}
+          unit="件"
+          failed={error !== null}
+        />
+        <StatCard
+          label="受信メッセージ (累計)"
+          value={messages}
+          unit="件"
+          failed={error !== null}
+        />
       </div>
 
       {/* 利用状況 */}
@@ -105,18 +115,33 @@ function StatCard({
   label,
   value,
   unit,
+  failed = false,
 }: {
   label: string;
   value: number | null;
   unit: string;
+  failed?: boolean;
 }) {
+  const loading = value === null && !failed;
   return (
     <div className="bg-white border border-slate-200 rounded-lg p-5">
       <div className="text-sm text-slate-500">{label}</div>
       <div className="mt-2 flex items-baseline gap-1">
-        <span className="text-3xl font-bold text-slate-900">
-          {value ?? '—'}
-        </span>
+        {loading ? (
+          <>
+            <span
+              aria-hidden="true"
+              className="inline-block h-8 w-16 bg-slate-200 animate-pulse rounded"
+            />
+            <span role="status" aria-live="polite" className="sr-only">
+              読み込み中
+            </span>
+          </>
+        ) : (
+          <span className="text-3xl font-bold text-slate-900">
+            {value ?? '—'}
+          </span>
+        )}
         <span className="text-sm text-slate-500">{unit}</span>
       </div>
     </div>
