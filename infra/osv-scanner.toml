@@ -29,6 +29,18 @@ ecosystem = "npm"
 vulnerability.ignore = true
 reason = "cdktf -> archiver-utils の transitive dependency。lodash 4.x の修正版はリリースされていないため、cdktf 側の依存差し替え待ち。2026-12-12 に再評価すること。"
 
+# brace-expansion 1.1.16 (minimatch@3.1.5 経由、jest -> glob@7 等の推移的依存) — CVE-2026-14257 (DoS via unbounded expansion length)
+# 修正版は 5.0.8 のみで、5.x は `exports.expand` の named export に書き換えられており
+# minimatch@3.1.5 が期待する `module.exports = expand`（関数直呼び出し）と非互換のため、
+# バージョン差し替えでは解消できない。1.x/2.x/3.x/4.x 系列への同等パッチはリリースされていない。
+# 依存元 (jest 経由の古い glob/minimatch) の更新待ち。2026-12-25 に再評価すること。
+[[PackageOverrides]]
+name = "brace-expansion"
+version = "1.1.16"
+ecosystem = "npm"
+vulnerability.ignore = true
+reason = "minimatch@3.1.5 (jest -> glob@7 等) の transitive dependency。修正版 5.0.8 は破壊的なexport形式変更でminimatch@3.1.5と非互換のため適用不可。1.x系列への同等パッチは未リリース。依存元の更新待ち。2026-12-25 に再評価すること。"
+
 # minimatch 5.1.6 (cdktf 経由) — GHSA-23c5-xmqv-rm74, GHSA-3ppc-4f35-3m26, GHSA-7r86-cg39-jmmj (ReDoS)
 [[PackageOverrides]]
 name = "minimatch"
