@@ -1,1 +1,32 @@
-bunx commitlint --edit "$1"
+bunx commitlint --edit "$1" || exit $?
+
+# --- Security: Gitleaks scan for commit messages ---
+# コミットメッセージにシークレットが混入するのを防ぐ。
+# pre-commit でダウンロード・キャッシュされたバイナリを再利用する。
+GITLEAKS_CMD="gitleaks"
+if ! command -v gitleaks >/dev/null 2>&1; then
+  GITLEAKS_CACHE_DIR="${XDG_CACHE_HOME:-$HOME/.cache}/gitleaks"
+  if [ -d "$GITLEAKS_CACHE_DIR" ]; then
+    GITLEAKS_BIN=$(ls -1 "$GITLEAKS_CACHE_DIR"/gitleaks-* 2>/dev/null | head -n 1)
+    if [ -n "$GITLEAKS_BIN" ] && [ -x "$GITLEAKS_BIN" ]; then
+      GITLEAKS_CMD="$GITLEAKS_BIN"
+    else
+      GITLEAKS_CMD=""
+    fi
+  else
+    GITLEAKS_CMD=""
+  fi
+fi
+
+if [ -n "$GITLEAKS_CMD" ]; then
+  echo "🔍 Running gitleaks on commit message..."
+  # --no-git: git の履歴ではなく、指定したファイル単体をスキャンする
+  # --config: 単一ファイルスキャンでは .gitleaks.toml のカレントディレクトリ自動探索が効かないため明示指定する
+  if ! "$GITLEAKS_CMD" detect --no-git --source "$1" --config .gitleaks.toml --redact --verbose --no-banner; then
+    echo "🚨 [Security Error] gitleaks detected secrets in your commit message."
+    echo "Commit is blocked. Please remove the secrets from the message."
+    exit 1
+  fi
+else
+  echo "⚠️  gitleaks is not available locally. Skipping content scan for commit message."
+fi
