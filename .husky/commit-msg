@@ -21,7 +21,8 @@ fi
 if [ -n "$GITLEAKS_CMD" ]; then
   echo "🔍 Running gitleaks on commit message..."
   # --no-git: git の履歴ではなく、指定したファイル単体をスキャンする
-  if ! "$GITLEAKS_CMD" detect --no-git --source "$1" --redact --verbose --no-banner; then
+  # --config: 単一ファイルスキャンでは .gitleaks.toml のカレントディレクトリ自動探索が効かないため明示指定する
+  if ! "$GITLEAKS_CMD" detect --no-git --source "$1" --config .gitleaks.toml --redact --verbose --no-banner; then
     echo "🚨 [Security Error] gitleaks detected secrets in your commit message."
     echo "Commit is blocked. Please remove the secrets from the message."
     exit 1
