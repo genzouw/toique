@@ -88,6 +88,31 @@ runs:
                 except Exception as e:
                     search_res = f"Web search failed across all providers: {e}"
 
+
+        # トップURLの全文Markdownを抽出するJina Reader APIの統合
+        urls = []
+        if tavily_key and 'results' in locals() and results:
+            urls = [r.get('url') for r in results if r.get('url')]
+        elif 'ddg_success' in locals() and ddg_success and 'results' in locals() and results:
+            urls = [r.get('href') for r in results if r.get('href')]
+        elif 'g_results' in locals() and g_results:
+            urls = [r.url for r in g_results if hasattr(r, 'url')]
+
+        if urls:
+            top_url = urls[0]
+            print(f"Jina Reader 経由でトップURLの全文Markdownを取得中: {top_url} via Jina Reader")
+            try:
+                import urllib.request
+                req = urllib.request.Request(f"https://r.jina.ai/{top_url}", headers={'User-Agent': 'Mozilla/5.0'})
+                with urllib.request.urlopen(req) as response:
+                    jina_md = response.read().decode('utf-8')
+                    # コンテキストの肥大化を防ぐため約10,000文字に制限
+                    jina_md = jina_md[:10000]
+                    search_res += f"\n\n--- Full Markdown Content (Jina Reader) for {top_url} ---\n{jina_md}\n--- End of Jina Reader Content ---\n"
+                    print("Jina ReaderのMarkdownコンテンツを追加しました。")
+            except Exception as e:
+                print(f"Jina Readerの取得に失敗しました: {e}")
+
         # Wikipedia API integration for factual knowledge lookup
         if query.strip():
             try:
