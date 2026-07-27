@@ -1,4 +1,4 @@
-import type { ElementType, ReactNode } from 'react';
+import { memo, type ElementType, type ReactNode } from 'react';
 import { ICON_SIZE } from '../lib/icon-size';
 
 interface EmptyStateProps {
@@ -9,7 +9,14 @@ interface EmptyStateProps {
   className?: string;
 }
 
-export default function EmptyState({
+/**
+ * ⚡ Bolt: Wrapped with React.memo() to prevent unnecessary re-renders.
+ * EmptyState is a pure presentational component used in lists/tables.
+ * When the parent (e.g. AdminUsers, Forms) re-renders due to network state changes,
+ * memoizing this prevents expensive recalculations and re-paints if props are unchanged.
+ * Expected impact: Minor reduction in render time when parent re-renders.
+ */
+const EmptyState = memo(function EmptyState({
   icon: Icon,
   title,
   description,
@@ -35,4 +42,6 @@ export default function EmptyState({
       {action && <div className="mt-6">{action}</div>}
     </div>
   );
-}
+});
+
+export default EmptyState;
