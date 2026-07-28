@@ -1,0 +1,4 @@
+💡 What: Wrapped `EmptyState` and `ErrorAlert` pure presentational components with `React.memo()`.
+🎯 Why: Prevents unnecessary Virtual DOM diffing overhead and component re-renders when parent components change their local state (e.g., toggling loading spinners) or refetch data, which would otherwise blindly re-render these static leaf components.
+📊 Impact: Eliminates redundant re-renders of static fallback components across the application, especially in `Forms`, `Channels`, and `Messages` views where loading state transitions frequently occur.
+🔬 Measurement: Use React Developer Tools Profiler. Observe that `EmptyState` and `ErrorAlert` no longer highlight/re-render when parent state updates occur that do not affect their passed props.

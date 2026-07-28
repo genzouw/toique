@@ -1,4 +1,4 @@
-import type { ElementType, ReactNode } from 'react';
+import React, { type ElementType, type ReactNode } from 'react';
 import { ICON_SIZE } from '../lib/icon-size';
 
 interface EmptyStateProps {
@@ -9,7 +9,10 @@ interface EmptyStateProps {
   className?: string;
 }
 
-export default function EmptyState({
+// ⚡ Bolt: Use React.memo() on pure presentational components to prevent
+// unnecessary Virtual DOM diffing overhead when parent components re-render
+// (e.g. on loading state changes or data fetches).
+export default React.memo(function EmptyState({
   icon: Icon,
   title,
   description,
@@ -35,4 +38,4 @@ export default function EmptyState({
       {action && <div className="mt-6">{action}</div>}
     </div>
   );
-}
+});
