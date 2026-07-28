@@ -3,7 +3,7 @@
 # (途中コマンドが失敗した場合は即時中断してコミットを成立させない)
 set -e
 
-bunx lint-staged
+bun x lint-staged
 
 # --- Security: Prevent committing sensitive file paths ---
 # 以下のパターンにマッチするファイル名が含まれている場合はコミットを拒否する。
