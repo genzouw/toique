@@ -10,11 +10,12 @@ interface EmptyStateProps {
 }
 
 /**
- * ⚡ Bolt: Wrapped with React.memo() to prevent unnecessary re-renders.
- * EmptyState is a pure presentational component used in lists/tables.
- * When the parent (e.g. AdminUsers, Forms) re-renders due to network state changes,
- * memoizing this prevents expensive recalculations and re-paints if props are unchanged.
- * Expected impact: Minor reduction in render time when parent re-renders.
+ * ⚡ Bolt: 不要な再レンダーを防ぐために React.memo() でラップしています。
+ * EmptyState はリストやテーブルなどで使われる純粋な表示用コンポーネントです。
+ * React.memo() は props の浅い比較を行い、親コンポーネント（例: AdminUsers, Forms）が
+ * ネットワーク状態の変化などで再レンダーされても、props が変化していない場合は
+ * このコンポーネントの再レンダーをスキップします。
+ * 期待される効果: 親の再レンダー時における描画時間のわずかな短縮。
  */
 const EmptyState = memo(function EmptyState({
   icon: Icon,

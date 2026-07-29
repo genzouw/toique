@@ -6,10 +6,11 @@ interface ErrorAlertProps {
 }
 
 /**
- * ⚡ Bolt: Wrapped with React.memo() to prevent unnecessary re-renders when parent
- * components (e.g. Dashboard) update their state (e.g. loading flags) while the error
- * state remains the same.
- * Expected impact: Reduces virtual DOM diffing overhead during parent state transitions.
+ * ⚡ Bolt: 不要な再レンダーを防ぐために React.memo() でラップしています。
+ * React.memo() は props の浅い比較を行い、親コンポーネント（例: Dashboard）が
+ * ローディング状態などの更新で再レンダーされても、error の値が変化していない場合は
+ * このコンポーネントの再レンダーをスキップします。
+ * 期待される効果: 親の状態遷移時における仮想DOM差分計算のオーバーヘッド削減。
  */
 const ErrorAlert = memo(function ErrorAlert({
   error,
