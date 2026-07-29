@@ -77,6 +77,10 @@ cdktf.out/
 *.sqlite
 *.db
 *.log
+*.http
+*.rest
+*.patch
+*.diff
 
 # Infrastructure State Files
 *.tfstate

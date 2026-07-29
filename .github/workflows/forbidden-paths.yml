@@ -38,32 +38,46 @@ jobs:
           persist-credentials: false
 
       - name: Check file paths
+        env:
+          # `${{ }}` を run ブロック内に直接展開するとシェルへのコード注入経路になる
+          # (zizmor template-injection)。env 経由で渡し、シェル変数として参照する。
+          DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
         run: |
           set -euo pipefail
 
-          # 対象とするコミットの差分を取得する
+          # 対象とするコミットの変更ファイルを取得する。
+          # `git diff` は範囲の両端のツリーしか比較しないため、範囲内で追加後に削除された
+          # 機密ファイルを見逃す（.husky/pre-push と同じ理由）。`git log --name-only` で
+          # 範囲内の全コミットの変更パスを個別に列挙し、途中経過のコミットも漏れなく検査する。
           if [ "${{ github.event_name }}" = "pull_request" ]; then
-            # PR の場合: PR のベースブランチと HEAD の差分
+            # PR の場合: PR のベースブランチと HEAD の間の全コミット
             BASE_SHA="${{ github.event.pull_request.base.sha }}"
             HEAD_SHA="${{ github.event.pull_request.head.sha }}"
-            echo "Checking files changed in PR (from $BASE_SHA to $HEAD_SHA)..."
-            if ! CHANGED_FILES=$(git diff --name-only --diff-filter=d "$BASE_SHA" "$HEAD_SHA" 2>/dev/null); then
-              echo "::warning::git diff failed (base SHA may be unavailable). Falling back to checking all files..."
-              CHANGED_FILES=$(git ls-files)
+            echo "Checking files changed in PR commits (from $BASE_SHA to $HEAD_SHA)..."
+            if ! CHANGED_FILES=$(git log --name-only --pretty=format: --diff-filter=d "$BASE_SHA".."$HEAD_SHA" 2>/dev/null | sort -u); then
+              echo "::error::Unable to inspect the complete commit range (from $BASE_SHA to $HEAD_SHA). Failing closed instead of falling back to a partial check."
+              exit 1
             fi
           else
-            # push 等の場合: 直前のコミットとの差分
+            # push 等の場合: 直前のコミットから今回のコミットまでの全コミット
             BEFORE_SHA="${{ github.event.before }}"
+            CURRENT_SHA="${{ github.sha }}"
             # 新規ブランチの push の場合は before が all zero SHA になる
             if [ "$BEFORE_SHA" = "0000000000000000000000000000000000000000" ] || [ -z "$BEFORE_SHA" ]; then
-              # 新規ブランチの場合は HEAD に含まれる全ファイル、もしくはツリー全体を検査
-              echo "New branch push detected or before SHA is empty. Checking all files in the current tree..."
-              CHANGED_FILES=$(git ls-files)
+              # 新規ブランチの場合、push 完了時点で origin 上の当該ブランチは既に CURRENT_SHA と
+              # 一致してしまっているため `git log CURRENT_SHA --not --remotes` は自分自身を除外して
+              # 空になり検知漏れとなる。デフォルトブランチとの差分となる履歴を検査することで、
+              # 途中で追加後に削除されたファイルも見逃さないようにする。
+              echo "New branch push detected or before SHA is empty. Checking commit history since origin/$DEFAULT_BRANCH..."
+              if ! CHANGED_FILES=$(git log "$CURRENT_SHA" --not "origin/$DEFAULT_BRANCH" --name-only --pretty=format: --diff-filter=d 2>/dev/null | sort -u); then
+                echo "::error::Unable to inspect the complete commit history for the new branch (against origin/$DEFAULT_BRANCH). Failing closed instead of falling back to a partial check."
+                exit 1
+              fi
             else
-              echo "Checking files changed in push (from $BEFORE_SHA to ${{ github.sha }})..."
-              if ! CHANGED_FILES=$(git diff --name-only --diff-filter=d "$BEFORE_SHA" "${{ github.sha }}" 2>/dev/null); then
-                echo "::warning::git diff failed (before SHA may be unavailable). Falling back to checking all files..."
-                CHANGED_FILES=$(git ls-files)
+              echo "Checking files changed in push commits (from $BEFORE_SHA to $CURRENT_SHA)..."
+              if ! CHANGED_FILES=$(git log --name-only --pretty=format: --diff-filter=d "$BEFORE_SHA".."$CURRENT_SHA" 2>/dev/null | sort -u); then
+                echo "::error::Unable to inspect the complete commit range (from $BEFORE_SHA to $CURRENT_SHA). Failing closed instead of falling back to a partial check."
+                exit 1
               fi
             fi
           fi
@@ -77,7 +91,7 @@ jobs:
           # `.env.example` 等のテンプレート（機密値を含まない雛形）は正当にコミットされるため、
           # 2 段目の `grep -Ev` で明示的に許可リスト化して誤検知を防ぐ。
           FORBIDDEN_FILES=$(echo "$CHANGED_FILES" \
-            | grep -E '((^|/)\.env.*|\.cursor/.*|\.claude/.*|\.aider.*|\.windsurf/.*|\.jules/.*|\.Jules/.*|.*credentials.*\.json|.*\.pem|.*\.key|.*\.p12|.*_rsa|.*_ed25519|.*_ecdsa|.*\.sqlite|.*\.db|.*\.log|\.npmrc|\.netrc|.*\.tfstate(\..*)?|(^|/)cdktf\.out(/.*)?|(^|/)\.terraform(/.*)?)$' \
+            | grep -E '((^|/)\.env.*|\.cursor/.*|\.claude/.*|\.aider.*|\.windsurf/.*|\.jules/.*|\.Jules/.*|.*credentials.*\.json|.*\.pem|.*\.key|.*\.p12|.*_rsa|.*_ed25519|.*_ecdsa|.*\.sqlite|.*\.db|.*\.log|\.npmrc|\.netrc|.*\.tfstate(\..*)?|(^|/)cdktf\.out(/.*)?|(^|/)\.terraform(/.*)?|.*\.(http|rest|patch|diff))$' \
             | grep -Ev '(^|/)\.env\.(example|sample|template|dist)$' \
             || true)
 
