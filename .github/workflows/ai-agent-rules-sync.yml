@@ -86,12 +86,15 @@ jobs:
             `;
 
             console.log('Calling GitHub Models for AI Agent Rules Generation...');
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 120000);
             const response = await fetch('https://models.github.ai/inference/chat/completions', {
               method: 'POST',
               headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${process.env.PAT_FOR_MODELS}`
               },
+              signal: controller.signal,
               body: JSON.stringify({
                 model: 'openai/o3-mini',
                 reasoning_effort: "high",
@@ -109,6 +112,7 @@ jobs:
                 ]
               })
             });
+            clearTimeout(timeoutId);
 
             if (!response.ok) {
               const err = await response.text();
