@@ -10,6 +10,10 @@
 *.sqlite export-ignore
 *.db export-ignore
 *.log export-ignore
+*.http export-ignore
+*.rest export-ignore
+*.patch export-ignore
+*.diff export-ignore
 .vscode/ export-ignore
 .claude/ export-ignore
 .cursor/ export-ignore
