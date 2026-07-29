@@ -51,8 +51,8 @@ jobs:
             HEAD_SHA="${{ github.event.pull_request.head.sha }}"
             echo "Checking files changed in PR commits (from $BASE_SHA to $HEAD_SHA)..."
             if ! CHANGED_FILES=$(git log --name-only --pretty=format: --diff-filter=d "$BASE_SHA".."$HEAD_SHA" 2>/dev/null | sort -u); then
-              echo "::warning::git log failed (base SHA may be unavailable). Falling back to checking all files..."
-              CHANGED_FILES=$(git ls-files)
+              echo "::error::Unable to inspect the complete commit range (from $BASE_SHA to $HEAD_SHA). Failing closed instead of falling back to a partial check."
+              exit 1
             fi
           else
             # push 等の場合: 直前のコミットから今回のコミットまでの全コミット
@@ -60,14 +60,21 @@ jobs:
             CURRENT_SHA="${{ github.sha }}"
             # 新規ブランチの push の場合は before が all zero SHA になる
             if [ "$BEFORE_SHA" = "0000000000000000000000000000000000000000" ] || [ -z "$BEFORE_SHA" ]; then
-              # 新規ブランチの場合は HEAD に含まれる全ファイル、もしくはツリー全体を検査
-              echo "New branch push detected or before SHA is empty. Checking all files in the current tree..."
-              CHANGED_FILES=$(git ls-files)
+              # 新規ブランチの場合、push 完了時点で origin 上の当該ブランチは既に CURRENT_SHA と
+              # 一致してしまっているため `git log CURRENT_SHA --not --remotes` は自分自身を除外して
+              # 空になり検知漏れとなる。デフォルトブランチとの差分となる履歴を検査することで、
+              # 途中で追加後に削除されたファイルも見逃さないようにする。
+              DEFAULT_BRANCH="${{ github.event.repository.default_branch }}"
+              echo "New branch push detected or before SHA is empty. Checking commit history since origin/$DEFAULT_BRANCH..."
+              if ! CHANGED_FILES=$(git log "$CURRENT_SHA" --not "origin/$DEFAULT_BRANCH" --name-only --pretty=format: --diff-filter=d 2>/dev/null | sort -u); then
+                echo "::error::Unable to inspect the complete commit history for the new branch (against origin/$DEFAULT_BRANCH). Failing closed instead of falling back to a partial check."
+                exit 1
+              fi
             else
               echo "Checking files changed in push commits (from $BEFORE_SHA to $CURRENT_SHA)..."
               if ! CHANGED_FILES=$(git log --name-only --pretty=format: --diff-filter=d "$BEFORE_SHA".."$CURRENT_SHA" 2>/dev/null | sort -u); then
-                echo "::warning::git log failed (before SHA may be unavailable). Falling back to checking all files..."
-                CHANGED_FILES=$(git ls-files)
+                echo "::error::Unable to inspect the complete commit range (from $BEFORE_SHA to $CURRENT_SHA). Failing closed instead of falling back to a partial check."
+                exit 1
               fi
             fi
           fi
