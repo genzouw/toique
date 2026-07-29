@@ -23,7 +23,7 @@
 ## マージ後の確認手順
 
 - [ ] 次の push / PR で `forbidden-paths.yml` が green になることを確認
-- [ ] ローカルでわざと `test.http` 等のファイルを git add して、コミットがブロックされることを確認
+- [ ] ローカルでわざと `test.http` 等のファイルを作成し、`git add -f test.http`（`.gitignore` で除外されているため通常の `git add` ではステージされない）でステージしてコミットがブロックされることを確認し、確認後は `git reset test.http` でステージを解除する
 
 ## ロールバック手順
 
