@@ -130,7 +130,24 @@ jobs:
               return;
             }
 
-            const result = JSON.parse(data.choices[0].message.content);
+            const message = data.choices[0].message;
+            if (message.refusal) {
+              console.error('GitHub Models refused the request:', message.refusal);
+              return;
+            }
+
+            let result;
+            try {
+              result = JSON.parse(message.content);
+            } catch (err) {
+              console.error('Failed to parse GitHub Models response as JSON:', err, message.content);
+              return;
+            }
+
+            if (!result.copilot || !result.cursor || !result.windsurf) {
+              console.error('GitHub Models response missing required fields:', JSON.stringify(result));
+              return;
+            }
 
             fs.mkdirSync('.github', { recursive: true });
 
