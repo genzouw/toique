@@ -1,4 +1,4 @@
-bunx commitlint --edit "$1" || exit $?
+bun x commitlint --edit "$1" || exit $?
 
 # --- Security: Gitleaks scan for commit messages ---
 # コミットメッセージにシークレットが混入するのを防ぐ。
