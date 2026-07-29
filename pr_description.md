@@ -4,4 +4,4 @@
 
 📸 Before/After: Visuals remain unchanged, but screen readers will now announce "N 件" or "見つかりませんでした" when the search results update dynamically.
 
-♿ Accessibility: Ensures that dynamic changes to search results are announced to screen reader users (WCAG 4.1.2 Name, Role, Value).
+♿ Accessibility: Ensures that dynamic changes to search results are announced to screen reader users (WCAG 4.1.3 Status Messages).
