@@ -179,8 +179,12 @@ function SearchResults({
 }) {
   if (results.length === 0) {
     return (
-      <div className="text-center py-10" role="status" aria-live="polite">
-        <p className="text-base text-slate-900">
+      <div className="text-center py-10">
+        <p
+          className="text-base text-slate-900"
+          role="status"
+          aria-live="polite"
+        >
           「{query}」に一致する質問は見つかりませんでした。
         </p>
         <p className="mt-2 text-sm text-slate-600">
