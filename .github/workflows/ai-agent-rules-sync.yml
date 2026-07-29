@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  sync_copilot_instructions:
+  sync_ai_agent_rules:
     name: Sync AI Agent Rules
     runs-on: ubuntu-latest
     permissions:
@@ -33,7 +33,7 @@ jobs:
         with:
           output: repomix-output.xml
           compress: true
-          ignore: "**/*.test.ts,**/*.spec.ts,**/dist/**,**/build/**,**/node_modules/**"
+          ignore: '**/*.test.ts,**/*.spec.ts,**/dist/**,**/build/**,**/node_modules/**'
 
       - name: Generate AI Agent Rules with GitHub Models
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
