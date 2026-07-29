@@ -1,0 +1,4 @@
+💡 What: Wrapped `EmptyState` and `ErrorAlert` pure presentational components with `React.memo()`.
+🎯 Why: These components are frequently used inside lists, dashboards, and tables. When parent components re-render due to network state changes or other state updates, these pure UI components do not need to re-render if their props remain unchanged.
+📊 Impact: Reduces React virtual DOM diffing overhead by skipping renders for these components.
+🔬 Measurement: Can be verified by profiling component re-renders using the React Developer Tools Profiler when parent states (like loading spinners in Dashboard) update.
