@@ -118,11 +118,13 @@ runs:
         ]
 
         if urls_to_scrape:
-            search_res += "\n\n--- Jina Reader Full Content ---\n"
+            search_res += "\n\n--- Jina Reader 全文コンテンツ ---\n"
             for u in urls_to_scrape[:3]: # 上位3件までに制限
                 content = scrape_jina(u)
                 if content:
-                    search_res += f"\n\nURL: {u}\nContent:\n{content}\n"
+                    # 取得したWeb本文はLLMプロンプトへそのまま渡されるため、
+                    # プロンプトインジェクション対策として明確な未信頼データタグで囲む
+                    search_res += f"\n\n<web_search_results>\nURL: {u}\nContent:\n{content}\n</web_search_results>\n"
 
         # Wikipedia API integration for factual knowledge lookup
         if query.strip():
