@@ -48,6 +48,8 @@ runs:
         max_results = int(os.environ.get('MAX_RESULTS', '5'))
         search_res = ""
         urls_to_scrape = []
+        # ダウンロード量・メモリ使用量が無制限に増えないよう、読み取りバイト数自体を上限化する（約200KB）
+        MAX_SCRAPE_BYTES = 200_000
 
         def scrape_jina(url):
             print(f"Jina Reader でスクレイピング中: {url}")
@@ -56,7 +58,8 @@ runs:
                 req.add_header("User-Agent", "Mozilla/5.0 (compatible; GitHubActions/1.0)")
                 # X-Return-Format: markdown（デフォルト）
                 with urllib.request.urlopen(req, timeout=10) as response:
-                    content = response.read().decode('utf-8')
+                    raw = response.read(MAX_SCRAPE_BYTES + 1)
+                    content = raw.decode('utf-8', errors='replace')
                     # 巨大なペイロードを渡さないよう、最大3000文字に切り詰める
                     return content[:3000] + "..." if len(content) > 3000 else content
             except Exception as e:
