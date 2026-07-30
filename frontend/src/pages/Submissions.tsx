@@ -180,8 +180,8 @@ export default function Submissions() {
 }
 
 /**
- * ⚡ Bolt: React.memo prevents unnecessary re-renders of list items (and their nested AnswerSummary containing JSON.stringify)
- * when parent component state (e.g., exportFormId, downloading) changes.
+ * ⚡ Bolt: React.memo により、親コンポーネントの状態（例: exportFormId, downloading）が変化した際に、
+ * リスト項目（および JSON.stringify を含むネストされた AnswerSummary）が不要に再レンダリングされるのを防ぐ。
  */
 const SubmissionRow = memo(function SubmissionRow({
   submission: s,
