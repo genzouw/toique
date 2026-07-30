@@ -180,7 +180,11 @@ function SearchResults({
   if (results.length === 0) {
     return (
       <div className="text-center py-10">
-        <p className="text-base text-slate-900">
+        <p
+          className="text-base text-slate-900"
+          role="status"
+          aria-live="polite"
+        >
           「{query}」に一致する質問は見つかりませんでした。
         </p>
         <p className="mt-2 text-sm text-slate-600">
@@ -199,7 +203,11 @@ function SearchResults({
 
   return (
     <div>
-      <p className="text-sm text-slate-600 mb-4">
+      <p
+        className="text-sm text-slate-600 mb-4"
+        role="status"
+        aria-live="polite"
+      >
         「{query}」の検索結果: {results.length} 件
       </p>
       <ul className="space-y-2">
