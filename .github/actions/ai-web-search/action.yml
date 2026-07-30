@@ -50,17 +50,17 @@ runs:
         urls_to_scrape = []
 
         def scrape_jina(url):
-            print(f"Scraping with Jina Reader: {url}")
+            print(f"Jina Reader でスクレイピング中: {url}")
             try:
                 req = urllib.request.Request(f"https://r.jina.ai/{url}")
                 req.add_header("User-Agent", "Mozilla/5.0 (compatible; GitHubActions/1.0)")
-                # X-Return-Format: markdown (default)
+                # X-Return-Format: markdown（デフォルト）
                 with urllib.request.urlopen(req, timeout=10) as response:
                     content = response.read().decode('utf-8')
-                    # truncate to avoid passing too huge payload, e.g., max 3000 chars
+                    # 巨大なペイロードを渡さないよう、最大3000文字に切り詰める
                     return content[:3000] + "..." if len(content) > 3000 else content
             except Exception as e:
-                print(f"Jina Reader fetch failed for {url}: {e}")
+                print(f"{url} の Jina Reader での取得に失敗しました: {e}")
                 return None
 
         if tavily_key:
