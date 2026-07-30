@@ -336,3 +336,14 @@ AI エージェント（Cursor, Claude Desktop など）が開発プロジェク
    ```
 
 3. Claude Desktop を再起動すると、`get_db_schema` や `get_api_routes` ツールが使えるようになり、バックエンド構造を正確に踏まえたコード生成が可能になります。
+
+### 新規AIレビューツール (CodeRabbit & PR-Agent) の導入手順
+
+生成AIによるコードレビューの品質向上と自動化のため、`CodeRabbit` および `PR-Agent` の設定ファイルを導入しました。設定内容を有効にするため、以下の手動作業を実施してください。
+
+1. **CodeRabbit のインストール**
+   - GitHub Marketplace から [CodeRabbit](https://github.com/apps/coderabbitai) を対象のリポジトリまたはOrganizationにインストールしてください。
+   - 無料プラン（Open Source / Pro Trial）でパブリックリポジトリにて利用可能です。
+2. **PR-Agent (CodiumAI) のインストール**
+   - GitHub Marketplace から [CodiumAI PR-Agent](https://github.com/apps/pr-agent) をインストールしてください。
+   - インストール後、PRに `/review` や `/describe` などのコマンドをコメントすることで機能します。
