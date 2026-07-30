@@ -344,6 +344,6 @@ AI エージェント（Cursor, Claude Desktop など）が開発プロジェク
 1. **CodeRabbit のインストール**
    - GitHub Marketplace から [CodeRabbit](https://github.com/apps/coderabbitai) を対象のリポジトリまたはOrganizationにインストールしてください。
    - 無料プラン（Open Source / Pro Trial）でパブリックリポジトリにて利用可能です。
-2. **PR-Agent (CodiumAI) のインストール**
-   - GitHub Marketplace から [CodiumAI PR-Agent](https://github.com/apps/pr-agent) をインストールしてください。
+2. **Qodo Merge (旧 PR-Agent / CodiumAI) のインストール**
+   - CodiumAI は Qodo にリブランドされ、PR-Agent(Pro)は Qodo Merge となりました。GitHub Marketplace から [Qodo Merge](https://github.com/apps/qodo-merge) をインストールしてください。
    - インストール後、PRに `/review` や `/describe` などのコマンドをコメントすることで機能します。
