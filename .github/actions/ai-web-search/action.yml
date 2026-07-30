@@ -111,9 +111,15 @@ runs:
                 except Exception as e:
                     search_res = f"Web search failed across all providers: {e}"
 
+        # URL欠落・空文字・不正な形式を除外し、重複も除去する（無駄なリクエストとログノイズを防止）
+        urls_to_scrape = [
+            u for u in dict.fromkeys(urls_to_scrape)
+            if isinstance(u, str) and u.strip().startswith(('http://', 'https://'))
+        ]
+
         if urls_to_scrape:
             search_res += "\n\n--- Jina Reader Full Content ---\n"
-            for u in urls_to_scrape[:3]: # limit to top 3
+            for u in urls_to_scrape[:3]: # 上位3件までに制限
                 content = scrape_jina(u)
                 if content:
                     search_res += f"\n\nURL: {u}\nContent:\n{content}\n"
