@@ -1,14 +1,13 @@
+[config]
+response_language="ja-JP"
+
 [pr_reviewer]
 require_score_review=true
 require_tests_review=true
 require_estimate_effort_to_review=true
-language="ja"
 
 [pr_description]
-generate_empty_descriptions=true
 use_bullet_points=true
-language="ja"
 
 [pr_code_suggestions]
 num_code_suggestions=5
-language="ja"
