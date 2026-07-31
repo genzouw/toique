@@ -41,10 +41,31 @@ runs:
         import os
         import base64
         import time
+        import urllib.request
+
         query = os.environ.get('SEARCH_QUERY', '')
         tavily_key = os.environ.get('TAVILY_API_KEY', '').strip()
         max_results = int(os.environ.get('MAX_RESULTS', '5'))
         search_res = ""
+        urls_to_scrape = []
+        # ダウンロード量・メモリ使用量が無制限に増えないよう、読み取りバイト数自体を上限化する（約200KB）
+        MAX_SCRAPE_BYTES = 200_000
+
+        def scrape_jina(url):
+            print(f"Jina Reader でスクレイピング中: {url}")
+            try:
+                req = urllib.request.Request(f"https://r.jina.ai/{url}")
+                req.add_header("User-Agent", "Mozilla/5.0 (compatible; GitHubActions/1.0)")
+                # X-Return-Format: markdown（デフォルト）
+                with urllib.request.urlopen(req, timeout=10) as response:
+                    raw = response.read(MAX_SCRAPE_BYTES + 1)
+                    content = raw.decode('utf-8', errors='replace')
+                    # 巨大なペイロードを渡さないよう、最大3000文字に切り詰める
+                    return content[:3000] + "..." if len(content) > 3000 else content
+            except Exception as e:
+                print(f"{url} の Jina Reader での取得に失敗しました: {e}")
+                return None
+
         if tavily_key:
             print(f"Using Tavily API for search query: {query}")
             try:
@@ -53,11 +74,13 @@ runs:
                 response = tavily_client.search(query=query, search_depth="basic", max_results=max_results)
                 results = response.get('results', [])
                 if results:
+                    urls_to_scrape = [r.get('url') for r in results]
                     search_res = "\n\n".join([f"Title: {r.get('title')}\nURL: {r.get('url')}\nSnippet: {r.get('content')}" for r in results])
                 else:
                     print("Tavily returned no results. Falling back to DuckDuckGo...")
             except Exception as e:
                 print(f"Tavily search failed: {e}. Falling back to DuckDuckGo...")
+
         if not search_res:
             print(f"Using DuckDuckGo for search query: {query}")
             from duckduckgo_search import DDGS
@@ -68,6 +91,7 @@ runs:
                         try:
                             results = list(ddgs.text(query, max_results=max_results))
                             if results:
+                                urls_to_scrape = [r.get('href') for r in results]
                                 search_res = "\n\n".join([f"Title: {r.get('title')}\nURL: {r.get('href')}\nSnippet: {r.get('body')}" for r in results])
                                 ddg_success = True
                             break
@@ -80,38 +104,27 @@ runs:
                 print(f"Using Google Search for query: {query}")
                 try:
                     from googlesearch import search as gsearch
-                    # googlesearch-python returns a generator of urls or objects if advanced=True
-                    # using advanced=True gets title, url, description
                     g_results = list(gsearch(query, num_results=max_results, advanced=True))
                     if g_results:
+                        urls_to_scrape = [r.url for r in g_results]
                         search_res = "\n\n".join([f"Title: {r.title}\nURL: {r.url}\nSnippet: {r.description}" for r in g_results])
                 except Exception as e:
                     search_res = f"Web search failed across all providers: {e}"
 
+        # URL欠落・空文字・不正な形式を除外し、重複も除去する（無駄なリクエストとログノイズを防止）
+        urls_to_scrape = [
+            u for u in dict.fromkeys(urls_to_scrape)
+            if isinstance(u, str) and u.strip().startswith(('http://', 'https://'))
+        ]
 
-        # トップURLの全文Markdownを抽出するJina Reader APIの統合
-        urls = []
-        if tavily_key and 'results' in locals() and results:
-            urls = [r.get('url') for r in results if r.get('url')]
-        elif 'ddg_success' in locals() and ddg_success and 'results' in locals() and results:
-            urls = [r.get('href') for r in results if r.get('href')]
-        elif 'g_results' in locals() and g_results:
-            urls = [r.url for r in g_results if hasattr(r, 'url')]
-
-        if urls:
-            top_url = urls[0]
-            print(f"Jina Reader 経由でトップURLの全文Markdownを取得中: {top_url} via Jina Reader")
-            try:
-                import urllib.request
-                req = urllib.request.Request(f"https://r.jina.ai/{top_url}", headers={'User-Agent': 'Mozilla/5.0'})
-                with urllib.request.urlopen(req) as response:
-                    jina_md = response.read().decode('utf-8')
-                    # コンテキストの肥大化を防ぐため約10,000文字に制限
-                    jina_md = jina_md[:10000]
-                    search_res += f"\n\n--- Full Markdown Content (Jina Reader) for {top_url} ---\n{jina_md}\n--- End of Jina Reader Content ---\n"
-                    print("Jina ReaderのMarkdownコンテンツを追加しました。")
-            except Exception as e:
-                print(f"Jina Readerの取得に失敗しました: {e}")
+        if urls_to_scrape:
+            search_res += "\n\n--- Jina Reader 全文コンテンツ ---\n"
+            for u in urls_to_scrape[:3]: # 上位3件までに制限
+                content = scrape_jina(u)
+                if content:
+                    # 取得したWeb本文はLLMプロンプトへそのまま渡されるため、
+                    # プロンプトインジェクション対策として明確な未信頼データタグで囲む
+                    search_res += f"\n\n<web_search_results>\nURL: {u}\nContent:\n{content}\n</web_search_results>\n"
 
         # Wikipedia API integration for factual knowledge lookup
         if query.strip():
