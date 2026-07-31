@@ -133,7 +133,7 @@ export default function FormSchemaBuilder({
                   onClick={() => moveStep(idx, -1)}
                   disabled={idx === 0}
                   className="text-slate-400 hover:text-slate-700 disabled:opacity-30 rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-900 focus-visible:ring-offset-1 transition-colors"
-                  title="上へ"
+                  title={idx === 0 ? '最初のステップは上へ移動できません' : '上へ'}
                   aria-label="ステップを上へ移動"
                 >
                   <ChevronUp size={ICON_SIZE.sm} />
@@ -144,7 +144,11 @@ export default function FormSchemaBuilder({
                     idx >= steps.length - 1 || steps[idx + 1]?.type === 'end'
                   }
                   className="text-slate-400 hover:text-slate-700 disabled:opacity-30 rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-900 focus-visible:ring-offset-1 transition-colors"
-                  title="下へ"
+                  title={
+                    idx >= steps.length - 1 || steps[idx + 1]?.type === 'end'
+                      ? 'これ以上下へ移動できません'
+                      : '下へ'
+                  }
                   aria-label="ステップを下へ移動"
                 >
                   <ChevronDown size={ICON_SIZE.sm} />
@@ -240,7 +244,11 @@ export default function FormSchemaBuilder({
                         onClick={() => removeChoice(idx, ci)}
                         disabled={step.choices.length <= 1}
                         className="p-1 text-red-400 hover:text-red-600 disabled:opacity-30 rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-1 transition-colors"
-                        title="削除"
+                        title={
+                          step.choices.length <= 1
+                            ? '選択肢は1つ以上必要です'
+                            : '削除'
+                        }
                         aria-label="選択肢を削除"
                       >
                         <Trash2 size={ICON_SIZE.xs} />

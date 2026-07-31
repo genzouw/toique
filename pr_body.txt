@@ -1,4 +1,9 @@
-💡 What: Wrapped `EmptyState` and `ErrorAlert` pure presentational components with `React.memo()`.
-🎯 Why: These components are frequently used inside lists, dashboards, and tables. When parent components re-render due to network state changes or other state updates, these pure UI components do not need to re-render if their props remain unchanged.
-📊 Impact: Reduces React virtual DOM diffing overhead by skipping renders for these components.
-🔬 Measurement: Can be verified by profiling component re-renders using the React Developer Tools Profiler when parent states (like loading spinners in Dashboard) update.
+💡 What: FormSchemaBuilderの各操作ボタン（上へ/下へ移動、選択肢削除）が無効化されている際、その理由を説明するツールチップを`title`属性に動的に設定しました。
+
+🎯 Why: ボタンが非活性（disabled）になっている場合、ユーザーが「なぜ操作できないのか」を直感的に理解できるようにするため。外部ドキュメントを読まずとも自己解決できるようにUXを改善しました。
+
+📸 Before/After:
+* Before: `disabled`状態の「上へ」ボタンの`title`は常に `"上へ"`。
+* After: 最初のステップで`disabled`状態の「上へ」ボタンの`title`は `"最初のステップは上へ移動できません"`。
+
+♿ Accessibility: `disabled` な要素の `title` 属性はブラウザによってツールチップ表示が省略される場合もありますが、多くのモダンなスクリーンリーダーでは依然として読み上げられ、視覚的・非視覚的双方でアクセシビリティの向上に貢献します。
