@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState, useId } from 'react';
+import { useCallback, useEffect, useMemo, useState, useId, memo } from 'react';
 import { Inbox, Download, RefreshCw } from 'lucide-react';
 import { formatDate } from '../lib/format-date';
 import { api, type Submission, type FormListItem } from '../lib/api';
@@ -165,24 +165,11 @@ export default function Submissions() {
             </thead>
             <tbody className="divide-y divide-slate-200">
               {items.map((s) => (
-                <tr key={s.id} className="align-top">
-                  <td className="px-4 py-2 text-slate-700 whitespace-nowrap">
-                    {formatDate(s.submittedAt)}
-                  </td>
-                  <td className="px-4 py-2 text-slate-900 whitespace-nowrap">
-                    {formsById[s.formId]?.name ?? s.formId.slice(0, 8)}
-                  </td>
-                  <td className="px-4 py-2 whitespace-nowrap">
-                    <span
-                      className={`px-2 py-0.5 text-xs rounded ${STATUS_COLOR[s.status]}`}
-                    >
-                      {STATUS_LABEL[s.status]}
-                    </span>
-                  </td>
-                  <td className="px-4 py-2 text-slate-700">
-                    <AnswerSummary answers={s.answers} />
-                  </td>
-                </tr>
+                <SubmissionRow
+                  key={s.id}
+                  submission={s}
+                  formName={formsById[s.formId]?.name}
+                />
               ))}
             </tbody>
           </table>
@@ -191,6 +178,39 @@ export default function Submissions() {
     </div>
   );
 }
+
+/**
+ * ⚡ Bolt: React.memo により、親コンポーネントの状態（例: exportFormId, downloading）が変化した際に、
+ * リスト項目（および JSON.stringify を含むネストされた AnswerSummary）が不要に再レンダリングされるのを防ぐ。
+ */
+const SubmissionRow = memo(function SubmissionRow({
+  submission: s,
+  formName,
+}: {
+  submission: Submission;
+  formName?: string;
+}) {
+  return (
+    <tr className="align-top">
+      <td className="px-4 py-2 text-slate-700 whitespace-nowrap">
+        {formatDate(s.submittedAt)}
+      </td>
+      <td className="px-4 py-2 text-slate-900 whitespace-nowrap">
+        {formName ?? s.formId.slice(0, 8)}
+      </td>
+      <td className="px-4 py-2 whitespace-nowrap">
+        <span
+          className={`px-2 py-0.5 text-xs rounded ${STATUS_COLOR[s.status]}`}
+        >
+          {STATUS_LABEL[s.status]}
+        </span>
+      </td>
+      <td className="px-4 py-2 text-slate-700">
+        <AnswerSummary answers={s.answers} />
+      </td>
+    </tr>
+  );
+});
 
 function AnswerSummary({ answers }: { answers: Record<string, unknown> }) {
   const entries = Object.entries(answers);
