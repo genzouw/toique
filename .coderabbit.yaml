@@ -74,6 +74,12 @@ reviews:
         Drizzle のマイグレーション SQL です。以下を必ず確認してください:
         - 既存行に対して破壊的 (DROP COLUMN / NOT NULL 追加 / 型変更) になっていないか、なるなら backfill / default 設定が整合しているか。
         - インデックス追加が大規模テーブルでロックを引き起こさないか (CONCURRENTLY の検討)。
+    - path: 'frontend/**/*.tsx'
+      instructions: "アクセシビリティ (a11y) とパフォーマンス最適化 (React.memo の使用など) に特に注意してレビューしてください。"
+    - path: 'backend/**/*.ts'
+      instructions: "セキュリティ (SQLインジェクション、認証・認可、データのサニタイズ) とパフォーマンス (N+1問題の回避など) に注意してレビューしてください。"
+    - path: '.github/workflows/**/*.yml'
+      instructions: "セキュリティ (意図しない権限の付与、ハードコードされたシークレット、ステップセキュリティの適用) に注意してレビューしてください。"
 
   # 生成物 / 依存物 / ロックファイルなどはレビュー対象から除外する。
   path_filters:
