@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, memo } from 'react';
 import { Link } from 'react-router';
 import { api, type UsageResponse, type ResourceUsage } from '../lib/api';
 import LoadingButton from '../components/LoadingButton';
@@ -111,7 +111,12 @@ export default function Dashboard() {
   );
 }
 
-function StatCard({
+/**
+ * ⚡ Bolt: 不要な再レンダーを防ぐために React.memo() でラップしています。
+ * Dashboard コンポーネントで managing（サブスク管理遷移時のローディング）などの
+ * 状態が変わっても、値が変わらない限り再レンダーをスキップし、描画時間を短縮します。
+ */
+const StatCard = memo(function StatCard({
   label,
   value,
   unit,
@@ -146,9 +151,14 @@ function StatCard({
       </div>
     </div>
   );
-}
+});
 
-function UsageBar({
+/**
+ * ⚡ Bolt: 不要な再レンダーを防ぐために React.memo() でラップしています。
+ * 利用状況のプログレスバーをメモ化し、親の無関係な状態更新によるリスト全体の
+ * 無駄な再レンダーを防ぎます。
+ */
+const UsageBar = memo(function UsageBar({
   label,
   current,
   limit,
@@ -188,4 +198,4 @@ function UsageBar({
       )}
     </div>
   );
-}
+});
