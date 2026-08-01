@@ -1,4 +1,11 @@
-💡 What: Wrapped `EmptyState` and `ErrorAlert` pure presentational components with `React.memo()`.
-🎯 Why: These components are frequently used inside lists, dashboards, and tables. When parent components re-render due to network state changes or other state updates, these pure UI components do not need to re-render if their props remain unchanged.
-📊 Impact: Reduces React virtual DOM diffing overhead by skipping renders for these components.
-🔬 Measurement: Can be verified by profiling component re-renders using the React Developer Tools Profiler when parent states (like loading spinners in Dashboard) update.
+💡 What:
+Wrapped `StatCard` and `UsageBar` in `frontend/src/pages/Dashboard.tsx` with `React.memo()`.
+
+🎯 Why:
+To prevent unnecessary re-renders of these pure presentational components when unrelated state in the parent `Dashboard` component (such as the `managing` loading state for the portal session transition) changes.
+
+📊 Impact:
+Reduces unnecessary virtual DOM diffing and re-renders during state transitions, improving rendering performance on the Dashboard.
+
+🔬 Measurement:
+Run the frontend development server and open React DevTools with "Highlight updates when components render" enabled. Toggle the portal session request (or simulate state changes) and observe that `StatCard` and `UsageBar` do not highlight/re-render.
