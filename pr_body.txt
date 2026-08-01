@@ -1,11 +1,9 @@
-💡 What:
-Wrapped `StatCard` and `UsageBar` in `frontend/src/pages/Dashboard.tsx` with `React.memo()`.
+💡 What: FormSchemaBuilderの各操作ボタン（上へ/下へ移動、選択肢削除）が無効化されている際、その理由を説明するツールチップを`title`属性に動的に設定しました。
 
-🎯 Why:
-To prevent unnecessary re-renders of these pure presentational components when unrelated state in the parent `Dashboard` component (such as the `managing` loading state for the portal session transition) changes.
+🎯 Why: ボタンが非活性（disabled）になっている場合、ユーザーが「なぜ操作できないのか」を直感的に理解できるようにするため。外部ドキュメントを読まずとも自己解決できるようにUXを改善しました。
 
-📊 Impact:
-Reduces unnecessary virtual DOM diffing and re-renders during state transitions, improving rendering performance on the Dashboard.
+📸 Before/After:
+* Before: `disabled`状態の「上へ」ボタンの`title`は常に `"上へ"`。
+* After: 最初のステップで`disabled`状態の「上へ」ボタンの`title`は `"最初のステップは上へ移動できません"`。
 
-🔬 Measurement:
-Run the frontend development server and open React DevTools with "Highlight updates when components render" enabled. Toggle the portal session request (or simulate state changes) and observe that `StatCard` and `UsageBar` do not highlight/re-render.
+♿ Accessibility: `disabled` な要素の `title` 属性はブラウザや支援技術によって表示・読み上げの挙動が異なり、単独では無効理由の伝達を保証できません。そのため、各ボタンの `aria-label` を無効理由に応じて動的に切り替え、スクリーンリーダー利用者にも確実に理由が伝わるようにしました。
