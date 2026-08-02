@@ -137,6 +137,168 @@ describe('isOperatorEmail', () => {
   });
 });
 
+describe('requireOperator middleware', () => {
+  function basicAuthHeader(username: string, password: string) {
+    return `Basic ${Buffer.from(`${username}:${password}`).toString('base64')}`;
+  }
+
+  async function loadRequireOperator() {
+    vi.resetModules();
+    const mod = await import('./auth.js');
+    return mod.requireOperator;
+  }
+
+  function buildApp(
+    requireOperator: Awaited<ReturnType<typeof loadRequireOperator>>,
+  ) {
+    const app = new Hono();
+    app.get('/test', requireOperator, (c) => c.text('ok'));
+    return app;
+  }
+
+  beforeEach(() => {
+    vi.stubEnv('ADMIN_USERNAME', 'admin');
+    vi.stubEnv('ADMIN_PASSWORD', 'sup3r-secret');
+  });
+
+  afterEach(() => {
+    vi.unstubAllEnvs();
+    vi.useRealTimers();
+  });
+
+  it('returns 200 for valid Basic credentials', async () => {
+    const requireOperator = await loadRequireOperator();
+    const app = buildApp(requireOperator);
+    const res = await app.request('/test', {
+      headers: {
+        Authorization: basicAuthHeader('admin', 'sup3r-secret'),
+        'x-forwarded-for': '203.0.113.10',
+      },
+    });
+    expect(res.status).toBe(200);
+  });
+
+  it('returns 401 for invalid Basic credentials', async () => {
+    const requireOperator = await loadRequireOperator();
+    const app = buildApp(requireOperator);
+    const res = await app.request('/test', {
+      headers: {
+        Authorization: basicAuthHeader('admin', 'wrong-password'),
+        'x-forwarded-for': '203.0.113.11',
+      },
+    });
+    expect(res.status).toBe(401);
+  });
+
+  it('rate limits an IP after 5 failed attempts within the window', async () => {
+    const requireOperator = await loadRequireOperator();
+    const app = buildApp(requireOperator);
+    const ip = '203.0.113.12';
+    const badAuth = basicAuthHeader('admin', 'wrong-password');
+
+    for (let i = 0; i < 5; i++) {
+      const res = await app.request('/test', {
+        headers: { Authorization: badAuth, 'x-forwarded-for': ip },
+      });
+      expect(res.status).toBe(401);
+    }
+
+    const limited = await app.request('/test', {
+      headers: { Authorization: badAuth, 'x-forwarded-for': ip },
+    });
+    expect(limited.status).toBe(429);
+
+    // 別IPは制限の影響を受けない
+    const otherIp = await app.request('/test', {
+      headers: { Authorization: badAuth, 'x-forwarded-for': '203.0.113.13' },
+    });
+    expect(otherIp.status).toBe(401);
+  });
+
+  it('clears the failure history for an IP once it authenticates successfully', async () => {
+    const requireOperator = await loadRequireOperator();
+    const app = buildApp(requireOperator);
+    const ip = '203.0.113.14';
+    const badAuth = basicAuthHeader('admin', 'wrong-password');
+    const goodAuth = basicAuthHeader('admin', 'sup3r-secret');
+
+    for (let i = 0; i < 4; i++) {
+      await app.request('/test', {
+        headers: { Authorization: badAuth, 'x-forwarded-for': ip },
+      });
+    }
+
+    const success = await app.request('/test', {
+      headers: { Authorization: goodAuth, 'x-forwarded-for': ip },
+    });
+    expect(success.status).toBe(200);
+
+    // 履歴がクリアされているため、直後に1回失敗しても429にはならない
+    const afterSuccess = await app.request('/test', {
+      headers: { Authorization: badAuth, 'x-forwarded-for': ip },
+    });
+    expect(afterSuccess.status).toBe(401);
+  });
+
+  it('unblocks an IP once the rate limit window has fully elapsed', async () => {
+    vi.useFakeTimers();
+    const requireOperator = await loadRequireOperator();
+    const app = buildApp(requireOperator);
+    const ip = '203.0.113.15';
+    const badAuth = basicAuthHeader('admin', 'wrong-password');
+
+    for (let i = 0; i < 5; i++) {
+      await app.request('/test', {
+        headers: { Authorization: badAuth, 'x-forwarded-for': ip },
+      });
+    }
+    const limited = await app.request('/test', {
+      headers: { Authorization: badAuth, 'x-forwarded-for': ip },
+    });
+    expect(limited.status).toBe(429);
+
+    // 15分のウィンドウが経過すると失敗履歴が期限切れになり、再度失敗を
+    // 記録できるようになる（429ではなく401が返る）
+    vi.advanceTimersByTime(15 * 60 * 1000 + 1);
+    const afterWindow = await app.request('/test', {
+      headers: { Authorization: badAuth, 'x-forwarded-for': ip },
+    });
+    expect(afterWindow.status).toBe(401);
+  });
+
+  it('does not evict an actively-limited IP just because it was inserted first (LRU touch on check)', async () => {
+    const requireOperator = await loadRequireOperator();
+    const app = buildApp(requireOperator);
+    const targetIp = '203.0.113.16';
+    const badAuth = basicAuthHeader('admin', 'wrong-password');
+
+    for (let i = 0; i < 5; i++) {
+      await app.request('/test', {
+        headers: { Authorization: badAuth, 'x-forwarded-for': targetIp },
+      });
+    }
+    const limitedFirst = await app.request('/test', {
+      headers: { Authorization: badAuth, 'x-forwarded-for': targetIp },
+    });
+    expect(limitedFirst.status).toBe(429);
+
+    // 他の複数IPからのアクセスが挟まっても、都度チェックされる対象IPの
+    // 挿入順は touch により更新され続けるため、制限状態が維持される。
+    for (let i = 0; i < 20; i++) {
+      await app.request('/test', {
+        headers: {
+          Authorization: badAuth,
+          'x-forwarded-for': `198.51.100.${i}`,
+        },
+      });
+      const stillLimited = await app.request('/test', {
+        headers: { Authorization: badAuth, 'x-forwarded-for': targetIp },
+      });
+      expect(stillLimited.status).toBe(429);
+    }
+  });
+});
+
 describe('requireTenant middleware', () => {
   beforeEach(() => {
     vi.clearAllMocks();

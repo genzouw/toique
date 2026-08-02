@@ -76,22 +76,62 @@ const RATE_LIMIT_MAX = 5;
 const MAX_BUCKETS = 10000;
 const rateBuckets = new Map<string, number[]>();
 
-function isRateLimited(ip: string): boolean {
-  const now = Date.now();
-  const windowStart = now - RATE_LIMIT_WINDOW_MS;
-  const history = rateBuckets.get(ip);
-  if (!history) return false;
-
-  let expiredCount = 0;
-  while (
-    expiredCount < history.length &&
-    history[expiredCount] <= windowStart
-  ) {
-    expiredCount++;
+// 期限切れタイムスタンプの件数を数える（history は時系列順に並んでいる）
+function countExpired(history: number[], windowStart: number): number {
+  let count = 0;
+  while (count < history.length && history[count] <= windowStart) {
+    count++;
   }
+  return count;
+}
+
+// 期限切れエントリを取り除き、Map の挿入順を最新に更新（touch）する。
+// isRateLimited（429判定の都度）でもこの touch を行わないと、既にレート
+// 制限に達したIPはチェックされるだけで挿入順が更新されず、他の新規IPの
+// 登録によって「挿入順で最古のキー」として誤って evict されてしまう。
+// その結果、攻撃者が多数の別IPでバケットを埋めるだけで対象IPの失敗履歴が
+// リセットされ、レート制限を回避できてしまう（要修正の根本原因）。
+function pruneAndTouch(ip: string, now: number): number[] | undefined {
+  const history = rateBuckets.get(ip);
+  if (!history) return undefined;
+
+  const windowStart = now - RATE_LIMIT_WINDOW_MS;
+  const expiredCount = countExpired(history, windowStart);
   if (expiredCount > 0) history.splice(0, expiredCount);
 
-  return history.length >= RATE_LIMIT_MAX;
+  if (history.length === 0) {
+    rateBuckets.delete(ip);
+    return undefined;
+  }
+
+  rateBuckets.delete(ip);
+  rateBuckets.set(ip, history);
+  return history;
+}
+
+function isRateLimited(ip: string): boolean {
+  const history = pruneAndTouch(ip, Date.now());
+  return history !== undefined && history.length >= RATE_LIMIT_MAX;
+}
+
+// MAX_BUCKETS 到達時、新規バケット登録のために1件 evict する。
+// 挿入順の先頭から走査し、実際に期限切れ（ウィンドウ外）と確認できた
+// バケットを優先して削除する。有効な履歴を持つIPを、たまたま挿入順が
+// 古いというだけで削除しないようにするため（pruneAndTouch によって
+// アクティブなIPは都度挿入順が更新されるので、通常はここで期限切れの
+// バケットが見つかる）。期限切れが1件も見つからない場合のみ、メモリ
+// 上限を守るため挿入順で最も古いキーを削除する。
+function evictOldestBucket(now: number) {
+  const windowStart = now - RATE_LIMIT_WINDOW_MS;
+  for (const [key, history] of rateBuckets) {
+    const lastTimestamp = history[history.length - 1];
+    if (lastTimestamp === undefined || lastTimestamp <= windowStart) {
+      rateBuckets.delete(key);
+      return;
+    }
+  }
+  const oldestKey = rateBuckets.keys().next().value;
+  if (oldestKey !== undefined) rateBuckets.delete(oldestKey);
 }
 
 function recordFailedAttempt(ip: string) {
@@ -99,8 +139,7 @@ function recordFailedAttempt(ip: string) {
   const history = rateBuckets.get(ip);
   if (!history) {
     if (rateBuckets.size >= MAX_BUCKETS) {
-      const oldestKey = rateBuckets.keys().next().value;
-      if (oldestKey !== undefined) rateBuckets.delete(oldestKey);
+      evictOldestBucket(now);
     }
     rateBuckets.set(ip, [now]);
   } else {
