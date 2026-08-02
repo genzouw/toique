@@ -67,7 +67,7 @@ export const requireAuth: MiddlewareHandler = async (c, next) => {
   await next();
 };
 
-const RATE_LIMIT_WINDOW_MS = 15 * 60 * 1000; // 15 minutes
+const RATE_LIMIT_WINDOW_MS = 15 * 60 * 1000; // 15分
 const RATE_LIMIT_MAX = 5;
 const MAX_BUCKETS = 10000;
 const rateBuckets = new Map<string, number[]>();
@@ -79,7 +79,10 @@ function isRateLimited(ip: string): boolean {
   if (!history) return false;
 
   let expiredCount = 0;
-  while (expiredCount < history.length && history[expiredCount] <= windowStart) {
+  while (
+    expiredCount < history.length &&
+    history[expiredCount] <= windowStart
+  ) {
     expiredCount++;
   }
   if (expiredCount > 0) history.splice(0, expiredCount);
@@ -152,7 +155,7 @@ export const requireOperator: MiddlewareHandler = async (c, next) => {
     return c.text('Unauthorized', 401);
   }
 
-  // Clear failed attempts on successful login
+  // ログイン成功時に失敗履歴をクリア
   rateBuckets.delete(ip);
 
   await next();
