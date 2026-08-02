@@ -90,7 +90,11 @@ if ! command -v gitleaks >/dev/null 2>&1; then
               echo "⚠️  Checksum verification failed. Skipping local scan."
             fi
           else
-            CHECKSUM_OK=1
+            # sha256sum / shasum のいずれも無く検証手段が無い環境では、未検証のバイナリを
+            # 実行しないようローカルスキャンをスキップする
+            # (docs/security/leak-prevention.md の「チェックサム検証を行った上でスキャンする」
+            # という説明と実際の挙動を一致させるため、ここで検証済み扱いにはしない)
+            echo "⚠️  Neither sha256sum nor shasum is available. Cannot verify checksum. Skipping local scan."
           fi
         else
           echo "⚠️  Failed to download gitleaks. Skipping local scan for this commit."
