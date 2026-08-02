@@ -73,7 +73,8 @@ export const requireAuth: MiddlewareHandler = async (c, next) => {
 // アトミックな更新に置き換えること（同一IPの失敗回数を実行単位間で共有するため）。
 const RATE_LIMIT_WINDOW_MS = 15 * 60 * 1000; // 15分
 const RATE_LIMIT_MAX = 5;
-const MAX_BUCKETS = 10000;
+// テストで上限到達時の evict 挙動を検証できるように環境変数での上書きを許可する
+const MAX_BUCKETS = Number(process.env.RATE_LIMIT_MAX_BUCKETS ?? 10000);
 const rateBuckets = new Map<string, number[]>();
 
 // 期限切れタイムスタンプの件数を数える（history は時系列順に並んでいる）

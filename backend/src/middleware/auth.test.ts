@@ -290,7 +290,10 @@ describe('requireOperator middleware', () => {
     expect(afterWindow.status).toBe(401);
   });
 
-  it('does not evict an actively-limited IP just because it was inserted first (LRU touch on check)', async () => {
+  it('does not evict an actively-limited IP when the bucket cap is reached (LRU touch on check)', async () => {
+    // バケット上限を小さく設定し、以下のループで実際に evictOldestBucket が
+    // 呼ばれる（=対象の回帰が検出できる）ようにする。
+    vi.stubEnv('RATE_LIMIT_MAX_BUCKETS', '5');
     const requireOperator = await loadRequireOperator();
     const app = buildApp(requireOperator);
     const targetIp = '203.0.113.16';
@@ -306,8 +309,9 @@ describe('requireOperator middleware', () => {
     });
     expect(limitedFirst.status).toBe(429);
 
-    // 他の複数IPからのアクセスが挟まっても、都度チェックされる対象IPの
-    // 挿入順は touch により更新され続けるため、制限状態が維持される。
+    // バケット上限(5)を超える数の別IPからのアクセスが挟まり、その都度
+    // evictOldestBucket が呼ばれるが、対象IPは都度チェックされて挿入順が
+    // touch により更新され続けるため、evict されず制限状態が維持される。
     for (let i = 0; i < 20; i++) {
       await app.request('/test', {
         headers: {
