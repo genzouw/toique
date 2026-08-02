@@ -156,6 +156,16 @@ function recordFailedAttempt(ip: string) {
  */
 export const requireOperator: MiddlewareHandler = async (c, next) => {
   const ip = clientIp(c.req.raw.headers);
+
+  // 本番環境では Cloud Run のプロキシが x-forwarded-for を必ず付与するため、
+  // "unknown" になるのはプロキシ設定不備を意味する。放置すると、IPを特定
+  // できない複数クライアントが同一バケットを共有してしまい、無関係な
+  // クライアント同士が互いの失敗回数でロックアウトされ得るため、設定不備
+  // として拒否する（本番以外はローカル検証の利便性のため許容する）。
+  if (process.env.NODE_ENV === 'production' && ip === 'unknown') {
+    return c.text('Unauthorized', 401);
+  }
+
   if (isRateLimited(ip)) {
     return c.text('Too Many Requests', 429);
   }

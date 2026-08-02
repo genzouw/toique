@@ -190,6 +190,30 @@ describe('requireOperator middleware', () => {
     expect(res.status).toBe(401);
   });
 
+  it('rejects requests with no identifiable IP in production (avoids a shared "unknown" bucket)', async () => {
+    vi.stubEnv('NODE_ENV', 'production');
+    const requireOperator = await loadRequireOperator();
+    const app = buildApp(requireOperator);
+    const res = await app.request('/test', {
+      headers: {
+        Authorization: basicAuthHeader('admin', 'sup3r-secret'),
+        // x-forwarded-for / x-real-ip をどちらも付与しない
+      },
+    });
+    expect(res.status).toBe(401);
+  });
+
+  it('still resolves clientIp to "unknown" outside production for local testing convenience', async () => {
+    const requireOperator = await loadRequireOperator();
+    const app = buildApp(requireOperator);
+    const res = await app.request('/test', {
+      headers: {
+        Authorization: basicAuthHeader('admin', 'sup3r-secret'),
+      },
+    });
+    expect(res.status).toBe(200);
+  });
+
   it('rate limits an IP after 5 failed attempts within the window', async () => {
     const requireOperator = await loadRequireOperator();
     const app = buildApp(requireOperator);
