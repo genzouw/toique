@@ -67,6 +67,10 @@ export const requireAuth: MiddlewareHandler = async (c, next) => {
   await next();
 };
 
+// 簡易レート制限 (プロセスメモリ内)
+// 単一 Bun プロセスでの運用を前提とする。複数ワーカー/プロセス/コンテナに
+// スケールする構成に変更する場合は、共有TTLストア (Redis 等) と
+// アトミックな更新に置き換えること（同一IPの失敗回数を実行単位間で共有するため）。
 const RATE_LIMIT_WINDOW_MS = 15 * 60 * 1000; // 15分
 const RATE_LIMIT_MAX = 5;
 const MAX_BUCKETS = 10000;
