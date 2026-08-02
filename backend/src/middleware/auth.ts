@@ -91,7 +91,7 @@ function countExpired(history: number[], windowStart: number): number {
 // 制限に達したIPはチェックされるだけで挿入順が更新されず、他の新規IPの
 // 登録によって「挿入順で最古のキー」として誤って evict されてしまう。
 // その結果、攻撃者が多数の別IPでバケットを埋めるだけで対象IPの失敗履歴が
-// リセットされ、レート制限を回避できてしまう（要修正の根本原因）。
+// リセットされ、レート制限を回避できてしまう。この touch はその回避を防ぐ。
 function pruneAndTouch(ip: string, now: number): number[] | undefined {
   const history = rateBuckets.get(ip);
   if (!history) return undefined;
