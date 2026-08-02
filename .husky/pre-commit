@@ -32,10 +32,12 @@ fi
 # コマンドが存在しない場合はスキップする。
 if command -v detect-secrets-hook >/dev/null 2>&1; then
   echo "🔍 Running detect-secrets on staged files..."
-  # stages files のパスを git diff で取得して渡す
-  staged_files=$(git diff --cached --name-only --diff-filter=d || true)
-  if [ -n "$staged_files" ]; then
-    detect-secrets-hook --baseline .secrets.baseline "$staged_files" || exit 1
+  # ステージされたファイルを NUL 区切りで取得し、detect-secrets-hook へ個別の引数として渡す。
+  # 改行区切りの文字列をそのまま単一引数として渡すと、複数ファイルがステージされた際に
+  # 1つの壊れたパスとして扱われスキャン対象から漏れてしまうため。
+  if git diff --cached --name-only --diff-filter=d | grep -q .; then
+    git diff --cached --name-only --diff-filter=d -z \
+      | xargs -0 detect-secrets-hook --baseline .secrets.baseline
   fi
 else
   echo "⚠️  detect-secrets-hook is not installed locally. Skipping entropy-based scan."
