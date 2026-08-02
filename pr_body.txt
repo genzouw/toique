@@ -1,9 +1,11 @@
-💡 What: FormSchemaBuilderの各操作ボタン（上へ/下へ移動、選択肢削除）が無効化されている際、その理由を説明するツールチップを`title`属性に動的に設定しました。
+🛡️ Sentinel: [HIGH] Fix Admin Login Rate Limiting
 
-🎯 Why: ボタンが非活性（disabled）になっている場合、ユーザーが「なぜ操作できないのか」を直感的に理解できるようにするため。外部ドキュメントを読まずとも自己解決できるようにUXを改善しました。
+🚨 Severity: HIGH
+💡 Vulnerability: The admin login endpoint (`requireOperator` middleware using Basic Authentication) lacked rate limiting, allowing infinite brute-force attempts on the `ADMIN_USERNAME` and `ADMIN_PASSWORD`.
+🎯 Impact: Attackers could brute-force the operator credentials without being blocked, potentially gaining full administrative access to the platform.
+🔧 Fix: Implemented an in-memory sliding window rate limiter for the `requireOperator` middleware. It tracks failed authentication attempts by IP address, limits them to 5 failures per 15 minutes, safely evicts old entries to prevent memory exhaustion (DoS), and clears the history upon successful login.
+✅ Verification: `bun run test` verified that rate limiting and standard basic authentication behavior functions correctly.
 
-📸 Before/After:
-* Before: `disabled`状態の「上へ」ボタンの`title`は常に `"上へ"`。
-* After: 最初のステップで`disabled`状態の「上へ」ボタンの`title`は `"最初のステップは上へ移動できません"`。
-
-♿ Accessibility: `disabled` な要素の `title` 属性はブラウザや支援技術によって表示・読み上げの挙動が異なり、単独では無効理由の伝達を保証できません。そのため、各ボタンの `aria-label` を無効理由に応じて動的に切り替え、スクリーンリーダー利用者にも確実に理由が伝わるようにしました。
+- [x] Tested locally
+- [x] No sensitive information exposed
+- [x] Kept changes under 50 lines

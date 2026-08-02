@@ -6,6 +6,7 @@ import { tenantMembers, tenants } from '../schema.js';
 import { auth } from '../auth/better-auth.js';
 import { isDogfoodingEmail } from '../lib/dogfooding.js';
 import { createEnvSetReader } from '../lib/env-set.js';
+import { clientIp } from '../lib/client-ip.js';
 
 type AuthUser = {
   id: string;
@@ -66,18 +67,61 @@ export const requireAuth: MiddlewareHandler = async (c, next) => {
   await next();
 };
 
+const RATE_LIMIT_WINDOW_MS = 15 * 60 * 1000; // 15 minutes
+const RATE_LIMIT_MAX = 5;
+const MAX_BUCKETS = 10000;
+const rateBuckets = new Map<string, number[]>();
+
+function isRateLimited(ip: string): boolean {
+  const now = Date.now();
+  const windowStart = now - RATE_LIMIT_WINDOW_MS;
+  const history = rateBuckets.get(ip);
+  if (!history) return false;
+
+  let expiredCount = 0;
+  while (expiredCount < history.length && history[expiredCount] <= windowStart) {
+    expiredCount++;
+  }
+  if (expiredCount > 0) history.splice(0, expiredCount);
+
+  return history.length >= RATE_LIMIT_MAX;
+}
+
+function recordFailedAttempt(ip: string) {
+  const now = Date.now();
+  const history = rateBuckets.get(ip);
+  if (!history) {
+    if (rateBuckets.size >= MAX_BUCKETS) {
+      const oldestKey = rateBuckets.keys().next().value;
+      if (oldestKey !== undefined) rateBuckets.delete(oldestKey);
+    }
+    rateBuckets.set(ip, [now]);
+  } else {
+    history.push(now);
+    rateBuckets.delete(ip);
+    rateBuckets.set(ip, history);
+  }
+}
+
 /**
  * 運営者 (Toique を運営する側) のみ通過させるミドルウェア。
  * Basic認証で固定ID/パスワードを確認する。
  * 該当しない場合は 401 を返す。
  */
 export const requireOperator: MiddlewareHandler = async (c, next) => {
+  const ip = clientIp(c.req.raw.headers);
+  if (isRateLimited(ip)) {
+    return c.text('Too Many Requests', 429);
+  }
+
   if (!expectedUsernameHash || !expectedPasswordHash) {
+    recordFailedAttempt(ip);
     return c.text('Unauthorized', 401);
   }
 
   const authHeader = c.req.header('Authorization');
   if (!authHeader || !authHeader.startsWith('Basic ')) {
+    recordFailedAttempt(ip);
     return c.text('Unauthorized', 401);
   }
 
@@ -86,11 +130,13 @@ export const requireOperator: MiddlewareHandler = async (c, next) => {
   try {
     decoded = Buffer.from(base64Credentials, 'base64').toString('utf-8');
   } catch {
+    recordFailedAttempt(ip);
     return c.text('Unauthorized', 401);
   }
 
   const colonIndex = decoded.indexOf(':');
   if (colonIndex === -1) {
+    recordFailedAttempt(ip);
     return c.text('Unauthorized', 401);
   }
   const username = decoded.slice(0, colonIndex);
@@ -102,8 +148,12 @@ export const requireOperator: MiddlewareHandler = async (c, next) => {
   const usernameMatch = timingSafeEqual(usernameHash, expectedUsernameHash);
   const passwordMatch = timingSafeEqual(passwordHash, expectedPasswordHash);
   if (!usernameMatch || !passwordMatch) {
+    recordFailedAttempt(ip);
     return c.text('Unauthorized', 401);
   }
+
+  // Clear failed attempts on successful login
+  rateBuckets.delete(ip);
 
   await next();
 };
