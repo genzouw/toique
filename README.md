@@ -245,7 +245,6 @@ curl -s http://localhost:3000/api/v1/messages | jq
 ### コードレビューとAI自動化
 
 - **CodeRabbit** (`.coderabbit.yaml`): profile=assertive。本番自動デプロイ運用のため高感度
-- **Gemini Code Assist** (`.gemini/config.yaml` + `.gemini/styleguide.md`): 日本語レビュー
 - **Qodo Merge (PR Agent)**: CodiumAI を使用したPR自動レビュー。公開リポジトリは完全無料で使用できます（※ GitHub Appとしてのインストール推奨、または Actions経由での実行）。
 - **AI Issue Triage** (`ai-issue-triage.yml`): `actions/github-script` を用いて、Issueが作成された際に自動で GitHub Models を呼び出し、トリアージを行う仕組みです。
 - **AI ChatOps** (`ai-chatops.yml`): PRのコメントで `/ai fix` などのコマンドを受け取り、GitHub Models と Web検索 (RAG) を活用して自動で回答や修正案を提示します。

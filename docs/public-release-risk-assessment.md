@@ -6,26 +6,26 @@
 - `toique` リポジトリ (HEAD: PR #289 マージ後)
 - 隣接リポジトリ `genzouw.com/terraform`
 
-**調査者**: Claude (一次調査) + Gemini (二次照合) を統合
+**調査者**: Claude (一次調査) + 二次レビュー AI (二次照合) を統合
 **判定方針**: 両者一致した指摘は重大度確定、片方のみは検出元を明記、誤検出は注記して訂正
 
 ---
 
 ## エグゼクティブサマリ
 
-| 重大度      | 件数 | 検出元                                                                   |
-| ----------- | ---- | ------------------------------------------------------------------------ |
-| 🔴 Critical | 2    | Claude / Gemini 一致 2                                                   |
-| 🟠 High     | 5    | Claude 4 / 両者一致 1                                                    |
-| 🟡 Medium   | 4    | Claude 中心                                                              |
-| 🟢 Low      | 4    | Claude (うち 1 件は Critical から再分類、1 件は Gemini 誤検出を訂正済み) |
+| 重大度      | 件数 | 検出元                                                                            |
+| ----------- | ---- | --------------------------------------------------------------------------------- |
+| 🔴 Critical | 2    | Claude / 二次レビュー AI 一致 2                                                   |
+| 🟠 High     | 5    | Claude 4 / 両者一致 1                                                             |
+| 🟡 Medium   | 4    | Claude 中心                                                                       |
+| 🟢 Low      | 4    | Claude (うち 1 件は Critical から再分類、1 件は 二次レビュー AI 誤検出を訂正済み) |
 
 **🔄 評価見直し履歴**:
 
 1. 初版 C-1（`.env` ローカル平文の Resend API キー残存）→ **Low (L-4)** に再分類。Public 化で漏出する経路が存在せず、公開化が引き金になる固有リスクではないため。
 2. 初版 C-2（隣接 `genzouw.com/terraform/environments/oci/terraform.tfvars` の平文 MySQL root パスワード）→ **対象外として削除**。`genzouw.com` は別リポジトリ (private のまま) で、toique の Public 化と因果関係がないため。「同じワークステーションでの運用習慣の横展開リスク」として強引に取り込んでいたが、論理飛躍が大きく toique 固有の Public 化リスクではない。
 
-**git history の自動シークレットスキャン (Claude/Gemini 両者実施)**: API キー・トークン形式 (`AKIA*`, `AIza*`, `sk_live_*`, `ghp_*`, `re_*`, `BEGIN PRIVATE KEY` 等) のヒットは **0 件**。`tfstate` / `*.auto.tfvars` の追加履歴も検出されず。
+**git history の自動シークレットスキャン (Claude/二次レビュー AI 両者実施)**: API キー・トークン形式 (`AKIA*`, `AIza*`, `sk_live_*`, `ghp_*`, `re_*`, `BEGIN PRIVATE KEY` 等) のヒットは **0 件**。`tfstate` / `*.auto.tfvars` の追加履歴も検出されず。
 
 **最大の残存リスク**: 「履歴」ではなく「**CI/CD パイプラインが掴む本番権限のスコープ**」と「**ローカル/隣接リポジトリの未追跡シークレット**」。
 
@@ -37,7 +37,7 @@
 
 ### C-3. 本番デプロイ workflow が mutable tag pin の 3rd-party Action に OIDC + Cloudflare API Token を渡す
 
-- **検出元**: Claude / Gemini 一致
+- **検出元**: Claude / 二次レビュー AI 一致
 - **ファイル**: `toique/.github/workflows/deploy.yml`
 - **該当 Action（`permissions: id-token: write` の job 内）**:
   - `google-github-actions/auth@v3`, `setup-gcloud@v3`, `deploy-cloudrun@v3`
@@ -52,7 +52,7 @@
 
 ### C-4. GCP WIF の `attribute_condition` が緩い可能性（要実機確認 + IaC 化）
 
-- **検出元**: Claude / Gemini 一致
+- **検出元**: Claude / 二次レビュー AI 一致
 - **状況**:
   - WIF は手動 gcloud で構築され IaC 化されていない (`docs/fork-setup.md:100-110` のレシピが唯一の記録)
   - `genzouw.com/terraform` には WIF / `<GCP_PROJECT_ID>` の管理なし（Claude 確認済み）
@@ -85,7 +85,7 @@
 
 ### H-1. 本番固有名詞が docs に集約掲載
 
-- **検出元**: Claude / Gemini 一致
+- **検出元**: Claude / 二次レビュー AI 一致
 - **ファイル**: `toique/docs/manual-deploy.md`, `toique/docs/backup.md`
 - **値**:
   - `<GCP_PROJECT_ID>` (GCP プロジェクト名)
@@ -110,7 +110,7 @@
   1. GitHub Environments (`production`) を作成し **Required reviewers + wait timer** を設定
   2. Dependabot `allow: dependency-type: direct` のみに絞り、indirect 依存の lockfile-only PR を排除
   3. Branch protection を有効化 (Public 化と同時に GitHub Free でも利用可能になる)
-- **Gemini の主張に対する訂正**: 「`workflow_run` は fork PR から発火する」は GitHub の仕様上誤り。`workflow_run` は **default branch の YAML** を使う。fork PR の CI 成功は本番 workflow_run のトリガにならない。ただし「main マージ = 即デプロイ」リスクは本物
+- **二次レビュー AI の主張に対する訂正**: 「`workflow_run` は fork PR から発火する」は GitHub の仕様上誤り。`workflow_run` は **default branch の YAML** を使う。fork PR の CI 成功は本番 workflow_run のトリガにならない。ただし「main マージ = 即デプロイ」リスクは本物
 
 ### H-3. `dogfooding.ts` でハードコードされた Gmail
 
@@ -132,7 +132,7 @@
 
 ### H-5. コミット履歴の本番固有名詞残存（履歴書き換えは推奨しない）
 
-- **検出元**: Gemini
+- **検出元**: 二次レビュー AI
 - **状態**: `git log -p` で `<GCP_PROJECT_ID>`, `<GCP_PROJECT_NUMBER>`, `github-deployer@...` 等が PR #289 マージ前の commit に残存
 - **リスク**: API キー級ではないが、攻撃者の地図として機能（H-1 と本質的に同じリスクで二重カウント）
 - **対応**: **履歴書き換え (`git filter-repo` / `.git` 削除して新規 init) は不採用**
@@ -145,7 +145,7 @@
 
 ### M-1. 1st-party / インフラ系 Action もメジャータグ pin
 
-- **検出元**: Claude / Gemini 一致
+- **検出元**: Claude / 二次レビュー AI 一致
 - **状態**: `actions/checkout@v6`, `actions/upload-artifact@v4`, `docker/setup-buildx-action@v4`, `cloudflare/wrangler-action@v3` 等
 - **重要**: `genzouw.com/terraform/environments/github/main.tf` で kakezan-manabo / monopo / hyakuninissyu が `actions_sha_pinning_required = true` を設定済み。**toique を public 化すると同じ設定が自動 ON** され、未 pin の Action があると CI が落ちる
 - **対応**: Public 化と **同時に** 自動有効化される必須要件。先に全 Action を SHA pin に変換が必要
@@ -172,7 +172,7 @@
 
 ### M-4. ベースイメージの SHA pin 不足
 
-- **検出元**: Claude / Gemini 一致
+- **検出元**: Claude / 二次レビュー AI 一致
 - **状態**: `oven/bun:1.3.14-alpine` のようにタグまでは pin 済みだが SHA pin はなし
 - **対応**: 余力時に `oven/bun@sha256:...` 形式へ。最低 deploy stage のイメージは SHA pin 推奨
 
@@ -197,7 +197,7 @@
 
 - **検出元**: Claude
 - **状態**: 開発用 compose のみで production には影響なし
-- **Gemini の主張に対する訂正**: Gemini は「`backend/src/middleware/auth.ts:82-83` に `const expectedPassword = process.env.ADMIN_PASSWORD || 'admin';` が存在」と主張したが、実装確認の結果 **そのような fallback は存在しない**。実コードは以下:
+- **二次レビュー AI の主張に対する訂正**: 二次レビュー AI は「`backend/src/middleware/auth.ts:82-83` に `const expectedPassword = process.env.ADMIN_PASSWORD || 'admin';` が存在」と主張したが、実装確認の結果 **そのような fallback は存在しない**。実コードは以下:
 
   ```typescript
   // backend/src/middleware/auth.ts:43-46
@@ -211,7 +211,7 @@
   }
   ```
 
-  production では明示的に未設定エラーで落ちる安全な実装。Gemini の指摘は **誤検出**
+  production では明示的に未設定エラーで落ちる安全な実装。二次レビュー AI の指摘は **誤検出**
 
 - **対応**: `compose.yml` の `${ADMIN_USERNAME:-admin}` を `${ADMIN_USERNAME:?required}` に変えて未設定エラーで落とすか、現状維持（dev only なので影響軽微）
 
@@ -256,7 +256,7 @@
 - 旧 C-1（L-4 に再分類）: Resend API キーの revoke + rotate は Public 化のセキュリティ実害には関係しないため必須リストから除外。開発機 compromise を強く警戒する組織方針なら別途実施。
 - 旧 C-2（削除）: `genzouw.com/terraform/environments/oci/terraform.tfvars` の MySQL root パスワード平文は別リポジトリ (private) の独立した運用課題で、toique の Public 化とは因果関係なし。`genzouw.com` 側で対応する場合は別途。
 
-**履歴書き換え (Gemini の `.git` 削除 + 新規 init 案) は不採用**: API キーは履歴に無く、固有名詞は実害ベースの権限スコープで封じる方が筋が良い。
+**履歴書き換え (二次レビュー AI の `.git` 削除 + 新規 init 案) は不採用**: API キーは履歴に無く、固有名詞は実害ベースの権限スコープで封じる方が筋が良い。
 
 ---
 
@@ -330,11 +330,11 @@
 }
 ```
 
-### Gemini が「fork PR から workflow_run が発火する」と誤った理解
+### 二次レビュー AI が「fork PR から workflow_run が発火する」と誤った理解
 
 `workflow_run` は **base リポジトリの default branch の YAML** で動作するため、fork PR の CI 成功は本番デプロイをトリガしない (GitHub の公式仕様)。ただし、main へのマージが即デプロイされる構造自体は本物のリスクで、H-2 で対応。
 
-### Gemini が `auth.ts:82-83` の fallback を誤検出
+### 二次レビュー AI が `auth.ts:82-83` の fallback を誤検出
 
 実コード (`backend/src/middleware/auth.ts:43-46`) は production env var 必須チェックを実装済みで、`'admin'` というハードコードフォールバックは存在しない。`compose.yml` の dev only fallback は L-3 で言及。
 
@@ -355,13 +355,13 @@
 1. **別リポジトリ**: `genzouw.com` は toique とは独立した別 GitHub リポジトリで、当該リポジトリは **private のまま** 維持される
 2. **`.gitignore` で除外**: `terraform.tfvars` は `genzouw.com` 側で git tracked ではない
 3. **toique からの参照経路なし**: toique の git tree・history・workflow・コード・docs のいずれにも当該 MySQL パスワード値や OCI MySQL の参照は存在しない
-4. **論理飛躍**: Gemini の指摘を「同じワークステーションでの運用習慣の横展開リスク」として toique 文脈に取り込んだが、これは「同じ開発者が他リポでも秘密を平文管理しているかもしれない」という間接的な懸念であり、同論理を広げれば無限に他リポを巡る話になる。toique の Public 化が原因で漏れる経路は存在しない
+4. **論理飛躍**: 二次レビュー AI の指摘を「同じワークステーションでの運用習慣の横展開リスク」として toique 文脈に取り込んだが、これは「同じ開発者が他リポでも秘密を平文管理しているかもしれない」という間接的な懸念であり、同論理を広げれば無限に他リポを巡る話になる。toique の Public 化が原因で漏れる経路は存在しない
 
 `genzouw.com` 側の運用上の独立した課題としては存在するため、`genzouw.com` のメンテナンス時に対応するのが筋。
 
 ### 共通の教訓
 
-セキュリティ評価では「秘密値の存在を見たら revoke 推奨」という反射的判定ではなく、「**Public 化が新たに引き起こす固有リスクか**」「**変更対象のリポジトリと直接の因果関係があるか**」という 2 つの視点で重大度を再評価する必要がある。本調査では Claude / Gemini の両者ともに反射判定の癖があり、初版に 2 件の過剰評価が混入していた。Public 化のチェックリストに無関係項目を混入させると、本来優先すべき項目（WIF condition、Action SHA pin など）の対応リソースを浪費する。
+セキュリティ評価では「秘密値の存在を見たら revoke 推奨」という反射的判定ではなく、「**Public 化が新たに引き起こす固有リスクか**」「**変更対象のリポジトリと直接の因果関係があるか**」という 2 つの視点で重大度を再評価する必要がある。本調査では Claude / 二次レビュー AI の両者ともに反射判定の癖があり、初版に 2 件の過剰評価が混入していた。Public 化のチェックリストに無関係項目を混入させると、本来優先すべき項目（WIF condition、Action SHA pin など）の対応リソースを浪費する。
 
 ---
 
@@ -377,16 +377,16 @@
 - 隣接 `genzouw.com/terraform/` の WIF 関連検索 → 該当なし (WIF は手動 gcloud 管理と確認)
 - 既存 public repo (`kakezan-manabo` 等) の terraform 定義との比較
 
-### Gemini の調査範囲
+### 二次レビュー AI の調査範囲
 
 - 同じスコープを `--include-directories` で `genzouw.com/terraform` まで拡張して再実行
-- Gemini 独自発見: `terraform.tfvars` の平文パスワード（Claude 見落とし）⭐️
-- Gemini 誤検出: `auth.ts` の fallback 解釈、workflow_run の挙動
+- 二次レビュー AI 独自発見: `terraform.tfvars` の平文パスワード（Claude 見落とし）⭐️
+- 二次レビュー AI 誤検出: `auth.ts` の fallback 解釈、workflow_run の挙動
 
 ### 両者の補完関係
 
 - Claude: 実装詳細・隣接リポ運用・OSS テンプレ整備状況の評価に強い
-- Gemini: 履歴ベースの広範囲スキャン・隣接リポの平文シークレット検出に強い
+- 二次レビュー AI: 履歴ベースの広範囲スキャン・隣接リポの平文シークレット検出に強い
 - ただし、両者ともに「秘密値の存在を見たら高重大度」という反射判定の癖があり、初版で 2 件の過剰評価（旧 C-1 / 旧 C-2）が発生した。Public 化との因果関係を吟味する 2 段目のレビュー（本ドキュメント末尾の評価見直しセクション）が補正に有効だった。
 
 ---

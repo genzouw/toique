@@ -1,8 +1,8 @@
 # toique Public 化 実行チェックリスト
 
 **作成日**: 2026-05-19
-**前提ドキュメント**: [`docs/public-release-risk-assessment.md`](./public-release-risk-assessment.md)（2026-05-17、Claude + Gemini 統合版）
-**作成方法**: Claude（一次案） + Gemini（二次案）を統合
+**前提ドキュメント**: [`docs/public-release-risk-assessment.md`](./public-release-risk-assessment.md)（2026-05-17、Claude + 二次レビュー AI 統合版）
+**作成方法**: Claude（一次案） + 二次レビュー AI（二次案）を統合
 **位置づけ**: 前回リスクアセスメント以降の対応進捗を踏まえ、Public 化の直前・直後・継続フェーズで実行すべき作業を時系列に整理したチェックリスト
 
 ---
@@ -39,7 +39,7 @@
 9. **fork / pull_request_target 攻撃面**: 不使用確認、fork PR ビルド時の postinstall 制御
 10. **継続監視**: Dependabot / CodeRabbit の権限、通知先、WIF/IAM 棚卸し
 
-## 3. Gemini 一次案（要点）
+## 3. 二次レビュー AI 一次案（要点）
 
 1. SECURITY.md 作成
 2. 全 3rd-party Action SHA pin 最終確認
@@ -109,7 +109,7 @@
 ## 5. 両者の優劣
 
 - **Claude**: 既存リソース横断、LINE 暗号化未対応、Cloudflare API Token スコープ、LICENSE / subdomain takeover / 課金アラート など **横断系の網羅性** が強い。
-- **Gemini**: 既存対応状況の認識と要点絞り込みが速い。GitHub 設定 + SECURITY.md にフォーカスして明快。**ノイズが少ない** 反面、クラウド・課金・SPF/DKIM など範囲が狭い。
+- **二次レビュー AI**: 既存対応状況の認識と要点絞り込みが速い。GitHub 設定 + SECURITY.md にフォーカスして明快。**ノイズが少ない** 反面、クラウド・課金・SPF/DKIM など範囲が狭い。
 - **統合の判断**: フェーズ別チェックリストに圧縮することで、両者の強みを保ちつつ、前回ドキュメントとの差分が一目で分かるようにした。
 
 ---
