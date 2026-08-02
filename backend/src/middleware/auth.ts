@@ -122,14 +122,19 @@ function isRateLimited(ip: string): boolean {
 // アクティブなIPは都度挿入順が更新されるので、通常はここで期限切れの
 // バケットが見つかる）。期限切れが1件も見つからない場合のみ、メモリ
 // 上限を守るため挿入順で最も古いキーを削除する。
+// 1回の evict で走査するバケット数の上限（飽和時の O(MAX_BUCKETS) 走査を防ぐ）
+const EVICT_SCAN_LIMIT = 64;
+
 function evictOldestBucket(now: number) {
   const windowStart = now - RATE_LIMIT_WINDOW_MS;
+  let scanned = 0;
   for (const [key, history] of rateBuckets) {
     const lastTimestamp = history[history.length - 1];
     if (lastTimestamp === undefined || lastTimestamp <= windowStart) {
       rateBuckets.delete(key);
       return;
     }
+    if (++scanned >= EVICT_SCAN_LIMIT) break;
   }
   const oldestKey = rateBuckets.keys().next().value;
   if (oldestKey !== undefined) rateBuckets.delete(oldestKey);
