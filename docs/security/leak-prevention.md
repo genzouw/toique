@@ -5,11 +5,12 @@
 ## 防御層の全体像
 
 1. **コミット前検知 (Pre-commit / Pre-push)**
-   - **ツール:** `secretlint`, `gitleaks`, `lint-staged` (`package.json`) の厳格なフェイルファスト機構、Husky フックベースのファイルパスブロック・シークレットスキャン (`pre-commit`, `commit-msg` および `pre-push`)、エディタ設定 (`.vscode/settings.json`)
+   - **ツール:** `detect-secrets`, `secretlint`, `gitleaks`, `lint-staged` (`package.json`) の厳格なフェイルファスト機構、Husky フックベースのファイルパスブロック・シークレットスキャン (`pre-commit`, `commit-msg` および `pre-push`)、エディタ設定 (`.vscode/settings.json`)
    - **実行タイミング:** ローカルでの `git commit` 時（ファイル内容とコミットメッセージ）および `git push` 時（Husky を経由して実行）、およびエディタ上の操作時
    - **役割:** 開発者や AI エージェントが誤ってシークレットを含むファイルをステージングし、コミットしようとした際に検知してブロックします。`package.json` の `lint-staged` には、すべてのディレクトリ配下の `**/*.env*`, `**/*.pem`, `**/*.p12`, `**/*_rsa`, `**/.npmrc`, `**/.netrc`, `**/*.sqlite`, `**/*.db`, `**/*.log`, `**/*credentials*.json` や AI エージェントの作業跡 (`**/.cursor/`, `**/.claude/` 等、および一時ファイルの `*.http`, `*.rest`, `*.patch`, `*.diff`)、およびインフラストラクチャの完全な平文状態やシークレットを内包する **Terraform / CDKTF の状態ファイル（`**/*.tfstate*`, `**/cdktf.out/**`, `**/.terraform/**` 等）** を検出した場合に即座にコミットをリジェクトする、クロスプラットフォーム対応の厳格なフェイルファスト機構 (`node -e "..."`) が組み込まれており、遅いリンターの実行前に漏洩を防ぎます。さらに `.husky/commit-msg` にてコミットメッセージ自体の内容も `gitleaks` でスキャンし、メッセージへのシークレット混入もブロックします。また、エディタの検索・表示対象から `.env` や鍵ファイル、状態ファイル、AIの一時作業ファイルなどを外す除外設定（`.vscode/settings.json`）とルートの `.gitignore`を追加しています（機密管理の補助策であり、ファイルの読み込み自体を完全に防ぐセキュリティ制御ではありません）。Node.js に依存しているため、リポジトリを clone して`bun install`を実行すれば基本設定は一貫して動作します。
    - **Pre-push フックの最終防衛ライン:** `--no-verify` オプションで `pre-commit` をバイパスされた場合や、マージ・リベースによって意図せず機密ファイルが混入した場合に備え、`.husky/pre-push` フックを設けています。このフックはリモートへ送信されるコミット範囲（既存ブランチへの Push は `$remote_sha..$local_sha`、新規ブランチの Push は他のリモート追跡ブランチに存在しない範囲 `$local_sha --not --remotes`）に含まれる**各コミット**の変更パスを `git log --name-only` で個別に列挙して禁止パス検査を行い、あわせて `gitleaks detect` による内容スキャンを実行することで、途中のコミットで追加後に削除された機密ファイルも含めて公開リポジトリへのシークレット流出を水際でブロックします。
    - **Gitleaks の利用:** `pre-commit` フック（後述）はローカル環境に `gitleaks` が無い場合、対応 OS/ARCH（linux/darwin × x64/arm64）かつオンラインであれば `~/.cache/gitleaks/` へ自動ダウンロード・チェックサム検証を行った上でスキャンします。一方 `pre-push` フックはこの自動ダウンロードは行わず、既にインストール済みの `gitleaks` バイナリ、または `pre-commit` によってキャッシュ済みのバイナリのみを再利用します。いずれの手段でも利用できない場合はローカルでの内容スキャンをスキップし、コミット・Push 自体はブロックしません（CI での検知に委ねます）。ルール設定はリポジトリ直下の `.gitleaks.toml` で管理しており、デフォルトルールに加えてプロジェクト固有の漏洩リスク（ハードコードされた GCP Project ID・Project Number・Service Account、AI エージェントの一時プレースホルダや作業跡、PII としてのメールアドレス、Neon Postgres / Redis のエンドポイント、内部 IP アドレス、Cloudflare Pages / Cloud Run の未公開バックエンド URL）を検知するためのカスタムルールが定義されています。
+   - **Detect-secrets の利用:** Yelp によって開発された `detect-secrets` は、正規表現ベースの `gitleaks` を補完する目的で導入されています。高エントロピーな文字列（ランダムに生成された API キーやパスワードなど）を検知することに長けています。ローカルで `pip install detect-secrets` がインストールされている場合、`pre-commit` フックにおいてステージされたファイルのエントロピースキャンが自動で実行されます。誤検知（False Positives）は `.secrets.baseline` ファイルによって管理・除外されます。ベースラインの更新が必要な場合は、`bun run detect-secrets:update` を実行して再生成してください。
 
 2. **CI 検知 (CI/CD)**
    - **ツール:** `gitleaks` (`gitleaks-action`), `trivy`, `TruffleHog`, `secretlint`, `osv-scanner`, `CodeQL`, `zizmor`, カスタムパスブロッカー (`.github/workflows/forbidden-paths.yml`)
@@ -23,7 +24,7 @@
 
 ## 責任分界
 
-- **開発者（AIエージェント含む）:** コミット前にローカル環境で `secretlint` が正しく動作するように、必ず依存関係 (`bun install`) をインストールしておくこと。また、より強力な保護のためにローカル環境へ `gitleaks` をインストールすること（例: macOS では `brew install gitleaks`）。
+- **開発者（AIエージェント含む）:** コミット前にローカル環境で `secretlint` が正しく動作するように、必ず依存関係 (`bun install`) をインストールしておくこと。また、より強力な保護のためにローカル環境へ `gitleaks` をインストールすること（例: macOS では `brew install gitleaks`）。加えてエントロピーベースの検知を機能させるため `detect-secrets` をインストールしてください (`pip install detect-secrets`)。
 - **リポジトリ管理者およびフォーク運用者:** **最も強力なゼロデイ防御である GitHub Secret Scanning / Push Protection を有効化**し、CI での多層的なチェックを維持してください。手動でリポジトリの Settings (Code security and analysis) から有効化する必要があります。
 
 **Push Protection について:**
@@ -33,6 +34,6 @@ CI ランナーにシークレットが渡る前にブロックされるため�
 ## 運用ルール
 
 - **偽陽性 (False Positives) の対応:**
-  テストコードやドキュメント内のダミーシークレットが検知された場合は、リポジトリルートの `.secretlintignore` にパスを追加するか、ファイル内で無効化コメント (`// secretlint-disable`) を使用してください。`gitleaks` に関しては `.gitleaks.toml` の `[allowlist]` にパスや正規表現を追加することで対応します。実際のシークレットは**絶対に**コミットしないでください。
+  テストコードやドキュメント内のダミーシークレットが検知された場合は、リポジトリルートの `.secretlintignore` にパスを追加するか、ファイル内で無効化コメント (`// secretlint-disable`) を使用してください。`gitleaks` に関しては `.gitleaks.toml` の `[allowlist]` にパスや正規表現を追加することで対応します。`detect-secrets` の場合は `bun run detect-secrets:update` でベースラインを更新して除外対象を更新してください。実際のシークレットは**絶対に**コミットしないでください。
 - **万が一シークレットがコミットされた場合:**
   速やかに該当のシークレットを無効化（ローテート）し、管理者へ報告してください。コミット履歴の改ざん (`force-push`) だけで解決しようとせず、必ずシークレット自体の無効化を行ってください。

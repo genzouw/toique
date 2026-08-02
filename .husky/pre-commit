@@ -25,6 +25,24 @@ if [ -n "$FORBIDDEN_FILES" ]; then
 fi
 # ---------------------------------------------------------
 
+# --- Security: Detect-Secrets entropy scan ---
+# エントロピーベースのシークレットスキャンを実行し、gitleaks で検知しきれないカスタム形式の鍵や
+# 高エントロピー文字列の混入を防ぐ。
+# ベースライン (.secrets.baseline) に登録済みのものは除外される。
+# コマンドが存在しない場合はスキップする。
+if command -v detect-secrets-hook >/dev/null 2>&1; then
+  echo "🔍 Running detect-secrets on staged files..."
+  # stages files のパスを git diff で取得して渡す
+  staged_files=$(git diff --cached --name-only --diff-filter=d || true)
+  if [ -n "$staged_files" ]; then
+    detect-secrets-hook --baseline .secrets.baseline "$staged_files" || exit 1
+  fi
+else
+  echo "⚠️  detect-secrets-hook is not installed locally. Skipping entropy-based scan."
+  echo "   To install: pip install detect-secrets or use pre-commit framework."
+fi
+# ---------------------------------------------------------
+
 # --- Security: Gitleaks scan for staged files ---
 # コミットされるファイルの中身に対して gitleaks を実行し、APIキー等の混入を防ぐ。
 # バイナリがインストールされていない場合はユーザーキャッシュに自動ダウンロードして実行する。

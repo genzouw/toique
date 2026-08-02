@@ -46,3 +46,4 @@ ef6be419dcd19f7530b31da054baed4ac226cddf:frontend/src/lib/useSEO.ts:custom-cloud
 ef6be419dcd19f7530b31da054baed4ac226cddf:frontend/src/pages/Landing.tsx:custom-cloudflare-pages-url:152
 ef6be419dcd19f7530b31da054baed4ac226cddf:frontend/src/pages/Landing.tsx:custom-cloudflare-pages-url:153
 faafa7be1ea93b8767d80b09c9f51cca056236cd:.github/workflows/pr_conflict_notify.yml:custom-ai-traces:172
+.secrets.baseline

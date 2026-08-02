@@ -9,7 +9,8 @@
     "typecheck": "bun --cwd backend run typecheck && bun --cwd frontend run typecheck",
     "test": "bun --cwd backend run test && bun --cwd frontend run test",
     "knip": "bun --cwd backend run knip && bun --cwd frontend run knip",
-    "secretlint": "git ls-files -z | xargs -0 secretlint"
+    "secretlint": "git ls-files -z | xargs -0 secretlint",
+    "detect-secrets:update": "detect-secrets scan > .secrets.baseline"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.29.0"
