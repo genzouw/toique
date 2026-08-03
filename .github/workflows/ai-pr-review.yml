@@ -213,7 +213,7 @@ jobs:
             }
 
             const fs = require('fs');
-            // Write rdjson format for reviewdog
+            // reviewdog用にrdjson形式で書き出す
             const rdjson = {
               source: {
                 name: "AI PR Review",

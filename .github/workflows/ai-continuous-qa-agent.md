@@ -13,7 +13,7 @@ safe-outputs:
   add-comment: {}
 ---
 
-# Continuous QA Agent
+# 継続的QAエージェント
 
 ${{ github.repository }} の新しいPull Requestに含まれるコード変更を分析し、品質保証（QA）とテストの観点から継続的改善を提案してください。
 このAgentは、GitHub NextのAgentic Workflowsの概念に基づき、テストカバレッジの向上やエッジケースの発見を自動化することを目的としています。

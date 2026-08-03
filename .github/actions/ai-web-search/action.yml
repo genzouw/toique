@@ -9,7 +9,7 @@ inputs:
     required: false
     default: ''
   exa_api_key:
-    description: 'The Exa API Key (optional). Used for high quality neural search for developers.'
+    description: 'Exa APIキー（任意）。開発者向けの高品質なNeural Searchに使用します。'
     required: false
     default: ''
   max_results:
@@ -77,7 +77,7 @@ runs:
             try:
                 from exa_py import Exa
                 exa = Exa(exa_key)
-                # Use Exa's auto search feature
+                # Exaのautoプロンプト機能（クエリの自動最適化）を利用する
                 response = exa.search_and_contents(
                     query,
                     num_results=max_results,
