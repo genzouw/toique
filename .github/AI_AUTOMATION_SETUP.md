@@ -134,6 +134,7 @@ Dependabot による依存関係の更新 Pull Request が作成された際に�
 
 - `PAT_FOR_MODELS`: GitHub Models API を呼び出すための Personal Access Token
 - `TAVILY_API_KEY`: (推奨) 高精度な Web 検索を行うための Tavily API キー
+- `EXA_API_KEY`: (推奨) 開発者向けの高品質なNeural Search（Exa API）を行うためのAPIキー
 
 ### Semantic PR Title の適用
 
