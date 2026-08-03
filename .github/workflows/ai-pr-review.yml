@@ -276,13 +276,23 @@ jobs:
               body: summaryComment
             });
 
-      - name: Post Review Comments with Reviewdog
-        uses: reviewdog/action-reviewdog@3f401f40938d14c305c6c0b396732d847137f8ef # v1.33.0
+      - name: Set up reviewdog
+        uses: reviewdog/action-setup@d8a7baabd7f3e8544ee4dbde3ee41d0011c3a93f # v1.5.0
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          reporter: github-pr-review
-          level: warning
-          fail_level: none
-          filter_mode: added
-          name: AI-Code-Review
-          rdjson_file: rdjson.json
+          reviewdog_version: latest
+
+      - name: Post Review Comments with Reviewdog
+        env:
+          REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          # rdjson を標準入力から渡し、Files changed タブへインライン指摘として投稿する。
+          # fail-level=none なので、指摘が存在してもこのステップは失敗させない。
+          reviewdog \
+            -f=rdjson \
+            -name="AI-Code-Review" \
+            -reporter=github-pr-review \
+            -level=warning \
+            -fail-level=none \
+            -filter-mode=added \
+            < rdjson.json
