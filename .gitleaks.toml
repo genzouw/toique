@@ -3,6 +3,17 @@ title = "toique custom gitleaks config"
 [extend]
 useDefault = true
 
+# detect-secrets の baseline ファイル (.secrets.baseline) は、検出済みシークレットの
+# 位置情報を SHA1 の "hashed_secret" として記録するためのファイルであり、
+# 実際のシークレット値は含まれない。しかし hashed_secret の16進文字列はエントロピーが
+# 高く、gitleaks のデフォルトルール (generic-api-key 等) の誤検知対象になりやすいため、
+# ルールを問わずファイル単位でグローバルに除外する。
+[allowlist]
+description = "detect-secrets baseline はハッシュ値のみで実シークレットを含まないため除外"
+paths = [
+    '''(^|/)\.secrets\.baseline$'''
+]
+
 [[rules]]
 id = "custom-gcp-project-id"
 description = "Detects hardcoded GCP Project IDs"
