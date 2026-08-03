@@ -25,6 +25,47 @@ if [ -n "$FORBIDDEN_FILES" ]; then
 fi
 # ---------------------------------------------------------
 
+# --- Security: Detect-Secrets entropy scan ---
+# エントロピーベースのシークレットスキャンを実行し、gitleaks で検知しきれないカスタム形式の鍵や
+# 高エントロピー文字列の混入を防ぐ。
+# ベースライン (.secrets.baseline) に登録済みのものは除外される。
+# コマンドが存在しない場合はスキップする。
+if command -v detect-secrets-hook >/dev/null 2>&1; then
+  echo "🔍 Running detect-secrets on staged files..."
+  # ステージされたファイルを NUL 区切りで取得し、detect-secrets-hook へ個別の引数として渡す。
+  # 改行区切りの文字列をそのまま単一引数として渡すと、複数ファイルがステージされた際に
+  # 1つの壊れたパスとして扱われスキャン対象から漏れてしまうため。
+  STAGED_FOR_SECRETS=$(git diff --cached --name-only --diff-filter=d)
+  if [ -n "$STAGED_FOR_SECRETS" ]; then
+    # detect-secrets-hook は渡されたパスの「作業ツリー上の内容」を開いてスキャンする
+    # (git の staged content/index ではない)。そのため、同じファイルに unstaged な
+    # 変更が残っている「部分ステージ」の状態だと、実際にコミットされる内容と
+    # スキャン対象の内容が一致せず、シークレットの検知漏れにつながる恐れがある。
+    # 該当ファイルに unstaged 差分がある場合はスキャンせずコミットを拒否し、
+    # 全体をステージし直すか unstaged 分を退避してから再実行するよう促す。
+    # ステージ済みパスを NUL 区切りで渡して作業ツリー差分を引く。
+    # (パス名に空白・改行が含まれても壊れないようにするため)
+    PARTIALLY_STAGED=$(git diff --cached --name-only --diff-filter=d -z \
+      | xargs -0 git diff --name-only --)
+    if [ -n "$PARTIALLY_STAGED" ]; then
+      echo "🚨 [Security Error] The following files are partially staged (staged and unstaged changes coexist):"
+      echo "$PARTIALLY_STAGED"
+      echo "detect-secrets-hook scans the working tree content, not the staged index, so partial staging could let secrets slip through undetected."
+      echo "Please stage the entire file ('git add <file>') or unstage it entirely ('git restore --staged <file>') before committing."
+      exit 1
+    fi
+    # -n/--no-verify: 検知候補の追加検証のためにネットワーク呼び出し（外部APIへの
+    # 疎通確認）を行うプラグインがあるため、オフライン環境でも確実に動作させ、
+    # また検知候補の外部送信を避けるために明示的に無効化する。
+    git diff --cached --name-only --diff-filter=d -z \
+      | xargs -0 detect-secrets-hook --baseline .secrets.baseline -n
+  fi
+else
+  echo "⚠️  detect-secrets-hook is not installed locally. Skipping entropy-based scan."
+  echo "   To install: pip install detect-secrets==1.5.0 or use pre-commit framework."
+fi
+# ---------------------------------------------------------
+
 # --- Security: Gitleaks scan for staged files ---
 # コミットされるファイルの中身に対して gitleaks を実行し、APIキー等の混入を防ぐ。
 # バイナリがインストールされていない場合はユーザーキャッシュに自動ダウンロードして実行する。
@@ -70,7 +111,11 @@ if ! command -v gitleaks >/dev/null 2>&1; then
               echo "⚠️  Checksum verification failed. Skipping local scan."
             fi
           else
-            CHECKSUM_OK=1
+            # sha256sum / shasum のいずれも無く検証手段が無い環境では、未検証のバイナリを
+            # 実行しないようローカルスキャンをスキップする
+            # (docs/security/leak-prevention.md の「チェックサム検証を行った上でスキャンする」
+            # という説明と実際の挙動を一致させるため、ここで検証済み扱いにはしない)
+            echo "⚠️  Neither sha256sum nor shasum is available. Cannot verify checksum. Skipping local scan."
           fi
         else
           echo "⚠️  Failed to download gitleaks. Skipping local scan for this commit."

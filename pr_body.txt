@@ -1,11 +1,34 @@
-🛡️ Sentinel: [HIGH] Fix Admin Login Rate Limiting
+## 背景
 
-🚨 Severity: HIGH
-💡 Vulnerability: The admin login endpoint (`requireOperator` middleware using Basic Authentication) lacked rate limiting, allowing infinite brute-force attempts on the `ADMIN_USERNAME` and `ADMIN_PASSWORD`.
-🎯 Impact: Attackers could brute-force the operator credentials without being blocked, potentially gaining full administrative access to the platform.
-🔧 Fix: Implemented an in-memory sliding window rate limiter for the `requireOperator` middleware. It tracks failed authentication attempts by IP address, limits them to 5 failures per 15 minutes, safely evicts old entries to prevent memory exhaustion (DoS), and clears the history upon successful login.
-✅ Verification: `bun run test` verified that rate limiting and standard basic authentication behavior functions correctly.
+公開リポジトリでの漏洩リスクに対し、現在 gitleaks と secretlint による対策が行われていますが、ハードコードされたパスワードやランダムなAPIキー（高エントロピーな文字列）の検知ギャップを埋めるため、Yelp 製の `detect-secrets` を追加で導入します。
 
-- [x] Tested locally
-- [x] No sensitive information exposed
-- [x] Kept changes under 50 lines
+## このPRで導入するもの
+
+- ツール名: `detect-secrets` (v1.5.x)
+- 導入箇所: `.husky/pre-commit` フック内でのエントロピースキャン、および npm-scripts (`package.json`)
+- 期待される効果: コミット前にローカルでランダムな認証情報・APIキーなどの高エントロピー文字列を検知して拒否（ベースライン除外対応）
+
+## 検知漏れリスクと補完策
+
+- 検知できないケース: エントロピーが極端に低いパスワード（例: password123）や、変数名によるヒントがないもの
+- 補完策: 既存の GitHub Secret Scanning および gitleaks の正規表現パターンによる二重化でカバー
+
+## マージ前に必要な手動作業（チェックリスト）
+
+レビュアーは PR をマージする前に必ず以下を実施してください。
+本 PR の CI は手動作業完了を前提に通る設計です。
+
+- [ ] developer 各自のローカルで `pip install detect-secrets` を実行する周知
+- [ ] 既に `.secrets.baseline` が生成されていることの確認
+
+## マージ後の確認手順
+
+- [ ] ローカルでテスト用にダミーの高エントロピーな文字列（例: ランダムな Base64）をコミットしようとした際にフックで動作することを確認
+
+## ロールバック手順
+
+`.husky/pre-commit` から `detect-secrets` のブロックを削除し、`package.json` のスクリプトから `detect-secrets:update` を除外する。
+
+## 参考情報
+
+- 公式ドキュメント: https://github.com/Yelp/detect-secrets
