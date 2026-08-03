@@ -8,7 +8,7 @@ permissions:
   pull-requests: read
 tools:
   github:
-    toolsets: [pull_requests, code_scanning]
+    toolsets: [pull_requests]
 safe-outputs:
   add-comment: {}
 ---
