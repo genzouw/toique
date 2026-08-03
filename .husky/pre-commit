@@ -51,8 +51,11 @@ if command -v detect-secrets-hook >/dev/null 2>&1; then
       echo "Please stage the entire file ('git add <file>') or unstage it entirely ('git restore --staged <file>') before committing."
       exit 1
     fi
+    # -n/--no-verify: 検知候補の追加検証のためにネットワーク呼び出し（外部APIへの
+    # 疎通確認）を行うプラグインがあるため、オフライン環境でも確実に動作させ、
+    # また検知候補の外部送信を避けるために明示的に無効化する。
     git diff --cached --name-only --diff-filter=d -z \
-      | xargs -0 detect-secrets-hook --baseline .secrets.baseline
+      | xargs -0 detect-secrets-hook --baseline .secrets.baseline -n
   fi
 else
   echo "⚠️  detect-secrets-hook is not installed locally. Skipping entropy-based scan."
