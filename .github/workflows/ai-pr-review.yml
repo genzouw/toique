@@ -49,6 +49,7 @@ jobs:
         with:
           search_query: '${{ github.event.pull_request.title }} (vulnerability OR bug OR best practices OR performance OR security OR accessibility) (site:zenn.dev OR site:qiita.com OR site:github.com)'
           tavily_api_key: ${{ secrets.TAVILY_API_KEY }}
+          exa_api_key: ${{ secrets.EXA_API_KEY }}
           max_results: '5'
 
       - name: Initialize empty rdjson.json
