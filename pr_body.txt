@@ -25,3 +25,5 @@ AI の高精度 Web 検索（Exa API）を利用するために、管理者は�
 - [x] Actionlint での構文チェック
 - [x] Vitest での既存テストのパス確認
 - [x] 日本語でのドキュメント（`AI_AUTOMATION_SETUP.md`）の更新
+- [x] `gh aw compile` の実行と、生成された `ai-continuous-qa-agent.lock.yml` のコミット
+- [x] 生成された `.lock.yml` に対する Actionlint での検証
