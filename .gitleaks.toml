@@ -152,8 +152,3 @@ paths = [
     '''docs/manual-deploy\.md''',
     '''infra/README\.md'''
 ]
-
-[allowlist]
-paths = [
-    '''\.secrets\.baseline'''
-]
