@@ -43,7 +43,10 @@ if command -v detect-secrets-hook >/dev/null 2>&1; then
     # スキャン対象の内容が一致せず、シークレットの検知漏れにつながる恐れがある。
     # 該当ファイルに unstaged 差分がある場合はスキャンせずコミットを拒否し、
     # 全体をステージし直すか unstaged 分を退避してから再実行するよう促す。
-    PARTIALLY_STAGED=$(git diff --name-only --diff-filter=d -- $STAGED_FOR_SECRETS)
+    # ステージ済みパスを NUL 区切りで渡して作業ツリー差分を引く。
+    # (パス名に空白・改行が含まれても壊れないようにするため)
+    PARTIALLY_STAGED=$(git diff --cached --name-only --diff-filter=d -z \
+      | xargs -0 git diff --name-only --)
     if [ -n "$PARTIALLY_STAGED" ]; then
       echo "🚨 [Security Error] The following files are partially staged (staged and unstaged changes coexist):"
       echo "$PARTIALLY_STAGED"
@@ -59,7 +62,7 @@ if command -v detect-secrets-hook >/dev/null 2>&1; then
   fi
 else
   echo "⚠️  detect-secrets-hook is not installed locally. Skipping entropy-based scan."
-  echo "   To install: pip install detect-secrets or use pre-commit framework."
+  echo "   To install: pip install detect-secrets==1.5.0 or use pre-commit framework."
 fi
 # ---------------------------------------------------------
 

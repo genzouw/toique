@@ -10,7 +10,7 @@
     "test": "bun --cwd backend run test && bun --cwd frontend run test",
     "knip": "bun --cwd backend run knip && bun --cwd frontend run knip",
     "secretlint": "git ls-files -z | xargs -0 secretlint",
-    "detect-secrets:update": "detect-secrets scan --baseline .secrets.baseline"
+    "detect-secrets:update": "detect-secrets --version | grep -qx 1.5.0 || { echo '[FATAL] detect-secrets 1.5.0 is required (.secrets.baseline records this version). Install it with: pip install detect-secrets==1.5.0'; exit 1; }; detect-secrets scan --baseline .secrets.baseline"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.29.0"
