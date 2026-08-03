@@ -49,7 +49,13 @@ jobs:
         with:
           search_query: '${{ github.event.pull_request.title }} (vulnerability OR bug OR best practices OR performance OR security OR accessibility) (site:zenn.dev OR site:qiita.com OR site:github.com)'
           tavily_api_key: ${{ secrets.TAVILY_API_KEY }}
+          exa_api_key: ${{ secrets.EXA_API_KEY }}
           max_results: '5'
+
+      - name: Initialize empty rdjson.json
+        # 後続ステップがdiff取得失敗・Models APIエラー・JSONパースエラー等で早期returnした場合でも
+        # reviewdogステップがrdjson.json不在で失敗しないよう、空の診断結果を先に用意しておく
+        run: echo '{"source":{"name":"AI PR Review","url":"https://github.com/models"},"diagnostics":[]}' > rdjson.json
 
       - name: Code Review with GitHub Models
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
@@ -116,6 +122,14 @@ jobs:
                   items: {
                     type: "object",
                     properties: {
+                      file: {
+                        type: "string",
+                        description: "指摘対象のファイルパス"
+                      },
+                      line: {
+                        type: "integer",
+                        description: "指摘対象の行番号"
+                      },
                       category: {
                         type: "string",
                         enum: ["Bug", "Performance", "Security", "Accessibility", "Testing", "Best Practice", "Other"]
@@ -126,10 +140,10 @@ jobs:
                       },
                       suggestion: {
                         type: ["string", "null"],
-                        description: "コードフェンスを含まない具体的な修正コード。修正案がない場合はnull"
+                        description: "具体的な修正コード（Markdownコードブロックなし）。修正案がない場合はnull"
                       }
                     },
-                    required: ["category", "description", "suggestion"],
+                    required: ["file", "line", "category", "description", "suggestion"],
                     additionalProperties: false
                   }
                 },
@@ -198,25 +212,87 @@ jobs:
               return;
             }
 
-            let reviewComment = `🤖 **AI コードレビュー (GitHub Models):**\n\n### 要約\n${result.summary}\n\n### レビュー詳細\n`;
+            const fs = require('fs');
+            // reviewdog用にrdjson形式で書き出す
+            const rdjson = {
+              source: {
+                name: "AI PR Review",
+                url: "https://github.com/models"
+              },
+              diagnostics: []
+            };
+
+            let skippedInvalidCount = 0;
             if (result.review_comments && result.review_comments.length > 0) {
               for (const comment of result.review_comments) {
-                reviewComment += `- **[${comment.category}]** ${comment.description}\n`;
-                if (comment.suggestion) {
-                  reviewComment += `\n  \n  \`\`\`\n  ${comment.suggestion}\n  \`\`\`\n  \n`;
+                // file/lineがモデルの誤出力で不正な場合、reviewdogが読めずinline指摘が
+                // 欠落する可能性があるため、rdjsonに含める前に妥当性を検証する
+                if (!comment.file || typeof comment.file !== 'string' || !Number.isInteger(comment.line) || comment.line < 1) {
+                  console.warn(`不正なfile/lineのため指摘をスキップしました: ${JSON.stringify(comment)}`);
+                  skippedInvalidCount++;
+                  continue;
                 }
+                rdjson.diagnostics.push({
+                  message: `[${comment.category}] ${comment.description}`,
+                  location: {
+                    path: comment.file,
+                    range: {
+                      start: {
+                        line: comment.line
+                      }
+                    }
+                  },
+                  severity: comment.category === "Security" || comment.category === "Bug" ? "ERROR" : "WARNING",
+                  suggestions: comment.suggestion ? [
+                    {
+                      range: {
+                        start: { line: comment.line },
+                        end: { line: comment.line }
+                      },
+                      text: comment.suggestion
+                    }
+                  ] : []
+                });
               }
-            } else {
-              reviewComment += result.approval_recommendation === "Approve"
-                ? "特に指摘事項はありませんでした。LGTM! 🎉\n"
-                : "個別のレビュー指摘は生成されませんでした。\n";
             }
 
-            reviewComment += `\n### 推奨アクション: **${result.approval_recommendation}**`;
+            fs.writeFileSync('rdjson.json', JSON.stringify(rdjson, null, 2));
+
+            let summaryComment = `🤖 **AI コードレビュー (GitHub Models):**\n\n### 要約\n${result.summary}\n\n`;
+            summaryComment += `### 推奨アクション: **${result.approval_recommendation}**\n\n`;
+            if (rdjson.diagnostics.length > 0) {
+              summaryComment += `*詳細な指摘事項は Files changed タブにインラインで追加されます。*`;
+            } else {
+              summaryComment += "特に指摘事項はありませんでした。LGTM! 🎉";
+            }
+            if (skippedInvalidCount > 0) {
+              summaryComment += `\n\n_※ ${skippedInvalidCount}件の指摘は、AIモデルが出力したファイルパス/行番号が不正だったためスキップされました。_`;
+            }
 
             await github.rest.issues.createComment({
               owner: context.repo.owner,
               repo: context.repo.repo,
               issue_number: context.issue.number,
-              body: reviewComment
+              body: summaryComment
             });
+
+      - name: Set up reviewdog
+        uses: reviewdog/action-setup@d8a7baabd7f3e8544ee4dbde3ee41d0011c3a93f # v1.5.0
+        with:
+          reviewdog_version: v0.21.0
+
+      - name: Post Review Comments with Reviewdog
+        env:
+          REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          # rdjson を標準入力から渡し、Files changed タブへインライン指摘として投稿する。
+          # fail-level=none なので、指摘が存在してもこのステップは失敗させない。
+          reviewdog \
+            -f=rdjson \
+            -name="AI-Code-Review" \
+            -reporter=github-pr-review \
+            -level=warning \
+            -fail-level=none \
+            -filter-mode=added \
+            < rdjson.json

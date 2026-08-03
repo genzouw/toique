@@ -110,10 +110,17 @@ PRのコメントで `/ai-fix [FIX_CONTENT]` と入力すると、AIが対象の
 PRのコメントで `/ai-test [追加の指示]` と入力すると、AIがPRの変更差分を解析し、不足しているユニットテストコードを自動生成してPRブランチへコミット・プッシュします。
 これも `PAT_FOR_MODELS` シークレットの設定が必要です。
 
-### 高精度な Web 検索の有効化 (Tavily API)
+### 高品質な開発者向け Web 検索の有効化 (Exa API / Tavily API)
 
-AI ChatOps、AI PR Review、AI Issue Triage の各機能において、AI が外部の最新情報を検索する (RAG) 際に、デフォルトの DuckDuckGo 検索に代わって、より高精度で安定した検索が可能な **Tavily API** を利用できます。
-**設定手順:**
+AI ChatOps、AI PR Review、AI Issue Triage の各機能において、AI が外部の最新情報や技術情報を検索する (RAG) 際に、デフォルトの DuckDuckGo 検索に代わって、より高精度で安定した検索が可能な **Exa API** や **Tavily API** を利用できます。特に Exa API は開発者向けの高品質な検索（Neural Search）に特化しています。
+
+**設定手順 (Exa API の場合 - 推奨):**
+
+1. [Exa](https://exa.ai/) の公式サイトで無料アカウントを作成し、API キーを取得します。
+2. GitHub リポジトリの **Settings → Secrets and variables → Actions** を開きます。
+3. **New repository secret** をクリックし、名前を `EXA_API_KEY` とし、取得した API キーを値として保存します。
+
+**設定手順 (Tavily API の場合):**
 
 1. [Tavily](https://tavily.com/) の公式サイトで無料アカウントを作成し、API キーを取得します。
 2. GitHub リポジトリの **Settings → Secrets and variables → Actions** を開きます。
@@ -127,6 +134,7 @@ Dependabot による依存関係の更新 Pull Request が作成された際に�
 
 - `PAT_FOR_MODELS`: GitHub Models API を呼び出すための Personal Access Token
 - `TAVILY_API_KEY`: (推奨) 高精度な Web 検索を行うための Tavily API キー
+- `EXA_API_KEY`: (推奨) 開発者向けの高品質なNeural Search（Exa API）を行うためのAPIキー
 
 ### Semantic PR Title の適用
 
