@@ -51,6 +51,11 @@ jobs:
           tavily_api_key: ${{ secrets.TAVILY_API_KEY }}
           max_results: '5'
 
+      - name: Initialize empty rdjson.json
+        # 後続ステップがdiff取得失敗・Models APIエラー・JSONパースエラー等で早期returnした場合でも
+        # reviewdogステップがrdjson.json不在で失敗しないよう、空の診断結果を先に用意しておく
+        run: echo '{"source":{"name":"AI PR Review","url":"https://github.com/models"},"diagnostics":[]}' > rdjson.json
+
       - name: Code Review with GitHub Models
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         env:
