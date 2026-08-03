@@ -35,7 +35,22 @@ if command -v detect-secrets-hook >/dev/null 2>&1; then
   # ステージされたファイルを NUL 区切りで取得し、detect-secrets-hook へ個別の引数として渡す。
   # 改行区切りの文字列をそのまま単一引数として渡すと、複数ファイルがステージされた際に
   # 1つの壊れたパスとして扱われスキャン対象から漏れてしまうため。
-  if git diff --cached --name-only --diff-filter=d | grep -q .; then
+  STAGED_FOR_SECRETS=$(git diff --cached --name-only --diff-filter=d)
+  if [ -n "$STAGED_FOR_SECRETS" ]; then
+    # detect-secrets-hook は渡されたパスの「作業ツリー上の内容」を開いてスキャンする
+    # (git の staged content/index ではない)。そのため、同じファイルに unstaged な
+    # 変更が残っている「部分ステージ」の状態だと、実際にコミットされる内容と
+    # スキャン対象の内容が一致せず、シークレットの検知漏れにつながる恐れがある。
+    # 該当ファイルに unstaged 差分がある場合はスキャンせずコミットを拒否し、
+    # 全体をステージし直すか unstaged 分を退避してから再実行するよう促す。
+    PARTIALLY_STAGED=$(git diff --name-only --diff-filter=d -- $STAGED_FOR_SECRETS)
+    if [ -n "$PARTIALLY_STAGED" ]; then
+      echo "🚨 [Security Error] The following files are partially staged (staged and unstaged changes coexist):"
+      echo "$PARTIALLY_STAGED"
+      echo "detect-secrets-hook scans the working tree content, not the staged index, so partial staging could let secrets slip through undetected."
+      echo "Please stage the entire file ('git add <file>') or unstage it entirely ('git restore --staged <file>') before committing."
+      exit 1
+    fi
     git diff --cached --name-only --diff-filter=d -z \
       | xargs -0 detect-secrets-hook --baseline .secrets.baseline
   fi
