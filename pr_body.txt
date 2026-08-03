@@ -1,34 +1,27 @@
-## 背景
+最新の生成AIツールとベストプラクティスを導入し、当リポジトリのAI自動化パイプラインをさらに最適化・ブラッシュアップしました。
 
-公開リポジトリでの漏洩リスクに対し、現在 gitleaks と secretlint による対策が行われていますが、ハードコードされたパスワードやランダムなAPIキー（高エントロピーな文字列）の検知ギャップを埋めるため、Yelp 製の `detect-secrets` を追加で導入します。
+## 💡 概要
 
-## このPRで導入するもの
+1. **AI RAG 用の高精度 Web 検索の導入 (Exa API)**
+   - `ai-web-search/action.yml` において、従来の DuckDuckGo / Tavily API に加えて、開発者向けの高品質な検索（Neural Search）を提供する `Exa API` (`exa_py`) を導入しました。
+2. **AI PR Code Review の品質向上 (Reviewdog 連携)**
+   - `ai-pr-review.yml` を改修し、GitHub Models のプロンプトからファイルパス (`file`) と行番号 (`line`) を出力させ、それを `rdjson` フォーマットに変換するステップを追加しました。
+   - `reviewdog/action-reviewdog` を用いて、巨大な単一コメントではなく、PRの差分（Files changed）に対してインラインでピンポイントに指摘コメントが投稿されるように改善しました。
+3. **継続的QAの実験的導入 (Agentic Workflows)**
+   - GitHub Nextが提唱する自然言語でのワークフロー定義（Agentic Workflows）の概念に基づき、テストの改善やエッジケースの発見を自動化する `ai-continuous-qa-agent.md` を追加しました。
 
-- ツール名: `detect-secrets` (v1.5.x)
-- 導入箇所: `.husky/pre-commit` フック内でのエントロピースキャン、および npm-scripts (`package.json`)
-- 期待される効果: コミット前にローカルでランダムな認証情報・APIキーなどの高エントロピー文字列を検知して拒否（ベースライン除外対応）
+## ⚠️ マージ前の手動事前作業 (重要)
 
-## 検知漏れリスクと補完策
+AI の高精度 Web 検索（Exa API）を利用するために、管理者は以下の手順で設定を行う必要があります。この手順は `.github/AI_AUTOMATION_SETUP.md` にも追記されています。
 
-- 検知できないケース: エントロピーが極端に低いパスワード（例: password123）や、変数名によるヒントがないもの
-- 補完策: 既存の GitHub Secret Scanning および gitleaks の正規表現パターンによる二重化でカバー
+1. [Exa](https://exa.ai/) の公式サイトで無料アカウントを作成し、API キーを取得します。
+2. GitHub リポジトリの **Settings → Secrets and variables → Actions** を開きます。
+3. **New repository secret** をクリックし、名前を `EXA_API_KEY` とし、取得した API キーを値として保存します。
 
-## マージ前に必要な手動作業（チェックリスト）
+（※APIキーが存在しない場合は安全にフォールバックされるため、すぐに壊れることはありませんが、品質向上のために設定を強く推奨します）
 
-レビュアーは PR をマージする前に必ず以下を実施してください。
-本 PR の CI は手動作業完了を前提に通る設計です。
+## ✅ 確認項目
 
-- [ ] developer 各自のローカルで `pip install detect-secrets` を実行する周知
-- [ ] 既に `.secrets.baseline` が生成されていることの確認
-
-## マージ後の確認手順
-
-- [ ] ローカルでテスト用にダミーの高エントロピーな文字列（例: ランダムな Base64）をコミットしようとした際にフックで動作することを確認
-
-## ロールバック手順
-
-`.husky/pre-commit` から `detect-secrets` のブロックを削除し、`package.json` のスクリプトから `detect-secrets:update` を除外する。
-
-## 参考情報
-
-- 公式ドキュメント: https://github.com/Yelp/detect-secrets
+- [x] Actionlint での構文チェック
+- [x] Vitest での既存テストのパス確認
+- [x] 日本語でのドキュメント（`AI_AUTOMATION_SETUP.md`）の更新

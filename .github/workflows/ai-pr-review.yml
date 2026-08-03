@@ -116,6 +116,14 @@ jobs:
                   items: {
                     type: "object",
                     properties: {
+                      file: {
+                        type: "string",
+                        description: "指摘対象のファイルパス"
+                      },
+                      line: {
+                        type: "integer",
+                        description: "指摘対象の行番号"
+                      },
                       category: {
                         type: "string",
                         enum: ["Bug", "Performance", "Security", "Accessibility", "Testing", "Best Practice", "Other"]
@@ -126,10 +134,10 @@ jobs:
                       },
                       suggestion: {
                         type: ["string", "null"],
-                        description: "コードフェンスを含まない具体的な修正コード。修正案がない場合はnull"
+                        description: "具体的な修正コード（Markdownコードブロックなし）。修正案がない場合はnull"
                       }
                     },
-                    required: ["category", "description", "suggestion"],
+                    required: ["file", "line", "category", "description", "suggestion"],
                     additionalProperties: false
                   }
                 },
@@ -198,25 +206,66 @@ jobs:
               return;
             }
 
-            let reviewComment = `🤖 **AI コードレビュー (GitHub Models):**\n\n### 要約\n${result.summary}\n\n### レビュー詳細\n`;
+            const fs = require('fs');
+            // Write rdjson format for reviewdog
+            const rdjson = {
+              source: {
+                name: "AI PR Review",
+                url: "https://github.com/models"
+              },
+              diagnostics: []
+            };
+
             if (result.review_comments && result.review_comments.length > 0) {
               for (const comment of result.review_comments) {
-                reviewComment += `- **[${comment.category}]** ${comment.description}\n`;
-                if (comment.suggestion) {
-                  reviewComment += `\n  \n  \`\`\`\n  ${comment.suggestion}\n  \`\`\`\n  \n`;
-                }
+                rdjson.diagnostics.push({
+                  message: `[${comment.category}] ${comment.description}`,
+                  location: {
+                    path: comment.file,
+                    range: {
+                      start: {
+                        line: comment.line
+                      }
+                    }
+                  },
+                  severity: comment.category === "Security" || comment.category === "Bug" ? "ERROR" : "WARNING",
+                  suggestions: comment.suggestion ? [
+                    {
+                      range: {
+                        start: { line: comment.line },
+                        end: { line: comment.line }
+                      },
+                      text: comment.suggestion
+                    }
+                  ] : []
+                });
               }
-            } else {
-              reviewComment += result.approval_recommendation === "Approve"
-                ? "特に指摘事項はありませんでした。LGTM! 🎉\n"
-                : "個別のレビュー指摘は生成されませんでした。\n";
             }
 
-            reviewComment += `\n### 推奨アクション: **${result.approval_recommendation}**`;
+            fs.writeFileSync('rdjson.json', JSON.stringify(rdjson, null, 2));
+
+            let summaryComment = `🤖 **AI コードレビュー (GitHub Models):**\n\n### 要約\n${result.summary}\n\n`;
+            summaryComment += `### 推奨アクション: **${result.approval_recommendation}**\n\n`;
+            if (result.review_comments && result.review_comments.length > 0) {
+              summaryComment += `*詳細な指摘事項は Files changed タブにインラインで追加されます。*`;
+            } else {
+              summaryComment += "特に指摘事項はありませんでした。LGTM! 🎉";
+            }
 
             await github.rest.issues.createComment({
               owner: context.repo.owner,
               repo: context.repo.repo,
               issue_number: context.issue.number,
-              body: reviewComment
+              body: summaryComment
             });
+
+      - name: Post Review Comments with Reviewdog
+        uses: reviewdog/action-reviewdog@3f401f40938d14c305c6c0b396732d847137f8ef # v1.33.0
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          reporter: github-pr-review
+          level: warning
+          fail_level: error
+          filter_mode: added
+          name: AI-Code-Review
+          rdjson_file: rdjson.json
