@@ -222,8 +222,16 @@ jobs:
               diagnostics: []
             };
 
+            let skippedInvalidCount = 0;
             if (result.review_comments && result.review_comments.length > 0) {
               for (const comment of result.review_comments) {
+                // file/lineがモデルの誤出力で不正な場合、reviewdogが読めずinline指摘が
+                // 欠落する可能性があるため、rdjsonに含める前に妥当性を検証する
+                if (!comment.file || typeof comment.file !== 'string' || !Number.isInteger(comment.line) || comment.line < 1) {
+                  console.warn(`不正なfile/lineのため指摘をスキップしました: ${JSON.stringify(comment)}`);
+                  skippedInvalidCount++;
+                  continue;
+                }
                 rdjson.diagnostics.push({
                   message: `[${comment.category}] ${comment.description}`,
                   location: {
@@ -252,10 +260,13 @@ jobs:
 
             let summaryComment = `🤖 **AI コードレビュー (GitHub Models):**\n\n### 要約\n${result.summary}\n\n`;
             summaryComment += `### 推奨アクション: **${result.approval_recommendation}**\n\n`;
-            if (result.review_comments && result.review_comments.length > 0) {
+            if (rdjson.diagnostics.length > 0) {
               summaryComment += `*詳細な指摘事項は Files changed タブにインラインで追加されます。*`;
             } else {
               summaryComment += "特に指摘事項はありませんでした。LGTM! 🎉";
+            }
+            if (skippedInvalidCount > 0) {
+              summaryComment += `\n\n_※ ${skippedInvalidCount}件の指摘は、AIモデルが出力したファイルパス/行番号が不正だったためスキップされました。_`;
             }
 
             await github.rest.issues.createComment({
