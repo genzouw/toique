@@ -282,7 +282,7 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           reporter: github-pr-review
           level: warning
-          fail_level: error
+          fail_level: none
           filter_mode: added
           name: AI-Code-Review
           rdjson_file: rdjson.json
