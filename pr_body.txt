@@ -1,29 +1,36 @@
-最新の生成AIツールとベストプラクティスを導入し、当リポジトリのAI自動化パイプラインをさらに最適化・ブラッシュアップしました。
+## 背景
 
-## 💡 概要
+公開リポジトリでの漏洩リスクとして、ローカルの `pre-commit` フックでの `detect-secrets` スキャンを `--no-verify` などでバイパスして、高エントロピーなシークレットがプッシュされてしまうギャップがありました。これを CI でも検知してブロックする必要があります。
 
-1. **AI RAG 用の高精度 Web 検索の導入 (Exa API)**
-   - `ai-web-search/action.yml` において、従来の DuckDuckGo / Tavily API に加えて、開発者向けの高品質な検索（Neural Search）を提供する `Exa API` (`exa_py`) を導入しました。
-2. **AI PR Code Review の品質向上 (Reviewdog 連携)**
-   - `ai-pr-review.yml` を改修し、GitHub Models のプロンプトからファイルパス (`file`) と行番号 (`line`) を出力させ、それを `rdjson` フォーマットに変換するステップを追加しました。
-   - `reviewdog/action-reviewdog` を用いて、巨大な単一コメントではなく、PRの差分（Files changed）に対してインラインでピンポイントに指摘コメントが投稿されるように改善しました。
-3. **継続的QAの実験的導入 (Agentic Workflows)**
-   - GitHub Nextが提唱する自然言語でのワークフロー定義（Agentic Workflows）の概念に基づき、テストの改善やエッジケースの発見を自動化する `ai-continuous-qa-agent.md` を追加しました。
+## このPRで導入するもの
 
-## ⚠️ マージ前の手動事前作業 (重要)
+- ツール名: detect-secrets v1.5.0
+- 導入箇所: `.github/workflows/detect-secrets.yml`
+- 期待される効果: GitHub への push / PR および定期実行時にベースラインに対して detect-secrets のスキャンを行い、新たな高エントロピーのシークレットが混入していればブロックする。
 
-AI の高精度 Web 検索（Exa API）を利用するために、管理者は以下の手順で設定を行う必要があります。この手順は `.github/AI_AUTOMATION_SETUP.md` にも追記されています。
+## 検知漏れリスクと補完策
 
-1. [Exa](https://exa.ai/) の公式サイトで無料アカウントを作成し、API キーを取得します。
-2. GitHub リポジトリの **Settings → Secrets and variables → Actions** を開きます。
-3. **New repository secret** をクリックし、名前を `EXA_API_KEY` とし、取得した API キーを値として保存します。
+- 検知できないケース: エントロピーベースの検知であるため、特定のルールベースのシークレットは検知しきれない場合がある。
+- 補完策: 既存の `gitleaks` (CI および pre-push)、`trufflehog` ワークフロー、GitHub Secret Scanning や Push Protection を組み合わせて多重防御を実施済み。
 
-（※APIキーが存在しない場合は安全にフォールバックされるため、すぐに壊れることはありませんが、品質向上のために設定を強く推奨します）
+## マージ前に必要な手動作業（チェックリスト）
 
-## ✅ 確認項目
+レビュアーは PR をマージする前に必ず以下を実施してください。
+本 PR の CI は手動作業完了を前提に通る設計です。
 
-- [x] Actionlint での構文チェック
-- [x] Vitest での既存テストのパス確認
-- [x] 日本語でのドキュメント（`AI_AUTOMATION_SETUP.md`）の更新
-- [x] `gh aw compile` の実行と、生成された `ai-continuous-qa-agent.lock.yml` のコミット
-- [x] 生成された `.lock.yml` に対する Actionlint での検証
+- [ ] リポジトリの設定で、`Push Protection` と `Secret Scanning` が引き続き有効になっていることを確認する。
+- [ ] 開発チーム全体に、偽陽性時は `bun run detect-secrets:update` を用いてローカルのベースラインを更新・コミットする運用であることを再周知する。
+
+## マージ後の確認手順
+
+- [ ] 本PRのマージ後の push において、`.github/workflows/detect-secrets.yml` が green になることを確認する。
+- [ ] PR 内で誤検知（False Positives）が出た場合、ローカルでのベースライン更新運用が機能するかを確認する。
+
+## ロールバック手順
+
+問題が出た場合や CI 実行時間に深刻な影響があった場合は、`.github/workflows/detect-secrets.yml` を削除または disable にし、変更前の状態に revert してください。
+
+## 参考情報
+
+- 公式ドキュメント: https://github.com/Yelp/detect-secrets
+- 比較検討した他案: `gitleaks` とは検知のアプローチ（正規表現ベース vs エントロピーベース）が異なるため、両方を補完的に使用する形とした。
