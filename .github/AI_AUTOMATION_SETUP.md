@@ -110,6 +110,16 @@ PRのコメントで `/ai-fix [FIX_CONTENT]` と入力すると、AIが対象の
 PRのコメントで `/ai-test [追加の指示]` と入力すると、AIがPRの変更差分を解析し、不足しているユニットテストコードを自動生成してPRブランチへコミット・プッシュします。
 これも `PAT_FOR_MODELS` シークレットの設定が必要です。
 
+### AI Code Scanner (aislop)
+
+リポジトリにコミットされたコードの中に、AI コーディングエージェントが残したスロップ（不要なコメント、飲み込まれた例外、幻覚によるインポートなど）がないかを自動的にスキャンします。GitHub Code Scanning と連携して、PR や main ブランチでの問題を検知します。
+この機能は `aislop` ツールを使用しており、特別な設定は不要です。
+
+### Gemini PR Review
+
+Pull Request 作成時に、Google Gemini (Gemini 1.5 Pro) を使用してコードのレビューを自動的に実行します。これにより既存のAIツールに加えて、別のLLMによる多角的な視点からのレビューが可能になります。
+**注意:** この機能を使用するためには、リポジトリの Secrets に `GEMINI_API_KEY` を設定する必要があります。
+
 ### 高品質な開発者向け Web 検索の有効化 (Exa API / Tavily API)
 
 AI ChatOps、AI PR Review、AI Issue Triage の各機能において、AI が外部の最新情報や技術情報を検索する (RAG) 際に、デフォルトの DuckDuckGo 検索に代わって、より高精度で安定した検索が可能な **Exa API** や **Tavily API** を利用できます。特に Exa API は開発者向けの高品質な検索（Neural Search）に特化しています。
@@ -135,6 +145,7 @@ Dependabot による依存関係の更新 Pull Request が作成された際に�
 - `PAT_FOR_MODELS`: GitHub Models API を呼び出すための Personal Access Token
 - `TAVILY_API_KEY`: (推奨) 高精度な Web 検索を行うための Tavily API キー
 - `EXA_API_KEY`: (推奨) 開発者向けの高品質なNeural Search（Exa API）を行うためのAPIキー
+- `GEMINI_API_KEY`: Gemini PR Review を実行するための Google Gemini API キー
 
 ### Semantic PR Title の適用
 

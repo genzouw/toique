@@ -1,0 +1,54 @@
+name: AI Code Scanner (aislop)
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+  security-events: write
+  actions: read
+
+jobs:
+  aislop:
+    name: Run aislop
+    runs-on: ubuntu-latest
+    steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@bf7454d06d71f1098171f2acdf0cd4708d7b5920 # v2.20.0
+        with:
+          egress-policy: audit
+
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@4bc047ad259df6fc24a6c9b0f9a0cb08cf17fbe5 # v2.0.1
+        with:
+          bun-version: latest
+
+      - name: Run aislop
+        run: |
+          mkdir -p .aislop
+          # 変更されたファイルに対してスキャンを実行し、結果をSARIF形式で出力
+          # 差分がない場合や問題がない場合もエラーで終了しないように "|| true" を付与
+          if [ "${{ github.event_name }}" == "pull_request" ]; then
+            npx aislop@latest scan --changes --base origin/${{ github.base_ref }} --sarif > .aislop/results.sarif || true
+          else
+            npx aislop@latest scan --sarif > .aislop/results.sarif || true
+          fi
+
+      - name: Upload SARIF to GitHub Code Scanning
+        # PRからの実行時はSARIFのアップロードがサポートされていない場合があるので、
+        # 条件付きでスキップする。
+        # セキュリティイベントへの書き込みはフォークからのPRでは通常失敗するため条件付きにする
+        if: github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository)
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: .aislop/results.sarif
+          category: aislop
