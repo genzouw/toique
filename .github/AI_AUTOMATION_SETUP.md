@@ -117,7 +117,7 @@ PRのコメントで `/ai-test [追加の指示]` と入力すると、AIがPR�
 
 ### Gemini PR Review
 
-Pull Request 作成時に、Google Gemini (Gemini 1.5 Pro) を使用してコードのレビューを自動的に実行します。これにより既存のAIツールに加えて、別のLLMによる多角的な視点からのレビューが可能になります。
+Pull Request 作成時に、Google Gemini (Gemini 3.6 Flash) を使用してコードのレビューを自動的に実行します。これにより既存のAIツールに加えて、別のLLMによる多角的な視点からのレビューが可能になります。
 **注意:** この機能を使用するためには、リポジトリの Secrets に `GEMINI_API_KEY` を設定する必要があります。
 
 ### 高品質な開発者向け Web 検索の有効化 (Exa API / Tavily API)

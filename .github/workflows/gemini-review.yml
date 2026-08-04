@@ -3,8 +3,8 @@ name: Gemini PR Review
 on:
   pull_request:
     types: [opened, synchronize, reopened]
-    # For security reasons with fork PRs, avoid auto-running on forks if possible,
-    # but the action itself should handle it or we limit the trigger.
+    # フォークPRではセキュリティ上の理由から自動実行を避けたいが、
+    # 実際の制御は下記jobレベルのif条件（同一リポジトリ限定）で行う。
 
 permissions:
   contents: read
@@ -12,8 +12,9 @@ permissions:
 
 jobs:
   review:
-    # Skip for fork PRs to prevent secret leakage, as PR reviews on forks need pull_request_target,
-    # but for simplicity we restrict to internal PRs.
+    # フォークPRからのシークレット漏洩を防ぐため、フォークPRはスキップする。
+    # PRレビューをフォークで行うには pull_request_target が必要だが、
+    # 簡潔さのため同一リポジトリ内のPRのみに限定する。
     if: github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-latest
     steps:
@@ -23,14 +24,15 @@ jobs:
           egress-policy: audit
 
       - name: Checkout Repo
-        uses: actions/checkout@v4
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
+          persist-credentials: false
 
       - name: Gemini PR Review
-        uses: derailed-dash/gemini-review-action@v1
+        uses: derailed-dash/gemini-review-action@aaf0094c47ba7cd10a2fc05c0db5b3d29b2582f9 # v1 (v1.5.1)
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           gemini_api_key: ${{ secrets.GEMINI_API_KEY }}
-          model: "gemini-1.5-pro"
-          language: "ja"
+          gemini_model: 'gemini-3.6-flash'
+          language: 'ja'
