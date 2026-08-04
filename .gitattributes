@@ -26,4 +26,4 @@
 cdktf.out/ export-ignore
 .terraform/ export-ignore
 
-.github/workflows/*.lock.yml linguist-generated=true
+.github/workflows/*.lock.yml linguist-generated=true merge=ours
