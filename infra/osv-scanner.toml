@@ -53,14 +53,6 @@ ecosystem = "npm"
 vulnerability.ignore = true
 reason = "eslint-plugin-react-hooks の transitive dependency。開発ビルドツールのみで利用し、プロダクション環境には影響しない。親パッケージの更新待ち。2026-12-17 に再評価すること。"
 
-# js-yaml 4.1.1 (root bun.lock: @textlint/linter-formatter, rc-config-loader 経由) — CVE-2026-53550 (Quadratic-complexity DoS)
-[[PackageOverrides]]
-name = "js-yaml"
-version = "4.1.1"
-ecosystem = "npm"
-vulnerability.ignore = true
-reason = "@textlint/linter-formatter, rc-config-loader の transitive dependency。開発ツールのみで利用し、プロダクション環境には影響しない。親パッケージの更新待ち。2026-12-17 に再評価すること。"
-
 # js-yaml 3.14.2 (infra/package-lock.json 経由) — CVE-2026-53550 (Quadratic-complexity DoS)
 [[PackageOverrides]]
 name = "js-yaml"
