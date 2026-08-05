@@ -17,6 +17,12 @@ permissions:
 jobs:
   deptrust:
     name: DepTrust Check
+    # pull_request は fork PR に限定する。同一リポジトリのブランチは push トリガー
+    # （全ブランチ対象）で既にスキャン済みのため、ここまで許可すると同一コミットに
+    # 対して push/pull_request で二重実行され、deptrust の外部API呼び出しが倍増して
+    # secondary rate limit(403) を誘発しやすくなる（下記スクリプトのリトライ処理が
+    # 対策している問題と同種）。fork のブランチへの push は base repo 側のイベントとして
+    # 検知できないため、pull_request イベントで補完する。
     if: github.event_name == 'push' || github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' || (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name != github.repository)
     runs-on: ubuntu-latest
     steps:
