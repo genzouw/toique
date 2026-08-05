@@ -32,6 +32,20 @@ jobs:
         with:
           persist-credentials: false
 
+      # SARIF は結果をすべてファイルへ書き出すため、失敗しても Actions のログには
+      # `Exit code: 1` しか残らず、ジョブログだけでは原因を追えない。
+      # 先に table 形式で同じスキャンを流し、検出内容をログ上で読めるようにする。
+      # ここでの失敗はジョブの合否に影響させない（判定は後続の SARIF スキャンが行う）。
+      - name: Run OSV-Scanner (human-readable output)
+        continue-on-error: true
+        uses: google/osv-scanner-action/osv-scanner-action@9a498708959aeaef5ef730655706c5a1df1edbc2 # v2.3.8
+        with:
+          scan-args: |-
+            -r
+            --config=infra/osv-scanner.toml
+            --format=table
+            ./
+
       - name: Run OSV-Scanner
         uses: google/osv-scanner-action/osv-scanner-action@9a498708959aeaef5ef730655706c5a1df1edbc2 # v2.3.8
         with:
