@@ -82,6 +82,16 @@ AI によるレビュー・トリアージは、リポジトリ側に API キー
 - **GitHub Agentic Workflows (`gh-aw`)**: 2026年に一度導入しましたが、`copilot` エンジンが GitHub Copilot の premium request / AI クレジットを消費する**有料**サービスであり、無料方針と両立しないため撤去しました。関連ファイル（`.github/workflows/*-agent.md`、`*.lock.yml`、`.github/aw/`）はすべて削除済みです。`gh aw compile` で再生成すると課金と CI 失敗が復活するため、再導入しないでください。
 - **外部AIプロバイダの API キーを要するもの**（Gemini API、OpenAI API、Anthropic API など）: 無料枠があるものでもキー管理と枯渇時の CI 失敗が発生するため採用しません。
 
+**本方針の適用範囲（AI 推論と Web 検索の区別）:**
+
+上記の「API キーを要するものは採用しない」は **AI 推論（LLM 呼び出し）** に対する方針です。RAG 用の **Web 検索 API**（Exa / Tavily、第6節の設定手順）は、以下の条件を満たすため例外として許容します。
+
+- **無料枠の範囲でのみ利用**し、有料プランへの移行は行わない
+- **API キーの設定は任意**。未設定でも `.github/actions/ai-web-search` が Exa → Tavily → DuckDuckGo の順にフォールバックするため、CI は失敗しない
+- 枯渇・障害時も同じフォールバックにより CI を停止させない
+
+ただし現状これらの検索 API を利用しているのは GitHub Models 依存のワークフローのみであり、いずれも #648 で撤去対象です。
+
 ## 6. 新規導入した自動化ツールの運用ルール (2024年導入)
 
 更なる開発効率化のため、以下の新しいAIツールおよびCI/CDの自動化パイプラインが追加されています。これらは標準で動作するように設定されていますが、運用上以下の点を留意してください。
@@ -109,11 +119,15 @@ PRのコメントで `/ai-fix [FIX_CONTENT]` と入力すると、AIが対象の
 PRのコメントで `/ai-test [追加の指示]` と入力すると、AIがPRの変更差分を解析し、不足しているユニットテストコードを自動生成してPRブランチへコミット・プッシュします。
 これも `PAT_FOR_MODELS` シークレットの設定が必要です。
 
-### 高品質な開発者向け Web 検索の有効化 (Exa API / Tavily API)
+### 高品質な開発者向け Web 検索の有効化 (Exa API / Tavily API) — 任意
+
+> **本設定は必須ではありません。** 第5節の「無料枠のみ」方針の下で**無料枠の範囲でのみ**許容される任意設定です。
+> 未設定でも Exa → Tavily → DuckDuckGo の順に自動フォールバックするため CI は失敗しません。有料プランへの移行は行いません。
+> なお、これらの検索 API を利用しているのは GitHub Models 依存のワークフローのみのため、#648 で撤去対象です。
 
 AI ChatOps、AI PR Review、AI Issue Triage の各機能において、AI が外部の最新情報や技術情報を検索する (RAG) 際に、デフォルトの DuckDuckGo 検索に代わって、より高精度で安定した検索が可能な **Exa API** や **Tavily API** を利用できます。特に Exa API は開発者向けの高品質な検索（Neural Search）に特化しています。
 
-**設定手順 (Exa API の場合 - 推奨):**
+**設定手順 (Exa API の場合):**
 
 1. [Exa](https://exa.ai/) の公式サイトで無料アカウントを作成し、API キーを取得します。
 2. GitHub リポジトリの **Settings → Secrets and variables → Actions** を開きます。
