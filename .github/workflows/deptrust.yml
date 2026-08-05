@@ -2,6 +2,9 @@ name: DepTrust Supply Chain Security
 
 on:
   push:
+    # branches: ['**'] でタグを除外しつつ全ブランチを対象にする
+    # （フィルタ無しだと push.branches 制限を外した副作用でタグpushでも起動してしまう）
+    branches: ['**']
   pull_request:
   schedule:
     # 毎週火曜 10:30 JST (01:30 UTC) にスキャン
