@@ -34,6 +34,9 @@ Dependabotによるマイナー/パッチアップデートの自動マージ（
 
 ## 3. GitHub Models (Issue Triage, Weekly Summary, Release Drafter, AI ChatOps, AI PR Code Review, AI PR Description Generator 用)
 
+> **⚠️ 本節の内容は 2026-07-30 の GitHub Models 提供終了により無効です。**
+> ここに記載されたワークフローは現在いずれも動作しません。最新の方針は第5節を、撤去・移行の進捗は #648 を参照してください。
+
 AI Weekly Summary (`ai-weekly-summary.yml`)、AI Release Drafter (`ai-release-drafter.yml`) は、GitHubが提供する無料の GitHub Models (gpt-4o-mini) を利用しています。**AI Issue Triage** (`ai-issue-triage.yml`)、**AI ChatOps** (`ai-chatops.yml`)、**AI PR Code Review** (`ai-pr-review.yml`)、**AI PR Description Generator** (`ai-pr-description.yml`)、および **AI CI Failure Analyzer** (`ai-ci-analyzer.yml`)、**AI Threat Modeling** (`ai-threat-modeling.yml`) は、高度な推論機能を持つ最新モデルの GitHub Models (o3-mini) を利用しています。追加のAPIキー設定は不要で、標準の `GITHUB_TOKEN` を用いて動作します。
 
 **各ワークフローのトリガーと保護条件:**
@@ -63,19 +66,21 @@ AI Weekly Summary (`ai-weekly-summary.yml`)、AI Release Drafter (`ai-release-dr
 
 **当リポジトリの CI/CD から呼び出す AI モデル・外部サービスは、すべて無料で利用できるものに限定します。**
 
-採用する実行基盤は **GitHub Models** に統一します。パブリックリポジトリでは標準の `GITHUB_TOKEN` と `permissions: models: read` だけで利用でき、APIキーの発行も課金も不要です（レート制限のみ）。
+> **⚠️ GitHub Models は 2026-07-30 をもって完全に終了しました。**
+> playground・モデルカタログ・推論 API・BYOK のいずれも利用できません（[GitHub Changelog](https://github.blog/changelog/2026-07-30-github-models-is-now-retired/)）。
+> `permissions: models: read` を付与しても推論 API 自体が存在しないため、**GitHub Models に依存する既存ワークフローはすべて動作しません**。
+> 該当する 23 本のワークフローの撤去・移行は #648 で対応します。
 
-```yaml
-permissions:
-  models: read # これだけで GitHub Models を無料で利用できる
-```
+**現行の方針: GitHub ネイティブの無料 AI 推論基盤は存在しないため、リポジトリ側で AI 推論を実行するワークフローは新規に追加しません。**
+
+AI によるレビュー・トリアージは、リポジトリ側に API キーも課金設定も必要としない無料の外部 App（CodeRabbit / Qodo Merge、第4節参照）に一本化します。
 
 **採用しないもの:**
 
+- **GitHub Models**: 2026-07-30 に提供終了。新規採用・再導入とも不可です。
+- **GitHub Copilot / Microsoft Foundry**: GitHub Models の後継として案内されていますが、いずれも premium request 消費（課金）または API キー管理を伴うため、上記の無料方針と両立しません。
 - **GitHub Agentic Workflows (`gh-aw`)**: 2026年に一度導入しましたが、`copilot` エンジンが GitHub Copilot の premium request / AI クレジットを消費する**有料**サービスであり、無料方針と両立しないため撤去しました。関連ファイル（`.github/workflows/*-agent.md`、`*.lock.yml`、`.github/aw/`）はすべて削除済みです。`gh aw compile` で再生成すると課金と CI 失敗が復活するため、再導入しないでください。
 - **外部AIプロバイダの API キーを要するもの**（Gemini API、OpenAI API、Anthropic API など）: 無料枠があるものでもキー管理と枯渇時の CI 失敗が発生するため採用しません。
-
-新しい AI ワークフローを追加する場合は、既存の `ai-pr-review.yml` / `ai-pr-labeler.yml` / `ai-issue-triage.yml` と同じ GitHub Models 方式を踏襲してください。
 
 ## 6. 新規導入した自動化ツールの運用ルール (2024年導入)
 
