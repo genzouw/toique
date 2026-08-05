@@ -87,3 +87,7 @@ cdktf.out/
 *.tfstate.*
 cdktf.out/
 .terraform/
+
+# PR/Issue 本文の下書き（一時ファイル。誤コミット防止）
+pr_body.txt
+issue_body.txt
