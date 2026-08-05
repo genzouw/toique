@@ -362,3 +362,6 @@ AI エージェント（Cursor, Claude Desktop など）が開発プロジェク
 2. **Qodo Merge (旧 PR-Agent / CodiumAI) のインストール**
    - CodiumAI は Qodo にリブランドされ、PR-Agent(Pro)は Qodo Merge となりました。GitHub Marketplace から [Qodo Merge](https://github.com/apps/qodo-merge) をインストールしてください。
    - インストール後、PRに `/review` や `/describe` などのコマンドをコメントすることで機能します。
+3. **Google Gemini Review Action の設定**
+   - リポジトリの Secrets に `GEMINI_API_KEY` を登録してください。
+   - PRが作成・更新されると、Google Geminiが自動的にコードレビューを行います。
