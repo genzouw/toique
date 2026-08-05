@@ -36,7 +36,7 @@ jobs:
           # Restrict the diff to Markdown files only, using git directly so the
           # environment variable passed to the next step (and thus the node
           # process argv/envp size) never balloons with unrelated code changes.
-          git fetch origin "$BASE_REF" --depth=1
+          git fetch origin "$BASE_REF"
           DIFF=$(git diff "origin/$BASE_REF...HEAD" -- '*.md')
           # Cap by bytes, not lines, since a single long line can still blow past ARG_MAX.
           TRUNCATED_DIFF=$(echo "$DIFF" | head -c 40000)
