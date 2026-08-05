@@ -1,4 +1,0 @@
-💡 What: Extracted list item rendering logic in `Channels.tsx` into a new `React.memo()` wrapped `ChannelRow` component and used `useCallback` for its handlers.
-🎯 Why: To prevent the entire list of registered channels from unnecessarily re-rendering on every keystroke in the adjacent channel registration form.
-📊 Impact: Eliminates unnecessary virtual DOM diffing for the list on every form state update, making form interactions more responsive, especially as the number of channels grows.
-🔬 Measurement: Verify by typing into the channel registration form and observing React DevTools Profiler; the `ChannelRow` components should no longer re-render.
