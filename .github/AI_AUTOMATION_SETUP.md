@@ -34,6 +34,9 @@ Dependabotによるマイナー/パッチアップデートの自動マージ（
 
 ## 3. GitHub Models (Issue Triage, Weekly Summary, Release Drafter, AI ChatOps, AI PR Code Review, AI PR Description Generator 用)
 
+> **⚠️ 本節の内容は 2026-07-30 の GitHub Models 提供終了により無効です。**
+> ここに記載されたワークフローは現在いずれも動作しません。最新の方針は第5節を、撤去・移行の進捗は #648 を参照してください。
+
 AI Weekly Summary (`ai-weekly-summary.yml`)、AI Release Drafter (`ai-release-drafter.yml`) は、GitHubが提供する無料の GitHub Models (gpt-4o-mini) を利用しています。**AI Issue Triage** (`ai-issue-triage.yml`)、**AI ChatOps** (`ai-chatops.yml`)、**AI PR Code Review** (`ai-pr-review.yml`)、**AI PR Description Generator** (`ai-pr-description.yml`)、および **AI CI Failure Analyzer** (`ai-ci-analyzer.yml`)、**AI Threat Modeling** (`ai-threat-modeling.yml`) は、高度な推論機能を持つ最新モデルの GitHub Models (o3-mini) を利用しています。追加のAPIキー設定は不要で、標準の `GITHUB_TOKEN` を用いて動作します。
 
 **各ワークフローのトリガーと保護条件:**
@@ -59,29 +62,35 @@ AI Weekly Summary (`ai-weekly-summary.yml`)、AI Release Drafter (`ai-release-dr
 - パフォーマンス: O(N)ループの回避、N+1問題の防止、不要なDBクエリの削減など
 - アクセシビリティ: ボタン等のアクション要素における具体的な対象を含んだ aria-label や title の付与、role="tablist" におけるキーボードナビゲーションや roving tabIndex のサポートなど
 
-## 5. GitHub Agentic Workflows (gh-aw) の導入 (2026年導入)
+## 5. AI 実行基盤の方針: 無料枠のみを利用する
 
-従来のカスタムPython/ActionsスクリプトによるAIワークフローの一部を、公式の **GitHub Agentic Workflows** に移行・併用しています。これは Markdown ベースで定義され、サンドボックス環境やセーフアウトプットのゲートを備えた、より安全で統制されたAIエージェント実行環境を提供します。
+**当リポジトリの CI/CD から呼び出す AI モデル・外部サービスは、すべて無料で利用できるものに限定します。**
 
-**設定とコンパイル手順（必須）:**
+> **⚠️ GitHub Models は 2026-07-30 をもって完全に終了しました。**
+> playground・モデルカタログ・推論 API・BYOK のいずれも利用できません（[GitHub Changelog](https://github.blog/changelog/2026-07-30-github-models-is-now-retired/)）。
+> `permissions: models: read` を付与しても推論 API 自体が存在しないため、**GitHub Models に依存する既存ワークフローはすべて動作しません**。
+> 該当する 23 本のワークフローの撤去・移行は #648 で対応します。
 
-1. 手元の環境に GitHub CLI 拡張機能 `gh-aw` をインストールします。
+**現行の方針: GitHub ネイティブの無料 AI 推論基盤は存在しないため、リポジトリ側で AI 推論を実行するワークフローは新規に追加しません。**
 
-   ```bash
-   gh extension install github/gh-aw
-   ```
+AI によるレビュー・トリアージは、リポジトリ側に API キーも課金設定も必要としない無料の外部 App（CodeRabbit / Qodo Merge、第4節参照）に一本化します。
 
-2. `.github/workflows/` ディレクトリ内に `.md` 拡張子でエージェントの定義（例: `ai-issue-triage-agent.md`, `ai-pr-review-agent.md`）を作成・編集します。
-3. コミットする前に、リポジトリのルートディレクトリで**必ずローカルでコンパイル**を実行し、対応する `.lock.yml` ファイルを生成・更新してください。
+**採用しないもの:**
 
-   ```bash
-   gh aw compile
-   ```
+- **GitHub Models**: 2026-07-30 に提供終了。新規採用・再導入とも不可です。
+- **GitHub Copilot / Microsoft Foundry**: GitHub Models の後継として案内されていますが、いずれも premium request 消費（課金）または API キー管理を伴うため、上記の無料方針と両立しません。
+- **GitHub Agentic Workflows (`gh-aw`)**: 2026年に一度導入しましたが、`copilot` エンジンが GitHub Copilot の premium request / AI クレジットを消費する**有料**サービスであり、無料方針と両立しないため撤去しました。関連ファイル（`.github/workflows/*-agent.md`、`*.lock.yml`、`.github/aw/`）はすべて削除済みです。`gh aw compile` で再生成すると課金と CI 失敗が復活するため、再導入しないでください。
+- **外部AIプロバイダの API キーを要するもの**（Gemini API、OpenAI API、Anthropic API など）: 無料枠があるものでもキー管理と枯渇時の CI 失敗が発生するため採用しません。
 
-4. `.md` ファイルと生成された `.lock.yml` ファイルの両方をコミットしてプッシュします。
+**本方針の適用範囲（AI 推論と Web 検索の区別）:**
 
-**認証とコスト管理:**
-これらのワークフローは、GitHub Actions の標準の `GITHUB_TOKEN` および AI クレジットを利用して実行されます。特別なトークンの追加設定は不要です。
+上記の「API キーを要するものは採用しない」は **AI 推論（LLM 呼び出し）** に対する方針です。RAG 用の **Web 検索 API**（Exa / Tavily、第6節の設定手順）は、以下の条件を満たすため例外として許容します。
+
+- **無料枠の範囲でのみ利用**し、有料プランへの移行は行わない
+- **API キーの設定は任意**。未設定でも `.github/actions/ai-web-search` が Exa → Tavily → DuckDuckGo の順にフォールバックするため、CI は失敗しない
+- 枯渇・障害時も同じフォールバックにより CI を停止させない
+
+ただし現状これらの検索 API を利用しているのは GitHub Models 依存のワークフローのみであり、いずれも #648 で撤去対象です。
 
 ## 6. 新規導入した自動化ツールの運用ルール (2024年導入)
 
@@ -110,11 +119,15 @@ PRのコメントで `/ai-fix [FIX_CONTENT]` と入力すると、AIが対象の
 PRのコメントで `/ai-test [追加の指示]` と入力すると、AIがPRの変更差分を解析し、不足しているユニットテストコードを自動生成してPRブランチへコミット・プッシュします。
 これも `PAT_FOR_MODELS` シークレットの設定が必要です。
 
-### 高品質な開発者向け Web 検索の有効化 (Exa API / Tavily API)
+### 高品質な開発者向け Web 検索の有効化 (Exa API / Tavily API) — 任意
+
+> **本設定は必須ではありません。** 第5節の「無料枠のみ」方針の下で**無料枠の範囲でのみ**許容される任意設定です。
+> 未設定でも Exa → Tavily → DuckDuckGo の順に自動フォールバックするため CI は失敗しません。有料プランへの移行は行いません。
+> なお、これらの検索 API を利用しているのは GitHub Models 依存のワークフローのみのため、#648 で撤去対象です。
 
 AI ChatOps、AI PR Review、AI Issue Triage の各機能において、AI が外部の最新情報や技術情報を検索する (RAG) 際に、デフォルトの DuckDuckGo 検索に代わって、より高精度で安定した検索が可能な **Exa API** や **Tavily API** を利用できます。特に Exa API は開発者向けの高品質な検索（Neural Search）に特化しています。
 
-**設定手順 (Exa API の場合 - 推奨):**
+**設定手順 (Exa API の場合):**
 
 1. [Exa](https://exa.ai/) の公式サイトで無料アカウントを作成し、API キーを取得します。
 2. GitHub リポジトリの **Settings → Secrets and variables → Actions** を開きます。
@@ -260,17 +273,6 @@ CI/CDパイプラインにおけるAIプロンプトインジェクションや�
 - **実行タイミング:** 毎週日曜日の定期実行（`schedule`）および手動実行（`workflow_dispatch`）。
 - **仕組み:** `yamadashy/repomix` を用いてリポジトリをXML化し、`GitHub Models` (o3-mini, `reasoning_effort: high`) を用いて規約やコンテキストを自動抽出し、PRを生成します。
 - **手動作業:** 自動生成された更新PRにおいて、後続のCIワークフロー（テストやリントなど）を正常にトリガーさせるため、リポジトリへの書き込み権限（および `GitHub Models` へのアクセス権限）を持ったPersonal Access Token (PAT) を `PAT_FOR_MODELS` シークレットとして設定する必要があります。
-
-### AI Vulnerability Scanner Agent (`gh-aw`) の追加
-
-既存の `gh-aw` (`GitHub Agentic Workflows`) に加えて、新たに `ai-vulnerability-scanner-agent.md` を追加しました。これはセキュリティ脆弱性がIssueとして報告された際に、自動的にトリアージと分析を行い、適切なラベル (`security` など) を付与する特化型エージェントです。
-
-**手動作業:**
-ローカル環境で以下のコマンドを実行し、エージェントをコンパイルして `.lock.yml` ファイルを生成・コミットしてください。
-
-```bash
-gh aw compile
-```
 
 ### AI PR Labeler
 
