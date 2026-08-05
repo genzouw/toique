@@ -59,29 +59,23 @@ AI Weekly Summary (`ai-weekly-summary.yml`)、AI Release Drafter (`ai-release-dr
 - パフォーマンス: O(N)ループの回避、N+1問題の防止、不要なDBクエリの削減など
 - アクセシビリティ: ボタン等のアクション要素における具体的な対象を含んだ aria-label や title の付与、role="tablist" におけるキーボードナビゲーションや roving tabIndex のサポートなど
 
-## 5. GitHub Agentic Workflows (gh-aw) の導入 (2026年導入)
+## 5. AI 実行基盤の方針: 無料枠のみを利用する
 
-従来のカスタムPython/ActionsスクリプトによるAIワークフローの一部を、公式の **GitHub Agentic Workflows** に移行・併用しています。これは Markdown ベースで定義され、サンドボックス環境やセーフアウトプットのゲートを備えた、より安全で統制されたAIエージェント実行環境を提供します。
+**当リポジトリの CI/CD から呼び出す AI モデル・外部サービスは、すべて無料で利用できるものに限定します。**
 
-**設定とコンパイル手順（必須）:**
+採用する実行基盤は **GitHub Models** に統一します。パブリックリポジトリでは標準の `GITHUB_TOKEN` と `permissions: models: read` だけで利用でき、APIキーの発行も課金も不要です（レート制限のみ）。
 
-1. 手元の環境に GitHub CLI 拡張機能 `gh-aw` をインストールします。
+```yaml
+permissions:
+  models: read # これだけで GitHub Models を無料で利用できる
+```
 
-   ```bash
-   gh extension install github/gh-aw
-   ```
+**採用しないもの:**
 
-2. `.github/workflows/` ディレクトリ内に `.md` 拡張子でエージェントの定義（例: `ai-issue-triage-agent.md`, `ai-pr-review-agent.md`）を作成・編集します。
-3. コミットする前に、リポジトリのルートディレクトリで**必ずローカルでコンパイル**を実行し、対応する `.lock.yml` ファイルを生成・更新してください。
+- **GitHub Agentic Workflows (`gh-aw`)**: 2026年に一度導入しましたが、`copilot` エンジンが GitHub Copilot の premium request / AI クレジットを消費する**有料**サービスであり、無料方針と両立しないため撤去しました。関連ファイル（`.github/workflows/*-agent.md`、`*.lock.yml`、`.github/aw/`）はすべて削除済みです。`gh aw compile` で再生成すると課金と CI 失敗が復活するため、再導入しないでください。
+- **外部AIプロバイダの API キーを要するもの**（Gemini API、OpenAI API、Anthropic API など）: 無料枠があるものでもキー管理と枯渇時の CI 失敗が発生するため採用しません。
 
-   ```bash
-   gh aw compile
-   ```
-
-4. `.md` ファイルと生成された `.lock.yml` ファイルの両方をコミットしてプッシュします。
-
-**認証とコスト管理:**
-これらのワークフローは、GitHub Actions の標準の `GITHUB_TOKEN` および AI クレジットを利用して実行されます。特別なトークンの追加設定は不要です。
+新しい AI ワークフローを追加する場合は、既存の `ai-pr-review.yml` / `ai-pr-labeler.yml` / `ai-issue-triage.yml` と同じ GitHub Models 方式を踏襲してください。
 
 ## 6. 新規導入した自動化ツールの運用ルール (2024年導入)
 
@@ -260,17 +254,6 @@ CI/CDパイプラインにおけるAIプロンプトインジェクションや�
 - **実行タイミング:** 毎週日曜日の定期実行（`schedule`）および手動実行（`workflow_dispatch`）。
 - **仕組み:** `yamadashy/repomix` を用いてリポジトリをXML化し、`GitHub Models` (o3-mini, `reasoning_effort: high`) を用いて規約やコンテキストを自動抽出し、PRを生成します。
 - **手動作業:** 自動生成された更新PRにおいて、後続のCIワークフロー（テストやリントなど）を正常にトリガーさせるため、リポジトリへの書き込み権限（および `GitHub Models` へのアクセス権限）を持ったPersonal Access Token (PAT) を `PAT_FOR_MODELS` シークレットとして設定する必要があります。
-
-### AI Vulnerability Scanner Agent (`gh-aw`) の追加
-
-既存の `gh-aw` (`GitHub Agentic Workflows`) に加えて、新たに `ai-vulnerability-scanner-agent.md` を追加しました。これはセキュリティ脆弱性がIssueとして報告された際に、自動的にトリアージと分析を行い、適切なラベル (`security` など) を付与する特化型エージェントです。
-
-**手動作業:**
-ローカル環境で以下のコマンドを実行し、エージェントをコンパイルして `.lock.yml` ファイルを生成・コミットしてください。
-
-```bash
-gh aw compile
-```
 
 ### AI PR Labeler
 
