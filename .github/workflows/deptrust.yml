@@ -2,7 +2,6 @@ name: DepTrust Supply Chain Security
 
 on:
   push:
-    branches: ['main']
   pull_request:
   schedule:
     # 毎週火曜 10:30 JST (01:30 UTC) にスキャン
@@ -15,6 +14,7 @@ permissions:
 jobs:
   deptrust:
     name: DepTrust Check
+    if: github.event_name == 'push' || github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' || (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name != github.repository)
     runs-on: ubuntu-latest
     steps:
       - name: Harden Runner
