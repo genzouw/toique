@@ -1,5 +1,6 @@
 ---
 timeout-minutes: 10
+model: claude-sonnet-4.5
 on:
   pull_request:
     types: [opened, synchronize]
