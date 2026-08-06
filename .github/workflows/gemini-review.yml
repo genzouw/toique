@@ -10,6 +10,9 @@ on:
 jobs:
   gemini_review:
     name: Gemini PR Code Review
+    concurrency:
+      group: gemini-review-${{ github.event.pull_request.number }}
+      cancel-in-progress: true
     # 内部PR、またはフォーク発のPRであってもフォークのコンテキストで実行される場合のみ実行する
     if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-latest
