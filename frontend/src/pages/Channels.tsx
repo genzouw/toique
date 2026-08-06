@@ -1,4 +1,4 @@
-import { useEffect, useState, useId } from 'react';
+import { useEffect, useState, useId, useCallback, memo } from 'react';
 import { Trash2, Copy, Check, MessageCircle } from 'lucide-react';
 import { api, type LineChannel } from '../lib/api';
 import { ICON_SIZE } from '../lib/icon-size';
@@ -21,7 +21,7 @@ export default function Channels() {
   const [submitting, setSubmitting] = useState(false);
   const [copiedId, setCopiedId] = useState<string | null>(null);
 
-  async function refresh() {
+  const refresh = useCallback(async () => {
     setLoading(true);
     try {
       setItems(await api.listChannels());
@@ -31,12 +31,11 @@ export default function Channels() {
     } finally {
       setLoading(false);
     }
-  }
+  }, []);
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     refresh();
-  }, []);
+  }, [refresh]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -57,17 +56,20 @@ export default function Channels() {
     }
   }
 
-  async function handleDelete(id: string) {
-    if (!confirm('削除してよろしいですか？')) return;
-    try {
-      await api.deleteChannel(id);
-      await refresh();
-    } catch (err) {
-      setError((err as Error).message);
-    }
-  }
+  const handleDelete = useCallback(
+    async (id: string) => {
+      if (!confirm('削除してよろしいですか？')) return;
+      try {
+        await api.deleteChannel(id);
+        await refresh();
+      } catch (err) {
+        setError((err as Error).message);
+      }
+    },
+    [refresh],
+  );
 
-  async function handleCopy(channelId: string, itemId: string) {
+  const handleCopy = useCallback(async (channelId: string, itemId: string) => {
     const url = buildWebhookUrl(channelId);
     try {
       await navigator.clipboard.writeText(url);
@@ -78,7 +80,7 @@ export default function Channels() {
     } catch {
       setError('クリップボードへのコピーに失敗しました');
     }
-  }
+  }, []);
 
   return (
     <div>
@@ -149,77 +151,101 @@ export default function Channels() {
           />
         ) : (
           <ul className="mt-4 divide-y divide-slate-200 bg-white border border-slate-200 rounded-lg">
-            {items.map((ch) => {
-              const webhookUrl = buildWebhookUrl(ch.channelId);
-              const isCopied = copiedId === ch.id;
-              return (
-                <li key={ch.id} className="px-5 py-4">
-                  <div className="flex items-start justify-between gap-4">
-                    <div className="min-w-0 flex-1">
-                      <div className="font-medium text-slate-900">
-                        {ch.displayName}
-                      </div>
-                      <div className="text-xs text-slate-500 mt-0.5">
-                        Channel ID: {ch.channelId}
-                      </div>
-                    </div>
-                    <button
-                      onClick={() => handleDelete(ch.id)}
-                      className="p-2 text-red-600 hover:bg-red-50 rounded-md shrink-0 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-1 transition-colors"
-                      title={`${ch.displayName} を削除`}
-                      aria-label={`${ch.displayName} を削除`}
-                    >
-                      <Trash2 size={ICON_SIZE.md} />
-                    </button>
-                  </div>
-                  <div className="mt-3">
-                    <div className="text-xs font-medium text-slate-700">
-                      Webhook URL
-                    </div>
-                    <div className="mt-1 flex items-stretch gap-2">
-                      <code
-                        className="flex-1 min-w-0 px-2 py-1.5 bg-slate-100 rounded text-xs text-slate-700 font-mono truncate"
-                        title={webhookUrl}
-                      >
-                        {webhookUrl}
-                      </code>
-                      <div className="sr-only" role="status">
-                        {isCopied ? 'Webhook URL をコピーしました' : ''}
-                      </div>
-                      <button
-                        type="button"
-                        onClick={() => handleCopy(ch.channelId, ch.id)}
-                        className="px-2 py-1.5 text-slate-700 hover:bg-slate-100 rounded-md flex items-center gap-1 text-xs border border-slate-300 shrink-0 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-slate-900 focus-visible:ring-offset-1 transition-colors"
-                        aria-label={
-                          isCopied
-                            ? `${ch.displayName} の Webhook URL をコピー済み`
-                            : `${ch.displayName} の Webhook URL をコピー: ${webhookUrl}`
-                        }
-                        aria-live="polite"
-                      >
-                        {isCopied ? (
-                          <>
-                            <Check size={ICON_SIZE.xs} />
-                            コピー済み
-                          </>
-                        ) : (
-                          <>
-                            <Copy size={ICON_SIZE.xs} />
-                            コピー
-                          </>
-                        )}
-                      </button>
-                    </div>
-                  </div>
-                </li>
-              );
-            })}
+            {items.map((ch) => (
+              <ChannelRow
+                key={ch.id}
+                channel={ch}
+                isCopied={copiedId === ch.id}
+                onDelete={handleDelete}
+                onCopy={handleCopy}
+              />
+            ))}
           </ul>
         )}
       </div>
     </div>
   );
 }
+
+/**
+ * ⚡ Bolt: 不要な再レンダーを防ぐために React.memo() でラップしています。
+ * copiedId の状態変更によって親コンポーネントが再レンダーされても、
+ * isCopied の値が変わらない限り各行コンポーネントの再レンダーをスキップします。
+ */
+const ChannelRow = memo(function ChannelRow({
+  channel: ch,
+  isCopied,
+  onDelete,
+  onCopy,
+}: {
+  channel: LineChannel;
+  isCopied: boolean;
+  onDelete: (id: string) => void;
+  onCopy: (channelId: string, itemId: string) => void;
+}) {
+  const webhookUrl = buildWebhookUrl(ch.channelId);
+  return (
+    <li className="px-5 py-4">
+      <div className="flex items-start justify-between gap-4">
+        <div className="min-w-0 flex-1">
+          <div className="font-medium text-slate-900">
+            {ch.displayName}
+          </div>
+          <div className="text-xs text-slate-500 mt-0.5">
+            Channel ID: {ch.channelId}
+          </div>
+        </div>
+        <button
+          onClick={() => onDelete(ch.id)}
+          className="p-2 text-red-600 hover:bg-red-50 rounded-md shrink-0 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-1 transition-colors"
+          title={`${ch.displayName} を削除`}
+          aria-label={`${ch.displayName} を削除`}
+        >
+          <Trash2 size={ICON_SIZE.md} />
+        </button>
+      </div>
+      <div className="mt-3">
+        <div className="text-xs font-medium text-slate-700">
+          Webhook URL
+        </div>
+        <div className="mt-1 flex items-stretch gap-2">
+          <code
+            className="flex-1 min-w-0 px-2 py-1.5 bg-slate-100 rounded text-xs text-slate-700 font-mono truncate"
+            title={webhookUrl}
+          >
+            {webhookUrl}
+          </code>
+          <div className="sr-only" role="status">
+            {isCopied ? 'Webhook URL をコピーしました' : ''}
+          </div>
+          <button
+            type="button"
+            onClick={() => onCopy(ch.channelId, ch.id)}
+            className="px-2 py-1.5 text-slate-700 hover:bg-slate-100 rounded-md flex items-center gap-1 text-xs border border-slate-300 shrink-0 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-slate-900 focus-visible:ring-offset-1 transition-colors"
+            aria-label={
+              isCopied
+                ? `${ch.displayName} の Webhook URL をコピー済み`
+                : `${ch.displayName} の Webhook URL をコピー: ${webhookUrl}`
+            }
+            aria-live="polite"
+          >
+            {isCopied ? (
+              <>
+                <Check size={ICON_SIZE.xs} />
+                コピー済み
+              </>
+            ) : (
+              <>
+                <Copy size={ICON_SIZE.xs} />
+                コピー
+              </>
+            )}
+          </button>
+        </div>
+      </div>
+    </li>
+  );
+});
 
 function Field({
   label,
