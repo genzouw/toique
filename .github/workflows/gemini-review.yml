@@ -13,7 +13,7 @@ jobs:
     concurrency:
       group: gemini-review-${{ github.event.pull_request.number }}
       cancel-in-progress: true
-    # 内部PR、またはフォーク発のPRであってもフォークのコンテキストで実行される場合のみ実行する
+    # 同一リポジトリ内のPRのみ実行する（フォークPRでは実行しない）
     if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-latest
     permissions:
