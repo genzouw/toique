@@ -80,7 +80,15 @@ AI によるレビュー・トリアージは、リポジトリ側に API キー
 - **GitHub Models**: 2026-07-30 に提供終了。新規採用・再導入とも不可です。
 - **GitHub Copilot / Microsoft Foundry**: GitHub Models の後継として案内されていますが、いずれも premium request 消費（課金）または API キー管理を伴うため、上記の無料方針と両立しません。
 - **GitHub Agentic Workflows (`gh-aw`)**: 2026年に一度導入しましたが、`copilot` エンジンが GitHub Copilot の premium request / AI クレジットを消費する**有料**サービスであり、無料方針と両立しないため撤去しました。関連ファイル（`.github/workflows/*-agent.md`、`*.lock.yml`、`.github/aw/`）はすべて削除済みです。`gh aw compile` で再生成すると課金と CI 失敗が復活するため、再導入しないでください。
-- **外部AIプロバイダの API キーを要するもの**（Gemini API、OpenAI API、Anthropic API など）: 無料枠があるものでもキー管理と枯渇時の CI 失敗が発生するため採用しません。
+- **外部AIプロバイダの API キーを要するもの**（OpenAI API、Anthropic API など）: 無料枠があるものでもキー管理と枯渇時の CI 失敗が発生するため採用しません。**例外として Gemini Code Review のみ、以下の条件下で承認しています。**
+
+**例外: Gemini Code Review（「Gemini Code Review の導入」の項を参照）**
+
+上記「外部AIプロバイダの API キーを要するものは採用しない」の原則に対し、`derailed-dash/gemini-review-action` を用いた Gemini Code Review のみ、以下の条件を満たす限りで例外として承認します。
+
+- **承認条件**: フォークPRでは実行されず、内部PR（同一リポジトリ内のブランチ）に限定して実行します。CodeRabbit / Qodo Merge の無料AIレビューを補完する目的に限り採用し、他の有料APIへの拡大は行いません。
+- **無料枠枯渇時の扱い**: `GEMINI_API_KEY` の無料枠を超過した場合、`gemini_review` ジョブのみが失敗します。他の必須CIチェック（テスト・Lint等）には影響しないため、CI全体をブロックしません。枯渇が頻発する場合は本ワークフローの実行頻度見直しまたは撤去を検討してください。
+- **許可するデータ送信範囲**: 除外対象を除く追跡済みのテキストファイルのコード内容に限定されます。詳細な送信範囲・注意事項は「Gemini Code Review の導入」の項を参照してください。
 
 **本方針の適用範囲（AI 推論と Web 検索の区別）:**
 
