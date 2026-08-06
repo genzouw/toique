@@ -5,6 +5,7 @@ response_language="ja-JP"
 require_score_review=true
 require_tests_review=true
 require_estimate_effort_to_review=true
+extra_instructions = "フロントエンド (frontend/**/*.tsx) では、React.memo の適切な利用とアクセシビリティ (WAI-ARIA, role) を確認してください。バックエンド (backend/**/*.ts) では、SQLインジェクション対策などセキュリティを重視してレビューしてください。常に日本語でコメントしてください。"
 
 [pr_description]
 use_bullet_points=true
