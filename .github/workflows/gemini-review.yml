@@ -18,7 +18,7 @@ jobs:
           persist-credentials: false
 
       - name: Gemini AI Review
-        uses: derailed-dash/gemini-review-action@main
+        uses: derailed-dash/gemini-review-action@aaf0094c47ba7cd10a2fc05c0db5b3d29b2582f9 # v1.5.1
         with:
           gemini_api_key: ${{ secrets.GEMINI_API_KEY }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
