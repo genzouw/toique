@@ -5,6 +5,9 @@ response_language="ja-JP"
 require_score_review=true
 require_tests_review=true
 require_estimate_effort_to_review=true
+# extra_instructions は Qodo Merge (旧 PR-Agent) 専用のレビュー観点設定です。
+# .github/workflows/gemini-review.yml の Gemini Code Review はこのファイルを読み込まないため、
+# Gemini にも同様の観点を適用したい場合は .github/commands/gemini-review.toml を別途作成してください。
 extra_instructions = "フロントエンド (frontend/**/*.tsx) では、React.memo の適切な利用とアクセシビリティ (WAI-ARIA, role) を確認してください。バックエンド (backend/**/*.ts) では、SQLインジェクション対策などセキュリティを重視してレビューしてください。常に日本語でコメントしてください。"
 
 [pr_description]
