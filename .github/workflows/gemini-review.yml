@@ -23,12 +23,12 @@ jobs:
           egress-policy: audit
 
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
 
       - name: Gemini Code Review
-        uses: derailed-dash/gemini-review-action@v1
+        uses: derailed-dash/gemini-review-action@aaf0094c47ba7cd10a2fc05c0db5b3d29b2582f9 # v1
         with:
           gemini_api_key: ${{ secrets.GEMINI_API_KEY }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
