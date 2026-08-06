@@ -3,13 +3,14 @@ name: Gemini AI Code Review
 on:
   pull_request:
     types: [opened, synchronize, reopened]
-    # To prevent fork PRs from duplicating runs internally, use the condition below in jobs.
-    # Note: Using 'push' on branches: ['*'] is required for some scanners, but for reviews we use pull_request.
+    # フォークPRでの重複実行を防ぐため、実際の制御は下記ジョブの if 条件で行う。
+    # 一部のスキャナでは push トリガー（branches: ['*']）が必要になることがあるが、
+    # レビュー用途では pull_request トリガーを使用する。
 
 jobs:
   gemini_review:
     name: Gemini PR Code Review
-    # Only run on internal PRs or pushed PRs from forks that are executed in the fork context
+    # 内部PR、またはフォーク発のPRであってもフォークのコンテキストで実行される場合のみ実行する
     if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-latest
     permissions:
