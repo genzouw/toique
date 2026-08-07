@@ -42,6 +42,11 @@ jobs:
           # `${{ }}` を run ブロック内に直接展開するとシェルへのコード注入経路になる
           # (zizmor template-injection)。env 経由で渡し、シェル変数として参照する。
           DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
+          EVENT_NAME: ${{ github.event_name }}
+          PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          PUSH_BEFORE_SHA: ${{ github.event.before }}
+          PUSH_CURRENT_SHA: ${{ github.sha }}
         run: |
           set -euo pipefail
 
@@ -49,10 +54,10 @@ jobs:
           # `git diff` は範囲の両端のツリーしか比較しないため、範囲内で追加後に削除された
           # 機密ファイルを見逃す（.husky/pre-push と同じ理由）。`git log --name-only` で
           # 範囲内の全コミットの変更パスを個別に列挙し、途中経過のコミットも漏れなく検査する。
-          if [ "${{ github.event_name }}" = "pull_request" ]; then
+          if [ "$EVENT_NAME" = "pull_request" ]; then
             # PR の場合: PR のベースブランチと HEAD の間の全コミット
-            BASE_SHA="${{ github.event.pull_request.base.sha }}"
-            HEAD_SHA="${{ github.event.pull_request.head.sha }}"
+            BASE_SHA="$PR_BASE_SHA"
+            HEAD_SHA="$PR_HEAD_SHA"
             echo "Checking files changed in PR commits (from $BASE_SHA to $HEAD_SHA)..."
             if ! CHANGED_FILES=$(git log --name-only --pretty=format: --diff-filter=d "$BASE_SHA".."$HEAD_SHA" 2>/dev/null | sort -u); then
               echo "::error::Unable to inspect the complete commit range (from $BASE_SHA to $HEAD_SHA). Failing closed instead of falling back to a partial check."
@@ -60,8 +65,8 @@ jobs:
             fi
           else
             # push 等の場合: 直前のコミットから今回のコミットまでの全コミット
-            BEFORE_SHA="${{ github.event.before }}"
-            CURRENT_SHA="${{ github.sha }}"
+            BEFORE_SHA="$PUSH_BEFORE_SHA"
+            CURRENT_SHA="$PUSH_CURRENT_SHA"
             # 新規ブランチの push の場合は before が all zero SHA になる。
             # また force-push（dependabot の rebase 等）では旧 HEAD が孤児化して到達不能になり、
             # before の実体がリポジトリに存在しなくなる。この場合 `git log BEFORE..CURRENT` は
