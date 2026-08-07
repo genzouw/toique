@@ -34,54 +34,22 @@ jobs:
 
       - name: Resolve scan base
         id: scan-base
-        env:
-          # `${{ }}` を run ブロック内に直接展開するとシェルへのコード注入経路になる
-          # (zizmor template-injection)。env 経由で渡し、シェル変数として参照する。
-          EVENT_NAME: ${{ github.event_name }}
-          PUSH_BEFORE_SHA: ${{ github.event.before }}
-          PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
-        run: |
-          set -euo pipefail
-
-          # base に到達不能なコミットを渡すと TruffleHog は
-          # "unable to resolve commit: object not found" で内部エラーになるにもかかわらず、
-          # ジョブは success で終了する。実際には chunks:0 / bytes:0 で 1 バイトも検査
-          # されておらず、秘密情報スキャンが無言で無効化される fail open となる
-          # (実機ログで確認済み: run 31062805632)。
-          # force-push (dependabot の rebase 等) では旧 HEAD が孤児化して到達不能になる
-          # ため、base へ渡す前に実体の有無を必ず確認する。
-          # 到達不能・ゼロ SHA・空のいずれの場合も base を指定せず、head までの履歴全体を
-          # 対象とする schedule 時と同じ経路へフォールバックする。これは部分検査への劣化
-          # ではなく、より広い範囲を検査する安全側の挙動である。
-          BASE=''
-          case "$EVENT_NAME" in
-            push)
-              if [ -n "$PUSH_BEFORE_SHA" ] \
-                && [ "$PUSH_BEFORE_SHA" != "0000000000000000000000000000000000000000" ] \
-                && git cat-file -e "${PUSH_BEFORE_SHA}^{commit}" 2>/dev/null; then
-                BASE="$PUSH_BEFORE_SHA"
-                echo "push の直前コミット ($BASE) 以降をスキャンします。"
-              else
-                echo "push の before SHA がゼロ SHA・空・到達不能（force-push）のいずれかです。base を指定せず履歴全体をスキャンします。"
-              fi
-              ;;
-            pull_request)
-              # PR のベースブランチとの差分を対象とする。base SHA はベースブランチ上に
-              # 存在するため、fetch-depth: 0 の checkout 後は常に到達可能。
-              BASE="$PR_BASE_SHA"
-              ;;
-            *)
-              # schedule / workflow_dispatch: 全履歴スキャン（base 指定なし）。
-              echo "$EVENT_NAME イベントのため、base を指定せず履歴全体をスキャンします。"
-              ;;
-          esac
-          echo "base=$BASE" >> "$GITHUB_OUTPUT"
+        # 到達性ガードの実装は composite action に一本化している。詳細は
+        # .github/actions/resolve-scan-base/action.yml を参照。
+        uses: ./.github/actions/resolve-scan-base
 
       - name: TruffleHog OSS
         uses: trufflesecurity/trufflehog@6f3c981e7b77f235fd2702dd74af25fc4b72bf11 # v3.96.0
         with:
-          # base の決定ロジックは直前の Resolve scan base ステップを参照。
-          # 空文字は「base 指定なし = head までの履歴全体をスキャン」を意味する。
+          # base が空文字の場合は「base 指定なし = head までの履歴全体をスキャン」となり、
+          # schedule 実行と同じ経路に落ちる。これは部分検査への劣化ではなく、より広い範囲を
+          # 検査する安全側の挙動である。
+          #
+          # 逆に到達不能なコミットを base に渡すと TruffleHog は
+          # "unable to resolve commit: object not found" で内部エラーになるにもかかわらず
+          # ジョブは success で終了し、chunks:0 / bytes:0 で 1 バイトも検査されないまま
+          # 秘密情報スキャンが無言で無効化される fail open となる
+          # (実機ログで確認済み: run 31062805632)。
           base: ${{ steps.scan-base.outputs.base }}
           head: ${{ github.sha }}
           extra_args: --debug --only-verified
