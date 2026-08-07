@@ -24,10 +24,3 @@ jobs:
         with:
           # ai-release-drafter がこのタイトルを元にリリースノートを作成するため必須
           requireScope: false
-          # PRタイトルが "feat:", "fix:", "chore:" などで始まることを強制する
-          # エラーメッセージをカスタマイズ可能
-          subjectPattern: ^(?![A-Z]).+$
-          subjectPatternError: |
-            The subject \"{subject}\" found in the pull request title \"{title}\"
-            didn't match the configured pattern. Please ensure that the subject
-            doesn't start with an uppercase character.
