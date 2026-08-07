@@ -1,0 +1,67 @@
+name: 'Resolve scan base'
+description: >-
+  セキュリティスキャン系ワークフローが検査するコミット範囲の起点 (base) を解決する。
+  push の `github.event.before` は force-push (dependabot の rebase 等) で旧 HEAD が
+  孤児化すると到達不能になるため、実体の有無を確認したうえで返す。
+  この判定を各ワークフローに書き写すと 1 本だけ直し漏れる事故 (trufflehog.yml の
+  fail open) が再発するため、判定はこの action に一本化する。
+  git の履歴を参照するため、呼び出し側は事前に `fetch-depth: 0` で checkout しておくこと。
+
+outputs:
+  base:
+    description: >-
+      検査範囲の起点として利用できる SHA。利用できない場合は空文字を返す。
+      空文字は「before を起点にできない」ことのみを意味し、その先のフォールバックは
+      呼び出し側の責務とする (trufflehog は履歴全体スキャン、detect-secrets /
+      forbidden-paths はデフォルトブランチとの差分検査)。いずれも部分検査への劣化では
+      なく、より広い範囲を検査する安全側の挙動であること。
+    value: ${{ steps.resolve.outputs.base }}
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Resolve base SHA
+      id: resolve
+      shell: bash
+      env:
+        # `${{ }}` を run ブロック内に直接展開するとシェルへのコード注入経路になる
+        # (zizmor template-injection)。env 経由で渡し、シェル変数として参照する。
+        EVENT_NAME: ${{ github.event_name }}
+        PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        PUSH_BEFORE_SHA: ${{ github.event.before }}
+      run: |
+        set -euo pipefail
+
+        BASE=''
+        case "$EVENT_NAME" in
+          pull_request | pull_request_target)
+            # PR のベースブランチとの差分を対象とする。base SHA はベースブランチ上に
+            # 存在するため、fetch-depth: 0 の checkout 後は常に到達可能。
+            # ここで到達性チェックを挟むと、万一到達不能だった場合に空文字を返して
+            # 呼び出し側のフォールバックへ静かに逃がしてしまい、fail closed の設計意図を
+            # 損なう。PR では実体確認を行わず、範囲の解決に失敗したら呼び出し側が
+            # エラー終了する経路に委ねる。
+            BASE="$PR_BASE_SHA"
+            echo "pull_request イベントのため、ベースブランチの $BASE を起点にします。"
+            ;;
+          push)
+            # base に到達不能なコミットを渡すと、git は範囲解決に失敗し、TruffleHog は
+            # "unable to resolve commit: object not found" で内部エラーになるにもかかわらず
+            # ジョブが success で終了する (実機ログで確認済み: run 31062805632)。
+            # 新規ブランチの push では before がゼロ SHA になる点にも注意。
+            if [ -n "$PUSH_BEFORE_SHA" ] \
+              && [ "$PUSH_BEFORE_SHA" != '0000000000000000000000000000000000000000' ] \
+              && git cat-file -e "${PUSH_BEFORE_SHA}^{commit}" 2>/dev/null; then
+              BASE="$PUSH_BEFORE_SHA"
+              echo "push の直前コミット ($BASE) を起点にします。"
+            else
+              echo "push の before SHA がゼロ SHA・空・到達不能（force-push による孤児化）のいずれかです。起点なしを返し、呼び出し側のフォールバック経路に委ねます。"
+            fi
+            ;;
+          *)
+            # schedule / workflow_dispatch: 「直前の状態」が存在しないため範囲を持たない。
+            echo "$EVENT_NAME イベントには検査範囲の起点が存在しないため、起点なしを返します。"
+            ;;
+        esac
+
+        echo "base=$BASE" >> "$GITHUB_OUTPUT"
