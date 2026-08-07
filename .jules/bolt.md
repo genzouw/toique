@@ -1,0 +1,3 @@
+## 2024-08-07 - React.memo() with large lists in page components
+**Learning:** In this codebase, it's a common anti-pattern to render large lists inline within single-file page components alongside forms or filter states (e.g., `AdminContacts.tsx` and `filter` state). This causes the entire list to re-render whenever the filter or form state changes, degrading performance as the list grows.
+**Action:** Extract list item rendering logic into a new component wrapped in `React.memo()`. This ensures referential stability and prevents unnecessary re-renders of the list items when unrelated parent component states change.
