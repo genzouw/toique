@@ -62,13 +62,18 @@ jobs:
             # push 等の場合: 直前のコミットから今回のコミットまでの全コミット
             BEFORE_SHA="${{ github.event.before }}"
             CURRENT_SHA="${{ github.sha }}"
-            # 新規ブランチの push の場合は before が all zero SHA になる
-            if [ "$BEFORE_SHA" = "0000000000000000000000000000000000000000" ] || [ -z "$BEFORE_SHA" ]; then
+            # 新規ブランチの push の場合は before が all zero SHA になる。
+            # また force-push（dependabot の rebase 等）では旧 HEAD が孤児化して到達不能になり、
+            # before の実体がリポジトリに存在しなくなる。この場合 `git log BEFORE..CURRENT` は
+            # 必ず失敗するため、判定前に実体の有無を確認して同じ経路へフォールバックする。
+            if [ "$BEFORE_SHA" = "0000000000000000000000000000000000000000" ] || [ -z "$BEFORE_SHA" ] || ! git cat-file -e "${BEFORE_SHA}^{commit}" 2>/dev/null; then
               # 新規ブランチの場合、push 完了時点で origin 上の当該ブランチは既に CURRENT_SHA と
               # 一致してしまっているため `git log CURRENT_SHA --not --remotes` は自分自身を除外して
               # 空になり検知漏れとなる。デフォルトブランチとの差分となる履歴を検査することで、
               # 途中で追加後に削除されたファイルも見逃さないようにする。
-              echo "New branch push detected or before SHA is empty. Checking commit history since origin/$DEFAULT_BRANCH..."
+              # force-push 後も旧コミットは GitHub 上から到達不能となるため、この経路は
+              # 「現存するブランチの実体」に対する完全な検査であり fail closed の設計意図を損なわない。
+              echo "New branch push, empty before SHA, or unreachable before SHA (force-push) detected. Checking commit history since origin/$DEFAULT_BRANCH..."
               if ! CHANGED_FILES=$(git log "$CURRENT_SHA" --not "origin/$DEFAULT_BRANCH" --name-only --pretty=format: --diff-filter=d 2>/dev/null | sort -u); then
                 echo "::error::Unable to inspect the complete commit history for the new branch (against origin/$DEFAULT_BRANCH). Failing closed instead of falling back to a partial check."
                 exit 1
