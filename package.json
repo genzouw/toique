@@ -44,7 +44,7 @@
     "fast-uri": "3.1.5",
     "js-yaml": "4.3.0",
     "@hono/node-server": "^2.0.10",
-    "hono": "^4.12.34",
+    "hono": "^4.13.0",
     "ip-address": "^10.3.1"
   }
 }
