@@ -69,8 +69,12 @@ cdktf.out/
 *.pem
 *.key
 *.p12
+*.p8
+*.keystore
+*.jks
 *_rsa
 *credentials*.json
+*secret*.json
 .env*
 .npmrc
 .netrc
@@ -81,6 +85,7 @@ cdktf.out/
 *.rest
 *.patch
 *.diff
+*.local
 
 # Infrastructure State Files
 *.tfstate
