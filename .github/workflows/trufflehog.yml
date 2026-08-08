@@ -32,12 +32,24 @@ jobs:
           fetch-depth: 0
           persist-credentials: false
 
+      - name: Resolve scan base
+        id: scan-base
+        # 到達性ガードの実装は composite action に一本化している。詳細は
+        # .github/actions/resolve-scan-base/action.yml を参照。
+        uses: ./.github/actions/resolve-scan-base
+
       - name: TruffleHog OSS
         uses: trufflesecurity/trufflehog@6f3c981e7b77f235fd2702dd74af25fc4b72bf11 # v3.96.0
         with:
-          # schedule時は全履歴スキャン(base指定なし)。
-          # push時は直前コミット(event.before)を対象とするが、新規ブランチpush等でbeforeがゼロSHAの場合はベースを指定せずheadのみスキャンする。
-          # PR時はターゲットブランチとの差分を対象とする。
-          base: ${{ github.event_name == 'push' && github.event.before != '0000000000000000000000000000000000000000' && github.event.before || github.event_name == 'pull_request' && github.event.pull_request.base.sha || '' }}
+          # base が空文字の場合は「base 指定なし = head までの履歴全体をスキャン」となり、
+          # schedule 実行と同じ経路に落ちる。これは部分検査への劣化ではなく、より広い範囲を
+          # 検査する安全側の挙動である。
+          #
+          # 逆に到達不能なコミットを base に渡すと TruffleHog は
+          # "unable to resolve commit: object not found" で内部エラーになるにもかかわらず
+          # ジョブは success で終了し、chunks:0 / bytes:0 で 1 バイトも検査されないまま
+          # 秘密情報スキャンが無言で無効化される fail open となる
+          # (実機ログで確認済み: run 31062805632)。
+          base: ${{ steps.scan-base.outputs.base }}
           head: ${{ github.sha }}
           extra_args: --debug --only-verified

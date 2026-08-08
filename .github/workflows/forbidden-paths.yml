@@ -37,11 +37,21 @@ jobs:
           fetch-depth: 0
           persist-credentials: false
 
+      - name: Resolve scan base
+        id: scan-base
+        # 到達性ガードの実装は composite action に一本化している。詳細は
+        # .github/actions/resolve-scan-base/action.yml を参照。
+        uses: ./.github/actions/resolve-scan-base
+
       - name: Check file paths
         env:
           # `${{ }}` を run ブロック内に直接展開するとシェルへのコード注入経路になる
           # (zizmor template-injection)。env 経由で渡し、シェル変数として参照する。
           DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
+          EVENT_NAME: ${{ github.event_name }}
+          PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          PUSH_CURRENT_SHA: ${{ github.sha }}
+          SCAN_BASE: ${{ steps.scan-base.outputs.base }}
         run: |
           set -euo pipefail
 
@@ -49,36 +59,36 @@ jobs:
           # `git diff` は範囲の両端のツリーしか比較しないため、範囲内で追加後に削除された
           # 機密ファイルを見逃す（.husky/pre-push と同じ理由）。`git log --name-only` で
           # 範囲内の全コミットの変更パスを個別に列挙し、途中経過のコミットも漏れなく検査する。
-          if [ "${{ github.event_name }}" = "pull_request" ]; then
-            # PR の場合: PR のベースブランチと HEAD の間の全コミット
-            BASE_SHA="${{ github.event.pull_request.base.sha }}"
-            HEAD_SHA="${{ github.event.pull_request.head.sha }}"
-            echo "Checking files changed in PR commits (from $BASE_SHA to $HEAD_SHA)..."
-            if ! CHANGED_FILES=$(git log --name-only --pretty=format: --diff-filter=d "$BASE_SHA".."$HEAD_SHA" 2>/dev/null | sort -u); then
-              echo "::error::Unable to inspect the complete commit range (from $BASE_SHA to $HEAD_SHA). Failing closed instead of falling back to a partial check."
+
+          # pull_request では merge commit である github.sha ではなく PR の head を終点にする。
+          if [ "$EVENT_NAME" = "pull_request" ]; then
+            HEAD_SHA="$PR_HEAD_SHA"
+          else
+            HEAD_SHA="$PUSH_CURRENT_SHA"
+          fi
+
+          # SCAN_BASE は Resolve scan base ステップ（composite action）の出力。
+          # 空文字は「起点にできる直前コミットが無い」ことを意味する。
+          if [ -n "$SCAN_BASE" ]; then
+            echo "コミット範囲 ($SCAN_BASE..$HEAD_SHA) の変更ファイルを確認します..."
+            if ! CHANGED_FILES=$(git log --name-only --pretty=format: --diff-filter=d "$SCAN_BASE".."$HEAD_SHA" 2>/dev/null | sort -u); then
+              echo "::error::Unable to inspect the complete commit range (from $SCAN_BASE to $HEAD_SHA). Failing closed instead of falling back to a partial check."
               exit 1
             fi
           else
-            # push 等の場合: 直前のコミットから今回のコミットまでの全コミット
-            BEFORE_SHA="${{ github.event.before }}"
-            CURRENT_SHA="${{ github.sha }}"
-            # 新規ブランチの push の場合は before が all zero SHA になる
-            if [ "$BEFORE_SHA" = "0000000000000000000000000000000000000000" ] || [ -z "$BEFORE_SHA" ]; then
-              # 新規ブランチの場合、push 完了時点で origin 上の当該ブランチは既に CURRENT_SHA と
-              # 一致してしまっているため `git log CURRENT_SHA --not --remotes` は自分自身を除外して
-              # 空になり検知漏れとなる。デフォルトブランチとの差分となる履歴を検査することで、
-              # 途中で追加後に削除されたファイルも見逃さないようにする。
-              echo "New branch push detected or before SHA is empty. Checking commit history since origin/$DEFAULT_BRANCH..."
-              if ! CHANGED_FILES=$(git log "$CURRENT_SHA" --not "origin/$DEFAULT_BRANCH" --name-only --pretty=format: --diff-filter=d 2>/dev/null | sort -u); then
-                echo "::error::Unable to inspect the complete commit history for the new branch (against origin/$DEFAULT_BRANCH). Failing closed instead of falling back to a partial check."
-                exit 1
-              fi
-            else
-              echo "Checking files changed in push commits (from $BEFORE_SHA to $CURRENT_SHA)..."
-              if ! CHANGED_FILES=$(git log --name-only --pretty=format: --diff-filter=d "$BEFORE_SHA".."$CURRENT_SHA" 2>/dev/null | sort -u); then
-                echo "::error::Unable to inspect the complete commit range (from $BEFORE_SHA to $CURRENT_SHA). Failing closed instead of falling back to a partial check."
-                exit 1
-              fi
+            # 新規ブランチの push の場合は before が all zero SHA になる。
+            # また force-push（dependabot の rebase 等）では旧 HEAD が孤児化して到達不能になり、
+            # before の実体がリポジトリに存在しなくなるため `git log BEFORE..CURRENT` が必ず失敗する。
+            # 新規ブランチの場合、push 完了時点で origin 上の当該ブランチは既に HEAD_SHA と
+            # 一致してしまっているため `git log HEAD_SHA --not --remotes` は自分自身を除外して
+            # 空になり検知漏れとなる。デフォルトブランチとの差分となる履歴を検査することで、
+            # 途中で追加後に削除されたファイルも見逃さないようにする。
+            # force-push 後も旧コミットは GitHub 上から到達不能となるため、この経路は
+            # 「現存するブランチの実体」に対する完全な検査であり fail closed の設計意図を損なわない。
+            echo "新規ブランチの push、before SHA が空、または before SHA が到達不能（force-push）を検知しました。origin/$DEFAULT_BRANCH との差分となるコミット履歴を確認します..."
+            if ! CHANGED_FILES=$(git log "$HEAD_SHA" --not "origin/$DEFAULT_BRANCH" --name-only --pretty=format: --diff-filter=d 2>/dev/null | sort -u); then
+              echo "::error::Unable to inspect the complete commit history for the new branch (against origin/$DEFAULT_BRANCH). Failing closed instead of falling back to a partial check."
+              exit 1
             fi
           fi
 
@@ -91,7 +101,7 @@ jobs:
           # `.env.example` 等のテンプレート（機密値を含まない雛形）は正当にコミットされるため、
           # 2 段目の `grep -Ev` で明示的に許可リスト化して誤検知を防ぐ。
           FORBIDDEN_FILES=$(echo "$CHANGED_FILES" \
-            | grep -E '((^|/)\.env.*|\.cursor/.*|\.claude/.*|\.aider.*|\.windsurf/.*|\.jules/.*|\.Jules/.*|.*credentials.*\.json|.*\.pem|.*\.key|.*\.p12|.*_rsa|.*_ed25519|.*_ecdsa|.*\.sqlite|.*\.db|.*\.log|\.npmrc|\.netrc|.*\.tfstate(\..*)?|(^|/)cdktf\.out(/.*)?|(^|/)\.terraform(/.*)?|.*\.(http|rest|patch|diff))$' \
+            | grep -E '((^|/)\.env.*|\.cursor/.*|\.claude/.*|\.aider.*|\.windsurf/.*|\.jules/.*|\.Jules/.*|.*credentials.*\.json|.*secret.*\.json|.*\.pem|.*\.key|.*\.p12|.*\.p8|.*\.keystore|.*\.jks|.*_rsa|.*_ed25519|.*_ecdsa|.*\.sqlite|.*\.db|.*\.log|\.npmrc|\.netrc|.*\.tfstate(\..*)?|(^|/)cdktf\.out(/.*)?|(^|/)\.terraform(/.*)?|.*\.(http|rest|patch|diff|local))$' \
             | grep -Ev '(^|/)\.env\.(example|sample|template|dist)$' \
             || true)
 

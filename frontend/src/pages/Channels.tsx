@@ -34,6 +34,7 @@ export default function Channels() {
   }, []);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     refresh();
   }, [refresh]);
 
@@ -154,7 +155,7 @@ export default function Channels() {
             {items.map((ch) => (
               <ChannelRow
                 key={ch.id}
-                channel={ch}
+                ch={ch}
                 isCopied={copiedId === ch.id}
                 onDelete={handleDelete}
                 onCopy={handleCopy}
@@ -169,16 +170,17 @@ export default function Channels() {
 
 /**
  * ⚡ Bolt: 不要な再レンダーを防ぐために React.memo() でラップしています。
- * copiedId の状態変更によって親コンポーネントが再レンダーされても、
- * isCopied の値が変わらない限り各行コンポーネントの再レンダーをスキップします。
+ * フォーム入力時に親コンポーネントの `form` 状態が頻繁に更新されても、
+ * この ChannelRow は `ch` などの props が変更されない限り再レンダーされず、
+ * パフォーマンスが向上します。
  */
 const ChannelRow = memo(function ChannelRow({
-  channel: ch,
+  ch,
   isCopied,
   onDelete,
   onCopy,
 }: {
-  channel: LineChannel;
+  ch: LineChannel;
   isCopied: boolean;
   onDelete: (id: string) => void;
   onCopy: (channelId: string, itemId: string) => void;
@@ -188,9 +190,7 @@ const ChannelRow = memo(function ChannelRow({
     <li className="px-5 py-4">
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0 flex-1">
-          <div className="font-medium text-slate-900">
-            {ch.displayName}
-          </div>
+          <div className="font-medium text-slate-900">{ch.displayName}</div>
           <div className="text-xs text-slate-500 mt-0.5">
             Channel ID: {ch.channelId}
           </div>
@@ -205,9 +205,7 @@ const ChannelRow = memo(function ChannelRow({
         </button>
       </div>
       <div className="mt-3">
-        <div className="text-xs font-medium text-slate-700">
-          Webhook URL
-        </div>
+        <div className="text-xs font-medium text-slate-700">Webhook URL</div>
         <div className="mt-1 flex items-stretch gap-2">
           <code
             className="flex-1 min-w-0 px-2 py-1.5 bg-slate-100 rounded text-xs text-slate-700 font-mono truncate"

@@ -57,6 +57,24 @@ paths = [
 ]
 
 [[rules]]
+id = "custom-resend-api-key"
+description = "Detects Resend API Keys"
+regex = '''\b(re_[0-9a-zA-Z]{24})\b'''
+tags = ["resend", "api-key"]
+
+[[rules]]
+id = "custom-stripe-secret-key"
+description = "Detects Stripe Secret Keys"
+regex = '''(?i)\b(sk_(live|test)_[0-9a-zA-Z]{24,34})\b'''
+tags = ["stripe", "api-key"]
+
+[[rules]]
+id = "custom-better-auth-secret"
+description = "Detects Better Auth Secrets"
+regex = '''(?i)(?:BETTER_AUTH_SECRET\s*=\s*['"]?)([0-9a-zA-Z+/=]{32,})'''
+tags = ["auth", "secret"]
+
+[[rules]]
 id = "custom-pii-email"
 description = "Detects email addresses (PII risk)"
 regex = '''[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}'''

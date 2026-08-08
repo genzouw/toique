@@ -1,4 +1,9 @@
-💡 What: Extract table row in `Submissions` component to a separate `SubmissionRow` wrapped in `React.memo()`.
-🎯 Why: Prevents 100 table rows and their nested components (which use `JSON.stringify`) from unnecessarily re-rendering when unrelated state in the parent (like the `exportFormId` dropdown or `downloading` status) changes.
-📊 Impact: Reduces virtual DOM diffing overhead and speeds up UI interaction when selecting forms for CSV download.
-🔬 Measurement: Verify by rendering the Submissions page with multiple items, opening React DevTools Profiler, and changing the form selection dropdown. The list items will no longer re-render.
+## 実行サマリー
+
+- 選定した観点: コミット前検知
+- 選定したツール: 既存ツールの設定厳格化 (lint-staged, gitleaks)
+- 比較検討した他案: pre-commit framework の導入（既存のHuskyスクリプトが高度にカスタマイズされており、置換リスクが高いため却下）
+- 作成した PR: (gh CLI の認証エラーのため作成できませんでしたが、ブランチにコミット済みです)
+- 重複防止チェックの結果: (gh CLI 認証エラーのため実行不可)
+- マージ前に手動が必要な作業の件数: 2件
+- 次回（来週）以降に取り組むべき残課題: GitHub Secret Scanning のカバレッジ拡充や、npm audit などの CI ステップへの統合検討
