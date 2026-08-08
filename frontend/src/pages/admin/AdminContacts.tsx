@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, memo } from 'react';
 import { Link } from 'react-router';
 import { Mail } from 'lucide-react';
 import { formatDate } from '../../lib/format-date';
@@ -107,33 +107,7 @@ export default function AdminContacts() {
             </thead>
             <tbody className="divide-y divide-slate-100">
               {filtered.map((row) => (
-                <tr key={row.id} className="hover:bg-slate-50">
-                  <td className="px-4 py-2 text-slate-600 whitespace-nowrap">
-                    {formatDate(row.createdAt)}
-                  </td>
-                  <td className="px-4 py-2 text-slate-700">
-                    {CATEGORY_LABEL[row.category]}
-                  </td>
-                  <td className="px-4 py-2">
-                    <Link
-                      to={`/admin/contacts/${row.id}`}
-                      className="text-slate-900 hover:underline"
-                    >
-                      {row.subject}
-                    </Link>
-                  </td>
-                  <td className="px-4 py-2 text-slate-700">{row.name}</td>
-                  <td className="px-4 py-2 text-slate-600">
-                    {row.tenantName ?? '—'}
-                  </td>
-                  <td className="px-4 py-2">
-                    <span
-                      className={`inline-flex px-2 py-0.5 rounded-full text-xs ${STATUS_PILL[row.status]}`}
-                    >
-                      {STATUS_LABEL[row.status]}
-                    </span>
-                  </td>
-                </tr>
+                <AdminContactRow key={row.id} row={row} />
               ))}
             </tbody>
           </table>
@@ -142,3 +116,42 @@ export default function AdminContacts() {
     </div>
   );
 }
+
+/**
+ * ⚡ Bolt: 不要な再レンダーを防ぐために React.memo() でラップしています。
+ * AdminContacts コンポーネントで filter（ステータス絞り込み）などの状態が変わっても、
+ * 個別の row（問い合わせデータ）が変わらない限り再レンダーをスキップし、描画時間を短縮します。
+ */
+const AdminContactRow = memo(function AdminContactRow({
+  row,
+}: {
+  row: ContactListItem;
+}) {
+  return (
+    <tr className="hover:bg-slate-50">
+      <td className="px-4 py-2 text-slate-600 whitespace-nowrap">
+        {formatDate(row.createdAt)}
+      </td>
+      <td className="px-4 py-2 text-slate-700">
+        {CATEGORY_LABEL[row.category]}
+      </td>
+      <td className="px-4 py-2">
+        <Link
+          to={`/admin/contacts/${row.id}`}
+          className="text-slate-900 hover:underline"
+        >
+          {row.subject}
+        </Link>
+      </td>
+      <td className="px-4 py-2 text-slate-700">{row.name}</td>
+      <td className="px-4 py-2 text-slate-600">{row.tenantName ?? '—'}</td>
+      <td className="px-4 py-2">
+        <span
+          className={`inline-flex px-2 py-0.5 rounded-full text-xs ${STATUS_PILL[row.status]}`}
+        >
+          {STATUS_LABEL[row.status]}
+        </span>
+      </td>
+    </tr>
+  );
+});
