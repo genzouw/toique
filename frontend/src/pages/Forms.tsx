@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, memo } from 'react';
 import { Link } from 'react-router';
 import { Plus, FileText } from 'lucide-react';
 import { api, type FormListItem } from '../lib/api';
@@ -17,6 +17,42 @@ const STATUS_COLOR: Record<FormListItem['status'], string> = {
   published: 'bg-emerald-100 text-emerald-700',
   archived: 'bg-slate-100 text-slate-500',
 };
+
+/**
+ * ⚡ Bolt: 不要な再レンダーを防ぐために React.memo() でラップしています。
+ * Forms コンポーネントが何らかの理由で再レンダーされた場合でも、
+ * リスト項目（FormListItemRow）の props が変わらなければ再レンダーをスキップします。
+ */
+const FormListItemRow = memo(function FormListItemRow({
+  form,
+}: {
+  form: FormListItem;
+}) {
+  return (
+    <li>
+      <Link
+        to={`/forms/${form.id}`}
+        className="block px-5 py-3 hover:bg-slate-50"
+      >
+        <div className="flex items-center justify-between">
+          <div>
+            <div className="font-medium text-slate-900">{form.name}</div>
+            <div className="text-xs text-slate-500 mt-0.5">
+              {form.triggerKeyword
+                ? `トリガー: 「${form.triggerKeyword}」`
+                : 'トリガー未設定'}
+            </div>
+          </div>
+          <span
+            className={`text-xs px-2 py-0.5 rounded ${STATUS_COLOR[form.status]}`}
+          >
+            {STATUS_LABEL[form.status]}
+          </span>
+        </div>
+      </Link>
+    </li>
+  );
+});
 
 export default function Forms() {
   const [items, setItems] = useState<FormListItem[]>([]);
@@ -76,30 +112,7 @@ export default function Forms() {
         ) : (
           <ul className="divide-y divide-slate-200">
             {items.map((form) => (
-              <li key={form.id}>
-                <Link
-                  to={`/forms/${form.id}`}
-                  className="block px-5 py-3 hover:bg-slate-50"
-                >
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <div className="font-medium text-slate-900">
-                        {form.name}
-                      </div>
-                      <div className="text-xs text-slate-500 mt-0.5">
-                        {form.triggerKeyword
-                          ? `トリガー: 「${form.triggerKeyword}」`
-                          : 'トリガー未設定'}
-                      </div>
-                    </div>
-                    <span
-                      className={`text-xs px-2 py-0.5 rounded ${STATUS_COLOR[form.status]}`}
-                    >
-                      {STATUS_LABEL[form.status]}
-                    </span>
-                  </div>
-                </Link>
-              </li>
+              <FormListItemRow key={form.id} form={form} />
             ))}
           </ul>
         )}
