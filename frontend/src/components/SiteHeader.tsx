@@ -1,7 +1,8 @@
+import { memo } from 'react';
 import { NavLink } from 'react-router';
 import { HEADER_CTA, HEADER_NAV_ITEMS } from '../lib/navigation';
 
-export default function SiteHeader() {
+const SiteHeader = memo(function SiteHeader() {
   return (
     <header className="border-b border-slate-200">
       <div className="max-w-5xl mx-auto px-6 h-14 flex items-center justify-between">
@@ -39,4 +40,7 @@ export default function SiteHeader() {
       </div>
     </header>
   );
-}
+});
+
+// ⚡ Bolt: 不要な再レンダーを防ぐために React.memo() でラップしています。
+export default SiteHeader;
