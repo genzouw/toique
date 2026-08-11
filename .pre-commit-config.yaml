@@ -9,4 +9,4 @@ repos:
     hooks:
       - id: detect-secrets
         args: ['--baseline', '.secrets.baseline', '--no-verify']
-        exclude: .secrets.baseline
+        exclude: '(^|/)\.secrets\.baseline$'
