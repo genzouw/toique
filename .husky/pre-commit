@@ -114,11 +114,13 @@ fi
 # バイナリがインストールされていない場合はユーザーキャッシュに自動ダウンロードして実行する。
 # オフライン環境・未対応OS/ARCH・チェックサム検証失敗時はローカルスキャンをスキップし、
 # コミット自体はブロックしない（CIでの検知に委ねる）。
+# NOTE: ダウンロード/キャッシュ処理は PRE_COMMIT_RAN の値に関わらず実行する。pre-commit
+# framework が管理するバイナリはフレームワーク独自のキャッシュ配下に置かれ、
+# .husky/pre-push が参照する ${XDG_CACHE_HOME:-$HOME/.cache}/gitleaks とは別物のため、
+# 委譲時にここをスキップすると pre-push が gitleaks を発見できず content scan が
+# fail-open になってしまう。実際のスキャン実行のみを PRE_COMMIT_RAN で制御する。
 GITLEAKS_CMD="gitleaks"
-if [ "$PRE_COMMIT_RAN" -eq 1 ]; then
-  # すでに pre-commit 側で実行済みの場合はスキップ
-  GITLEAKS_CMD=""
-elif ! command -v gitleaks >/dev/null 2>&1; then
+if ! command -v gitleaks >/dev/null 2>&1; then
   echo "⚠️  gitleaks is not installed globally. Downloading automatically..."
   GITLEAKS_VERSION="8.21.2"
   GITLEAKS_CACHE_DIR="${XDG_CACHE_HOME:-$HOME/.cache}/gitleaks"
@@ -187,7 +189,11 @@ elif ! command -v gitleaks >/dev/null 2>&1; then
   fi
 fi
 
-if [ -n "$GITLEAKS_CMD" ]; then
+if [ "$PRE_COMMIT_RAN" -eq 1 ]; then
+  # すでに pre-commit 側で gitleaks を実行済みのため、ここでの再スキャンはスキップする
+  # (上記のダウンロード/キャッシュ処理自体はスキップしていない点に注意)。
+  :
+elif [ -n "$GITLEAKS_CMD" ]; then
   echo "🔍 Running gitleaks on staged files..."
   # `--staged`: ステージされたファイルのみをスキャン対象とする
   # `--redact`: ターミナル出力でシークレットの生値をマスクする
