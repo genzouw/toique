@@ -25,7 +25,7 @@
 
 ## 責任分界
 
-- **開発者（AIエージェント含む）:** コミット前にローカル環境で `secretlint` が正しく動作するように、必ず依存関係 (`bun install`) をインストールしておくこと。また、より強力な保護のために、Python の `pre-commit` framework をインストールすること (`pip install pre-commit` または `brew install pre-commit` など) を強く推奨します。これにより `gitleaks` と `detect-secrets` の管理と実行が自動化されます。`pre-commit` を使用しない場合は、フォールバック機構のためにローカル環境へ `gitleaks` と `detect-secrets` (`pip install detect-secrets==1.5.0`、`.secrets.baseline` のバージョンと揃える) を手動でインストールしてください。
+- **開発者（AIエージェント含む）:** コミット前にローカル環境で `secretlint` が正しく動作するように、必ず依存関係 (`bun install`) をインストールしておくこと。また、より強力な保護のために、Python の `pre-commit` framework (`3.0.0` 以上。`.pre-commit-config.yaml` に `minimum_pre_commit_version` として明示) をインストールすること (`pip install pre-commit` または `brew install pre-commit` など) を強く推奨します。`3.0.0` 未満では Gitleaks フック (`language: golang`) が前提とする Go の自動導入が行われず、フック初期化に失敗する可能性があるため、`pre-commit --version` で確認し、古い場合は `pip install -U pre-commit` 等でアップグレードしてください。これにより `gitleaks` と `detect-secrets` の管理と実行が自動化されます。`pre-commit` を使用しない場合は、フォールバック機構のためにローカル環境へ `gitleaks` と `detect-secrets` (`pip install detect-secrets==1.5.0`、`.secrets.baseline` のバージョンと揃える) を手動でインストールしてください。
 - **リポジトリ管理者およびフォーク運用者:** **最も強力なゼロデイ防御である GitHub Secret Scanning / Push Protection を有効化**し、CI での多層的なチェックを維持してください。手動でリポジトリの Settings (Code security and analysis) から有効化する必要があります。
 
 **Push Protection について:**
