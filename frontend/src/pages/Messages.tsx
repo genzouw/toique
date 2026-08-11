@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, memo } from 'react';
 import { MessageSquare, RefreshCw } from 'lucide-react';
 import { formatDate } from '../lib/format-date';
 import { api, type InboundMessageListItem } from '../lib/api';
@@ -67,24 +67,7 @@ export default function Messages() {
             </thead>
             <tbody className="divide-y divide-slate-200">
               {items.map((m) => (
-                <tr key={m.id}>
-                  <td className="px-4 py-2 text-slate-700 whitespace-nowrap">
-                    {formatDate(m.receivedAt)}
-                  </td>
-                  <td className="px-4 py-2">
-                    <span className="px-2 py-0.5 text-xs rounded bg-slate-100 text-slate-700">
-                      {m.eventType}
-                    </span>
-                  </td>
-                  <td className="px-4 py-2 text-slate-700">
-                    {m.messageType ?? '—'}
-                  </td>
-                  <td className="px-4 py-2 text-slate-900">
-                    {m.text ?? (
-                      <span className="text-slate-400">(テキストなし)</span>
-                    )}
-                  </td>
-                </tr>
+                <MessageRow key={m.id} message={m} />
               ))}
             </tbody>
           </table>
@@ -93,3 +76,31 @@ export default function Messages() {
     </div>
   );
 }
+
+/**
+ * ⚡ Bolt: 不要な再レンダーを防ぐために React.memo() でラップしています。
+ * Messages コンポーネントの状態（例: error, loading）が変わっても、
+ * 個別の row（メッセージデータ）が変わらない限り再レンダーをスキップし、描画時間を短縮します。
+ */
+const MessageRow = memo(function MessageRow({
+  message: m,
+}: {
+  message: InboundMessageListItem;
+}) {
+  return (
+    <tr>
+      <td className="px-4 py-2 text-slate-700 whitespace-nowrap">
+        {formatDate(m.receivedAt)}
+      </td>
+      <td className="px-4 py-2">
+        <span className="px-2 py-0.5 text-xs rounded bg-slate-100 text-slate-700">
+          {m.eventType}
+        </span>
+      </td>
+      <td className="px-4 py-2 text-slate-700">{m.messageType ?? '—'}</td>
+      <td className="px-4 py-2 text-slate-900">
+        {m.text ?? <span className="text-slate-400">(テキストなし)</span>}
+      </td>
+    </tr>
+  );
+});
