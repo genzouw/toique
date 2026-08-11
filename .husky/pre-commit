@@ -25,6 +25,15 @@ if [ -n "$FORBIDDEN_FILES" ]; then
 fi
 # ---------------------------------------------------------
 
+if command -v pre-commit >/dev/null 2>&1; then
+  echo "🔍 Running pre-commit framework hooks..."
+  pre-commit run --hook-stage pre-commit || exit 1
+  PRE_COMMIT_RAN=1
+else
+  PRE_COMMIT_RAN=0
+fi
+
+if [ "$PRE_COMMIT_RAN" -eq 0 ]; then
 # --- Security: Detect-Secrets entropy scan ---
 # エントロピーベースのシークレットスキャンを実行し、gitleaks で検知しきれないカスタム形式の鍵や
 # 高エントロピー文字列の混入を防ぐ。
@@ -149,6 +158,7 @@ if [ -n "$GITLEAKS_CMD" ]; then
   "$GITLEAKS_CMD" protect --staged --redact --verbose --no-banner || exit 1
 fi
 # ---------------------------------------------------------
+fi # end of PRE_COMMIT_RAN block
 
 # .github/workflows/ がステージされていれば actionlint をローカルで実行
 # (actionlint がインストールされていない環境はスキップして CI 側で拾う)
