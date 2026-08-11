@@ -1,3 +1,4 @@
+minimum_pre_commit_version: '3.0.0'
 repos:
   - repo: https://github.com/gitleaks/gitleaks
     rev: v8.21.2
