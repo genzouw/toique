@@ -64,6 +64,16 @@ if [ "$PRE_COMMIT_RAN" -eq 1 ]; then
   # すでに pre-commit 側で実行済みの場合はスキップ
   :
 elif command -v detect-secrets-hook >/dev/null 2>&1; then
+  # .secrets.baseline は detect-secrets==1.5.0 を前提に生成・運用されている。PATH 上の
+  # 実行ファイルが別バージョンだと、プラグイン構成の差異により検知漏れ・誤検知が
+  # 生じる恐れがあるため、フォールバックでのスキャン実行前にバージョンを検証する。
+  DETECT_SECRETS_VERSION=$(detect-secrets --version 2>/dev/null || true)
+  if [ "$DETECT_SECRETS_VERSION" != "1.5.0" ]; then
+    echo "🚨 [Security Error] detect-secrets version mismatch (found: ${DETECT_SECRETS_VERSION:-unknown}, required: 1.5.0)."
+    echo ".secrets.baseline was generated with detect-secrets==1.5.0; a different version may scan inconsistently."
+    echo "Please run: pip install detect-secrets==1.5.0"
+    exit 1
+  fi
   echo "🔍 Running detect-secrets on staged files..."
   # ステージされたファイルを NUL 区切りで取得し、detect-secrets-hook へ個別の引数として渡す。
   # 改行区切りの文字列をそのまま単一引数として渡すと、複数ファイルがステージされた際に
