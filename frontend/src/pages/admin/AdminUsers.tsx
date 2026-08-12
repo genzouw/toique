@@ -77,7 +77,7 @@ export default function AdminUsers() {
 /**
  * ⚡ Bolt: 不要な再レンダーを防ぐために React.memo() でラップしています。
  * AdminUsers コンポーネントの状態（例: error）が変わっても、
- * 個別の row（ユーザーデータ）が変わらない限り再レンダーをスキップし、描画時間を短縮します。
+ * 個別の行（ユーザーデータ）が変わらない限り再レンダーをスキップし、描画時間を短縮します。
  */
 const AdminUserRow = memo(function AdminUserRow({
   row,

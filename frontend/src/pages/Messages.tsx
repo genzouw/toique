@@ -80,7 +80,7 @@ export default function Messages() {
 /**
  * ⚡ Bolt: 不要な再レンダーを防ぐために React.memo() でラップしています。
  * Messages コンポーネントの状態（例: error, loading）が変わっても、
- * 個別の row（メッセージデータ）が変わらない限り再レンダーをスキップし、描画時間を短縮します。
+ * 個別の行（メッセージデータ）が変わらない限り再レンダーをスキップし、描画時間を短縮します。
  */
 const MessageRow = memo(function MessageRow({
   message: m,
