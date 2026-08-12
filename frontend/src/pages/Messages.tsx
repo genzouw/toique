@@ -79,8 +79,9 @@ export default function Messages() {
 
 /**
  * ⚡ Bolt: 不要な再レンダーを防ぐために React.memo() でラップしています。
- * Messages コンポーネントの状態（例: error, loading）が変わっても、
- * 個別の行（メッセージデータ）が変わらない限り再レンダーをスキップし、描画時間を短縮します。
+ * 行がマウントされたままの状態で、message の参照が変わらない場合に
+ * 再レンダーをスキップし、描画時間を短縮します（loading の変化で行自体が
+ * アンマウント／再マウントされる場合は対象外です）。
  */
 const MessageRow = memo(function MessageRow({
   message: m,
