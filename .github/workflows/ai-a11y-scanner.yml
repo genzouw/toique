@@ -66,8 +66,8 @@ jobs:
               return;
             }
 
-            if (!prDiff) {
-              console.log("No diff found. Skipping review.");
+            if (!prDiff || prDiff.trim().length < 20) {
+              console.log("Diff is too small or empty. Skipping API call to save quota.");
               return;
             }
 

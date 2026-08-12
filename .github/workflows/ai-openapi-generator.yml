@@ -34,13 +34,12 @@ jobs:
         with:
           node-version: '22'
 
-      - name: Install Repomix
-        # バージョンは zizmor (adhoc-packages) 対策として latest ではなく固定値を指定する。
-        run: npm install --global repomix@1.17.0
-
       - name: Bundle backend with Repomix
-        run: |
-          repomix --include "backend/src/**/*.ts" --ignore "backend/src/**/*.test.ts" --output repomix-backend.xml
+        uses: yamadashy/repomix/.github/actions/repomix@9cfeac741dd6d788ea232f50c28c410d32120377 # v1.17.0
+        with:
+          output: repomix-backend.xml
+          include: 'backend/src/**/*.ts'
+          ignore: 'backend/src/**/*.test.ts'
 
       - name: Generate OpenAPI with GitHub Models
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
