@@ -18,6 +18,42 @@ const STATUS_COLOR: Record<FormListItem['status'], string> = {
   archived: 'bg-slate-100 text-slate-500',
 };
 
+/**
+ * ⚡ Bolt: 不要な再レンダーを防ぐために React.memo() でラップしています。
+ * Forms コンポーネントが何らかの理由で再レンダーされた場合でも、
+ * リスト項目（FormListItemRow）の props が変わらなければ再レンダーをスキップします。
+ */
+const FormListItemRow = memo(function FormListItemRow({
+  form,
+}: {
+  form: FormListItem;
+}) {
+  return (
+    <li>
+      <Link
+        to={`/forms/${form.id}`}
+        className="block px-5 py-3 hover:bg-slate-50"
+      >
+        <div className="flex items-center justify-between">
+          <div>
+            <div className="font-medium text-slate-900">{form.name}</div>
+            <div className="text-xs text-slate-500 mt-0.5">
+              {form.triggerKeyword
+                ? `トリガー: 「${form.triggerKeyword}」`
+                : 'トリガー未設定'}
+            </div>
+          </div>
+          <span
+            className={`text-xs px-2 py-0.5 rounded ${STATUS_COLOR[form.status]}`}
+          >
+            {STATUS_LABEL[form.status]}
+          </span>
+        </div>
+      </Link>
+    </li>
+  );
+});
+
 export default function Forms() {
   const [items, setItems] = useState<FormListItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -76,7 +112,7 @@ export default function Forms() {
         ) : (
           <ul className="divide-y divide-slate-200">
             {items.map((form) => (
-              <FormRow key={form.id} form={form} />
+              <FormListItemRow key={form.id} form={form} />
             ))}
           </ul>
         )}
@@ -84,35 +120,3 @@ export default function Forms() {
     </div>
   );
 }
-
-/**
- * ⚡ Bolt: 不要な再レンダーを防ぐために React.memo() でラップしています。
- * Forms コンポーネントの状態が変わっても、個別の row（フォームデータ）が変わらない限り
- * 再レンダーをスキップし、描画時間を短縮します。
- */
-const FormRow = memo(function FormRow({ form }: { form: FormListItem }) {
-  return (
-    <li>
-      <Link
-        to={`/forms/${form.id}`}
-        className="block px-5 py-3 hover:bg-slate-50"
-      >
-        <div className="flex items-center justify-between">
-          <div>
-            <div className="font-medium text-slate-900">{form.name}</div>
-            <div className="text-xs text-slate-500 mt-0.5">
-              {form.triggerKeyword
-                ? `トリガー: 「${form.triggerKeyword}」`
-                : 'トリガー未設定'}
-            </div>
-          </div>
-          <span
-            className={`text-xs px-2 py-0.5 rounded ${STATUS_COLOR[form.status]}`}
-          >
-            {STATUS_LABEL[form.status]}
-          </span>
-        </div>
-      </Link>
-    </li>
-  );
-});
