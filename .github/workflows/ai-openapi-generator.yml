@@ -10,8 +10,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: write
-  pull-requests: write
+  contents: read
 
 jobs:
   generate_openapi:
@@ -40,6 +39,9 @@ jobs:
           output: repomix-backend.xml
           include: 'backend/src/**/*.ts'
           ignore: 'backend/src/**/*.test.ts'
+          compress: false
+          repomix-version: '1.17.0'
+          node-version: '22'
 
       - name: Generate OpenAPI with GitHub Models
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
