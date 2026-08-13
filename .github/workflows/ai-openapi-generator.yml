@@ -34,7 +34,7 @@ jobs:
           node-version: '22'
 
       - name: Bundle backend with Repomix
-        uses: yamadashy/repomix/.github/actions/repomix@9cfeac741dd6d788ea232f50c28c410d32120377 # v1.17.0
+        uses: yamadashy/repomix/.github/actions/repomix@c4c80eb8ab3fad8c60f23ff9280f3f2c65789379 # v1.18.0
         with:
           output: repomix-backend.xml
           include: 'backend/src/**/*.ts'

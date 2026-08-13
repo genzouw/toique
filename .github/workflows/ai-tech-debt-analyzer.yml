@@ -29,7 +29,7 @@ jobs:
           node-version: '20'
 
       - name: Run Repomix to pack the repository
-        uses: yamadashy/repomix/.github/actions/repomix@9cfeac741dd6d788ea232f50c28c410d32120377 # v1.17.0
+        uses: yamadashy/repomix/.github/actions/repomix@c4c80eb8ab3fad8c60f23ff9280f3f2c65789379 # v1.18.0
         with:
           output: repomix-output.xml
           compress: true
