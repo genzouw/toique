@@ -9,9 +9,11 @@ jobs:
   sync_ai_agent_rules:
     name: Sync AI Agent Rules
     runs-on: ubuntu-latest
+    # NOTE: GitHub Models API は 2026-07-30 に終了済みのため、このワークフローは
+    # 現在動作しません（撤去は #648 で対応中）。撤去完了までの暫定対応として、
+    # 不要な書き込み権限を持たせないよう contents: read のみに制限しています。
     permissions:
-      contents: write
-      pull-requests: write
+      contents: read
     steps:
       - name: Harden Runner
         uses: step-security/harden-runner@b09bb98e06d4d774595224525879c09bc6e98c40 # v2.20.1
@@ -158,13 +160,8 @@ jobs:
             fs.writeFileSync('CLAUDE.md', result.claude);
             console.log('Successfully wrote .github/copilot-instructions.md, .cursorrules, .windsurfrules, and CLAUDE.md');
 
-      - name: Create Pull Request with updated AI Agent Rules
-        id: create-pr
-        uses: peter-evans/create-pull-request@5f6978faf089d4d20b00c7766989d076bb2fc7f1 # v8.1.1
-        with:
-          token: ${{ secrets.PAT_FOR_MODELS }}
-          commit-message: 'chore: auto-update AI agent rules via AI'
-          title: 'chore: AIによるAI Agent Rules (Copilot, Cursor, Windsurf, Claude Code) の自動更新'
-          body: '🤖 GitHub Models (o3-mini) によってソースコードから最新の各AIエディタ向けカスタム指示書（Copilot, Cursor, Windsurf, Claude Code）が生成されました。確認してマージしてください。'
-          branch: 'ai-agent-rules-update'
-          base: 'main'
+      # NOTE: 「Create Pull Request」ステップは撤去済みです。
+      # GitHub Models API が終了しており上記ステップは常にエラー終了して
+      # ファイルを生成しないため、PR作成ステップは実行されず、
+      # 書き込み権限を持つ PAT_FOR_MODELS をジョブに保持し続ける必要もありません。
+      # ワークフロー自体の撤去は #648 で対応中です。
