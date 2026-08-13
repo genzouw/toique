@@ -69,7 +69,17 @@ jobs:
               return;
             }
 
-            if (!prDiff || prDiff.trim().length < 20) {
+            // Count actual added/removed lines, excluding diff metadata
+            // (`diff --git`, `index`, `---`/`+++` headers, `@@` hunk markers).
+            // A raw character-length check over the full diff text was
+            // ineffective because header lines alone exceed 20 chars even
+            // for a 1-line change, so the quota-saving skip never triggered.
+            const changedLineCount = prDiff
+              .split('\n')
+              .filter((line) => /^[+-]/.test(line) && !/^(\+\+\+|---)/.test(line))
+              .length;
+
+            if (!prDiff || changedLineCount < 3) {
               console.log("Diff is too small or empty. Skipping API call to save quota.");
               return;
             }
