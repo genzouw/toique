@@ -63,15 +63,16 @@ jobs:
               properties: {
                 copilot: { type: "string", description: "Rules for GitHub Copilot (.github/copilot-instructions.md)" },
                 cursor: { type: "string", description: "Rules for Cursor (.cursorrules)" },
-                windsurf: { type: "string", description: "Rules for Windsurf (.windsurfrules)" }
+                windsurf: { type: "string", description: "Rules for Windsurf (.windsurfrules)" },
+                claude: { type: "string", description: "Rules for Claude Code CLI (CLAUDE.md)" }
               },
-              required: ["copilot", "cursor", "windsurf"],
+              required: ["copilot", "cursor", "windsurf", "claude"],
               additionalProperties: false
             };
 
             const prompt = `
             あなたはシニアソフトウェアエンジニアです。
-            以下のリポジトリ全体のソースコード情報（XML形式）を分析し、各種 AI 開発エディタ (GitHub Copilot, Cursor, Windsurf) 向けのカスタム指示書を作成してください。
+            以下のリポジトリ全体のソースコード情報（XML形式）を分析し、各種 AI 開発エディタおよび CLI (GitHub Copilot, Cursor, Windsurf, Claude Code) 向けのカスタム指示書を作成してください。
 
             【リポジトリのコンテキスト】
             \`\`\`xml
@@ -144,7 +145,7 @@ jobs:
               return;
             }
 
-            if (!result.copilot || !result.cursor || !result.windsurf) {
+            if (!result.copilot || !result.cursor || !result.windsurf || !result.claude) {
               console.error('GitHub Models response missing required fields:', JSON.stringify(result));
               return;
             }
@@ -154,7 +155,8 @@ jobs:
             fs.writeFileSync('.github/copilot-instructions.md', result.copilot);
             fs.writeFileSync('.cursorrules', result.cursor);
             fs.writeFileSync('.windsurfrules', result.windsurf);
-            console.log('Successfully wrote .github/copilot-instructions.md, .cursorrules, and .windsurfrules');
+            fs.writeFileSync('CLAUDE.md', result.claude);
+            console.log('Successfully wrote .github/copilot-instructions.md, .cursorrules, .windsurfrules, and CLAUDE.md');
 
       - name: Create Pull Request with updated AI Agent Rules
         id: create-pr
@@ -162,7 +164,7 @@ jobs:
         with:
           token: ${{ secrets.PAT_FOR_MODELS }}
           commit-message: 'chore: auto-update AI agent rules via AI'
-          title: 'chore: AIによるAI Agent Rules (Copilot, Cursor, Windsurf) の自動更新'
-          body: '🤖 GitHub Models (o3-mini) によってソースコードから最新の各AIエディタ向けカスタム指示書（Copilot, Cursor, Windsurf）が生成されました。確認してマージしてください。'
+          title: 'chore: AIによるAI Agent Rules (Copilot, Cursor, Windsurf, Claude Code) の自動更新'
+          body: '🤖 GitHub Models (o3-mini) によってソースコードから最新の各AIエディタ向けカスタム指示書（Copilot, Cursor, Windsurf, Claude Code）が生成されました。確認してマージしてください。'
           branch: 'ai-agent-rules-update'
           base: 'main'

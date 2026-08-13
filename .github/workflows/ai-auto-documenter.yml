@@ -93,7 +93,7 @@ jobs:
               }
             }
 
-            if (!prDiff || changedLineCount < 3) {
+            if (!prDiff || prDiff.trim().length < 20 || changedLineCount < 3) {
               console.log("Diff is too small or empty. Skipping API call to save quota.");
               return;
             }
