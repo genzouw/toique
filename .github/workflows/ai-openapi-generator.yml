@@ -40,7 +40,7 @@ jobs:
           include: 'backend/src/**/*.ts'
           ignore: 'backend/src/**/*.test.ts'
           compress: false
-          repomix-version: '1.17.0'
+          repomix-version: '1.18.0'
           node-version: '22'
 
       - name: Generate OpenAPI with GitHub Models
