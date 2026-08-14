@@ -25,6 +25,24 @@ if [ -n "$FORBIDDEN_FILES" ]; then
 fi
 # ---------------------------------------------------------
 
+# --- Security: Reject a tampered .secrets.baseline before it can execute code ---
+# detect-secrets は `--baseline <file>` 実行時に <file> の filters_used をそのまま
+# ロードし、`path` が `file://...` スキームだと importlib 経由でそのファイルの Python
+# コードを実行する (detect_secrets.settings.get_filters -> import_file_as_module)。
+# .pre-commit-config.yaml の detect-secrets hook、および下段の detect-secrets-hook
+# フォールバックはどちらも `--baseline .secrets.baseline` を渡すため、攻撃者が改変した
+# .secrets.baseline を含むブランチを checkout してコミットしただけで任意コード実行に
+# 繋がる。CI 側 (.github/workflows/detect-secrets.yml) は同じ理由から --baseline を
+# 一切渡さない設計を採っているが、ローカルは既知シークレットの抑制に baseline を使い
+# 続けるため、代わりに実行前のゲートで file:// フィルタの混入を検知して止める。
+if [ -f .secrets.baseline ] && grep -qE '"path"[[:space:]]*:[[:space:]]*"file://' .secrets.baseline; then
+  echo "🚨 [Security Error] .secrets.baseline references a file:// filter."
+  echo "   detect-secrets would import and execute that file as Python code when loading the baseline."
+  echo "   Refusing to run detect-secrets locally. Review .secrets.baseline for tampering before committing."
+  exit 1
+fi
+# ---------------------------------------------------------
+
 # --- Security: pre-commit framework delegation ---
 # Pythonの pre-commit がインストールされている場合は、そちらへ委譲する
 # (gitleaks と detect-secrets を .pre-commit-config.yaml で一元管理)。
