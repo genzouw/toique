@@ -34,6 +34,10 @@ jobs:
           output: repomix-output.xml
           compress: true
           ignore: '**/*.test.ts,**/*.spec.ts,**/dist/**,**/build/**,**/node_modules/**'
+          # uses: の SHA は composite action の wrapper だけを固定する。
+          # CLI 本体は action 内の `npm install --global repomix@<version>` で入り、
+          # 未指定だと default の latest になるため、uses: のバージョンと明示的に揃える。
+          repomix-version: '1.18.0'
 
       - name: Generate AI Agent Rules with GitHub Models
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
