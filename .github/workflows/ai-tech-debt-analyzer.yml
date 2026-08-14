@@ -40,7 +40,7 @@ jobs:
         id: search_web
         uses: ./.github/actions/ai-web-search
         with:
-          search_query: 'latest software architecture and tech debt patterns best practices 2024 2025 (site:zenn.dev OR site:qiita.com OR site:github.com)'
+          search_query: 'latest software architecture and tech debt patterns best practices (site:zenn.dev OR site:qiita.com OR site:github.com)'
           tavily_api_key: ${{ secrets.TAVILY_API_KEY }}
           exa_api_key: ${{ secrets.EXA_API_KEY }}
           max_results: '5'
@@ -88,7 +88,7 @@ jobs:
             2. **パフォーマンス**: 非効率なデータ処理（N+1問題、O(N)ループによる辞書構築など）がないか。
             3. **セキュリティ**: 潜在的な脆弱性パターンがないか。
             4. **保守性**: DRY原則に反する重複コードや、過度に複雑な関数（Cyclomatic Complexityが高い等）がないか。
-            5. **最新トレンドとの比較**: 検索結果（2024-2025年の最新ベストプラクティスなど）を考慮し、時代遅れになっている設計やライブラリの利用パターンがないか。
+            5. **最新トレンドとの比較**: 検索結果（最新のベストプラクティスなど）を考慮し、時代遅れになっている設計やライブラリの利用パターンがないか。
 
             結果は、優先度（High, Medium, Low）を付けて具体的に（ファイル名や対象コードを明記して）記述し、最後に「次のステップ」として推奨アクションをまとめてください。
             `;

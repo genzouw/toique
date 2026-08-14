@@ -88,7 +88,7 @@ jobs:
 
             const prompt = `
             あなたはDevRel（Developer Relations）に精通したシニアエンジニア・テクニカルライターです。
-            2025年の「Markdown-First AI Content Workflow」のトレンドに基づき、過去1週間にマージされた以下のPull Requestの情報を元に、開発チームや外部コミュニティ向けに魅力的で技術的なブログ記事（Markdown）を作成してください。
+            「Markdown-First AI Content Workflow」のトレンドに基づき、過去1週間にマージされた以下のPull Requestの情報を元に、開発チームや外部コミュニティ向けに魅力的で技術的なブログ記事（Markdown）を作成してください。
 
             【リポジトリのコンテキスト（一部）】
             \`\`\`xml

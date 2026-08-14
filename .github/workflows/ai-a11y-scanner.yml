@@ -97,7 +97,7 @@ jobs:
 
             const prompt = `
             あなたはWCAG (Web Content Accessibility Guidelines) やWAI-ARIAのベストプラクティスに精通したシニアフロントエンドエンジニアです。
-            2025年の最新のアクセシビリティ基準に基づいて、以下のPull Requestの変更差分（diff）をレビューしてください。
+            最新のアクセシビリティ基準に基づいて、以下のPull Requestの変更差分（diff）をレビューしてください。
 
             【レビューの観点】
             - \`<button>\` や \`<a>\` などのインタラクティブ要素に適切な \`aria-label\` またはテキストコンテンツが含まれているか。
