@@ -362,3 +362,5 @@ AI エージェント（Cursor, Claude Desktop など）が開発プロジェク
 2. **Qodo Merge (旧 PR-Agent / CodiumAI) のインストール**
    - CodiumAI は Qodo にリブランドされ、PR-Agent(Pro)は Qodo Merge となりました。GitHub Marketplace から [Qodo Merge](https://github.com/apps/qodo-merge) をインストールしてください。
    - インストール後、PRに `/review` や `/describe` などのコマンドをコメントすることで機能します。
+3. **Qodo Merge の設定統合**
+   - これまで `.pr-agent.toml` と `.pr_agent.toml` が混在していたため、`.pr_agent.toml` に設定を一本化しました。これにより、日本語出力(`response_language="ja-JP"`)と `gpt-4o` モデルの利用設定が正しく一貫して適用されます。設定の変更が必要な場合は `.pr_agent.toml` のみを編集してください。

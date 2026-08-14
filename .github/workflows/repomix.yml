@@ -15,7 +15,7 @@ jobs:
       contents: read
     steps:
       - name: Harden Runner
-        uses: step-security/harden-runner@bf7454d06d71f1098171f2acdf0cd4708d7b5920 # v2.20.0
+        uses: step-security/harden-runner@b09bb98e06d4d774595224525879c09bc6e98c40 # v2.20.1
         with:
           egress-policy: audit
       - name: リポジトリのチェックアウト
@@ -36,7 +36,7 @@ jobs:
         # 許可済みの github-owned アクション (actions/setup-node) + npm 経由での直接実行に切り替える。
         # バージョンは zizmor (adhoc-packages) 対策として latest ではなく固定値を指定する。
         run: |
-          npm install --global repomix@1.17.0
+          npm install --global repomix@1.18.0
           repomix --output repomix-output.xml --compress
 
       - name: Repomix 出力アーティファクトのアップロード
