@@ -10,8 +10,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: write
-  pull-requests: write
+  contents: read
 
 jobs:
   generate_openapi:
@@ -19,7 +18,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Harden Runner
-        uses: step-security/harden-runner@bf7454d06d71f1098171f2acdf0cd4708d7b5920 # v2.20.0
+        uses: step-security/harden-runner@b09bb98e06d4d774595224525879c09bc6e98c40 # v2.20.1
         with:
           egress-policy: audit
 
@@ -34,13 +33,15 @@ jobs:
         with:
           node-version: '22'
 
-      - name: Install Repomix
-        # バージョンは zizmor (adhoc-packages) 対策として latest ではなく固定値を指定する。
-        run: npm install --global repomix@1.17.0
-
       - name: Bundle backend with Repomix
-        run: |
-          repomix --include "backend/src/**/*.ts" --ignore "backend/src/**/*.test.ts" --output repomix-backend.xml
+        uses: yamadashy/repomix/.github/actions/repomix@9cfeac741dd6d788ea232f50c28c410d32120377 # v1.17.0
+        with:
+          output: repomix-backend.xml
+          include: 'backend/src/**/*.ts'
+          ignore: 'backend/src/**/*.test.ts'
+          compress: false
+          repomix-version: '1.17.0'
+          node-version: '22'
 
       - name: Generate OpenAPI with GitHub Models
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0

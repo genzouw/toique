@@ -16,7 +16,7 @@ jobs:
       pull-requests: write
     steps:
       - name: Harden Runner
-        uses: step-security/harden-runner@bf7454d06d71f1098171f2acdf0cd4708d7b5920 # v2.20.0
+        uses: step-security/harden-runner@b09bb98e06d4d774595224525879c09bc6e98c40 # v2.20.1
         with:
           egress-policy: audit
 
@@ -69,8 +69,32 @@ jobs:
               return;
             }
 
-            if (!prDiff) {
-              console.log("No diff found. Skipping review.");
+            // Count actual added/removed lines within diff hunks only.
+            // Real diff content only appears after a `@@` hunk header;
+            // header lines (`diff --git`, `index`, `---`/`+++`) appear once
+            // per file before the first hunk. Matching on a `+++`/`---`
+            // text prefix (instead of hunk position) misclassified genuine
+            // code lines that happen to start with `++`/`--` (e.g. `++i;`
+            // becomes `+++i;` once diff-prefixed) as headers and excluded
+            // them, undercounting the diff.
+            let inHunk = false;
+            let changedLineCount = 0;
+            for (const line of prDiff.split('\n')) {
+              if (line.startsWith('diff --git')) {
+                inHunk = false;
+                continue;
+              }
+              if (line.startsWith('@@')) {
+                inHunk = true;
+                continue;
+              }
+              if (inHunk && /^[+-]/.test(line)) {
+                changedLineCount++;
+              }
+            }
+
+            if (!prDiff || changedLineCount < 3) {
+              console.log("Diff is too small or empty. Skipping API call to save quota.");
               return;
             }
 

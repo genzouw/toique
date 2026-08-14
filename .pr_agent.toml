@@ -1,10 +1,12 @@
 [config]
 model="gpt-4o"
 model_weak="gpt-4o-mini"
+response_language="ja-JP"
 
 [pr_reviewer]
 require_tests_review = true
-require_score = true
+require_score_review = true
+require_estimate_effort_to_review = true
 extra_instructions = """
 変更がプロジェクト全体に与える影響や、アーキテクチャの観点など、広いスコープからコードレビューを行ってください。必ず日本語でコメントしてください。
 メインブランチにマージされた場合に Cloud Run / Cloudflare Pages 上の本番環境にデプロイされることを考慮し、以下の観点を強調し、重要視して必ずレビューに盛り込んでください:
@@ -18,7 +20,9 @@ extra_instructions = """
 """
 
 [pr_description]
+use_bullet_points=true
 extra_instructions = "PRの要約や説明はすべて日本語で記述してください。"
 
 [pr_code_suggestions]
+num_code_suggestions=5
 extra_instructions = "可能であれば、具体的な修正コードの提案（スニペット）を含めてください。"
