@@ -238,6 +238,9 @@ LLM に渡すプロンプトの中で、**リポジトリ外の第三者が内�
 | Web検索結果（Tavily / DuckDuckGo / Exa）      | `<web_search_results>`    |
 | 過去の類似Issue検索結果                       | `<similar_issues>`        |
 | Stack Overflow 検索結果                       | `<stackoverflow_results>` |
+| CI 失敗ログ（GitHub Actions のジョブログ）    | `<ci_logs>`               |
+
+※ repomixの出力（`${repoContext}`）など、自リポジトリのソースを固めたものはこの表の対象外（第三者が内容を左右できないため）。
 
 守るべきルール:
 
