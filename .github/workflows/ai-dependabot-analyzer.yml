@@ -56,9 +56,9 @@ jobs:
         id: get_diff
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
         run: |
           # 依存関係ファイル・lockfileの差分を取得し、文字数が多すぎる場合は切り詰める (約10,000文字程度に制限)
-          PR_NUMBER=${{ github.event.pull_request.number }}
           DIFF=$(gh pr diff "$PR_NUMBER" || echo "Cannot fetch diff.")
           TRUNCATED_DIFF=$(echo "$DIFF" | head -c 10000)
 
