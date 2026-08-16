@@ -1,0 +1,5 @@
+# pre-commit-autoupdate.yml が使用する pre-commit 本体のバージョンピン。
+# run: の中で pip install した場合 Dependabot の対象外になり更新経路が無くなるため、
+# requirements ファイルに切り出して pip エコシステムで追従させる
+# (.github/dependabot.yml の package-ecosystem: 'pip' / directory: '/.github')。
+pre-commit==4.6.2

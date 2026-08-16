@@ -224,6 +224,29 @@ updates:
       - dependency-name: 'oven-sh/setup-bun'
         update-types: ['version-update:semver-major']
 
+  # Python (GitHub Actions 内で使用するツールのバージョンピン)
+  # github-actions エコシステムが見るのは uses: の参照だけで run: 内の pip install は
+  # 対象外になるため、.github/requirements-pre-commit.txt を pip として追従させる。
+  - package-ecosystem: 'pip'
+    directory: '/.github'
+    schedule:
+      interval: 'weekly'
+      day: 'monday'
+      time: '09:00'
+      timezone: 'Asia/Tokyo'
+    open-pull-requests-limit: 2
+    target-branch: 'main'
+    reviewers:
+      - 'genzouw'
+    labels:
+      - 'dependencies'
+      - 'github-actions'
+    commit-message:
+      prefix: 'ci'
+      include: 'scope'
+    pull-request-branch-name:
+      separator: '/'
+
   # Docker base image (backend)
   - package-ecosystem: 'docker'
     directory: '/backend'
