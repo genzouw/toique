@@ -112,6 +112,10 @@ jobs:
           commit-message: 'chore(security): 🔒 update pre-commit hooks'
           branch: 'chore/pre-commit-autoupdate'
           base: 'main'
+          # PR本文は「.pre-commit-config.yaml 内のバージョン更新」とだけ宣言している。
+          # add-paths を省略すると autofix 系フックが作業ツリーを書き換えた際に
+          # その差分まで同梱され、宣言と実差分が黙って乖離するため範囲を固定する。
+          add-paths: .pre-commit-config.yaml
           title: 'chore(security): 🔒 pre-commit フックの自動更新'
           body: |
             ## 概要
