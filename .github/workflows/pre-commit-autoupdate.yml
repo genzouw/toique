@@ -33,8 +33,13 @@ jobs:
       - name: Install pre-commit
         run: pip install pre-commit==4.6.2
 
+      # detect-secrets の版は .pre-commit-config.yaml の rev だけでなく
+      # .secrets.baseline / .husky/pre-commit / package.json / docs にも固定されており、
+      # rev だけを上げるとフォールバック経路 (pre-commit framework 未導入の環境) が
+      # バージョン不一致で実行を拒否し、エントロピースキャンが丸ごと止まる。
+      # ベースライン再生成を伴うため自動更新の対象外とし、gitleaks のみ追従させる。
       - name: Run pre-commit autoupdate
-        run: pre-commit autoupdate --freeze
+        run: pre-commit autoupdate --freeze --repo https://github.com/gitleaks/gitleaks
 
       # 更新後のフックが実際に動作することを確認する。
       # 本リポジトリには .pre-commit-config.yaml を検証するCIジョブが無く、
@@ -55,10 +60,12 @@ jobs:
           title: 'chore(security): 🔒 pre-commit フックの自動更新'
           body: |
             ## 概要
-            定期監査の一環として、ローカルのセキュリティ検知ツール (`gitleaks`, `detect-secrets` 等) のバージョンを最新に保つため、`pre-commit autoupdate` を実行しました。
+            定期監査の一環として、ローカルのセキュリティ検知ツール `gitleaks` のバージョンを最新に保つため、`pre-commit autoupdate` を実行しました。
 
             ## 変更内容
-            - `.pre-commit-config.yaml` 内のフックのバージョン更新
+            - `.pre-commit-config.yaml` 内の `gitleaks` のバージョン更新
+
+            なお `detect-secrets` は `.secrets.baseline` の再生成を伴うため自動更新の対象外です (手動更新)。
 
             ## マージ前の確認事項
             - CI が正常に通過していることを確認してください。
