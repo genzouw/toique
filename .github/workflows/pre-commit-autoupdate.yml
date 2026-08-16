@@ -6,9 +6,12 @@ on:
     - cron: '0 23 * * 0'
   workflow_dispatch:
 
+# PR 作成は PAT_FOR_MODELS で行い、checkout も persist-credentials: false のため
+# GITHUB_TOKEN には読み取り以上の権限は不要 (最小権限の原則)。
+# 本ジョブは pre-commit install-hooks で外部リポジトリのフックをビルド・実行する
+# 場所でもあるため、書き込み可能なトークンを同居させない。
 permissions:
-  contents: write
-  pull-requests: write
+  contents: read
 
 jobs:
   auto-update:
