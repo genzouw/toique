@@ -99,6 +99,10 @@ jobs:
             echo "::error::gitleaks binary not found in the pre-commit cache"
             exit 1
           fi
+          # どの版で検証したかをログに残す。将来 pre-commit キャッシュの復元
+          # (actions/cache 等) が導入された場合に、更新後ではなく古いバイナリを
+          # 誤って検証してしまう事故に後から気付けるようにするため。
+          echo "verifying with: $("$GITLEAKS_BIN" version)"
           "$GITLEAKS_BIN" dir "$(mktemp -d)" --config .gitleaks.toml --no-banner
 
       - name: Create Pull Request
