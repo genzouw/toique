@@ -71,5 +71,7 @@ jobs:
             - CI が正常に通過していることを確認してください。
             - 検知ツールのメジャーバージョンアップが含まれる場合、破壊的変更（ルールの変更など）がないか確認してください。
           labels: 'dependencies, github-actions'
+          # PAT_FOR_MODELS の持ち主が生成 PR の作者になるため、同一ユーザーを reviewers に
+          # 指定すると POST /pulls/{n}/requested_reviewers が 422 を返し step が失敗する。
+          # 自己アサインは可能なので assignees のみ指定する。
           assignees: 'genzouw'
-          reviewers: 'genzouw'
