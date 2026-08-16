@@ -51,6 +51,7 @@ jobs:
           token: ${{ secrets.PAT_FOR_MODELS }}
           commit-message: 'chore(security): 🔒 update pre-commit hooks'
           branch: 'chore/pre-commit-autoupdate'
+          base: 'main'
           title: 'chore(security): 🔒 pre-commit フックの自動更新'
           body: |
             ## 概要
@@ -62,6 +63,6 @@ jobs:
             ## マージ前の確認事項
             - CI が正常に通過していることを確認してください。
             - 検知ツールのメジャーバージョンアップが含まれる場合、破壊的変更（ルールの変更など）がないか確認してください。
-          labels: 'dependencies, security'
+          labels: 'dependencies, github-actions'
           assignees: 'genzouw'
           reviewers: 'genzouw'
