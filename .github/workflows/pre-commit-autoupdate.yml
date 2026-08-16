@@ -55,8 +55,20 @@ jobs:
       # rev だけを上げるとフォールバック経路 (pre-commit framework 未導入の環境) が
       # バージョン不一致で実行を拒否し、エントロピースキャンが丸ごと止まる。
       # ベースライン再生成を伴うため自動更新の対象外とし、gitleaks のみ追従させる。
+      #
+      # --repo は allow-list ではなく deny-list として運用する。allow-list
+      # (例: --repo gitleaks のみ指定) だと、.pre-commit-config.yaml に新しい
+      # フックを追加しても autoupdate 側は指定漏れに気付けず exit 0 のまま
+      # 静かに取り残される。deny-list なら新規フックは自動的に対象へ入る。
       - name: Run pre-commit autoupdate
-        run: pre-commit autoupdate --freeze --repo https://github.com/gitleaks/gitleaks
+        run: |
+          set -euo pipefail
+          mapfile -t repo_args < <(python -c "import yaml; skip = ('local', 'meta', 'https://github.com/Yelp/detect-secrets'); print('\n'.join('--repo=' + r['repo'] for r in yaml.safe_load(open('.pre-commit-config.yaml'))['repos'] if r['repo'] not in skip))")
+          if [ "${#repo_args[@]}" -eq 0 ]; then
+            echo "::error::no repository is targeted for autoupdate"
+            exit 1
+          fi
+          pre-commit autoupdate --freeze "${repo_args[@]}"
 
       # 更新後のフックが実際に動作することを確認する。
       # 本リポジトリには .pre-commit-config.yaml を検証するCIジョブが無く、
