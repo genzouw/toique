@@ -47,8 +47,30 @@ jobs:
       # 失敗した場合はPRを作らず、壊れた更新が取り込まれるのを防ぐ。
       - name: Verify updated hooks
         run: |
+          # 更新後の rev が解決でき、フックがビルドできることの確認 (ここが本命)。
           pre-commit install-hooks
+          # detect-secrets はステージ非依存で動くためここで実際に検証される。
+          # 一方 gitleaks フックの entry は --staged 前提のため、CI のクリーンな
+          # チェックアウトではステージが空になり、何もスキャンせずに成功する。
+          # gitleaks の実質的な検証は次のステップで行う。
           pre-commit run --all-files --show-diff-on-failure
+
+      # gitleaks の更新事故で最も影響が大きいのは .gitleaks.toml のスキーマ非互換
+      # (ルール定義の仕様変更) だが、上記 --all-files では空振りして検出できない。
+      # かといってリポジトリ全体をスキャンすると、.gitleaksignore のフィンガープリントが
+      # 全履歴スキャン (--log-opts=--all) 前提で記録されており浅いチェックアウトでは
+      # 一致しないため、精査済みの既知検知で必ず失敗してしまう。
+      # そこで空ディレクトリを対象に更新後のバイナリを起動し、設定ファイルを
+      # 読み込めるかどうかだけを検証する (読み込み失敗時は exit 1 になる)。
+      - name: Verify gitleaks config compatibility
+        run: |
+          set -euo pipefail
+          GITLEAKS_BIN="$(find "${PRE_COMMIT_HOME:-$HOME/.cache/pre-commit}" -type f -name gitleaks -perm -u+x -print -quit)"
+          if [ -z "$GITLEAKS_BIN" ]; then
+            echo "::error::gitleaks binary not found in the pre-commit cache"
+            exit 1
+          fi
+          "$GITLEAKS_BIN" dir "$(mktemp -d)" --config .gitleaks.toml --no-banner
 
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@5f6978faf089d4d20b00c7766989d076bb2fc7f1 # v8.1.1
