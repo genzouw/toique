@@ -36,6 +36,15 @@ jobs:
       - name: Run pre-commit autoupdate
         run: pre-commit autoupdate --freeze
 
+      # 更新後のフックが実際に動作することを確認する。
+      # 本リポジトリには .pre-commit-config.yaml を検証するCIジョブが無く、
+      # 生成PRのCIが全て緑でも設定の妥当性は担保されないため、ここで検証する。
+      # 失敗した場合はPRを作らず、壊れた更新が取り込まれるのを防ぐ。
+      - name: Verify updated hooks
+        run: |
+          pre-commit install-hooks
+          pre-commit run --all-files --show-diff-on-failure
+
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@67ccf781d68cd99b580ae25a5c18a1cc84ffff1f # v7.0.6
         with:
