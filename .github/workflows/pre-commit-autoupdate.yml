@@ -26,7 +26,7 @@ jobs:
           persist-credentials: false
 
       - name: Setup Python
-        uses: actions/setup-python@v5 # v5.3.0
+        uses: actions/setup-python@0b93645e9fea7318ecaed2b359559ac225c90a2b # v5.3.0
         with:
           python-version: '3.12'
 
@@ -37,12 +37,12 @@ jobs:
         run: pre-commit autoupdate
 
       - name: Create Pull Request
-        uses: peter-evans/create-pull-request@v7 # v7.0.6
+        uses: peter-evans/create-pull-request@67ccf781d68cd99b580ae25a5c18a1cc84ffff1f # v7.0.6
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          commit-message: "chore(security): 🔒 update pre-commit hooks"
-          branch: "chore/pre-commit-autoupdate"
-          title: "chore(security): 🔒 pre-commit フックの自動更新"
+          commit-message: 'chore(security): 🔒 update pre-commit hooks'
+          branch: 'chore/pre-commit-autoupdate'
+          title: 'chore(security): 🔒 pre-commit フックの自動更新'
           body: |
             ## 概要
             定期監査の一環として、ローカルのセキュリティ検知ツール (`gitleaks`, `detect-secrets` 等) のバージョンを最新に保つため、`pre-commit autoupdate` を実行しました。
@@ -53,6 +53,6 @@ jobs:
             ## マージ前の確認事項
             - CI が正常に通過していることを確認してください。
             - 検知ツールのメジャーバージョンアップが含まれる場合、破壊的変更（ルールの変更など）がないか確認してください。
-          labels: "dependencies, security"
-          assignees: "genzouw"
-          reviewers: "genzouw"
+          labels: 'dependencies, security'
+          assignees: 'genzouw'
+          reviewers: 'genzouw'
