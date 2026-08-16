@@ -6,6 +6,13 @@ on:
     - cron: '0 23 * * 0'
   workflow_dispatch:
 
+# schedule と workflow_dispatch が両方トリガーのため、週次実行中に手動実行が
+# 重なると同一ブランチへ同時に push しうる。create-pull-request は既存ブランチを
+# force push で更新するため、後勝ちでどちらかの結果が失われるのを防ぐ。
+concurrency:
+  group: pre-commit-autoupdate
+  cancel-in-progress: false
+
 # PR 作成は PAT_FOR_MODELS で行い、checkout も persist-credentials: false のため
 # GITHUB_TOKEN には読み取り以上の権限は不要 (最小権限の原則)。
 # 本ジョブは pre-commit install-hooks で外部リポジトリのフックをビルド・実行する
