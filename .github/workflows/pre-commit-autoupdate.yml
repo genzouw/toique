@@ -33,11 +33,15 @@ jobs:
         with:
           python-version: '3.12'
 
-      # バージョンピンは .github/requirements-pre-commit.txt に切り出してある。
-      # run: の中で直接 pip install するとどのボットからも参照されない孤立点になり、
-      # 「陳腐化を防ぐ」ワークフロー自身の実行系だけが古いまま固まるため。
+      # このピンは Dependabot の対象外 (github-actions エコシステムが見るのは uses: の
+      # 参照のみで run: 内の pip install は見ない) のため、版上げは手動で行う。
+      # requirements ファイルに切り出して pip エコシステムに登録する案は、OSV-Scanner が
+      # pre-commit の依存を推定解決して実際に pip が入れる版と異なる版で脆弱性を報告し、
+      # 恒常的な偽陽性でセキュリティ CI を赤くするため見送っている (PR #681 で検証済み)。
+      # .pre-commit-config.yaml の minimum_pre_commit_version により最低要件は担保される。
+      # 目安として半年に一度、https://pypi.org/project/pre-commit/ を見て更新すること。
       - name: Install pre-commit
-        run: pip install -r .github/requirements-pre-commit.txt
+        run: pip install pre-commit==4.6.2
 
       # detect-secrets の版は .pre-commit-config.yaml の rev だけでなく
       # .secrets.baseline / .husky/pre-commit / package.json / docs にも固定されており、
