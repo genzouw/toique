@@ -56,7 +56,7 @@ AI によるレビュー・トリアージの代替方針は第5節を参照し�
 
 ## 4. AIコードレビューの設定最適化
 
-当リポジトリでは CodeRabbit および Qodo Merge (旧 PR Agent) などの無料AIレビューツールを導入しています。
+当リポジトリでは CodeRabbit および Qodo Merge (旧 PR Agent) といった外部 AI レビューツールを導入対象としています（Qodo Merge の無料利用条件は「新規AIレビューツール (CodeRabbit & PR-Agent) の導入手順」を参照。本リポジトリは現時点で無料対象外です）。
 生成AIのレビュー精度を向上させるため、各設定ファイル（`.coderabbit.yaml`, `.pr_agent.toml`）には以下のような追加のレビュー観点が定義されています。
 もし新たなセキュリティやパフォーマンス、アクセシビリティの懸念事項があれば、設定ファイルを手動で調整し、AIのプロンプトを最適化してください。
 
@@ -74,7 +74,12 @@ AI によるレビュー・トリアージの代替方針は第5節を参照し�
 
 **現行の方針: GitHub ネイティブの無料 AI 推論基盤は存在しないため、リポジトリ側で AI 推論を実行するワークフローは新規に追加しません。**
 
-AI によるレビュー・トリアージは、リポジトリ側に API キーも課金設定も必要としない無料の外部 App（CodeRabbit / Qodo Merge、第4節参照）に一本化します。
+AI によるレビュー・トリアージは、リポジトリ側に API キーも課金設定も必要としない外部 App（CodeRabbit / Qodo Merge、第4節参照）に一本化します。
+
+ただし「App 側で推論が走る」ことと「無料である」ことは別問題です。App ごとに無料条件を確認し、条件を満たさないものは本方針上採用できません。
+
+- **CodeRabbit**: 公開リポジトリ向けの無料プラン（Open Source）があり、本リポジトリは対象です。
+- **Qodo Merge**: 無料利用は [Qodo for Open Source](https://docs.qodo.ai/open-source-program) に承認された場合のみ（公開リポジトリ・stars 100 以上・継続的なメンテナンス・利用ポリシー遵守）。本リポジトリは stars が条件未達のため**現時点では無料対象外**で、通常プランはクレジット課金となるため導入を見送っています。
 
 **採用しないもの:**
 
@@ -126,7 +131,7 @@ Rust製の高速なスペルチェッカー `typos` がCIに追加されてい�
 当リポジトリでは生成AIによるコードの大量生成やそれに伴うCI/CDパイプラインへの負荷増大に対応するため、静的解析ツールとAIの連携を強化しています。
 PRマージ前に以下の作業を確認してください。
 
-1. **Qodo Merge / PR-Agent のインストール**: PR-Agent などの無料レビューツールを GitHub App として対象リポジトリにインストールし、適切な権限 (Issues: Write, Pull Requests: Write 等) を付与してください。
+1. **Qodo Merge / PR-Agent のインストール**: PR-Agent などのレビューツールを GitHub App として対象リポジトリにインストールし、適切な権限 (Issues: Write, Pull Requests: Write 等) を付与してください。インストール前に無料利用の条件を満たすか確認してください（Qodo Merge は Qodo for Open Source の承認が必要で、本リポジトリは現時点で対象外です）。
 2. **セキュリティスキャナの有効化確認**: `Gitleaks`, `Trufflehog` が適切に動作するよう、GitHub の設定 > Security から Secret Scanning と Push Protection が有効になっているか確認してください。また、`Zizmor` による解析結果が Code scanning alerts に適切に反映されるよう設定されているか確認してください。
 3. **StepSecurity Harden-Runner のインストール**: AIコーディングエージェントからのクレデンシャル漏洩やサプライチェーン攻撃を防ぐため、主要なワークフローに `step-security/harden-runner` を導入しています。
    - StepSecurity の GitHub App を対象リポジトリにインストールし、初期設定を行ってください（公開リポジトリは無料で利用可能です）。
@@ -221,5 +226,7 @@ AI エージェント（Cursor, Claude Desktop など）が開発プロジェク
 2. **Qodo Merge (旧 PR-Agent / CodiumAI) のインストール**
    - CodiumAI は Qodo にリブランドされ、PR-Agent(Pro)は Qodo Merge となりました。GitHub Marketplace から [Qodo Merge](https://github.com/apps/qodo-merge) をインストールしてください。
    - インストール後、PRに `/review` や `/describe` などのコマンドをコメントすることで機能します。
+   - **無料利用の条件**: [Qodo for Open Source](https://docs.qodo.ai/open-source-program) に承認された場合のみ無料です。条件は「公開 GitHub リポジトリであること」「stars 100 以上」「継続的にメンテナンスされていること」「Qodo の利用ポリシーを遵守すること」です。承認されない場合はクレジット課金の通常プランとなります。
+   - **本リポジトリの状況**: stars が 100 に届いておらず条件未達のため、現時点では無料対象外です。第5節の「CI から呼び出す AI は無料枠のみ」方針に従い、条件を満たすまでインストールは行いません。
 3. **Qodo Merge の設定統合**
    - これまで `.pr-agent.toml` と `.pr_agent.toml` が混在していたため、`.pr_agent.toml` に設定を一本化しました。これにより、日本語出力(`response_language="ja-JP"`)と `gpt-4o` モデルの利用設定が正しく一貫して適用されます。設定の変更が必要な場合は `.pr_agent.toml` のみを編集してください。
