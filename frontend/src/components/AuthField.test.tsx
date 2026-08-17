@@ -30,6 +30,10 @@ describe('AuthField', () => {
     });
     expect(input).toBeInTheDocument();
     expect(input).toHaveAttribute('type', 'email');
+
+    const requiredMarker = screen.getByText('*', { selector: 'span' });
+    expect(requiredMarker).toHaveClass('text-red-500');
+    expect(requiredMarker).toHaveAttribute('aria-hidden', 'true');
   });
 
   it('renders no toggle button for non-password types', () => {
