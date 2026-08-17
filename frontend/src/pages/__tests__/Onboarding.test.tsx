@@ -35,7 +35,7 @@ describe('Onboarding', () => {
     expect(
       screen.getByRole('heading', { name: '組織の登録' }),
     ).toBeInTheDocument();
-    expect(screen.getByLabelText('組織名')).toBeInTheDocument();
+    expect(screen.getByLabelText(/組織名/, { selector: 'input' })).toBeInTheDocument();
     expect(
       screen.getByRole('button', { name: '組織を作成して開始' }),
     ).toBeInTheDocument();
@@ -53,7 +53,7 @@ describe('Onboarding', () => {
       </MemoryRouter>,
     );
 
-    const tenantInput = screen.getByLabelText('組織名');
+    const tenantInput = screen.getByLabelText(/組織名/, { selector: 'input' });
     const submitButton = screen.getByRole('button', {
       name: '組織を作成して開始',
     });
@@ -87,7 +87,7 @@ describe('Onboarding', () => {
       </MemoryRouter>,
     );
 
-    const tenantInput = screen.getByLabelText('組織名');
+    const tenantInput = screen.getByLabelText(/組織名/, { selector: 'input' });
     const submitButton = screen.getByRole('button', {
       name: '組織を作成して開始',
     });

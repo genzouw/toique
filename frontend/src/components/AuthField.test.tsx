@@ -25,7 +25,7 @@ function ControlledAuthField(props: {
 describe('AuthField', () => {
   it('renders label and input with associated htmlFor', () => {
     render(<ControlledAuthField label="メールアドレス" type="email" />);
-    const input = screen.getByLabelText('メールアドレス');
+    const input = screen.getByLabelText(/メールアドレス/, { selector: 'input' });
     expect(input).toBeInTheDocument();
     expect(input).toHaveAttribute('type', 'email');
   });
@@ -41,7 +41,7 @@ describe('AuthField', () => {
     const user = userEvent.setup();
     render(<ControlledAuthField label="パスワード" type="password" />);
 
-    const passwordInput = screen.getByLabelText('パスワード');
+    const passwordInput = screen.getByLabelText(/パスワード/, { selector: 'input' });
     expect(passwordInput).toHaveAttribute('type', 'password');
 
     const showButton = screen.getByRole('button', { name: 'パスワードを表示' });
@@ -69,14 +69,14 @@ describe('AuthField', () => {
         variant="admin"
       />,
     );
-    const input = screen.getByLabelText('パスワード');
+    const input = screen.getByLabelText(/パスワード/, { selector: 'input' });
     expect(input.className).toContain('focus-visible:ring-amber-500');
     expect(input.className).not.toContain('focus-visible:ring-slate-900');
   });
 
   it('applies user focus ring color by default', () => {
     render(<ControlledAuthField label="パスワード" type="password" />);
-    const input = screen.getByLabelText('パスワード');
+    const input = screen.getByLabelText(/パスワード/, { selector: 'input' });
     expect(input.className).toContain('focus-visible:ring-slate-900');
     expect(input.className).not.toContain('focus-visible:ring-amber-500');
   });
@@ -84,7 +84,7 @@ describe('AuthField', () => {
   it('updates value via onChange', async () => {
     const user = userEvent.setup();
     render(<ControlledAuthField label="メール" type="email" />);
-    const input = screen.getByLabelText('メール');
+    const input = screen.getByLabelText(/メール/, { selector: 'input' });
     await user.type(input, 'foo@example.com');
     expect(input).toHaveValue('foo@example.com');
   });
