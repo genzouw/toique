@@ -30,6 +30,22 @@ jobs:
         with:
           egress-policy: audit
 
+      # PAT_FOR_AUTOMATION が未登録でも、ジョブは autoupdate と gitleaks 検証を
+      # 数分走らせ切ってから最後の create-pull-request で初めて落ちる。しかも
+      # v8.1.1 のエラーは "Input 'token' not supplied. Unable to continue." で、
+      # シークレット未登録が原因だと読み取れない (with: にキーを書いている以上
+      # action 側の default: ${{ github.token }} は適用されず空文字が渡るため)。
+      # 原因と対処が一目で分かるよう、実作業に入る前にここで打ち切る。
+      - name: Verify automation token is configured
+        env:
+          AUTOMATION_TOKEN: ${{ secrets.PAT_FOR_AUTOMATION }}
+        run: |
+          set -euo pipefail
+          if [ -z "${AUTOMATION_TOKEN}" ]; then
+            echo "::error::secrets.PAT_FOR_AUTOMATION is not registered. Create a fine-grained PAT scoped to this repository with Contents: write and Pull requests: write, then register it as the PAT_FOR_AUTOMATION repository secret. See section 3 of .github/AI_AUTOMATION_SETUP.md."
+            exit 1
+          fi
+
       - name: Checkout repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
