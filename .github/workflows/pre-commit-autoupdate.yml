@@ -13,7 +13,7 @@ concurrency:
   group: pre-commit-autoupdate
   cancel-in-progress: false
 
-# PR 作成は PAT_FOR_MODELS で行い、checkout も persist-credentials: false のため
+# PR 作成は PAT_FOR_AUTOMATION で行い、checkout も persist-credentials: false のため
 # GITHUB_TOKEN には読み取り以上の権限は不要 (最小権限の原則)。
 # 本ジョブは pre-commit install-hooks で外部リポジトリのフックをビルド・実行する
 # 場所でもあるため、書き込み可能なトークンを同居させない。
@@ -29,6 +29,22 @@ jobs:
         uses: step-security/harden-runner@b09bb98e06d4d774595224525879c09bc6e98c40 # v2.20.1
         with:
           egress-policy: audit
+
+      # PAT_FOR_AUTOMATION が未登録でも、ジョブは autoupdate と gitleaks 検証を
+      # 数分走らせ切ってから最後の create-pull-request で初めて落ちる。しかも
+      # v8.1.1 のエラーは "Input 'token' not supplied. Unable to continue." で、
+      # シークレット未登録が原因だと読み取れない (with: にキーを書いている以上
+      # action 側の default: ${{ github.token }} は適用されず空文字が渡るため)。
+      # 原因と対処が一目で分かるよう、実作業に入る前にここで打ち切る。
+      - name: Verify automation token is configured
+        env:
+          AUTOMATION_TOKEN: ${{ secrets.PAT_FOR_AUTOMATION }}
+        run: |
+          set -euo pipefail
+          if [ -z "${AUTOMATION_TOKEN}" ]; then
+            echo "::error::secrets.PAT_FOR_AUTOMATION is not registered. Create a fine-grained PAT scoped to this repository with Contents: write and Pull requests: write, then register it as the PAT_FOR_AUTOMATION repository secret. See section 3 of .github/AI_AUTOMATION_SETUP.md."
+            exit 1
+          fi
 
       - name: Checkout repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -108,7 +124,7 @@ jobs:
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@5f6978faf089d4d20b00c7766989d076bb2fc7f1 # v8.1.1
         with:
-          token: ${{ secrets.PAT_FOR_MODELS }}
+          token: ${{ secrets.PAT_FOR_AUTOMATION }}
           commit-message: 'chore(security): 🔒 update pre-commit hooks'
           branch: 'chore/pre-commit-autoupdate'
           base: 'main'
@@ -130,7 +146,7 @@ jobs:
             - CI が正常に通過していることを確認してください。
             - 検知ツールのメジャーバージョンアップが含まれる場合、破壊的変更（ルールの変更など）がないか確認してください。
           labels: 'dependencies, github-actions'
-          # PAT_FOR_MODELS の持ち主が生成 PR の作者になるため、同一ユーザーを reviewers に
+          # PAT_FOR_AUTOMATION の持ち主が生成 PR の作者になるため、同一ユーザーを reviewers に
           # 指定すると POST /pulls/{n}/requested_reviewers が 422 を返し step が失敗する。
           # 自己アサインは可能なので assignees のみ指定する。
           assignees: 'genzouw'

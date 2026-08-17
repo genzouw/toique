@@ -245,19 +245,23 @@ curl -s http://localhost:3000/api/v1/messages | jq
 ### コードレビューとAI自動化
 
 - **CodeRabbit** (`.coderabbit.yaml`): profile=assertive。本番自動デプロイ運用のため高感度
-- **Qodo Merge (PR Agent)**: CodiumAI を使用したPR自動レビュー。公開リポジトリは完全無料で使用できます（※ GitHub Appとしてのインストール推奨、または Actions経由での実行）。
-- **AI Issue Triage** (`ai-issue-triage.yml`): `actions/github-script` を用いて、Issueが作成された際に自動で GitHub Models を呼び出し、トリアージを行う仕組みです。
-- **AI ChatOps** (`ai-chatops.yml`): PRのコメントで `/ai fix` などのコマンドを受け取り、GitHub Models と Web検索 (RAG) を活用して自動で回答や修正案を提示します。
-- **AI PR Code Review** (`ai-pr-review.yml`): PR作成時等に、コード差分とWeb検索から得たベストプラクティスに基づき、GitHub Modelsが自動レビューを行います。
-- **AI DevRel Blog Generator** (`ai-blog-generator.yml`): 毎週定期的に、マージ済みのPR情報を収集し、DevRel向けの技術ブログ記事（Markdown）を自動生成します。
-- **AI Auto-Documenter** (`ai-auto-documenter.yml`): PRの変更差分からTypeScriptコードを解析し、欠落しているJSDoc/TSDocをAIが自動で提案します。
+- **Qodo Merge (PR Agent)**: CodiumAI を使用したPR自動レビュー。無料利用は [Qodo for Open Source](https://docs.qodo.ai/open-source-program) の審査を通過した公開リポジトリに限られます（※ GitHub Appとしてのインストール推奨、または Actions経由での実行）。
 
 > [!NOTE]
 > **導入のための手動事前作業:**
 >
-> 1. **Qodo Merge**: [Qodo Merge GitHub App](https://github.com/apps/qodo-merge) をインストールするだけで公開リポジトリに対して完全無料で利用可能です。自動的に `.pr_agent.toml` の設定を読み込みます。
-> 2. **GitHub Models連携**: AI Issue Triage, AI Weekly Summary, AI Release Drafter, AI ChatOps, AI PR Code Review はすべて GitHub Models を使用します。手動での API キー登録は不要で、自動的に `GITHUB_TOKEN` が利用されます。
-> 3. **権限設定**: 各ワークフローファイルに `permissions:` が個別定義されているため、リポジトリ全体の "Workflow permissions" を **Read and write** にする必要はありません。デフォルトの **Read repository contents and packages permissions** のままで動作します（各ワークフローは `issues: write` や `pull-requests: write` などの必要な権限を内部で個別に宣言しています）。
+> 1. **CodeRabbit**: [CodeRabbit GitHub App](https://github.com/apps/coderabbitai) をインストールします。公開リポジトリは無料で、`.coderabbit.yaml` を自動的に読み込みます。
+> 2. **Qodo Merge**: [Qodo Merge GitHub App](https://github.com/apps/qodo-merge) をインストールすると `.pr_agent.toml` の設定を自動的に読み込みます。ただし**インストールだけで無料になるわけではありません**。無料枠は [Qodo for Open Source](https://docs.qodo.ai/open-source-program) の対象として承認された場合のみで、公開 GitHub リポジトリであること・stars 100 以上・継続的にメンテナンスされていること・利用ポリシーの遵守が条件です。本リポジトリは stars が条件に届いていないため、現時点では無料対象外です。対象外の場合は Qodo の通常プラン（クレジット課金）となるため、「CI から呼び出す AI は無料枠のみ」の方針（`.github/AI_AUTOMATION_SETUP.md` 第5節）に照らし、条件を満たすまで導入は見送ります。
+>
+> いずれも GitHub App 側で推論が実行されるため、リポジトリに API キーを登録する必要はありません。
+
+> [!IMPORTANT]
+> **GitHub Models を利用した自前の AI ワークフローは廃止しました。**
+> GitHub Models は 2026-07-30 に推論 API を含めて[完全に終了](https://github.blog/changelog/2026-07-30-github-models-is-now-retired/)しています。
+> これに依存していた `ai-*.yml` 23 本と Composite Action `.github/actions/ai-web-search` は撤去済みです。
+> 後継として案内される Microsoft Foundry / GitHub Copilot はいずれも課金または API キー管理を伴い、
+> 「CI から呼び出す AI は無料枠のみ」という方針（`.github/AI_AUTOMATION_SETUP.md` 第5節）と両立しないため採用しません。
+> AI によるレビュー・トリアージは上記の外部 App に一本化しています。
 
 ### PR / リポジトリ運用
 
@@ -291,4 +295,5 @@ curl -s http://localhost:3000/api/v1/messages | jq
 ### AI / 自動化機能の強化 (2025)
 
 - **MCP (Model Context Protocol)**: `scripts/mcp-server.ts` を用いて、Claude Desktop や Cursor 等のローカル AI ツールから直接 Hono ルーティングや Drizzle DB スキーマを読み取れる仕組みを導入しています。詳細は `.github/AI_AUTOMATION_SETUP.md` を参照してください。
-- **AI OpenAPI Generator**: バックエンドのルーティングやスキーマ変更を検知して、`docs/openapi.yaml` を自動生成する GitHub Action ワークフローを導入しています。
+
+MCP サーバーは開発者のローカル環境で動作し、CI 側の推論基盤には依存しません。そのため GitHub Models の終了後も引き続き利用できます。
