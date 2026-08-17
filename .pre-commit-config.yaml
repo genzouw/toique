@@ -1,12 +1,12 @@
 minimum_pre_commit_version: '3.0.0'
 repos:
   - repo: https://github.com/gitleaks/gitleaks
-    rev: v8.21.2
+    rev: 43fae355e6fe4d99d2a7b240a224b85e2903aeb4 # v8.21.2
     hooks:
       - id: gitleaks
   - repo: https://github.com/Yelp/detect-secrets
-    rev: v1.5.0
+    rev: 01886c8a910c64595c47f186ca1ffc0b77fa5458 # v1.5.0
     hooks:
       - id: detect-secrets
         args: ['--baseline', '.secrets.baseline', '--no-verify']
-        exclude: '^\.secrets\.baseline$'
+        exclude: '(^|/)\.secrets\.baseline$'

@@ -22,7 +22,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          # ai-release-drafter がこのタイトルを元にリリースノートを作成するため必須
+          # scope は任意。Conventional Commits の type と subject のみを強制する。
           requireScope: false
           # PRタイトルが "feat:", "fix:", "chore:" などで始まることを強制する
           # エラーメッセージをカスタマイズ可能
