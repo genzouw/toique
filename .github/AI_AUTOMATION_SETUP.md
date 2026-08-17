@@ -47,9 +47,10 @@ GitHub Models は 2026-07-30 に playground・モデルカタログ・推論 API
 **シークレットの取り扱い:**
 
 - `EXA_API_KEY` / `TAVILY_API_KEY` — 利用者が無くなったため、登録されている場合はリポジトリの Secrets から削除して構いません。
-- `PAT_FOR_MODELS` — 本リポジトリの Actions secrets には**登録されていません**（`gh api repos/genzouw/toique/actions/secrets` で確認済み。owner は Organization ではなく User のため、Organization / Environment / Dependabot secrets の階層もありません）。「GitHub Models 用のトークンを削除するか残すか」という判断自体が対象不在で成立しません。
-  - `pre-commit-autoupdate.yml` は PR 作成用トークンとして `secrets.PAT_FOR_AUTOMATION` を参照します（`GITHUB_TOKEN` で PR を作ると後続の Actions がトリガーされないため専用トークンが必要）が、これも未登録です。**このワークフローは現状のままではトークン未設定により失敗します（`with:` にキーを指定している以上、`peter-evans/create-pull-request` 側の `default: ${{ github.token }}` は適用されず、空文字が渡って 401 になります）。**
-  - **未対応の手動作業**: `repo` / `workflow` スコープの Personal Access Token を新規発行し、`PAT_FOR_AUTOMATION` という名前でリポジトリの Secrets に登録してください。GitHub Models へのスコープは不要です。
+- `PAT_FOR_MODELS` — 本リポジトリには**登録されていません**。「GitHub Models 用のトークンを削除するか残すか」という判断自体が対象不在で成立しません。
+  - 確認範囲: Actions secrets / Dependabot secrets / Environment secrets の 3 面をそれぞれ API で確認済み（`gh api repos/genzouw/toique/actions/secrets`、`.../dependabot/secrets`、`.../environments`）。**User 所有リポジトリでも Environment secrets と Dependabot secrets は利用可能**なので、Actions secrets の結果だけでは未登録と断定できない点に注意してください。対象外となるのは Organization secrets の階層だけです（owner が User のため存在しません）。
+  - `pre-commit-autoupdate.yml` は PR 作成用トークンとして `secrets.PAT_FOR_AUTOMATION` を参照します（`GITHUB_TOKEN` で PR を作ると後続の Actions がトリガーされないため専用トークンが必要）が、これも上記 3 面のいずれにも未登録です。**このワークフローは現状のままではトークン未設定により失敗します。** `with:` にキーを指定している以上、`peter-evans/create-pull-request` 側の `default: ${{ github.token }}` は適用されず空文字が渡り、v8.1.1 は API を叩く前に `Input 'token' not supplied. Unable to continue.` で終了します（401 にはなりません）。
+  - **未対応の手動作業**: fine-grained Personal Access Token を新規発行し、`PAT_FOR_AUTOMATION` という名前でリポジトリの Secrets に登録してください。必要な権限は本リポジトリに対する **Contents: write** と **Pull requests: write** の 2 つです。当ワークフローは `add-paths: .pre-commit-config.yaml` で workflow ファイルを書き換えないため、`workflow` 相当の権限は不要です。GitHub Models へのスコープも不要です。
 
 AI によるレビュー・トリアージの代替方針は第5節を参照してください。
 
