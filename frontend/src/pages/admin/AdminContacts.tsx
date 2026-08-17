@@ -1,4 +1,4 @@
-import { useEffect, useState, memo, useMemo } from 'react';
+import { useEffect, useState, memo } from 'react';
 import { Link } from 'react-router';
 import { Mail } from 'lucide-react';
 import { formatDate } from '../../lib/format-date';
@@ -44,10 +44,8 @@ export default function AdminContacts() {
       );
   }, []);
 
-  // ⚡ Bolt: filter state や rows が変更されない限り、要素数の多いリストの不要な再フィルタリング（O(N)の計算）をスキップし、レンダリングのオーバーヘッドを削減します。
-  const filtered = useMemo(() => {
-    return rows?.filter((r) => filter === 'all' || r.status === filter) ?? [];
-  }, [rows, filter]);
+  const filtered =
+    rows?.filter((r) => filter === 'all' || r.status === filter) ?? [];
 
   return (
     <div className="space-y-4">
