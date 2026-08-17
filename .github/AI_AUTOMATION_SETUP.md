@@ -229,16 +229,5 @@ AI エージェント（Cursor, Claude Desktop など）が開発プロジェク
    - **無料利用の条件**: [Qodo for Open Source](https://docs.qodo.ai/open-source-program) に承認された場合のみ無料です。条件は「公開 GitHub リポジトリであること」「stars 100 以上」「継続的にメンテナンスされていること」「Qodo の利用ポリシーを遵守すること」です。承認されない場合はクレジット課金の通常プランとなります。
    - **本リポジトリの状況**: stars が 100 に届いておらず条件未達のため、現時点では無料対象外です。第5節の「CI から呼び出す AI は無料枠のみ」方針に従い、条件を満たすまでインストールは行いません。
 
-### 新規AIレビューツール (Gemini PR Review) の導入手順
-
-生成AIによるコードレビューの品質向上と自動化のため、`derailed-dash/gemini-review-action` を利用したワークフローを導入しました。
-
-1. **Gemini API キーの取得**
-   - Google AI Studio 等から Gemini API キーを取得します。
-2. **Secrets の設定**
-   - GitHubリポジトリの **Settings** > **Secrets and variables** > **Actions** を開きます。
-   - `New repository secret` をクリックし、名前に `GEMINI_API_KEY`、値に取得したAPIキーを設定して保存します。
-   - `GITHUB_TOKEN` はGitHub Actionsによって自動で提供されるため、追加の設定は不要です。
-
 3. **Qodo Merge の設定統合**
    - これまで `.pr-agent.toml` と `.pr_agent.toml` が混在していたため、`.pr_agent.toml` に設定を一本化しました。これにより、日本語出力(`response_language="ja-JP"`)と `gpt-4o` モデルの利用設定が正しく一貫して適用されます。設定の変更が必要な場合は `.pr_agent.toml` のみを編集してください。
