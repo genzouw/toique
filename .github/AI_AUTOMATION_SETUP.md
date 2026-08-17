@@ -171,13 +171,13 @@ LLM に渡すプロンプトの中で、**リポジトリ外の第三者が内�
 4. 外部データが自動マージ・自動修正などの**行動判断**に影響しうるワークフローでは、判断根拠を検証可能な情報（diff、公式のセキュリティ勧告など）に限定する旨を WARNING に明記する。診断・分析用のプロンプトに実際の diff を含める場合は `<pr_diff>` タグを使用する。
 5. `${prDiff}` や `${searchResults}` のような外部由来データは、`developer`（system）ロールのプロンプトへ埋め込まない。ロール自体が高優先度の指示として解釈されるため、タグで囲んでいてもリスクが残る。外部データは必ず `user` ロールのメッセージ内にタグ付きで格納し、`developer` ロールには静的な指示・WARNINGのみを置く。
 
-### SBOM (Software Bill of Materials) ポリシーの適用 (2025年最新トレンド)
+### SBOM (Software Bill of Materials) ポリシーの適用
 
-サプライチェーン攻撃の防止および2025年のCI/CDベストプラクティスに従い、`.github/workflows/sbom-policy-check.yml` にてSBOM（SPDX-JSON形式）の自動生成とアーティファクト保存を導入しました。
+サプライチェーン攻撃の防止というCI/CDのベストプラクティスに従い、`.github/workflows/sbom-policy-check.yml` にてSBOM（SPDX-JSON形式）の自動生成とアーティファクト保存を導入しました。
 **手動確認作業:**
 Pull Requestをマージする前に、該当PRで実行された `SBOM Policy Check` ワークフローの実行結果から `sbom` アーティファクトをダウンロードし、依存関係に意図しないパッケージ（悪意のあるタイポスクワッティングなど）が含まれていないか、定期的に手動で内容を監査・確認してください。確認が完了するまではマージしないでください。なお、開発のボトルネック化を防ぐため、将来的にはCI上で自動スキャンツール（`osv-scanner` や `Socket` など）を用いた自動検知への移行を推奨します。
 
-### OpenSSF Scorecard の導入 (2025年最新)
+### OpenSSF Scorecard の導入
 
 オープンソースプロジェクトにおけるサプライチェーンセキュリティのベストプラクティスとして、`OpenSSF Scorecard` を GitHub Actions ワークフロー ([.github/workflows/scorecard.yml](workflows/scorecard.yml)) で運用しています。
 
