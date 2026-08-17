@@ -46,8 +46,10 @@ GitHub Models は 2026-07-30 に playground・モデルカタログ・推論 API
 
 **シークレットの取り扱い:**
 
-- `EXA_API_KEY` / `TAVILY_API_KEY` — 利用者が無くなったため、リポジトリの Secrets から削除して構いません。
-- `PAT_FOR_MODELS` — **削除しないでください。** 名前に反して、現在は `pre-commit-autoupdate.yml` が自動更新 PR を作成するためのトークンとして利用しています（`GITHUB_TOKEN` で PR を作ると後続の Actions がトリガーされないため）。GitHub Models へのスコープはもう不要なので、次回ローテーション時に `repo` / `workflow` スコープのみへ縮小してください。
+- `EXA_API_KEY` / `TAVILY_API_KEY` — 利用者が無くなったため、登録されている場合はリポジトリの Secrets から削除して構いません。
+- `PAT_FOR_MODELS` — 本リポジトリの Actions secrets には**登録されていません**（`gh api repos/genzouw/toique/actions/secrets` で確認済み。owner は Organization ではなく User のため、Organization / Environment / Dependabot secrets の階層もありません）。「GitHub Models 用のトークンを削除するか残すか」という判断自体が対象不在で成立しません。
+  - `pre-commit-autoupdate.yml` は PR 作成用トークンとして `secrets.PAT_FOR_AUTOMATION` を参照します（`GITHUB_TOKEN` で PR を作ると後続の Actions がトリガーされないため専用トークンが必要）が、これも未登録です。**このワークフローは現状のままではトークン未設定により失敗します（`with:` にキーを指定している以上、`peter-evans/create-pull-request` 側の `default: ${{ github.token }}` は適用されず、空文字が渡って 401 になります）。**
+  - **未対応の手動作業**: `repo` / `workflow` スコープの Personal Access Token を新規発行し、`PAT_FOR_AUTOMATION` という名前でリポジトリの Secrets に登録してください。GitHub Models へのスコープは不要です。
 
 AI によるレビュー・トリアージの代替方針は第5節を参照してください。
 

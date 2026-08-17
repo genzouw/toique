@@ -13,7 +13,7 @@ concurrency:
   group: pre-commit-autoupdate
   cancel-in-progress: false
 
-# PR 作成は PAT_FOR_MODELS で行い、checkout も persist-credentials: false のため
+# PR 作成は PAT_FOR_AUTOMATION で行い、checkout も persist-credentials: false のため
 # GITHUB_TOKEN には読み取り以上の権限は不要 (最小権限の原則)。
 # 本ジョブは pre-commit install-hooks で外部リポジトリのフックをビルド・実行する
 # 場所でもあるため、書き込み可能なトークンを同居させない。
@@ -108,7 +108,7 @@ jobs:
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@5f6978faf089d4d20b00c7766989d076bb2fc7f1 # v8.1.1
         with:
-          token: ${{ secrets.PAT_FOR_MODELS }}
+          token: ${{ secrets.PAT_FOR_AUTOMATION }}
           commit-message: 'chore(security): 🔒 update pre-commit hooks'
           branch: 'chore/pre-commit-autoupdate'
           base: 'main'
@@ -130,7 +130,7 @@ jobs:
             - CI が正常に通過していることを確認してください。
             - 検知ツールのメジャーバージョンアップが含まれる場合、破壊的変更（ルールの変更など）がないか確認してください。
           labels: 'dependencies, github-actions'
-          # PAT_FOR_MODELS の持ち主が生成 PR の作者になるため、同一ユーザーを reviewers に
+          # PAT_FOR_AUTOMATION の持ち主が生成 PR の作者になるため、同一ユーザーを reviewers に
           # 指定すると POST /pulls/{n}/requested_reviewers が 422 を返し step が失敗する。
           # 自己アサインは可能なので assignees のみ指定する。
           assignees: 'genzouw'
