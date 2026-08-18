@@ -1,4 +1,4 @@
-import { useEffect, useState, memo } from 'react';
+import { useEffect, useState, useMemo, memo } from 'react';
 import { Link } from 'react-router';
 import { Mail } from 'lucide-react';
 import { formatDate } from '../../lib/format-date';
@@ -44,8 +44,9 @@ export default function AdminContacts() {
       );
   }, []);
 
-  const filtered =
-    rows?.filter((r) => filter === 'all' || r.status === filter) ?? [];
+  const filtered = useMemo(() => {
+    return rows?.filter((r) => filter === 'all' || r.status === filter) ?? [];
+  }, [rows, filter]);
 
   return (
     <div className="space-y-4">
