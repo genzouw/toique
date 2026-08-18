@@ -1,0 +1,66 @@
+name: AI Auto Documenter
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  documenter:
+    runs-on: ubuntu-latest
+    if: github.event.pull_request.head.repo.full_name == github.repository
+    steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@05e31511f85b41b11d1cf0ef85d0992719546e2c # v2.21.0
+        with:
+          egress-policy: audit
+
+      - name: Checkout Repo
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+
+      - name: Setup python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Get PR diff
+        id: get_diff
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh pr diff ${{ github.event.pull_request.number }} > pr.diff || echo "" > pr.diff
+          changed_lines=$(grep -c "^+" pr.diff || echo 0)
+          char_count=$(wc -m < pr.diff)
+          if [ -z "$char_count" ] || [ "$char_count" -lt 20 ] || [ "$changed_lines" -lt 3 ]; then
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Run AI Documenter
+        if: steps.get_diff.outputs.skip == 'false'
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: |
+          uv run .github/scripts/ai-auto-documenter.py < pr.diff > rdjson.json
+
+      - name: Reviewdog
+        if: steps.get_diff.outputs.skip == 'false' && true
+        uses: reviewdog/action-reviewdog@v1
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          reporter: github-pr-review
+          filter_mode: added
+          fail_on_error: false
+          level: info
+          name: AI Auto Documenter
+          format: rdjson
+          rdjson: rdjson.json
