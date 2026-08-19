@@ -1,15 +1,42 @@
 # /// script
 # dependencies = [
-#   "requests",
-#   "exa-py"
+#   "requests>=2.31,<3",
+#   "exa-py>=1,<3",
 # ]
 # ///
 
 import os
 import sys
 import json
+import urllib.parse
 import requests
 from exa_py import Exa
+from html.parser import HTMLParser
+
+
+class _DuckDuckGoResultParser(HTMLParser):
+    """DuckDuckGo HTML版のレスポンスから検索結果リンクを構造的に抽出する。
+
+    固定文字列split（属性の出現順序に依存）ではなく、result__a / result__url
+    クラスを持つ <a> タグのhref属性を対象にすることで、ボット検証ページなど
+    構造が異なるHTMLに対しても例外を出さず・結果を捏造せずに空リストで済ませる。
+    """
+
+    def __init__(self):
+        super().__init__()
+        self.links = []
+
+    def handle_starttag(self, tag, attrs):
+        if tag != "a":
+            return
+        attrs_dict = dict(attrs)
+        href = attrs_dict.get("href")
+        if not href:
+            return
+        classes = (attrs_dict.get("class") or "").split()
+        if "result__a" in classes or "result__url" in classes:
+            self.links.append(href)
+
 
 def duckduckgo_search(query, max_results):
     url = "https://html.duckduckgo.com/html/"
