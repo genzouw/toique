@@ -61,9 +61,10 @@ Diff:
         if not candidates:
             # 安全フィルタ等でcandidatesが空になるケースを、defaultで握り潰さず明示的に異常として扱う
             raise ValueError(f"Gemini APIがcandidatesを返しませんでした: {resp_json.get('promptFeedback', resp_json)}")
-        parts = candidates[0].get("content", {}).get("parts")
+        # "content"キー自体の欠損もdefault({})で握り潰さず、partsと合わせて明示的に異常として扱う
+        content = candidates[0].get("content")
+        parts = content.get("parts") if content else None
         if not parts:
-            # content/partsが欠損するケースも、defaultで握り潰さず明示的に異常として扱う
             raise ValueError(f"Gemini APIレスポンスにcontent.partsが含まれていません: {candidates[0]}")
         text_resp = parts[0].get("text", "[]")
 
