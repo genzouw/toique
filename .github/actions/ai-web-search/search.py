@@ -101,7 +101,12 @@ def fetch_jina(url):
 
 def main():
     query = os.environ.get("QUERY", "")
-    max_results = int(os.environ.get("MAX_RESULTS", "5"))
+    try:
+        max_results = int(os.environ.get("MAX_RESULTS", "5"))
+    except ValueError:
+        max_results = 5
+    if max_results < 1:
+        max_results = 5
     exa_key = os.environ.get("EXA_API_KEY", "")
     tavily_key = os.environ.get("TAVILY_API_KEY", "")
     use_jina = os.environ.get("USE_JINA", "false").lower() == "true"
