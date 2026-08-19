@@ -125,14 +125,27 @@ def main():
         results = duckduckgo_search(query, max_results)
 
     # Jina Readerを使用してフルテキストを取得するオプション
+    # GITHUB_OUTPUTは1ジョブあたり1MBの上限があるため、full_textおよび
+    # シリアライズ後のJSON全体を上限未満に収める
+    MAX_FULL_TEXT_CHARS = 200_000
+    MAX_OUTPUT_BYTES = 900_000
     if use_jina and results:
         top_url = results[0].get("url")
         if top_url:
             full_text = fetch_jina(top_url)
             if full_text:
-                results[0]["full_text"] = full_text
+                results[0]["full_text"] = full_text[:MAX_FULL_TEXT_CHARS]
 
-    print(json.dumps(results, indent=2))
+    output = json.dumps(results, indent=2)
+    while len(output.encode("utf-8")) > MAX_OUTPUT_BYTES and results and "full_text" in results[0]:
+        # それでも上限を超える場合はfull_textを段階的に切り詰める
+        results[0]["full_text"] = results[0]["full_text"][: len(results[0]["full_text"]) // 2]
+        if not results[0]["full_text"]:
+            del results[0]["full_text"]
+            break
+        output = json.dumps(results, indent=2)
+
+    print(output)
 
 if __name__ == "__main__":
     main()
