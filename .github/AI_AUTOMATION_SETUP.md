@@ -72,12 +72,18 @@ AI によるレビュー・トリアージの代替方針は第5節を参照し�
 > `permissions: models: read` を付与しても推論 API 自体が存在しないため、GitHub Models に依存するワークフローは動作しません。
 > 該当した 23 本のワークフローは**撤去済み**です（第3節）。
 
-**現行の方針: GitHub ネイティブの無料 AI 推論基盤は存在しないため、リポジトリ側で AI 推論を実行するワークフローは Google Gemini 1.5 Pro（無料枠）を利用して構築します。**
+**現行の方針: GitHub ネイティブの無料 AI 推論基盤は存在しないため、リポジトリ側で AI 推論を実行するワークフローは Google Gemini API の無料枠モデルを利用して構築します。**
+
+> **モデルのバージョンについて**: `gemini-1.5-pro` は 2025-09-29 に提供終了済みのため使用しません。カスタム Python スクリプト（`ai-a11y-scanner.py` / `ai-auto-documenter.py`）は既定で無料枠モデル（`gemini-2.5-flash`）を使用し、`GEMINI_MODEL` 環境変数で上書き可能です。モデルの提供終了・変更が発生した場合は `GEMINI_MODEL` シークレットまたはワークフロー変数を設定するか、スクリプト内の既定値を更新してください。
 
 AI によるレビュー・トリアージには、`derailed-dash/gemini-review-action` などの Actions や、カスタム Python スクリプトを使用し、API キー（`GEMINI_API_KEY`）はリポジトリシークレットとして管理します。また、外部 App（CodeRabbit / Qodo Merge、第4節参照）も併用します。
 
 - **CodeRabbit**: 公開リポジトリ向けの無料プラン（Open Source）があり、本リポジトリは対象です。
 - **Qodo Merge**: 無料利用は [Qodo for Open Source](https://docs.qodo.ai/open-source-program) に承認された場合のみ（公開リポジトリ・stars 100 以上・継続的なメンテナンス・利用ポリシー遵守）。本リポジトリは stars が条件未達のため**現時点では無料対象外**で、通常プランはクレジット課金となるため導入を見送っています。
+
+**信頼境界（同一リポジトリPRへの限定）:**
+
+`GEMINI_API_KEY` および `pull-requests: write` 権限を使用するジョブ（`ai-a11y-scanner.yml` / `ai-auto-documenter.yml` / `gemini-review.yml`）は、いずれも `if: github.event.pull_request.head.repo.full_name == github.repository` により、フォークからの外部PRを除外し同一リポジトリ内のPRのみを処理します。これにより、外部の第三者が `GEMINI_API_KEY` を盗用したり、`pull-requests: write` 権限を使ってなりすましコメントを投稿したりするリスクを排除しています。将来、外部PRに対してもAIレビューを許可する場合は、シークレットや書き込み権限を持たない非特権ジョブ（診断の生成のみ）と、`pull_request_target` 等を用いて生成物をコメント投稿する特権ジョブを分離し、非特権ジョブの出力を信頼できないデータとして扱う設計にしてください。
 
 **採用しないもの:**
 
