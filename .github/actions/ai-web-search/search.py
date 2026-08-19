@@ -45,16 +45,20 @@ def duckduckgo_search(query, max_results):
     try:
         res = requests.post(url, headers=headers, data=data, timeout=10)
         res.raise_for_status()
-        # 依存関係を最小限に抑えるため、bs4を使用せずに基本的なパースを実行
-        content = res.text
+        parser = _DuckDuckGoResultParser()
+        parser.feed(res.text)
+
         results = []
-        parts = content.split('class="result__url" href="')
-        for part in parts[1:max_results+1]:
-            link = part.split('"')[0]
+        seen = set()
+        for link in parser.links:
             if link.startswith('//duckduckgo.com/l/?uddg='):
-                import urllib.parse
                 link = urllib.parse.unquote(link.split('uddg=')[1].split('&')[0])
+            if link in seen:
+                continue
+            seen.add(link)
             results.append({"url": link, "title": "DuckDuckGo Result", "snippet": "Snippet not available"})
+            if len(results) >= max_results:
+                break
         return results
     except Exception as e:
         print(f"DuckDuckGo error: {e}", file=sys.stderr)
