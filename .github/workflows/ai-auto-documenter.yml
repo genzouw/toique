@@ -19,15 +19,15 @@ jobs:
           egress-policy: audit
 
       - name: Checkout Repo
-        uses: actions/checkout@v4
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
 
       - name: Install uv
-        uses: astral-sh/setup-uv@v5
+        uses: astral-sh/setup-uv@20cfd1bf945f4377ade1205e4dbc17946fc9a30d # v10.0.1
 
       - name: Setup python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
         with:
           python-version: '3.12'
 
@@ -52,15 +52,14 @@ jobs:
         run: |
           uv run .github/scripts/ai-auto-documenter.py < pr.diff > rdjson.json
 
-      - name: Reviewdog
-        if: steps.get_diff.outputs.skip == 'false' && true
-        uses: reviewdog/action-reviewdog@v1
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          reporter: github-pr-review
-          filter_mode: added
-          fail_on_error: false
-          level: info
-          name: AI Auto Documenter
-          format: rdjson
-          rdjson: rdjson.json
+      - name: Setup reviewdog
+        if: steps.get_diff.outputs.skip == 'false'
+        uses: reviewdog/action-setup@38a8d76742a75eeb6c6ffc616bde64179fd09ebf # v1.5.0
+
+      - name: Run reviewdog
+        if: steps.get_diff.outputs.skip == 'false'
+        env:
+          REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          reviewdog -f=rdjson -reporter=github-pr-review -filter-mode=added \
+            -fail-level=none -level=info -name="AI Auto Documenter" < rdjson.json

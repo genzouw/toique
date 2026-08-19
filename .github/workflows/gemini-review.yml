@@ -19,12 +19,12 @@ jobs:
           egress-policy: audit
 
       - name: Checkout Repo
-        uses: actions/checkout@v4
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Run Gemini Review
         uses: derailed-dash/gemini-review-action@827d74180d81a4497261d8cb32139ac29eb680b0
         with:
           gemini_api_key: ${{ secrets.GEMINI_API_KEY }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          language: "Japanese"
-          command: "review"
+          language: 'Japanese'
+          command: 'review'
