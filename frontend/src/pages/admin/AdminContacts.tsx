@@ -44,8 +44,8 @@ export default function AdminContacts() {
       );
   }, []);
 
-  // Memoize the filtered rows to prevent unnecessary O(N) recalculations
-  // and maintain referential stability when unrelated state (like error) changes.
+  // rows または filter の変更時だけフィルタリングを再計算し、
+  // error など無関係な状態の変更時は参照を維持します。
   const filtered = useMemo(() => {
     return rows?.filter((r) => filter === 'all' || r.status === filter) ?? [];
   }, [rows, filter]);
