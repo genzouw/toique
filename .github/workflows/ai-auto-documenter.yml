@@ -55,7 +55,7 @@ jobs:
 
       - name: Setup reviewdog
         if: steps.get_diff.outputs.skip == 'false'
-        uses: reviewdog/action-setup@38a8d76742a75eeb6c6ffc616bde64179fd09ebf # v1.5.0
+        uses: reviewdog/action-setup@d8a7baabd7f3e8544ee4dbde3ee41d0011c3a93f # v1.5.0
 
       - name: Run reviewdog
         if: steps.get_diff.outputs.skip == 'false'
