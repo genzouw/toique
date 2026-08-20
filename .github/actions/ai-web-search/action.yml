@@ -1,0 +1,39 @@
+name: "AI Web Search for RAG context"
+description: "astral-sh/setup-uv を利用して Exa, Tavily, Arxiv などの検索を実行し、AI向けのコンテキストを取得するPythonスクリプトを実行します"
+
+inputs:
+  query:
+    description: '検索クエリ'
+    required: true
+  exa_api_key:
+    description: 'Exa APIキー (任意)'
+    required: false
+  tavily_api_key:
+    description: 'Tavily APIキー (任意)'
+    required: false
+
+outputs:
+  results:
+    description: "Markdown形式で結合された検索結果"
+    value: ${{ steps.run-search.outputs.results }}
+
+runs:
+  using: "composite"
+  steps:
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: "3.12"
+
+    - name: Setup uv
+      uses: astral-sh/setup-uv@v5
+
+    - name: Run Search Script
+      id: run-search
+      shell: bash
+      env:
+        QUERY: ${{ inputs.query }}
+        EXA_API_KEY: ${{ inputs.exa_api_key }}
+        TAVILY_API_KEY: ${{ inputs.tavily_api_key }}
+      run: |
+        uv run ${{ github.action_path }}/search.py

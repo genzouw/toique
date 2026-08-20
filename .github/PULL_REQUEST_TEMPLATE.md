@@ -35,6 +35,14 @@
 - [ ] secret / 個人情報を含むコードや設定が含まれていない
 - [ ] `Push Protection` の警告やブロックが発生していないこと
 
+## 事前作業・手動設定の確認
+
+<!-- AI・自動化ツールのためのAPIキー等の設定をマージ前に確認してください -->
+
+- [ ] Gemini API Key (`GEMINI_API_KEY`) が Repository Secrets に設定されている
+- [ ] Exa API Key (`EXA_API_KEY`), Tavily API Key (`TAVILY_API_KEY`) 等、RAG用のキーが設定されている（必要な場合）
+- [ ] StepSecurity Harden-Runner の初期設定・Appインストールが完了している
+
 ## デプロイ時の注意
 
 <!-- 環境変数追加 / インフラ変更 / 手動オペレーションが必要なら明記。なければ「なし」。 -->

@@ -46,8 +46,9 @@ GitHub Models は 2026-07-30 に playground・モデルカタログ・推論 API
 
 **シークレットの取り扱い:**
 
-- `EXA_API_KEY` / `TAVILY_API_KEY` — 利用者が無くなったため、登録されている場合はリポジトリの Secrets から削除して構いません。
-- `PAT_FOR_MODELS` — 本リポジトリには**登録されていません**。「GitHub Models 用のトークンを削除するか残すか」という判断自体が対象不在で成立しません。
+- `GEMINI_API_KEY` — Gemini 1.5 Pro を用いた AI 自動レビュー・トリアージツール (`gemini-review-action`) を利用するため、Google AI Studio から取得した API キーをリポジトリの Secrets に登録してください。
+- `EXA_API_KEY` / `TAVILY_API_KEY` — Web検索RAG (`ai-web-search`) 用のキーです。利用する場合はリポジトリの Secrets に登録してください。
+- `PAT_FOR_MODELS` — 撤去済みのため不要です。
   - 確認範囲: Actions secrets / Dependabot secrets / Environment secrets の 3 面をそれぞれ API で確認済み（`gh api repos/genzouw/toique/actions/secrets`、`.../dependabot/secrets`、`.../environments`）。**User 所有リポジトリでも Environment secrets と Dependabot secrets は利用可能**なので、Actions secrets の結果だけでは未登録と断定できない点に注意してください。対象外となるのは Organization secrets の階層だけです（owner が User のため存在しません）。
   - `pre-commit-autoupdate.yml` は PR 作成用トークンとして `secrets.PAT_FOR_AUTOMATION` を参照します（`GITHUB_TOKEN` で PR を作ると後続の Actions がトリガーされないため専用トークンが必要）が、これも上記 3 面のいずれにも未登録です。**このワークフローは現状のままではトークン未設定により失敗します。** `with:` にキーを指定している以上、`peter-evans/create-pull-request` 側の `default: ${{ github.token }}` は適用されず空文字が渡り、v8.1.1 は API を叩く前に `Input 'token' not supplied. Unable to continue.` で終了します（401 にはなりません）。
   - **未対応の手動作業**: fine-grained Personal Access Token を新規発行し、`PAT_FOR_AUTOMATION` という名前でリポジトリの Secrets に登録してください。必要な権限は本リポジトリに対する **Contents: write** と **Pull requests: write** の 2 つです。当ワークフローは `add-paths: .pre-commit-config.yaml` で workflow ファイルを書き換えないため、`workflow` 相当の権限は不要です。GitHub Models へのスコープも不要です。
@@ -72,9 +73,9 @@ AI によるレビュー・トリアージの代替方針は第5節を参照し�
 > `permissions: models: read` を付与しても推論 API 自体が存在しないため、GitHub Models に依存するワークフローは動作しません。
 > 該当した 23 本のワークフローは**撤去済み**です（第3節）。
 
-**現行の方針: GitHub ネイティブの無料 AI 推論基盤は存在しないため、リポジトリ側で AI 推論を実行するワークフローは新規に追加しません。**
+**現行の方針: GitHub ネイティブの無料 AI 推論基盤は存在しないため、無料枠を持つ外部API（Google Gemini API）を利用してリポジトリ側で AI 推論を実行します。**
 
-AI によるレビュー・トリアージは、リポジトリ側に API キーも課金設定も必要としない外部 App（CodeRabbit / Qodo Merge、第4節参照）に一本化します。
+AI によるレビュー・トリアージは、外部 App（CodeRabbit / Qodo Merge、第4節参照）に加えて、`derailed-dash/gemini-review-action` を使用した GitHub Actions ワークフロー (`gemini-review.yml`, `gemini-triage.yml`) でも行われます。これにより、無料枠内で Gemini 1.5 Pro などのモデルを活用します。
 
 ただし「App 側で推論が走る」ことと「無料である」ことは別問題です。App ごとに無料条件を確認し、条件を満たさないものは本方針上採用できません。
 
@@ -92,7 +93,7 @@ AI によるレビュー・トリアージは、リポジトリ側に API キー
 
 上記の「API キーを要するものは採用しない」は **AI 推論（LLM 呼び出し）** に対する方針です。RAG 用の **Web 検索 API**（Exa / Tavily）は、無料枠の範囲でのみ利用し API キーを任意とする限りにおいて例外として許容していました。
 
-ただしこれらを利用していたのは GitHub Models 依存のワークフローのみで、それらの撤去に伴い `.github/actions/ai-web-search` ごと削除済みです。現在 CI 上に Web 検索を行う仕組みは存在しません。
+ただし現在、再導入された `.github/actions/ai-web-search` により、無料枠の範囲でのみ利用し API キーを任意とする形で Exa / Tavily 等による RAG 用 Web 検索を行える基盤があります。
 
 ## 6. 新規導入した自動化ツールの運用ルール (2024年導入)
 
