@@ -235,10 +235,11 @@ AI エージェント（Cursor, Claude Desktop など）が開発プロジェク
 
 ### Gemini API による PR レビューおよび Issue トリアージの導入
 
-当リポジトリでは `derailed-dash/gemini-review-action` を利用して、Google Gemini (Gemini 3.7 Flash) による自動 PR レビューおよび Issue トリアージを導入しています。これにより、変更内容に対する高度なフィードバックや、新規 Issue の自動ラベル付け・サマリ生成が可能になります。無料枠で利用できるモデルであることを明示するため、両ワークフローとも `gemini_model: 'gemini-3.7-flash'` を明示的に指定しています。
+当リポジトリでは `derailed-dash/gemini-review-action` を利用して、Google Gemini (Gemini 3.7 Flash) による自動 PR レビューおよび Issue トリアージを導入しています。これにより、変更内容に対する高度なフィードバックや、新規 Issue の自動ラベル付けが可能になります（Issue トリアージは推定ラベルの適用のみを行い、判断理由をIssueコメントとして投稿するサマリ生成は行いません）。無料枠で利用できるモデルであることを明示するため、両ワークフローとも `gemini_model: 'gemini-3.7-flash'` を明示的に指定しています。
 
 **事前設定作業 (必須):**
 
 1. [Google AI Studio](https://aistudio.google.com/) にアクセスし、無料枠で利用できる `GEMINI_API_KEY` を取得してください。
-2. 対象リポジトリの GitHub Settings > Secrets and variables > Actions にアクセスし、`Repository secrets` として `GEMINI_API_KEY` を登録してください。
+2. **無料サービスにおけるデータ利用条件の確認とリポジトリ所有者の承認**: Cloud Billing を有効化していないプロジェクトの `GEMINI_API_KEY`（無料サービス）を使う場合、送信した入力（PR の差分、リポジトリコンテキスト、過去のコメント、Issue のタイトルと本文を含む）および生成された出力が、Google の製品・サービス・機械学習技術の改善に利用され、人による確認の対象になることがあります（[Gemini API Additional Terms of Service](https://ai.google.dev/gemini-api/terms) 参照）。これは Cloud Billing が有効なプロジェクトの無料クォータ（Paid Service 扱い）とは異なる取り扱いです。PR やリポジトリに機密情報が含まれうる場合は、**リポジトリ所有者がこのデータ利用条件を承認した場合のみ**、次の手順で `GEMINI_API_KEY` を登録してください。
+3. 対象リポジトリの GitHub Settings > Secrets and variables > Actions にアクセスし、`Repository secrets` として `GEMINI_API_KEY` を登録してください。
    （※ この設定が行われていない場合、該当のワークフローは失敗します）
