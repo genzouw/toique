@@ -233,7 +233,7 @@ AI エージェント（Cursor, Claude Desktop など）が開発プロジェク
 
 ### Gemini API による PR レビューおよび Issue トリアージの導入
 
-当リポジトリでは `derailed-dash/gemini-review-action` を利用して、Google Gemini (Gemini 1.5 Pro) による自動 PR レビューおよび Issue トリアージを導入しています。これにより、変更内容に対する高度なフィードバックや、新規 Issue の自動ラベル付け・サマリ生成が可能になります。
+当リポジトリでは `derailed-dash/gemini-review-action` を利用して、Google Gemini (Gemini 3.7 Flash) による自動 PR レビューおよび Issue トリアージを導入しています。これにより、変更内容に対する高度なフィードバックや、新規 Issue の自動ラベル付け・サマリ生成が可能になります。無料枠で利用できるモデルであることを明示するため、両ワークフローとも `gemini_model: 'gemini-3.7-flash'` を明示的に指定しています。
 
 **事前設定作業 (必須):**
 

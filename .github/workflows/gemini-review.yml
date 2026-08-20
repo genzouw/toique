@@ -30,3 +30,4 @@ jobs:
           gemini_api_key: ${{ secrets.GEMINI_API_KEY }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
           language: 'ja'
+          gemini_model: 'gemini-3.7-flash'

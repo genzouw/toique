@@ -30,3 +30,4 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           command: 'triage'
           language: 'ja'
+          gemini_model: 'gemini-3.7-flash'
