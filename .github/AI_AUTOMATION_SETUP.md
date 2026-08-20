@@ -236,6 +236,7 @@ AI エージェント（Cursor, Claude Desktop など）が開発プロジェク
 当リポジトリでは `derailed-dash/gemini-review-action` を利用して、Google Gemini (Gemini 1.5 Pro) による自動 PR レビューおよび Issue トリアージを導入しています。これにより、変更内容に対する高度なフィードバックや、新規 Issue の自動ラベル付け・サマリ生成が可能になります。
 
 **事前設定作業 (必須):**
+
 1. [Google AI Studio](https://aistudio.google.com/) にアクセスし、無料枠で利用できる `GEMINI_API_KEY` を取得してください。
 2. 対象リポジトリの GitHub Settings > Secrets and variables > Actions にアクセスし、`Repository secrets` として `GEMINI_API_KEY` を登録してください。
    （※ この設定が行われていない場合、該当のワークフローは失敗します）
