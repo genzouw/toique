@@ -112,6 +112,7 @@ export default function Submissions() {
               value={exportFormId}
               onChange={(e) => setExportFormId(e.target.value)}
               disabled={forms.length === 0}
+              title={forms.length === 0 ? 'フォームがありません' : undefined}
               className="mt-1 w-full px-3 py-2 border border-slate-300 rounded-md text-sm disabled:bg-slate-50 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-slate-900 focus-visible:ring-offset-2"
             >
               {forms.length === 0 ? (
@@ -130,8 +131,16 @@ export default function Submissions() {
             loading={downloading}
             disabled={!exportFormId}
             icon={Download}
-            title="選択したフォームのCSVをダウンロード"
-            aria-label="選択したフォームのCSVをダウンロード"
+            title={
+              !exportFormId
+                ? 'ダウンロード可能なフォームがありません'
+                : '選択したフォームのCSVをダウンロード'
+            }
+            aria-label={
+              !exportFormId
+                ? 'ダウンロード可能なフォームがありません'
+                : '選択したフォームのCSVをダウンロード'
+            }
             className="inline-flex items-center gap-2 px-4 py-2 bg-slate-900 text-white text-sm rounded-md disabled:opacity-50 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-slate-900 focus-visible:ring-offset-2 transition-colors"
           >
             {downloading ? 'ダウンロード中…' : 'CSVダウンロード'}
