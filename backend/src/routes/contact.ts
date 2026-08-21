@@ -51,6 +51,24 @@ setInterval(() => {
   }
 }, RATE_LIMIT_WINDOW_MS).unref();
 
+// 1回の evict で走査するバケット数の上限（飽和時の O(MAX_BUCKETS) 走査を防ぐ）
+const EVICT_SCAN_LIMIT = 64;
+
+function evictOldestBucket(now: number) {
+  const windowStart = now - RATE_LIMIT_WINDOW_MS;
+  let scanned = 0;
+  for (const [key, history] of rateBuckets) {
+    const lastTimestamp = history[history.length - 1];
+    if (lastTimestamp === undefined || lastTimestamp <= windowStart) {
+      rateBuckets.delete(key);
+      return;
+    }
+    if (++scanned >= EVICT_SCAN_LIMIT) break;
+  }
+  const oldestKey = rateBuckets.keys().next().value;
+  if (oldestKey !== undefined) rateBuckets.delete(oldestKey);
+}
+
 // ⚡ Bolt: Replace `.filter()` with in-place mutation to minimize garbage collection pauses.
 // Only calls `Map.set()` when initializing a new array.
 function rateLimited(ip: string): boolean {
@@ -63,10 +81,7 @@ function rateLimited(ip: string): boolean {
 
     // Evict oldest entry if we reach the limit
     if (rateBuckets.size >= MAX_BUCKETS) {
-      const oldestKey = rateBuckets.keys().next().value;
-      if (oldestKey !== undefined) {
-        rateBuckets.delete(oldestKey);
-      }
+      evictOldestBucket(now);
     }
 
     rateBuckets.set(ip, [now]);
