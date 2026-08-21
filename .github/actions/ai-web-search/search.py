@@ -16,6 +16,7 @@ import urllib.parse
 import arxiv
 from exa_py import Exa
 
+TAVILY_API_URL = "https://api.tavily.com/search"
 TAVILY_TIMEOUT_SECONDS = 30
 
 def main():
@@ -44,7 +45,7 @@ def main():
     if tavily_key:
         try:
             req = urllib.request.Request(
-                "https://api.tavily.com/search",
+                TAVILY_API_URL,
                 data=json.dumps({"api_key": tavily_key, "query": query, "search_depth": "basic"}).encode("utf-8"),
                 headers={"Content-Type": "application/json"}
             )
