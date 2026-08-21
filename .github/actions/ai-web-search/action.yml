@@ -1,0 +1,55 @@
+name: 'AI Web Search'
+description: 'Exa、Tavily、DuckDuckGo を使用してウェブ検索を実行し、必要に応じて Jina Reader を使用して完全なマークダウンコンテンツを取得します'
+inputs:
+  query:
+    description: '検索クエリ'
+    required: true
+  exa_api_key:
+    description: 'Exa API キー'
+    required: false
+  tavily_api_key:
+    description: 'Tavily API キー'
+    required: false
+  max_results:
+    description: '取得する最大結果数'
+    required: false
+    default: '5'
+  use_jina:
+    description: 'トップ結果の全文を取得するために Jina Reader を使用する'
+    required: false
+    default: 'false'
+
+outputs:
+  results:
+    description: '検索結果の JSON 配列'
+    value: ${{ steps.search.outputs.results }}
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Set up Python
+      uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+      with:
+        python-version: '3.12'
+
+    - name: Install uv
+      uses: astral-sh/setup-uv@20cfd1bf945f4377ade1205e4dbc17946fc9a30d # v10.0.1
+
+    - name: Run search script
+      id: search
+      shell: bash
+      env:
+        QUERY: ${{ inputs.query }}
+        EXA_API_KEY: ${{ inputs.exa_api_key }}
+        TAVILY_API_KEY: ${{ inputs.tavily_api_key }}
+        MAX_RESULTS: ${{ inputs.max_results }}
+        USE_JINA: ${{ inputs.use_jina }}
+        ACTION_PATH: ${{ github.action_path }}
+      run: |
+        uv run "$ACTION_PATH/search.py" > output.json
+        # 複数行の出力を安全に処理する
+        {
+          echo "results<<EOF"
+          cat output.json
+          echo "EOF"
+        } >> "$GITHUB_OUTPUT"

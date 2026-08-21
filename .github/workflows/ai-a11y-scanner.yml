@@ -1,0 +1,72 @@
+name: AI A11y Scanner
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  a11y-scanner:
+    runs-on: ubuntu-latest
+    if: github.event.pull_request.head.repo.full_name == github.repository
+    steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@05e31511f85b41b11d1cf0ef85d0992719546e2c # v2.21.0
+        with:
+          egress-policy: audit
+
+      - name: Checkout Repo
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@20cfd1bf945f4377ade1205e4dbc17946fc9a30d # v10.0.1
+
+      - name: Setup python
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: '3.12'
+
+      - name: Get PR diff
+        id: get_diff
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh pr diff ${{ github.event.pull_request.number }} > pr.diff || echo "" > pr.diff
+          # Only process if there are frontend changes
+          if ! grep -q "a/frontend/" pr.diff && ! grep -q "b/frontend/" pr.diff; then
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          changed_lines=$(grep -c "^+" pr.diff || echo 0)
+          char_count=$(wc -m < pr.diff)
+          if [ -z "$char_count" ] || [ "$char_count" -lt 20 ] || [ "$changed_lines" -lt 3 ]; then
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Run AI A11y Scanner
+        if: steps.get_diff.outputs.skip == 'false'
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: |
+          uv run .github/scripts/ai-a11y-scanner.py < pr.diff > rdjson.json
+
+      - name: Setup reviewdog
+        if: steps.get_diff.outputs.skip == 'false'
+        uses: reviewdog/action-setup@d8a7baabd7f3e8544ee4dbde3ee41d0011c3a93f # v1.5.0
+
+      - name: Run reviewdog
+        if: steps.get_diff.outputs.skip == 'false'
+        env:
+          REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          reviewdog -f=rdjson -reporter=github-pr-review -filter-mode=added \
+            -fail-level=none -level=warning -name="AI A11y Scanner" < rdjson.json
