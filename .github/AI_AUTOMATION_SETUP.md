@@ -81,6 +81,9 @@ AI によるレビュー・トリアージは、リポジトリ側に API キー
 - **CodeRabbit**: 公開リポジトリ向けの無料プラン（Open Source）があり、本リポジトリは対象です。
 - **Qodo Merge**: 無料利用は [Qodo for Open Source](https://docs.qodo.ai/open-source-program) に承認された場合のみ（公開リポジトリ・stars 100 以上・継続的なメンテナンス・利用ポリシー遵守）。本リポジトリは stars が条件未達のため**現時点では無料対象外**で、通常プランはクレジット課金となるため導入を見送っています。
 
+**例外: 無料枠の範囲でのみ利用し API キーを要する AI 推論基盤**
+- **Gemini 1.5 Pro**: `derailed-dash/gemini-review-action` などの Actions 経由で、Google の AI Studio から取得可能な無償の API キーを利用する場合は例外として利用を許可します。これらは API キー (`GEMINI_API_KEY`) を Secret に登録する必要があります。
+
 **採用しないもの:**
 
 - **GitHub Models**: 2026-07-30 に提供終了。新規採用・再導入とも不可です。
@@ -90,7 +93,7 @@ AI によるレビュー・トリアージは、リポジトリ側に API キー
 
 **本方針の適用範囲（AI 推論と Web 検索の区別）:**
 
-上記の「API キーを要するものは採用しない」は **AI 推論（LLM 呼び出し）** に対する方針です。RAG 用の **Web 検索 API**（Exa / Tavily）は、無料枠の範囲でのみ利用し API キーを任意とする限りにおいて例外として許容していました。
+上記の「API キーを要するものは採用しない」は、基本的には **AI 推論（LLM 呼び出し）** に対する方針です。RAG 用の **Web 検索 API**（Exa / Tavily）や、無償で利用可能で API キー (`GEMINI_API_KEY` 等) を登録して利用するサービスについては例外として許容します。
 
 ただしこれらを利用していたのは GitHub Models 依存のワークフローのみで、それらの撤去に伴い `.github/actions/ai-web-search` ごと削除済みです。現在 CI 上に Web 検索を行う仕組みは存在しません。
 
@@ -133,7 +136,8 @@ PRマージ前に以下の作業を確認してください。
 
 1. **Qodo Merge / PR-Agent のインストール**: PR-Agent などのレビューツールを GitHub App として対象リポジトリにインストールし、適切な権限 (Issues: Write, Pull Requests: Write 等) を付与してください。インストール前に無料利用の条件を満たすか確認してください（Qodo Merge は Qodo for Open Source の承認が必要で、本リポジトリは現時点で対象外です）。
 2. **セキュリティスキャナの有効化確認**: `Gitleaks`, `Trufflehog` が適切に動作するよう、GitHub の設定 > Security から Secret Scanning と Push Protection が有効になっているか確認してください。また、`Zizmor` による解析結果が Code scanning alerts に適切に反映されるよう設定されているか確認してください。
-3. **StepSecurity Harden-Runner のインストール**: AIコーディングエージェントからのクレデンシャル漏洩やサプライチェーン攻撃を防ぐため、主要なワークフローに `step-security/harden-runner` を導入しています。
+3. **API Keys の登録 (Actions / Gemini 用)**: Gemini などの無料 AI 推論 API を利用する Action が導入されている場合、GitHub のリポジトリ設定から Secrets and variables > Actions に `GEMINI_API_KEY` などの必要なシークレットを登録してください。
+4. **StepSecurity Harden-Runner のインストール**: AIコーディングエージェントからのクレデンシャル漏洩やサプライチェーン攻撃を防ぐため、主要なワークフローに `step-security/harden-runner` を導入しています。
    - StepSecurity の GitHub App を対象リポジトリにインストールし、初期設定を行ってください（公開リポジトリは無料で利用可能です）。
    - 現在はCIのダウンタイムを防ぐため `audit` モードで運用していますが、StepSecurity Dashboard 上で学習が完了し、必要な通信先リストが整備された段階で、ワークフローファイル側を `block` モードに変更（必要に応じて `allowed-endpoints` を追記）して完全なアウトバウンド通信の保護を有効化してください。
 
