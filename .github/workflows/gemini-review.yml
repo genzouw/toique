@@ -45,8 +45,11 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GH_REPO: ${{ github.repository }}
         run: |
-          IS_FORK=$(gh pr view "${{ github.event.issue.number }}" --json isCrossRepository --jq '.isCrossRepository')
+          PR_JSON=$(gh pr view "${{ github.event.issue.number }}" --json isCrossRepository,headRefOid)
+          IS_FORK=$(echo "$PR_JSON" | jq -r '.isCrossRepository')
+          PR_HEAD_SHA=$(echo "$PR_JSON" | jq -r '.headRefOid')
           echo "is_fork=$IS_FORK" >> "$GITHUB_OUTPUT"
+          echo "pr_head_sha=$PR_HEAD_SHA" >> "$GITHUB_OUTPUT"
           if [ "$IS_FORK" = "true" ]; then
             echo "::warning::フォーク由来のPRのため、未信頼コードのチェックアウトを避けてレビューをスキップします。"
           fi
@@ -55,7 +58,7 @@ jobs:
         if: github.event_name == 'pull_request' || steps.pr_origin.outputs.is_fork == 'false'
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          ref: ${{ github.event.pull_request.head.sha || format('refs/pull/{0}/head', github.event.issue.number) }}
+          ref: ${{ github.event.pull_request.head.sha || steps.pr_origin.outputs.pr_head_sha }}
           fetch-depth: 0
           persist-credentials: false
 
