@@ -1,5 +1,5 @@
-name: "AI Web Search for RAG context"
-description: "astral-sh/setup-uv を利用して Exa, Tavily, Arxiv などの検索を実行し、AI向けのコンテキストを取得するPythonスクリプトを実行します"
+name: 'AI Web Search for RAG context'
+description: 'astral-sh/setup-uv を利用して Exa, Tavily, Arxiv などの検索を実行し、AI向けのコンテキストを取得するPythonスクリプトを実行します'
 
 inputs:
   query:
@@ -14,19 +14,19 @@ inputs:
 
 outputs:
   results:
-    description: "Markdown形式で結合された検索結果"
+    description: 'Markdown形式で結合された検索結果'
     value: ${{ steps.run-search.outputs.results }}
 
 runs:
-  using: "composite"
+  using: 'composite'
   steps:
     - name: Set up Python
-      uses: actions/setup-python@v5
+      uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
       with:
-        python-version: "3.12"
+        python-version: '3.12'
 
     - name: Setup uv
-      uses: astral-sh/setup-uv@v5
+      uses: astral-sh/setup-uv@d4b2f3b6ecc6e67c4457f6d3e41ec42d3d0fcb86 # v5.4.2
 
     - name: Run Search Script
       id: run-search
