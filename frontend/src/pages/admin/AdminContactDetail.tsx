@@ -133,6 +133,20 @@ export default function AdminContactDetail() {
               key={s}
               onClick={() => changeStatus(s)}
               disabled={updating || detail.status === s}
+              title={
+                updating
+                  ? '更新中です'
+                  : detail.status === s
+                    ? '現在のステータスです'
+                    : undefined
+              }
+              aria-label={
+                updating
+                  ? '更新中です'
+                  : detail.status === s
+                    ? '現在のステータスです'
+                    : `ステータスを「${STATUS_LABEL[s]}」に変更する`
+              }
               className={`px-3 py-1.5 rounded-md text-sm border focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-slate-900 focus-visible:ring-offset-2 transition-colors ${
                 detail.status === s
                   ? 'bg-slate-900 text-white border-slate-900'
