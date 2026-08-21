@@ -36,8 +36,12 @@ describe('AdminLogin', () => {
     expect(
       screen.getByRole('heading', { name: '運営者ログイン' }),
     ).toBeInTheDocument();
-    expect(screen.getByLabelText('ユーザーID')).toBeInTheDocument();
-    expect(screen.getByLabelText('パスワード')).toBeInTheDocument();
+    expect(
+      screen.getByLabelText(/ユーザーID/, { selector: 'input' }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByLabelText(/パスワード/, { selector: 'input' }),
+    ).toBeInTheDocument();
     expect(
       screen.getByRole('button', { name: 'ログイン' }),
     ).toBeInTheDocument();
@@ -62,8 +66,12 @@ describe('AdminLogin', () => {
     expect(window.localStorage.getItem('adminAuth')).toBeNull();
 
     // Fill in credentials
-    const usernameInput = screen.getByLabelText('ユーザーID');
-    const passwordInput = screen.getByLabelText('パスワード');
+    const usernameInput = screen.getByLabelText(/ユーザーID/, {
+      selector: 'input',
+    });
+    const passwordInput = screen.getByLabelText(/パスワード/, {
+      selector: 'input',
+    });
     const submitButton = screen.getByRole('button', { name: 'ログイン' });
 
     await user.type(usernameInput, 'admin');
@@ -110,8 +118,14 @@ describe('AdminLogin', () => {
     );
 
     // Fill in credentials
-    await user.type(screen.getByLabelText('ユーザーID'), 'admin');
-    await user.type(screen.getByLabelText('パスワード'), 'correctpassword');
+    await user.type(
+      screen.getByLabelText(/ユーザーID/, { selector: 'input' }),
+      'admin',
+    );
+    await user.type(
+      screen.getByLabelText(/パスワード/, { selector: 'input' }),
+      'correctpassword',
+    );
 
     // Submit form
     await user.click(screen.getByRole('button', { name: 'ログイン' }));
@@ -141,7 +155,9 @@ describe('AdminLogin', () => {
       </BrowserRouter>,
     );
 
-    const passwordInput = screen.getByLabelText('パスワード');
+    const passwordInput = screen.getByLabelText(/パスワード/, {
+      selector: 'input',
+    });
     expect(passwordInput).toHaveAttribute('type', 'password');
 
     const showButton = screen.getByRole('button', { name: 'パスワードを表示' });
