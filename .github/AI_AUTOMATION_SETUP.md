@@ -75,7 +75,7 @@ AI によるレビュー・トリアージの代替方針は第5節を参照し�
 
 **現行の方針: GitHub ネイティブの無料 AI 推論基盤は存在しないため、無料枠を持つ外部API（Google Gemini API）を利用してリポジトリ側で AI 推論を実行します。**
 
-AI によるレビュー・トリアージは、外部 App（CodeRabbit / Qodo Merge、第4節参照）に加えて、`derailed-dash/gemini-review-action` を使用した GitHub Actions ワークフロー (`gemini-review.yml`, `gemini-triage.yml`) でも行われます。これにより、無料枠内で Gemini 1.5 Pro などのモデルを活用します。
+AI によるレビュー・トリアージは、外部 App（CodeRabbit / Qodo Merge、第4節参照）に加えて、`derailed-dash/gemini-review-action` を使用した GitHub Actions ワークフロー (`gemini-review.yml`, `gemini-triage.yml`) でも行われます。両ワークフローとも `gemini_model` 入力を指定していないため、`gemini-review-action` の既定モデルである `gemini-3.7-flash` を利用します（旧 `Gemini 1.5 Pro` は 2025-09-29 に提供終了済みのため、モデルを明示指定する場合も選択できません）。
 
 ただし「App 側で推論が走る」ことと「無料である」ことは別問題です。App ごとに無料条件を確認し、条件を満たさないものは本方針上採用できません。
 
