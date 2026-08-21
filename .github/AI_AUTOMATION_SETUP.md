@@ -41,7 +41,7 @@ GitHub Models は 2026-07-30 に playground・モデルカタログ・推論 API
 そのため以下を撤去しました。
 
 - `ai-*.yml` 23 本（Issue Triage / ChatOps / PR Review / PR Description / Weekly Summary / Release Drafter / CI Analyzer / Threat Modeling / Test Generator / Auto-Fix / Issue Solver / Auto-Documenter / OpenAPI Generator / Blog Generator / a11y Scanner / i18n Translator / Tech Debt Analyzer / Architecture Diagram / PR Labeler / PR Summary / Security Approval / Dependabot Analyzer / Agent Rules Sync）
-- Composite Action `.github/actions/ai-web-search`（利用者が上記のみだったため）
+- Composite Action `.github/actions/ai-web-search`（利用者が上記のみだったため。ただし後に第5節の方針変更に伴い再導入されており、現在は利用可能です。現在の利用方法は第5節を参照してください）
 - 上記に付随する `EXA_API_KEY` / `TAVILY_API_KEY`（RAG 用 Web 検索キー。他に利用者はありません）
 
 **シークレットの取り扱い:**
