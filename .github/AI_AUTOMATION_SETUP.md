@@ -87,7 +87,7 @@ AI によるレビュー・トリアージは、外部 App（CodeRabbit / Qodo M
 - **GitHub Models**: 2026-07-30 に提供終了。新規採用・再導入とも不可です。
 - **GitHub Copilot / Microsoft Foundry**: GitHub Models の後継として案内されていますが、いずれも premium request 消費（課金）または API キー管理を伴うため、上記の無料方針と両立しません。
 - **GitHub Agentic Workflows (`gh-aw`)**: 2026年に一度導入しましたが、`copilot` エンジンが GitHub Copilot の premium request / AI クレジットを消費する**有料**サービスであり、無料方針と両立しないため撤去しました。関連ファイル（`.github/workflows/*-agent.md`、`*.lock.yml`、`.github/aw/`）はすべて削除済みです。`gh aw compile` で再生成すると課金と CI 失敗が復活するため、再導入しないでください。
-- **外部AIプロバイダの API キーを要するもの**（Gemini API、OpenAI API、Anthropic API など）: 無料枠があるものでもキー管理と枯渇時の CI 失敗が発生するため採用しません。
+- **外部AIプロバイダの API キーを要するもの（Gemini API を除く）**（OpenAI API、Anthropic API など）: 無料枠があるものでもキー管理と枯渇時の CI 失敗が発生するため採用しません。Gemini API のみ、無料枠内で `gemini-review-action` によるレビュー・トリアージに利用するため例外的に採用しています（詳細は本節冒頭を参照）。
 
 **本方針の適用範囲（AI 推論と Web 検索の区別）:**
 
