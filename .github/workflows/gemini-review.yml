@@ -26,7 +26,25 @@ jobs:
         with:
           egress-policy: audit
 
+      # issue_comment 起動時は github.event.pull_request が無く、対象PRがフォーク由来かを
+      # YAML式だけでは判定できない。gh CLI で isCrossRepository を確認し、フォークPRであれば
+      # 後続のcheckout（未信頼コードの取得）とレビュー実行自体をスキップする。
+      # secrets を持つ特権ジョブで未信頼コードをcheckoutしない（pwn request対策）ため。
+      - name: Determine PR origin for comment-triggered review
+        id: pr_origin
+        if: github.event_name == 'issue_comment'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          IS_FORK=$(gh pr view "${{ github.event.issue.number }}" --json isCrossRepository --jq '.isCrossRepository')
+          echo "is_fork=$IS_FORK" >> "$GITHUB_OUTPUT"
+          if [ "$IS_FORK" = "true" ]; then
+            echo "::warning::フォーク由来のPRのため、未信頼コードのチェックアウトを避けてレビューをスキップします。"
+          fi
+
       - name: Checkout repository
+        if: github.event_name == 'pull_request' || steps.pr_origin.outputs.is_fork == 'false'
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: ${{ github.event.pull_request.head.sha || format('refs/pull/{0}/head', github.event.issue.number) }}
@@ -34,6 +52,7 @@ jobs:
           persist-credentials: false
 
       - name: Gemini PR Review
+        if: github.event_name == 'pull_request' || steps.pr_origin.outputs.is_fork == 'false'
         uses: derailed-dash/gemini-review-action@588dce6c72ea61e3a3b306b5648361de450179ab
         with:
           gemini_api_key: ${{ secrets.GEMINI_API_KEY }}
