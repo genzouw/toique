@@ -12,13 +12,21 @@ permissions:
 
 jobs:
   review:
-    # pull_request: フォーク/Dependabot PRにはGEMINI_API_KEYが渡らないため同一リポジトリのPRのみ自動実行
-    # issue_comment: PRに対するコメントでのみ実行（フォークPRでも権限者の/gemini-reviewコメントで起動可能）
+    # pull_request: フォーク/Dependabot PRにはGEMINI_API_KEYが渡らないため同一リポジトリかつ非Dependabot PRのみ自動実行
+    # issue_comment: PRに対するコメントのうち、本文が完全一致で `/gemini-review` かつ
+    #   コメント投稿者の author_association が OWNER/MEMBER/COLLABORATOR（＝リポジトリへの書込み権限を持つ信頼できる人物）
+    #   の場合のみ実行（フォークPRでも権限者の明示コマンドで起動可能）。任意のコメントで
+    #   secrets付き特権ジョブが起動しないよう、起動条件をコマンド＋権限者に限定する。
+    # 両イベントともDependabot作成PRは対象外（自動化されたPRにAIレビューを起動する意図はないため）。
     if: |
       (github.event_name == 'pull_request' &&
-       github.event.pull_request.head.repo.full_name == github.repository) ||
+       github.event.pull_request.head.repo.full_name == github.repository &&
+       github.event.pull_request.user.login != 'dependabot[bot]') ||
       (github.event_name == 'issue_comment' &&
-       github.event.issue.pull_request)
+       github.event.issue.pull_request &&
+       github.event.issue.user.login != 'dependabot[bot]' &&
+       github.event.comment.body == '/gemini-review' &&
+       contains(fromJSON('["OWNER", "MEMBER", "COLLABORATOR"]'), github.event.comment.author_association))
     runs-on: ubuntu-latest
     steps:
       - name: Harden Runner
