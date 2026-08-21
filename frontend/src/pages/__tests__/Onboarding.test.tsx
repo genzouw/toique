@@ -35,7 +35,9 @@ describe('Onboarding', () => {
     expect(
       screen.getByRole('heading', { name: '組織の登録' }),
     ).toBeInTheDocument();
-    expect(screen.getByLabelText(/組織名/, { selector: 'input' })).toBeInTheDocument();
+    expect(
+      screen.getByLabelText(/組織名/, { selector: 'input' }),
+    ).toBeInTheDocument();
     expect(
       screen.getByRole('button', { name: '組織を作成して開始' }),
     ).toBeInTheDocument();

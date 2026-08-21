@@ -25,9 +25,15 @@ function ControlledAuthField(props: {
 describe('AuthField', () => {
   it('renders label and input with associated htmlFor', () => {
     render(<ControlledAuthField label="メールアドレス" type="email" />);
-    const input = screen.getByLabelText(/メールアドレス/, { selector: 'input' });
+    const input = screen.getByLabelText(/メールアドレス/, {
+      selector: 'input',
+    });
     expect(input).toBeInTheDocument();
     expect(input).toHaveAttribute('type', 'email');
+
+    const requiredMarker = screen.getByText('*', { selector: 'span' });
+    expect(requiredMarker).toHaveClass('text-red-500');
+    expect(requiredMarker).toHaveAttribute('aria-hidden', 'true');
   });
 
   it('renders no toggle button for non-password types', () => {
@@ -41,7 +47,9 @@ describe('AuthField', () => {
     const user = userEvent.setup();
     render(<ControlledAuthField label="パスワード" type="password" />);
 
-    const passwordInput = screen.getByLabelText(/パスワード/, { selector: 'input' });
+    const passwordInput = screen.getByLabelText(/パスワード/, {
+      selector: 'input',
+    });
     expect(passwordInput).toHaveAttribute('type', 'password');
 
     const showButton = screen.getByRole('button', { name: 'パスワードを表示' });
