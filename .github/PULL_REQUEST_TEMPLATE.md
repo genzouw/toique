@@ -43,7 +43,7 @@
   フォークからのPR作成者は確認・対応不要です。
 -->
 
-- [ ] （メンテナー確認）Gemini API Key (`GEMINI_API_KEY`) が Repository Secrets に設定されている（フォークPRでは `GEMINI_API_KEY` が渡らないため、Gemini による自動レビューはスキップされます）
+- [ ] （メンテナー確認）Gemini API Key (`GEMINI_API_KEY`) が Repository Secrets に設定されている（`pull_request` 起動ではフォークPRに `GEMINI_API_KEY` が渡らないため、Gemini による自動レビューはスキップされます。一方 `issue_comment` 起動（`/gemini-review` コマンド）はベースリポジトリのコンテキストで実行されるため、フォークPRのコメントであっても Repository Secrets にアクセスできます）
 - [ ] （メンテナー確認）Exa API Key (`EXA_API_KEY`), Tavily API Key (`TAVILY_API_KEY`) 等、RAG用のキーが設定されている（必要な場合）
 - [ ] （メンテナー確認）StepSecurity Harden-Runner の初期設定・Appインストールが完了している
 
