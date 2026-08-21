@@ -37,11 +37,15 @@
 
 ## 事前作業・手動設定の確認
 
-<!-- AI・自動化ツールのためのAPIキー等の設定をマージ前に確認してください -->
+<!--
+  以下はメンテナー（マージ権限を持つ管理者）がマージ前に確認する項目です。
+  Repository Secrets はリポジトリの管理者のみが閲覧・設定できるため、
+  フォークからのPR作成者は確認・対応不要です。
+-->
 
-- [ ] Gemini API Key (`GEMINI_API_KEY`) が Repository Secrets に設定されている
-- [ ] Exa API Key (`EXA_API_KEY`), Tavily API Key (`TAVILY_API_KEY`) 等、RAG用のキーが設定されている（必要な場合）
-- [ ] StepSecurity Harden-Runner の初期設定・Appインストールが完了している
+- [ ] （メンテナー確認）Gemini API Key (`GEMINI_API_KEY`) が Repository Secrets に設定されている（フォークPRでは `GEMINI_API_KEY` が渡らないため、Gemini による自動レビューはスキップされます）
+- [ ] （メンテナー確認）Exa API Key (`EXA_API_KEY`), Tavily API Key (`TAVILY_API_KEY`) 等、RAG用のキーが設定されている（必要な場合）
+- [ ] （メンテナー確認）StepSecurity Harden-Runner の初期設定・Appインストールが完了している
 
 ## デプロイ時の注意
 
