@@ -10,10 +10,13 @@
 import os
 import sys
 import json
+import uuid
 import urllib.request
 import urllib.parse
 import arxiv
 from exa_py import Exa
+
+TAVILY_TIMEOUT_SECONDS = 30
 
 def main():
     query = os.environ.get("QUERY", "")
@@ -45,7 +48,7 @@ def main():
                 data=json.dumps({"api_key": tavily_key, "query": query, "search_depth": "basic"}).encode("utf-8"),
                 headers={"Content-Type": "application/json"}
             )
-            with urllib.request.urlopen(req) as response:
+            with urllib.request.urlopen(req, timeout=TAVILY_TIMEOUT_SECONDS) as response:
                 tavily_data = json.loads(response.read().decode())
                 results.append("## Tavily 検索結果:\n")
                 for r in tavily_data.get("results", [])[:2]:
@@ -74,10 +77,13 @@ def main():
     # GitHub Outputへの書き込み
     if "GITHUB_OUTPUT" in os.environ:
         with open(os.environ["GITHUB_OUTPUT"], "a") as f:
-            # 複数行の出力フォーマット
-            f.write("results<<EOF\n")
+            # 複数行の出力フォーマット。検索結果（外部APIの非信頼データ）に
+            # 単独行の "EOF" が含まれると出力が途中で終了してしまうため、
+            # 衝突しない一意な区切り文字を都度生成する。
+            delimiter = f"EOF_{uuid.uuid4().hex}"
+            f.write(f"results<<{delimiter}\n")
             f.write(output_text)
-            f.write("\nEOF\n")
+            f.write(f"\n{delimiter}\n")
     else:
         print(output_text)
 
