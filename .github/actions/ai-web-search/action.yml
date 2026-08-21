@@ -35,5 +35,6 @@ runs:
         QUERY: ${{ inputs.query }}
         EXA_API_KEY: ${{ inputs.exa_api_key }}
         TAVILY_API_KEY: ${{ inputs.tavily_api_key }}
+        ACTION_PATH: ${{ github.action_path }}
       run: |
-        uv run ${{ github.action_path }}/search.py
+        uv run "$ACTION_PATH/search.py"
