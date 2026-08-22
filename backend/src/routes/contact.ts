@@ -63,9 +63,28 @@ function rateLimited(ip: string): boolean {
 
     // Evict oldest entry if we reach the limit
     if (rateBuckets.size >= MAX_BUCKETS) {
-      const oldestKey = rateBuckets.keys().next().value;
-      if (oldestKey !== undefined) {
-        rateBuckets.delete(oldestKey);
+      // 攻撃者が新規IPで大量アクセスしてキャッシュを溢れさせ、既存の制限を
+      // 強制的に evict (消去) させる攻撃を防ぐため、単純に最古のキーを
+      // 削除する前に、すでに期限切れになっているエントリがないか走査して
+      // 優先的に削除する
+      const EVICT_SCAN_LIMIT = 64;
+      let scanned = 0;
+      let evicted = false;
+      for (const [key, timestamps] of rateBuckets) {
+        const lastTimestamp = timestamps[timestamps.length - 1];
+        if (lastTimestamp === undefined || lastTimestamp <= windowStart) {
+          rateBuckets.delete(key);
+          evicted = true;
+          break;
+        }
+        if (++scanned >= EVICT_SCAN_LIMIT) break;
+      }
+
+      if (!evicted) {
+        const oldestKey = rateBuckets.keys().next().value;
+        if (oldestKey !== undefined) {
+          rateBuckets.delete(oldestKey);
+        }
       }
     }
 
