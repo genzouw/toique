@@ -81,6 +81,22 @@ export default function Submissions() {
     }
   }
 
+  /**
+   * ⚡ Bolt: 不要な再レンダーを防ぐためにリストのレンダリング結果を useMemo でラップしています。
+   * Submissions コンポーネントで exportFormId や downloading の状態が変わって
+   * 再レンダーが発生した場合でも、items（回答一覧）が変わらない限り
+   * O(N) のマッピング処理（React Elementの生成）をスキップし、描画負荷を軽減します。
+   */
+  const submissionRows = useMemo(() => {
+    return items.map((s) => (
+      <SubmissionRow
+        key={s.id}
+        submission={s}
+        formName={formsById[s.formId]?.name}
+      />
+    ));
+  }, [items, formsById]);
+
   return (
     <div>
       <div className="flex items-center justify-between">
@@ -164,13 +180,7 @@ export default function Submissions() {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-200">
-              {items.map((s) => (
-                <SubmissionRow
-                  key={s.id}
-                  submission={s}
-                  formName={formsById[s.formId]?.name}
-                />
-              ))}
+              {submissionRows}
             </tbody>
           </table>
         )}
