@@ -1,6 +1,1 @@
-chore: update AI agent rules sync workflow
-
-Extend the automated rule generation workflow to generate
-configuration for Cursor and Windsurf in addition to GitHub Copilot.
-This leverages GitHub Models (o3-mini) structured outputs for
-precise JSON parsing.
+chore(ux): 🎨 Palette 必須入力フィールドに視覚的なインジケーターを追加

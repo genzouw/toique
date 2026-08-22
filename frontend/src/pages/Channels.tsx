@@ -263,6 +263,9 @@ function Field({
     <div>
       <label htmlFor={id} className="block text-sm font-medium text-slate-700">
         {label}
+        <span className="text-red-500 ml-1" aria-hidden="true">
+          *
+        </span>
       </label>
       <input
         id={id}
