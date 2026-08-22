@@ -86,7 +86,7 @@ AI によるレビュー・トリアージは、リポジトリ側に API キー
 - **GitHub Models**: 2026-07-30 に提供終了。新規採用・再導入とも不可です。
 - **GitHub Copilot / Microsoft Foundry**: GitHub Models の後継として案内されていますが、いずれも premium request 消費（課金）または API キー管理を伴うため、上記の無料方針と両立しません。
 - **GitHub Agentic Workflows (`gh-aw`)**: 2026年に一度導入しましたが、`copilot` エンジンが GitHub Copilot の premium request / AI クレジットを消費する**有料**サービスであり、無料方針と両立しないため撤去しました。関連ファイル（`.github/workflows/*-agent.md`、`*.lock.yml`、`.github/aw/`）はすべて削除済みです。`gh aw compile` で再生成すると課金と CI 失敗が復活するため、再導入しないでください。
-- **外部AIプロバイダの API キーを要するもの**（Gemini API、OpenAI API、Anthropic API など）: 無料枠があるものでもキー管理と枯渇時の CI 失敗が発生するため採用しません。
+- **外部AIプロバイダの API キーを要するもの**（Gemini API、OpenAI API、Anthropic API など）: 無料枠があるものでもキー管理と枯渇時の CI 失敗が発生するため、原則として採用しません。ただし、Gemini 1.5 Pro を利用した PR レビューワークフローなど、明示的に許可されたものは除きます。
 
 **本方針の適用範囲（AI 推論と Web 検索の区別）:**
 
@@ -230,3 +230,6 @@ AI エージェント（Cursor, Claude Desktop など）が開発プロジェク
    - **本リポジトリの状況**: stars が 100 に届いておらず条件未達のため、現時点では無料対象外です。第5節の「CI から呼び出す AI は無料枠のみ」方針に従い、条件を満たすまでインストールは行いません。
 3. **Qodo Merge の設定統合**
    - これまで `.pr-agent.toml` と `.pr_agent.toml` が混在していたため、`.pr_agent.toml` に設定を一本化しました。これにより、日本語出力(`response_language="ja-JP"`)と `gpt-4o` モデルの利用設定が正しく一貫して適用されます。設定の変更が必要な場合は `.pr_agent.toml` のみを編集してください。
+4. **Gemini Review Action の設定**
+   - Gemini 1.5 Pro を用いた PR の自動レビュー・トリアージ機能を利用するため、対象リポジトリ（本リポジトリ）の **Settings > Secrets and variables > Actions** から新しいリポジトリシークレットとして `GEMINI_API_KEY` を登録してください。
+   - [Google AI Studio](https://aistudio.google.com/app/apikey) にて API キーを取得できます。無料枠が利用可能なため、リポジトリへの導入が可能です。
