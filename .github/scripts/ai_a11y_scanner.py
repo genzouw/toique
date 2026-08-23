@@ -9,6 +9,7 @@
 import os
 import sys
 import json
+import traceback
 from google import genai
 from google.genai import types
 from pydantic import BaseModel
@@ -95,10 +96,10 @@ def main():
         # 確実に有効なJSONとなるようにパースしてから再度ダンプ
         rdjson_obj = json.loads(rdjson_str)
         print(json.dumps(rdjson_obj, indent=2))
-    except Exception as e:
-        # AIレビューはベストエフォートのため、失敗時はエラーを記録したうえで
-        # 空のrdjsonにフォールバックしてCIを止めない
-        print(f"Gemini処理中のエラー: {e}", file=sys.stderr)
+    except Exception:
+        # AIレビューはベストエフォートのため、失敗時はスタックトレースを記録した
+        # うえで空のrdjsonにフォールバックしてCIを止めない
+        traceback.print_exc(file=sys.stderr)
         print(EMPTY_RDJSON)
 
 if __name__ == "__main__":
