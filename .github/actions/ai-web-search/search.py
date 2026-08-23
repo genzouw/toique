@@ -16,9 +16,12 @@ import urllib.request
 import urllib.parse
 from typing import List, Dict
 
-JINA_READER_BASE_URL = "https://r.jina.ai"
-WIKIPEDIA_API_URL = "https://en.wikipedia.org/w/api.php"
-WIKIPEDIA_PAGE_URL_TEMPLATE = "https://en.wikipedia.org/?curid={page_id}"
+# 外部公開APIの既定エンドポイント。環境変数で上書き可能にしておく
+JINA_READER_BASE_URL = os.environ.get("JINA_READER_BASE_URL", "https://r.jina.ai")
+WIKIPEDIA_API_URL = os.environ.get("WIKIPEDIA_API_URL", "https://en.wikipedia.org/w/api.php")
+WIKIPEDIA_PAGE_URL_TEMPLATE = os.environ.get(
+    "WIKIPEDIA_PAGE_URL_TEMPLATE", "https://en.wikipedia.org/?curid={page_id}"
+)
 
 def get_jina_reader_content(url: str) -> str:
     """Fetch markdown content of a URL using Jina Reader API."""
