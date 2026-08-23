@@ -26,6 +26,7 @@ export default function Submissions() {
   const [exportFormId, setExportFormId] = useState<string>('');
   const [downloading, setDownloading] = useState(false);
   const selectId = useId();
+  const selectHintId = useId();
 
   // 中間配列のアロケーションを避けるため明示的なループを使用
   const formsById = useMemo(() => {
@@ -113,6 +114,9 @@ export default function Submissions() {
               onChange={(e) => setExportFormId(e.target.value)}
               disabled={forms.length === 0}
               title={forms.length === 0 ? 'フォームがありません' : undefined}
+              // title だけではスクリーンリーダーへ非活性理由が確実に伝わらないため、
+              // 可視の注記を aria-describedby で関連付ける
+              aria-describedby={forms.length === 0 ? selectHintId : undefined}
               className="mt-1 w-full px-3 py-2 border border-slate-300 rounded-md text-sm disabled:bg-slate-50 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-slate-900 focus-visible:ring-offset-2"
             >
               {forms.length === 0 ? (
@@ -125,6 +129,11 @@ export default function Submissions() {
                 ))
               )}
             </select>
+            {forms.length === 0 && (
+              <div id={selectHintId} className="text-xs text-slate-500 mt-1">
+                フォームがないため選択できません
+              </div>
+            )}
           </div>
           <LoadingButton
             onClick={handleDownload}
