@@ -69,6 +69,12 @@ export default function Submissions() {
   // 一覧に存在するフォームが選択されているときだけダウンロードを許可する
   const selectedForm = formsById[exportFormId];
 
+  const downloadButtonLabel = downloading
+    ? 'CSVをダウンロード中です'
+    : !selectedForm
+      ? 'ダウンロード可能なフォームがありません'
+      : '選択したフォームのCSVをダウンロード';
+
   async function handleDownload() {
     if (!selectedForm) return;
     setDownloading(true);
@@ -140,16 +146,11 @@ export default function Submissions() {
             loading={downloading}
             disabled={!selectedForm}
             icon={Download}
-            title={
-              !selectedForm
-                ? 'ダウンロード可能なフォームがありません'
-                : '選択したフォームのCSVをダウンロード'
-            }
-            aria-label={
-              !selectedForm
-                ? 'ダウンロード可能なフォームがありません'
-                : '選択したフォームのCSVをダウンロード'
-            }
+            // LoadingButton は loading 中もボタンを非活性化するため、
+            // downloading を最優先にして実際の状態と説明を一致させる
+            // （aria-label は表示テキストを上書きするので特に重要）
+            title={downloadButtonLabel}
+            aria-label={downloadButtonLabel}
             className="inline-flex items-center gap-2 px-4 py-2 bg-slate-900 text-white text-sm rounded-md disabled:opacity-50 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-slate-900 focus-visible:ring-offset-2 transition-colors"
           >
             {downloading ? 'ダウンロード中…' : 'CSVダウンロード'}
