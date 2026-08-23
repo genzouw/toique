@@ -32,12 +32,14 @@ jobs:
           DIFF_CONTENT=$(git diff "origin/$BASE_REF...HEAD")
 
           EOF=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
-          echo "diff<<$EOF" >> $GITHUB_OUTPUT
-          echo "$DIFF_CONTENT" >> $GITHUB_OUTPUT
-          echo "$EOF" >> $GITHUB_OUTPUT
+          {
+            echo "diff<<$EOF"
+            echo "$DIFF_CONTENT"
+            echo "$EOF"
+          } >> "$GITHUB_OUTPUT"
 
           CHANGES_COUNT=$(echo "$DIFF_CONTENT" | wc -l)
-          echo "changes_count=$CHANGES_COUNT" >> $GITHUB_OUTPUT
+          echo "changes_count=$CHANGES_COUNT" >> "$GITHUB_OUTPUT"
 
       - name: Setup uv
         if: steps.pr_diff.outputs.changes_count >= 3 && steps.pr_diff.outputs.diff != ''
@@ -58,9 +60,11 @@ jobs:
 
           # Pass the markdown content to a step output for the comment action
           EOF=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
-          echo "docs<<$EOF" >> $GITHUB_OUTPUT
-          cat generated_docs.md >> $GITHUB_OUTPUT
-          echo "$EOF" >> $GITHUB_OUTPUT
+          {
+            echo "docs<<$EOF"
+            cat generated_docs.md
+            echo "$EOF"
+          } >> "$GITHUB_OUTPUT"
 
       - name: Comment PR
         if: steps.generate_docs.outputs.docs != ''
