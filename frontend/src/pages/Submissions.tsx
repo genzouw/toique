@@ -161,10 +161,12 @@ export default function Submissions() {
             disabled={!selectedForm}
             icon={Download}
             // LoadingButton は loading 中もボタンを非活性化するため、
-            // downloading を最優先にして実際の状態と説明を一致させる
-            // （aria-label は表示テキストを上書きするので特に重要）
+            // downloading を最優先にして実際の状態と説明を一致させる。
+            // アクセシブル名は children（可視テキスト）に任せる。
+            // aria-label で上書きすると WCAG 2.5.3 Label in Name に反し、
+            // 音声コントロールで「CSVダウンロード」と発話しても一致しなくなる
             title={downloadButtonLabel}
-            aria-label={downloadButtonLabel}
+            aria-describedby={forms.length === 0 ? selectHintId : undefined}
             className="inline-flex items-center gap-2 px-4 py-2 bg-slate-900 text-white text-sm rounded-md disabled:opacity-50 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-slate-900 focus-visible:ring-offset-2 transition-colors"
           >
             {downloading ? 'ダウンロード中…' : 'CSVダウンロード'}
