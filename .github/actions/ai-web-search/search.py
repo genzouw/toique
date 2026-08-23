@@ -14,11 +14,15 @@ import sys
 import json
 import urllib.request
 import urllib.parse
-from typing import List, Dict, Any
+from typing import List, Dict
+
+JINA_READER_BASE_URL = "https://r.jina.ai"
+WIKIPEDIA_API_URL = "https://en.wikipedia.org/w/api.php"
+WIKIPEDIA_PAGE_URL_TEMPLATE = "https://en.wikipedia.org/?curid={page_id}"
 
 def get_jina_reader_content(url: str) -> str:
     """Fetch markdown content of a URL using Jina Reader API."""
-    jina_url = f"https://r.jina.ai/{url}"
+    jina_url = f"{JINA_READER_BASE_URL}/{url}"
     try:
         req = urllib.request.Request(jina_url, headers={'User-Agent': 'Mozilla/5.0'})
         with urllib.request.urlopen(req) as response:
@@ -88,10 +92,13 @@ def search_tavily(query: str, max_results: int) -> List[Dict[str, str]]:
 
 def search_wikipedia(query: str, max_results: int) -> List[Dict[str, str]]:
     import requests
-    url = f"https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch={urllib.parse.quote(query)}&utf8=&format=json"
+    url = f"{WIKIPEDIA_API_URL}?action=query&list=search&srsearch={urllib.parse.quote(query)}&utf8=&format=json"
     try:
         response = requests.get(url)
         data = response.json()
+        if "error" in data:
+            print(f"Wikipedia API error: {data['error']}", file=sys.stderr)
+            return []
         results = data.get("query", {}).get("search", [])[:max_results]
         formatted_results = []
         for r in results:
@@ -103,7 +110,7 @@ def search_wikipedia(query: str, max_results: int) -> List[Dict[str, str]]:
             snippet = re.sub(r'<[^>]+>', '', snippet)
             formatted_results.append({
                 "title": title,
-                "url": f"https://en.wikipedia.org/?curid={page_id}",
+                "url": WIKIPEDIA_PAGE_URL_TEMPLATE.format(page_id=page_id),
                 "snippet": snippet
             })
         return formatted_results
@@ -133,6 +140,15 @@ def search_arxiv(query: str, max_results: int) -> List[Dict[str, str]]:
         return []
 
 
+SEARCH_PROVIDERS = {
+    "exa": search_exa,
+    "tavily": search_tavily,
+    "duckduckgo": search_duckduckgo,
+    "wikipedia": search_wikipedia,
+    "arxiv": search_arxiv,
+}
+
+
 def main():
     query = os.environ.get("SEARCH_QUERY", "")
     provider = os.environ.get("SEARCH_PROVIDER", "duckduckgo").lower()
@@ -144,20 +160,11 @@ def main():
 
     print(f"'{query}' を {provider} で検索しています...", file=sys.stderr)
 
-    results = []
-    if provider == "exa":
-        results = search_exa(query, max_results)
-    elif provider == "tavily":
-        results = search_tavily(query, max_results)
-    elif provider == "duckduckgo":
-        results = search_duckduckgo(query, max_results)
-    elif provider == "wikipedia":
-        results = search_wikipedia(query, max_results)
-    elif provider == "arxiv":
-        results = search_arxiv(query, max_results)
-    else:
+    search_handler = SEARCH_PROVIDERS.get(provider)
+    if search_handler is None:
         print(f"サポートされていないプロバイダ: {provider}。DuckDuckGoにフォールバックします。", file=sys.stderr)
-        results = search_duckduckgo(query, max_results)
+        search_handler = search_duckduckgo
+    results = search_handler(query, max_results)
 
     output_md = f"# '{query}' の検索結果 ({provider})\n\n"
 
