@@ -45,11 +45,12 @@ export default function Submissions() {
       ]);
       setItems(subs);
       setForms(fs);
+      // 選択中フォームが一覧から消えた場合は古いIDを残さない
       setExportFormId((prev) => {
-        if (!prev && fs.length > 0) {
-          return fs[0].id;
+        if (prev && fs.some((f) => f.id === prev)) {
+          return prev;
         }
-        return prev;
+        return fs.length > 0 ? fs[0].id : '';
       });
       setError(null);
     } catch (e) {
@@ -64,16 +65,15 @@ export default function Submissions() {
     refresh();
   }, [refresh]);
 
+  // 一覧に存在するフォームが選択されているときだけダウンロードを許可する
+  const selectedForm = formsById[exportFormId];
+
   async function handleDownload() {
-    if (!exportFormId) return;
-    const form = formsById[exportFormId];
+    if (!selectedForm) return;
     setDownloading(true);
     setError(null);
     try {
-      await api.downloadSubmissionsCsv(
-        exportFormId,
-        form?.name ?? 'submissions',
-      );
+      await api.downloadSubmissionsCsv(exportFormId, selectedForm.name);
     } catch (e) {
       setError((e as Error).message);
     } finally {
@@ -129,15 +129,15 @@ export default function Submissions() {
           <LoadingButton
             onClick={handleDownload}
             loading={downloading}
-            disabled={!exportFormId}
+            disabled={!selectedForm}
             icon={Download}
             title={
-              !exportFormId
+              !selectedForm
                 ? 'ダウンロード可能なフォームがありません'
                 : '選択したフォームのCSVをダウンロード'
             }
             aria-label={
-              !exportFormId
+              !selectedForm
                 ? 'ダウンロード可能なフォームがありません'
                 : '選択したフォームのCSVをダウンロード'
             }
