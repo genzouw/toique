@@ -134,7 +134,9 @@ export default function Submissions() {
               className="mt-1 w-full px-3 py-2 border border-slate-300 rounded-md text-sm disabled:bg-slate-50 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-slate-900 focus-visible:ring-offset-2"
             >
               {forms.length === 0 ? (
-                <option>
+                // 値としての意味を持たないプレースホルダなので、
+                // 文言由来の value が乗らないよう明示的に空文字を指定する
+                <option value="">
                   {loading
                     ? 'フォームを読み込み中です'
                     : 'フォームがありません'}
