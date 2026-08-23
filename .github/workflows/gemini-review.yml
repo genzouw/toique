@@ -1,4 +1,4 @@
-name: "Gemini Code Review"
+name: 'Gemini Code Review'
 
 on:
   pull_request:
@@ -25,9 +25,10 @@ jobs:
           egress-policy: audit
 
       - name: Checkout repository
-        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.2.2
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
         with:
           ref: ${{ github.event.pull_request.head.sha || format('refs/pull/{0}/head', github.event.issue.number) }}
+          persist-credentials: false
 
       - name: Run Gemini Review Action
         uses: derailed-dash/gemini-review-action@0c17a4014dc67a743739d21615c4446604bf24a0 # Pinned to SHA for v1.6.5
