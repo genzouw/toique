@@ -11,7 +11,7 @@ import sys
 import json
 from google import genai
 from google.genai import types
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 
 class Location(BaseModel):
     path: str
@@ -25,6 +25,8 @@ class Diagnostic(BaseModel):
 class RDJson(BaseModel):
     source: dict
     diagnostics: list[Diagnostic]
+
+EMPTY_RDJSON = '{"source": {"name": "ai-a11y-scanner"}, "diagnostics": []}'
 
 def generate_rdjson(diff_text: str, api_key: str) -> str:
     client = genai.Client(api_key=api_key)
@@ -80,12 +82,12 @@ def main():
     api_key = os.environ.get("GEMINI_API_KEY", "")
 
     if not api_key:
-        print('{"source": {"name": "ai-a11y-scanner"}, "diagnostics": []}')
+        print(EMPTY_RDJSON)
         sys.exit(0)
 
     if not diff_text or len(diff_text.strip()) < 20:
         # Trivial diff, output empty rdjson
-        print('{"source": {"name": "ai-a11y-scanner"}, "diagnostics": []}')
+        print(EMPTY_RDJSON)
         sys.exit(0)
 
     try:
@@ -94,8 +96,10 @@ def main():
         rdjson_obj = json.loads(rdjson_str)
         print(json.dumps(rdjson_obj, indent=2))
     except Exception as e:
+        # AIレビューはベストエフォートのため、失敗時はエラーを記録したうえで
+        # 空のrdjsonにフォールバックしてCIを止めない
         print(f"Gemini処理中のエラー: {e}", file=sys.stderr)
-        print('{"source": {"name": "ai-a11y-scanner"}, "diagnostics": []}')
+        print(EMPTY_RDJSON)
 
 if __name__ == "__main__":
     main()
