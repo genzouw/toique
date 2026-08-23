@@ -1,0 +1,70 @@
+name: AI A11y Scanner
+
+on:
+  pull_request:
+    paths:
+      - 'frontend/**/*.tsx'
+      - 'frontend/**/*.ts'
+      - 'frontend/**/*.jsx'
+      - 'frontend/**/*.js'
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  a11y-scan:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@05e31511f85b41b11d1cf0ef85d0992719546e2c # v2.21.0
+        with:
+          egress-policy: audit
+
+      - name: Checkout code
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.2.2
+        with:
+          fetch-depth: 0
+
+      - name: Get PR diff
+        id: pr_diff
+        run: |
+          git fetch origin ${{ github.base_ref }}
+          DIFF_CONTENT=$(git diff origin/${{ github.base_ref }}...HEAD -- 'frontend/')
+
+          # Escaping for multi-line output in GitHub Actions
+          EOF=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
+          echo "diff<<$EOF" >> $GITHUB_OUTPUT
+          echo "$DIFF_CONTENT" >> $GITHUB_OUTPUT
+          echo "$EOF" >> $GITHUB_OUTPUT
+
+          CHANGES_COUNT=$(echo "$DIFF_CONTENT" | wc -l)
+          echo "changes_count=$CHANGES_COUNT" >> $GITHUB_OUTPUT
+
+      - name: Setup uv
+        if: steps.pr_diff.outputs.changes_count >= 3 && steps.pr_diff.outputs.diff != ''
+        uses: astral-sh/setup-uv@887a942a15af3a76af609919aaf322f3f83c1626 # v5.1.2
+        with:
+          enable-cache: true
+
+      - name: Run AI A11y Scanner
+        id: ai_scan
+        if: steps.pr_diff.outputs.changes_count >= 3 && steps.pr_diff.outputs.diff != ''
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          PR_DIFF: ${{ steps.pr_diff.outputs.diff }}
+        run: |
+          uv run .github/scripts/ai_a11y_scanner.py > rdjson.json
+
+      - name: Setup Reviewdog
+        if: steps.pr_diff.outputs.changes_count >= 3 && steps.pr_diff.outputs.diff != ''
+        uses: reviewdog/action-setup@3f401fe1d58fe77e10d665ab713057375e39b887 # v1.3.0
+        with:
+          reviewdog_version: latest
+
+      - name: Report via Reviewdog
+        if: steps.pr_diff.outputs.changes_count >= 3 && steps.pr_diff.outputs.diff != ''
+        env:
+          REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          cat rdjson.json | reviewdog -f=rdjson -name="ai-a11y-scanner" -reporter=github-pr-review -level=warning

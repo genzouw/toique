@@ -136,6 +136,10 @@ PRマージ前に以下の作業を確認してください。
 3. **StepSecurity Harden-Runner のインストール**: AIコーディングエージェントからのクレデンシャル漏洩やサプライチェーン攻撃を防ぐため、主要なワークフローに `step-security/harden-runner` を導入しています。
    - StepSecurity の GitHub App を対象リポジトリにインストールし、初期設定を行ってください（公開リポジトリは無料で利用可能です）。
    - 現在はCIのダウンタイムを防ぐため `audit` モードで運用していますが、StepSecurity Dashboard 上で学習が完了し、必要な通信先リストが整備された段階で、ワークフローファイル側を `block` モードに変更（必要に応じて `allowed-endpoints` を追記）して完全なアウトバウンド通信の保護を有効化してください。
+4. **AI連携ワークフロー用APIキーの登録**: GeminiによるPRのコードレビュー（`gemini-review.yml`）、A11yスキャン（`ai-a11y-scanner.yml`）、自動ドキュメント生成（`ai-auto-documenter.yml`）、およびRAG Web検索機能（`ai-web-search` Action）を利用するため、以下のシークレットをリポジトリの Settings > Secrets and variables > Actions に登録してください。
+   - `GEMINI_API_KEY`: Gemini APIを利用するためのキー（Google AI Studioから取得。必須）。
+   - `TAVILY_API_KEY`: Tavily検索機能用キー（オプション。AI Web検索機能のTavilyプロバイダ使用時に必要）。
+   - `EXA_API_KEY`: Exa検索機能用キー（オプション。AI Web検索機能のExaプロバイダ使用時に必要）。
 
 ## 7. サプライチェーン・セキュリティとローカル AI 連携
 
