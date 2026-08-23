@@ -5,6 +5,7 @@ import { contacts, tenantMembers, tenants } from '../schema.js';
 import { auth } from '../auth/better-auth.js';
 import { notifyContact } from '../lib/notify-contact.js';
 import { clientIp } from '../lib/client-ip.js';
+import { createRateLimiter } from '../lib/rate-limiter.js';
 
 const app = new Hono();
 
@@ -21,96 +22,16 @@ const CATEGORIES = new Set([
 // ------------------------------------
 // 同一IPから 1 時間に 5 件までに制限。
 // 分散環境を考慮するなら Redis 等に置き換える。
+// 実装とその不変条件は lib/rate-limiter.ts を参照。
 const RATE_LIMIT_WINDOW_MS = 60 * 60 * 1000;
-const RATE_LIMIT_MAX = 5;
-const MAX_BUCKETS = 10000; // メモリ使用量を制限し OOM DoS を防止
-const rateBuckets = new Map<string, number[]>();
 
-// ソート済み配列の先頭から期限切れエントリ数をカウント
-function countExpired(timestamps: number[], windowStart: number): number {
-  let count = 0;
-  while (count < timestamps.length && timestamps[count] <= windowStart) {
-    count++;
-  }
-  return count;
-}
-
-// 古いエントリを定期的にクリーンアップしてメモリリークを防止
-// ⚡ Bolt: Use while loop and splice for in-place array cleanup to avoid allocating a new array every time.
-setInterval(() => {
-  const now = Date.now();
-  const windowStart = now - RATE_LIMIT_WINDOW_MS;
-  for (const [ip, timestamps] of rateBuckets) {
-    const expiredCount = countExpired(timestamps, windowStart);
-
-    if (expiredCount === timestamps.length) {
-      rateBuckets.delete(ip);
-    } else if (expiredCount > 0) {
-      timestamps.splice(0, expiredCount);
-    }
-  }
-}, RATE_LIMIT_WINDOW_MS).unref();
-
-// ⚡ Bolt: Replace `.filter()` with in-place mutation to minimize garbage collection pauses.
-// Only calls `Map.set()` when initializing a new array.
-function rateLimited(ip: string): boolean {
-  const now = Date.now();
-  const windowStart = now - RATE_LIMIT_WINDOW_MS;
-  const history = rateBuckets.get(ip);
-
-  if (!history) {
-    if (RATE_LIMIT_MAX <= 0) return true;
-
-    // Evict oldest entry if we reach the limit
-    if (rateBuckets.size >= MAX_BUCKETS) {
-      // 攻撃者が新規IPで大量アクセスしてキャッシュを溢れさせ、既存の制限を
-      // 強制的に evict (消去) させる攻撃を防ぐため、単純に最古のキーを
-      // 削除する前に、すでに期限切れになっているエントリがないか走査して
-      // 優先的に削除する
-      const EVICT_SCAN_LIMIT = 64;
-      let scanned = 0;
-      let evicted = false;
-      for (const [key, timestamps] of rateBuckets) {
-        const lastTimestamp = timestamps[timestamps.length - 1];
-        if (lastTimestamp === undefined || lastTimestamp <= windowStart) {
-          rateBuckets.delete(key);
-          evicted = true;
-          break;
-        }
-        if (++scanned >= EVICT_SCAN_LIMIT) break;
-      }
-
-      if (!evicted) {
-        const oldestKey = rateBuckets.keys().next().value;
-        if (oldestKey !== undefined) {
-          rateBuckets.delete(oldestKey);
-        }
-      }
-    }
-
-    rateBuckets.set(ip, [now]);
-    return false;
-  }
-
-  const expiredCount = countExpired(history, windowStart);
-
-  if (expiredCount > 0) {
-    history.splice(0, expiredCount);
-  }
-
-  // Map の挿入順を最新に更新して LRU として機能させる。
-  // これを怠ると、アクティブな IP でも初回登録が古ければ
-  // MAX_BUCKETS 到達時に優先的に削除され、レート制限を回避されてしまう。
-  rateBuckets.delete(ip);
-  rateBuckets.set(ip, history);
-
-  if (history.length >= RATE_LIMIT_MAX) {
-    return true;
-  }
-
-  history.push(now);
-  return false;
-}
+const rateLimiter = createRateLimiter({
+  name: 'contact',
+  windowMs: RATE_LIMIT_WINDOW_MS,
+  max: 5,
+  maxBuckets: 10000, // メモリ使用量を制限し OOM DoS を防止
+  sweepIntervalMs: RATE_LIMIT_WINDOW_MS,
+});
 
 /**
  * 公開問い合わせ送信
@@ -146,7 +67,7 @@ app.post('/', async (c) => {
   if (url && url.length > 500) return c.text('url is invalid', 400);
 
   const ip = clientIp(c.req.raw.headers);
-  if (rateLimited(ip)) {
+  if (rateLimiter.consume(ip)) {
     return c.text('Too Many Requests', 429);
   }
 
