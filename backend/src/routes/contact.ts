@@ -26,6 +26,9 @@ const RATE_LIMIT_MAX = 5;
 const MAX_BUCKETS = 10000; // メモリ使用量を制限し OOM DoS を防止
 const rateBuckets = new Map<string, number[]>();
 
+// 1回の evict で走査するバケット数の上限
+const EVICT_SCAN_LIMIT = 64;
+
 // ソート済み配列の先頭から期限切れエントリ数をカウント
 function countExpired(timestamps: number[], windowStart: number): number {
   let count = 0;
@@ -33,6 +36,21 @@ function countExpired(timestamps: number[], windowStart: number): number {
     count++;
   }
   return count;
+}
+
+function evictOldestBucket(now: number) {
+  const windowStart = now - RATE_LIMIT_WINDOW_MS;
+  let scanned = 0;
+  for (const [key, history] of rateBuckets) {
+    const lastTimestamp = history[history.length - 1];
+    if (lastTimestamp === undefined || lastTimestamp <= windowStart) {
+      rateBuckets.delete(key);
+      return;
+    }
+    if (++scanned >= EVICT_SCAN_LIMIT) break;
+  }
+  const oldestKey = rateBuckets.keys().next().value;
+  if (oldestKey !== undefined) rateBuckets.delete(oldestKey);
 }
 
 // 古いエントリを定期的にクリーンアップしてメモリリークを防止
@@ -63,10 +81,7 @@ function rateLimited(ip: string): boolean {
 
     // Evict oldest entry if we reach the limit
     if (rateBuckets.size >= MAX_BUCKETS) {
-      const oldestKey = rateBuckets.keys().next().value;
-      if (oldestKey !== undefined) {
-        rateBuckets.delete(oldestKey);
-      }
+      evictOldestBucket(now);
     }
 
     rateBuckets.set(ip, [now]);
