@@ -21,10 +21,10 @@ const CATEGORIES = new Set([
 // ------------------------------------
 // 同一IPから 1 時間に 5 件までに制限。
 // 分散環境を考慮するなら Redis 等に置き換える。
-const RATE_LIMIT_WINDOW_MS = 60 * 60 * 1000;
-const RATE_LIMIT_MAX = 5;
-const MAX_BUCKETS = 10000; // メモリ使用量を制限し OOM DoS を防止
-const rateBuckets = new Map<string, number[]>();
+export const RATE_LIMIT_WINDOW_MS = 60 * 60 * 1000;
+export const RATE_LIMIT_MAX = 5;
+export const MAX_BUCKETS = 10000; // メモリ使用量を制限し OOM DoS を防止
+export const rateBuckets = new Map<string, number[]>();
 
 // ソート済み配列の先頭から期限切れエントリ数をカウント
 function countExpired(timestamps: number[], windowStart: number): number {
@@ -51,27 +51,22 @@ setInterval(() => {
   }
 }, RATE_LIMIT_WINDOW_MS).unref();
 
-// 1回の evict で走査するバケット数の上限（飽和時の O(MAX_BUCKETS) 走査を防ぐ）
-const EVICT_SCAN_LIMIT = 64;
-
-function evictOldestBucket(now: number) {
-  const windowStart = now - RATE_LIMIT_WINDOW_MS;
-  let scanned = 0;
-  for (const [key, history] of rateBuckets) {
-    const lastTimestamp = history[history.length - 1];
-    if (lastTimestamp === undefined || lastTimestamp <= windowStart) {
-      rateBuckets.delete(key);
-      return;
-    }
-    if (++scanned >= EVICT_SCAN_LIMIT) break;
-  }
+// rateBuckets の挿入順は「最後にタイムスタンプを追加した時刻 (= lastTimestamp)」の
+// 昇順に保たれている（バケット位置の更新はタイムスタンプ追加時にのみ行うため。
+// 詳細は rateLimited() のコメントを参照）。
+// バケットの期限切れ時刻は lastTimestamp + RATE_LIMIT_WINDOW_MS で決まるので、
+// 「先頭バケット = 最も早く期限切れになるバケット」が常に成立する。
+// したがって期限切れバケットが1件でも存在すれば必ず先頭にあり、
+// 走査上限に依存せず O(1) で期限切れを優先削除できる。
+// 期限切れが1件も無い場合も、削除されるのは残り有効期間が最短のバケットとなる。
+function evictOldestBucket() {
   const oldestKey = rateBuckets.keys().next().value;
   if (oldestKey !== undefined) rateBuckets.delete(oldestKey);
 }
 
 // ⚡ Bolt: Replace `.filter()` with in-place mutation to minimize garbage collection pauses.
 // Only calls `Map.set()` when initializing a new array.
-function rateLimited(ip: string): boolean {
+export function rateLimited(ip: string): boolean {
   const now = Date.now();
   const windowStart = now - RATE_LIMIT_WINDOW_MS;
   const history = rateBuckets.get(ip);
@@ -81,7 +76,7 @@ function rateLimited(ip: string): boolean {
 
     // Evict oldest entry if we reach the limit
     if (rateBuckets.size >= MAX_BUCKETS) {
-      evictOldestBucket(now);
+      evictOldestBucket();
     }
 
     rateBuckets.set(ip, [now]);
@@ -94,16 +89,21 @@ function rateLimited(ip: string): boolean {
     history.splice(0, expiredCount);
   }
 
-  // Map の挿入順を最新に更新して LRU として機能させる。
-  // これを怠ると、アクティブな IP でも初回登録が古ければ
-  // MAX_BUCKETS 到達時に優先的に削除され、レート制限を回避されてしまう。
-  rateBuckets.delete(ip);
-  rateBuckets.set(ip, history);
-
   if (history.length >= RATE_LIMIT_MAX) {
+    // 制限中の拒否リクエストではタイムスタンプを追加しないため、バケット位置も更新しない。
+    // ここで位置だけ末尾へ動かすと lastTimestamp が古いまま末尾に移動し、
+    // 「挿入順 = lastTimestamp 昇順」の不変条件が壊れる。
+    // その結果、期限切れバケットが evict の走査範囲外へ逃げ、
+    // 有効なバケットが代わりに削除されてレート制限を失わせられてしまう。
     return true;
   }
 
+  // タイムスタンプ追加と同時にバケットを末尾へ移動し、
+  // 「挿入順 = lastTimestamp 昇順」の不変条件を維持する。
+  // これにより、リクエストを受理し続けているアクティブな IP は
+  // 初回登録が古くても MAX_BUCKETS 到達時に優先削除されない。
+  rateBuckets.delete(ip);
+  rateBuckets.set(ip, history);
   history.push(now);
   return false;
 }
