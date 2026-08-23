@@ -67,133 +67,163 @@ export type RateLimiter = {
   readonly size: number;
 };
 
+/**
+ * リミッタ1個ぶんの内部状態。
+ *
+ * 各操作をクロージャではなくモジュールスコープの関数として実装し、
+ * この state を明示的に受け渡すことで、ファクトリ関数を薄く保つ。
+ */
+type LimiterState = {
+  readonly buckets: Map<string, number[]>;
+  readonly windowMs: number;
+  readonly max: number;
+  readonly maxBuckets: number;
+  readonly name: string;
+  droppedActiveBuckets: number;
+  lastSaturationWarnAt: number;
+};
+
+/** ソート済み配列の先頭から期限切れエントリ数をカウント */
+function countExpired(history: number[], windowStart: number): number {
+  let count = 0;
+  while (count < history.length && history[count] <= windowStart) {
+    count++;
+  }
+  return count;
+}
+
+/**
+ * 期限切れタイムスタンプを取り除く。挿入順は意図的に更新しない
+ * （更新すると上記の不変条件が壊れる）。
+ */
+function prune(
+  state: LimiterState,
+  key: string,
+  now: number,
+): number[] | undefined {
+  const history = state.buckets.get(key);
+  if (!history) return undefined;
+
+  const expiredCount = countExpired(history, now - state.windowMs);
+  if (expiredCount > 0) history.splice(0, expiredCount);
+
+  if (history.length === 0) {
+    state.buckets.delete(key);
+    return undefined;
+  }
+  return history;
+}
+
+/**
+ * 有効なバケットを捨てた = レート制限テーブルが飽和し、正規利用者のカウンタが
+ * 意図せずリセットされたことを意味する。本番で「レート制限が効いていない」事象が
+ * 起きたときに飽和が原因かを切り分けられるよう、必ず記録に残す。
+ */
+function reportSaturation(state: LimiterState, now: number): void {
+  state.droppedActiveBuckets++;
+  if (now - state.lastSaturationWarnAt < SATURATION_WARN_INTERVAL_MS) return;
+
+  state.lastSaturationWarnAt = now;
+  logger.warn('rate limiter saturated: evicted active bucket', {
+    name: state.name,
+    size: state.buckets.size,
+    droppedActiveBuckets: state.droppedActiveBuckets,
+  });
+  state.droppedActiveBuckets = 0;
+}
+
+/**
+ * maxBuckets 到達時に1件 evict する。挿入順の不変条件により、期限切れバケットが
+ * 存在すれば必ず先頭にあるため、先頭を落とすだけで期限切れを優先削除できる。
+ * 期限切れが1件も無い場合は、残り有効期間が最短のバケットを落とすことになる。
+ */
+function evictOldest(state: LimiterState, now: number): void {
+  const entry = state.buckets.entries().next().value;
+  if (!entry) return;
+
+  const [oldestKey, history] = entry;
+  const lastTimestamp = history[history.length - 1];
+  if (lastTimestamp !== undefined && lastTimestamp > now - state.windowMs) {
+    reportSaturation(state, now);
+  }
+  state.buckets.delete(oldestKey);
+}
+
+function sweep(state: LimiterState): void {
+  const windowStart = Date.now() - state.windowMs;
+  for (const [key, history] of state.buckets) {
+    const expiredCount = countExpired(history, windowStart);
+    if (expiredCount === history.length) {
+      state.buckets.delete(key);
+    } else if (expiredCount > 0) {
+      history.splice(0, expiredCount);
+    }
+  }
+}
+
+function isLimited(state: LimiterState, key: string): boolean {
+  if (state.max <= 0) return true;
+  const history = prune(state, key, Date.now());
+  return history !== undefined && history.length >= state.max;
+}
+
+function record(state: LimiterState, key: string): void {
+  const now = Date.now();
+  const history = prune(state, key, now);
+
+  if (!history) {
+    if (state.buckets.size >= state.maxBuckets) evictOldest(state, now);
+    state.buckets.set(key, [now]);
+    return;
+  }
+
+  // タイムスタンプ追加と同時にバケットを末尾へ移動し、
+  // 「挿入順 = lastTimestamp 昇順」の不変条件を維持する。
+  state.buckets.delete(key);
+  state.buckets.set(key, history);
+  history.push(now);
+}
+
 export function createRateLimiter(options: RateLimiterOptions): RateLimiter {
-  const {
-    windowMs,
-    max,
-    maxBuckets = DEFAULT_MAX_BUCKETS,
-    sweepIntervalMs,
-    name = 'rate-limiter',
-  } = options;
+  const state: LimiterState = {
+    buckets: new Map<string, number[]>(),
+    windowMs: options.windowMs,
+    max: options.max,
+    maxBuckets: options.maxBuckets ?? DEFAULT_MAX_BUCKETS,
+    name: options.name ?? 'rate-limiter',
+    droppedActiveBuckets: 0,
+    lastSaturationWarnAt: 0,
+  };
 
-  const buckets = new Map<string, number[]>();
-  let droppedActiveBuckets = 0;
-  let lastSaturationWarnAt = 0;
-
-  // ソート済み配列の先頭から期限切れエントリ数をカウント
-  function countExpired(history: number[], windowStart: number): number {
-    let count = 0;
-    while (count < history.length && history[count] <= windowStart) {
-      count++;
-    }
-    return count;
-  }
-
-  // 期限切れタイムスタンプを取り除く。挿入順は意図的に更新しない
-  // （更新すると上記の不変条件が壊れる）。
-  function prune(key: string, now: number): number[] | undefined {
-    const history = buckets.get(key);
-    if (!history) return undefined;
-
-    const expiredCount = countExpired(history, now - windowMs);
-    if (expiredCount > 0) history.splice(0, expiredCount);
-
-    if (history.length === 0) {
-      buckets.delete(key);
-      return undefined;
-    }
-    return history;
-  }
-
-  // 有効なバケットを捨てた = レート制限テーブルが飽和し、正規利用者のカウンタが
-  // 意図せずリセットされたことを意味する。本番で「レート制限が効いていない」事象が
-  // 起きたときに飽和が原因かを切り分けられるよう、必ず記録に残す。
-  function reportSaturation(now: number) {
-    droppedActiveBuckets++;
-    if (now - lastSaturationWarnAt < SATURATION_WARN_INTERVAL_MS) return;
-
-    lastSaturationWarnAt = now;
-    logger.warn('rate limiter saturated: evicted active bucket', {
-      name,
-      size: buckets.size,
-      droppedActiveBuckets,
-    });
-    droppedActiveBuckets = 0;
-  }
-
-  // maxBuckets 到達時に1件 evict する。挿入順の不変条件により、期限切れバケットが
-  // 存在すれば必ず先頭にあるため、先頭を落とすだけで期限切れを優先削除できる。
-  // 期限切れが1件も無い場合は、残り有効期間が最短のバケットを落とすことになる。
-  function evictOldest(now: number) {
-    const entry = buckets.entries().next().value;
-    if (!entry) return;
-
-    const [oldestKey, history] = entry;
-    const lastTimestamp = history[history.length - 1];
-    if (lastTimestamp !== undefined && lastTimestamp > now - windowMs) {
-      reportSaturation(now);
-    }
-    buckets.delete(oldestKey);
-  }
-
-  function sweep() {
-    const windowStart = Date.now() - windowMs;
-    for (const [key, history] of buckets) {
-      const expiredCount = countExpired(history, windowStart);
-      if (expiredCount === history.length) {
-        buckets.delete(key);
-      } else if (expiredCount > 0) {
-        history.splice(0, expiredCount);
-      }
-    }
-  }
-
-  if (sweepIntervalMs !== undefined) {
-    setInterval(sweep, sweepIntervalMs).unref();
-  }
-
-  function isLimited(key: string): boolean {
-    if (max <= 0) return true;
-    const history = prune(key, Date.now());
-    return history !== undefined && history.length >= max;
-  }
-
-  function record(key: string): void {
-    const now = Date.now();
-    const history = prune(key, now);
-
-    if (!history) {
-      if (buckets.size >= maxBuckets) evictOldest(now);
-      buckets.set(key, [now]);
-      return;
-    }
-
-    // タイムスタンプ追加と同時にバケットを末尾へ移動し、
-    // 「挿入順 = lastTimestamp 昇順」の不変条件を維持する。
-    buckets.delete(key);
-    buckets.set(key, history);
-    history.push(now);
+  if (options.sweepIntervalMs !== undefined) {
+    setInterval(() => sweep(state), options.sweepIntervalMs).unref();
   }
 
   return {
-    isLimited,
-    record,
+    isLimited(key: string): boolean {
+      return isLimited(state, key);
+    },
+    record(key: string): void {
+      record(state, key);
+    },
     consume(key: string): boolean {
-      if (isLimited(key)) return true;
-      record(key);
+      if (isLimited(state, key)) return true;
+      record(state, key);
       return false;
     },
     clear(key: string): void {
-      buckets.delete(key);
+      state.buckets.delete(key);
     },
     reset(): void {
-      buckets.clear();
-      droppedActiveBuckets = 0;
-      lastSaturationWarnAt = 0;
+      state.buckets.clear();
+      state.droppedActiveBuckets = 0;
+      state.lastSaturationWarnAt = 0;
     },
-    sweep,
+    sweep(): void {
+      sweep(state);
+    },
     get size(): number {
-      return buckets.size;
+      return state.buckets.size;
     },
   };
 }
