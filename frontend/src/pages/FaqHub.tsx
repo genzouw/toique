@@ -13,18 +13,24 @@ import {
 import SiteHeader from '../components/SiteHeader';
 import SiteFooter from '../components/SiteFooter';
 
+// ⚡ Bolt: Pre-compute lowercased text for all FAQs once outside the component
+// to avoid O(N*M) string allocations and expensive .toLowerCase() calls
+// on every keystroke during the filter operation.
+const SEARCHABLE_FAQS = FAQS.map((faq) => ({
+  ...faq,
+  _searchTarget: [faq.question, ...faq.answerParagraphs]
+    .join('\n')
+    .toLowerCase(),
+}));
+
 export default function FaqHub() {
   const [query, setQuery] = useState('');
   const normalizedQuery = query.trim().toLowerCase();
 
   const matchedFaqs: FaqArticle[] = useMemo(() => {
     if (!normalizedQuery) return [];
-    return FAQS.filter(
-      (f) =>
-        f.question.toLowerCase().includes(normalizedQuery) ||
-        f.answerParagraphs.some((p) =>
-          p.toLowerCase().includes(normalizedQuery),
-        ),
+    return SEARCHABLE_FAQS.filter((f) =>
+      f._searchTarget.includes(normalizedQuery),
     );
   }, [normalizedQuery]);
 
