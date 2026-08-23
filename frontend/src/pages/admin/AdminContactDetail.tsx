@@ -128,20 +128,26 @@ export default function AdminContactDetail() {
           ステータス
         </h2>
         <div className="flex gap-2">
-          {STATUSES.map((s) => (
-            <button
-              key={s}
-              onClick={() => changeStatus(s)}
-              disabled={updating || detail.status === s}
-              className={`px-3 py-1.5 rounded-md text-sm border focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-slate-900 focus-visible:ring-offset-2 transition-colors ${
-                detail.status === s
-                  ? 'bg-slate-900 text-white border-slate-900'
-                  : 'bg-white text-slate-700 border-slate-300 hover:bg-slate-50'
-              } disabled:opacity-60`}
-            >
-              {STATUS_LABEL[s]}
-            </button>
-          ))}
+          {STATUSES.map((s) => {
+            const isDisabled = updating || detail.status === s;
+            const disabledReason = detail.status === s ? `既に「${STATUS_LABEL[s]}」ステータスです` : updating ? '更新中…' : undefined;
+            return (
+              <button
+                key={s}
+                onClick={() => changeStatus(s)}
+                disabled={isDisabled}
+                title={isDisabled ? disabledReason : `${STATUS_LABEL[s]}に変更する`}
+                aria-label={isDisabled ? disabledReason : `${STATUS_LABEL[s]}に変更する`}
+                className={`px-3 py-1.5 rounded-md text-sm border focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-slate-900 focus-visible:ring-offset-2 transition-colors ${
+                  detail.status === s
+                    ? 'bg-slate-900 text-white border-slate-900'
+                    : 'bg-white text-slate-700 border-slate-300 hover:bg-slate-50'
+                } disabled:opacity-60`}
+              >
+                {STATUS_LABEL[s]}
+              </button>
+            );
+          })}
         </div>
       </section>
     </div>

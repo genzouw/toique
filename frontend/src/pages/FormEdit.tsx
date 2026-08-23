@@ -337,6 +337,7 @@ export default function FormEdit() {
             value={lineChannelId}
             onChange={(e) => setLineChannelId(e.target.value)}
             disabled={!isNew}
+            title={!isNew ? "作成後はチャネル変更できません" : undefined}
             className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm disabled:bg-slate-50 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-slate-900 focus-visible:ring-offset-2"
           >
             <option value="">選択してください</option>
@@ -474,6 +475,15 @@ export default function FormEdit() {
             onClick={handleSave}
             loading={saving}
             disabled={!name || !lineChannelId || !!jsonError}
+            title={
+              !name
+                ? 'フォーム名を入力してください'
+                : !lineChannelId
+                  ? 'LINEチャネルを選択してください'
+                  : jsonError
+                    ? 'JSONエラーを修正してください'
+                    : '変更を保存する'
+            }
             className="px-4 py-2 bg-slate-900 text-white text-sm rounded-md flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {saving ? '保存中…' : '保存'}
