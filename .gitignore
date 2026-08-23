@@ -94,5 +94,8 @@ cdktf.out/
 .terraform/
 
 # PR/Issue 本文の下書き（一時ファイル。誤コミット防止）
-pr_body.txt
-issue_body.txt
+# ファイル名の完全一致列挙だと表記ゆれ（例: pr_description.txt）をすり抜けるため、
+# プレフィックス一致のパターンで網羅する。
+pr_body*.txt
+pr_description*.txt
+issue_body*.txt
