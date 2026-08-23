@@ -22,15 +22,18 @@ jobs:
           egress-policy: audit
 
       - name: Checkout code
-        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.2.2
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
         with:
           fetch-depth: 0
+          persist-credentials: false
 
       - name: Get PR diff
         id: pr_diff
+        env:
+          BASE_REF: ${{ github.base_ref }}
         run: |
-          git fetch origin ${{ github.base_ref }}
-          DIFF_CONTENT=$(git diff origin/${{ github.base_ref }}...HEAD -- 'frontend/')
+          git fetch origin "$BASE_REF"
+          DIFF_CONTENT=$(git diff "origin/$BASE_REF...HEAD" -- 'frontend/')
 
           # Escaping for multi-line output in GitHub Actions
           EOF=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
@@ -43,7 +46,7 @@ jobs:
 
       - name: Setup uv
         if: steps.pr_diff.outputs.changes_count >= 3 && steps.pr_diff.outputs.diff != ''
-        uses: astral-sh/setup-uv@887a942a15af3a76af609919aaf322f3f83c1626 # v5.1.2
+        uses: astral-sh/setup-uv@d4b2f3b6ecc6e67c4457f6d3e41ec42d3d0fcb86 # v5.4.2
         with:
           enable-cache: true
 
