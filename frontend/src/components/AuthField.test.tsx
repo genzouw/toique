@@ -30,6 +30,16 @@ describe('AuthField', () => {
     });
     expect(input).toBeInTheDocument();
     expect(input).toHaveAttribute('type', 'email');
+
+    const requiredMarker = screen.getByText('*', { selector: 'span' });
+    expect(requiredMarker).toHaveClass('text-red-500');
+    expect(requiredMarker).toHaveAttribute('aria-hidden', 'true');
+
+    // ラベルと必須マークの間隔は `ml-1` のみで表現する（JSX 上に実体スペース
+    // `{' '}` を挿入すると `ml-1` と二重に余白が効いてしまうため、
+    // ラベルテキストの直後に空白文字が無いことを固定する）。
+    const label = requiredMarker.closest('label');
+    expect(label?.textContent).toBe('メールアドレス*');
   });
 
   it('renders no toggle button for non-password types', () => {
