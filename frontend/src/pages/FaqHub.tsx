@@ -13,8 +13,8 @@ import {
 import SiteHeader from '../components/SiteHeader';
 import SiteFooter from '../components/SiteFooter';
 
-// ⚡ Bolt: Pre-compute searchable strings outside the component to avoid
-// O(N) string allocations and transformations on every keystroke during render.
+// ⚡ 静的な検索対象文字列をコンポーネント外で事前計算し、
+// 入力中のレンダーごとの O(N) の文字列割り当てと変換を避ける。
 const SEARCHABLE_FAQS = FAQS.map((f) => ({
   faq: f,
   searchTargets: [f.question, ...f.answerParagraphs].map((s) =>
