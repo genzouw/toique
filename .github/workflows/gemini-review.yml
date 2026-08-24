@@ -31,6 +31,7 @@ jobs:
           persist-credentials: false
 
       - name: Run Gemini Review Action
+        if: ${{ secrets.GEMINI_API_KEY != '' }}
         uses: derailed-dash/gemini-review-action@0c17a4014dc67a743739d21615c4446604bf24a0 # Pinned to SHA for v1.6.5
         with:
           gemini_api_key: ${{ secrets.GEMINI_API_KEY }}
