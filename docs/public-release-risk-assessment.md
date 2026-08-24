@@ -173,7 +173,7 @@
 ### M-4. ベースイメージの SHA pin 不足
 
 - **検出元**: Claude / 二次レビュー AI 一致
-- **状態**: `oven/bun:1.3.14-alpine` のようにタグまでは pin 済みだが SHA pin はなし
+- **状態**: `oven/bun:1.4.0-alpine` のようにタグまでは pin 済みだが SHA pin はなし
 - **対応**: 余力時に `oven/bun@sha256:...` 形式へ。最低 deploy stage のイメージは SHA pin 推奨
 
 ---
