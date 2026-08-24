@@ -68,7 +68,7 @@ def generate_rdjson(diff_text: str, api_key: str) -> str:
     """
 
     response = client.models.generate_content(
-        model='gemini-1.5-pro',
+        model='gemini-2.5-flash',
         contents=prompt,
         config=types.GenerateContentConfig(
             response_mime_type="application/json",

@@ -32,7 +32,7 @@ def generate_documentation(diff_text: str, title: str, body: str, api_key: str) 
     """
 
     response = client.models.generate_content(
-        model='gemini-1.5-pro',
+        model='gemini-2.5-flash',
         contents=prompt,
         config=types.GenerateContentConfig(
             temperature=0.2
