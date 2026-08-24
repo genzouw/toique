@@ -6,7 +6,7 @@ inputs:
     description: 'The search query'
     required: true
   provider:
-    description: 'The search provider (exa, tavily, duckduckgo, google, wikipedia, arxiv)'
+    description: 'The search provider (exa, tavily, duckduckgo, wikipedia, arxiv)'
     required: true
     default: 'duckduckgo'
   max_results:
