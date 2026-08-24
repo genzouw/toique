@@ -289,6 +289,6 @@ jobs:
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           # wrangler v4 は Node 22+ 必須。bun 1.4.0 の process.version は v26.3.0 に
           # なったため要件を満たしており、v4 へ引き上げ可能な状態。実デプロイでの
-          # 検証が必要なため、切り替えは別PRで行う。
+          # 検証が必要なため、切り替えは別PRで行う (#726)。
           wranglerVersion: '3'
           command: pages deploy frontend/dist --project-name ${{ env.CF_PAGES_PROJECT }} --commit-dirty=true --commit-hash=${{ github.sha }} --commit-message="Deploy ${{ github.sha }}"
