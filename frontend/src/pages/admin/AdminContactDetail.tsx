@@ -29,7 +29,11 @@ export default function AdminContactDetail() {
   const { id } = useParams<{ id: string }>();
   const [detail, setDetail] = useState<ContactDetail | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [updating, setUpdating] = useState(false);
+  // どのステータスへの変更が進行中かを保持し、ボタンごとの非活性理由を
+  // 「変更中の1件」と「その間押せないだけの他ボタン」に分けて説明する
+  const [pendingStatus, setPendingStatus] = useState<ContactStatus | null>(
+    null,
+  );
 
   useEffect(() => {
     if (!id) return;
@@ -43,7 +47,7 @@ export default function AdminContactDetail() {
 
   async function changeStatus(status: ContactStatus) {
     if (!id) return;
-    setUpdating(true);
+    setPendingStatus(status);
     setError(null);
     try {
       const updated = await api.updateAdminContactStatus(id, status);
@@ -51,7 +55,7 @@ export default function AdminContactDetail() {
     } catch (err) {
       setError(err instanceof Error ? err.message : '更新に失敗しました');
     } finally {
-      setUpdating(false);
+      setPendingStatus(null);
     }
   }
 
@@ -129,17 +133,31 @@ export default function AdminContactDetail() {
         </h2>
         <div className="flex gap-2">
           {STATUSES.map((s) => {
-            const isDisabled = updating || detail.status === s;
-            const disabledReason = detail.status === s ? `既に「${STATUS_LABEL[s]}」ステータスです` : updating ? '更新中…' : undefined;
+            const isCurrent = detail.status === s;
+            // aria-label は表示テキストを上書きするため、非活性理由にも
+            // 対象ステータス名を含めてボタン同士を区別できるようにする。
+            // 実際に変更中なのは pendingStatus のボタンだけなので、
+            // 他のボタンは「更新中のため押せない」と事実どおりに説明する
+            const disabledReason =
+              pendingStatus === s
+                ? `「${STATUS_LABEL[s]}」への変更を更新中です`
+                : isCurrent
+                  ? `現在のステータスは「${STATUS_LABEL[s]}」です`
+                  : pendingStatus !== null
+                    ? `更新中のため「${STATUS_LABEL[s]}」へは変更できません`
+                    : undefined;
             return (
               <button
                 key={s}
                 onClick={() => changeStatus(s)}
-                disabled={isDisabled}
-                title={isDisabled ? disabledReason : `${STATUS_LABEL[s]}に変更する`}
-                aria-label={isDisabled ? disabledReason : `${STATUS_LABEL[s]}に変更する`}
+                disabled={pendingStatus !== null || isCurrent}
+                title={disabledReason}
+                aria-label={
+                  disabledReason ??
+                  `ステータスを「${STATUS_LABEL[s]}」に変更する`
+                }
                 className={`px-3 py-1.5 rounded-md text-sm border focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-slate-900 focus-visible:ring-offset-2 transition-colors ${
-                  detail.status === s
+                  isCurrent
                     ? 'bg-slate-900 text-white border-slate-900'
                     : 'bg-white text-slate-700 border-slate-300 hover:bg-slate-50'
                 } disabled:opacity-60`}

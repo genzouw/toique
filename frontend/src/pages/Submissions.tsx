@@ -26,6 +26,7 @@ export default function Submissions() {
   const [exportFormId, setExportFormId] = useState<string>('');
   const [downloading, setDownloading] = useState(false);
   const selectId = useId();
+  const selectHintId = useId();
 
   // 中間配列のアロケーションを避けるため明示的なループを使用
   const formsById = useMemo(() => {
@@ -45,11 +46,12 @@ export default function Submissions() {
       ]);
       setItems(subs);
       setForms(fs);
+      // 選択中フォームが一覧から消えた場合は古いIDを残さない
       setExportFormId((prev) => {
-        if (!prev && fs.length > 0) {
-          return fs[0].id;
+        if (prev && fs.some((f) => f.id === prev)) {
+          return prev;
         }
-        return prev;
+        return fs.length > 0 ? fs[0].id : '';
       });
       setError(null);
     } catch (e) {
@@ -64,16 +66,23 @@ export default function Submissions() {
     refresh();
   }, [refresh]);
 
+  // 一覧に存在するフォームが選択されているときだけダウンロードを許可する
+  const selectedForm = formsById[exportFormId];
+
+  const downloadButtonLabel = downloading
+    ? 'CSVをダウンロード中です'
+    : !selectedForm
+      ? loading
+        ? 'フォームを読み込み中です'
+        : 'ダウンロード可能なフォームがありません'
+      : '選択したフォームのCSVをダウンロード';
+
   async function handleDownload() {
-    if (!exportFormId) return;
-    const form = formsById[exportFormId];
+    if (!selectedForm) return;
     setDownloading(true);
     setError(null);
     try {
-      await api.downloadSubmissionsCsv(
-        exportFormId,
-        form?.name ?? 'submissions',
-      );
+      await api.downloadSubmissionsCsv(exportFormId, selectedForm.name);
     } catch (e) {
       setError((e as Error).message);
     } finally {
@@ -112,11 +121,26 @@ export default function Submissions() {
               value={exportFormId}
               onChange={(e) => setExportFormId(e.target.value)}
               disabled={forms.length === 0}
-              title={forms.length === 0 ? "作成済みのフォームがありません" : undefined}
+              title={
+                forms.length === 0
+                  ? loading
+                    ? 'フォームを読み込み中です'
+                    : 'フォームがありません'
+                  : undefined
+              }
+              // title だけではスクリーンリーダーへ非活性理由が確実に伝わらないため、
+              // 可視の注記を aria-describedby で関連付ける
+              aria-describedby={forms.length === 0 ? selectHintId : undefined}
               className="mt-1 w-full px-3 py-2 border border-slate-300 rounded-md text-sm disabled:bg-slate-50 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-slate-900 focus-visible:ring-offset-2"
             >
               {forms.length === 0 ? (
-                <option>フォームがありません</option>
+                // 値としての意味を持たないプレースホルダなので、
+                // 文言由来の value が乗らないよう明示的に空文字を指定する
+                <option value="">
+                  {loading
+                    ? 'フォームを読み込み中です'
+                    : 'フォームがありません'}
+                </option>
               ) : (
                 forms.map((f) => (
                   <option key={f.id} value={f.id}>
@@ -125,14 +149,26 @@ export default function Submissions() {
                 ))
               )}
             </select>
+            {forms.length === 0 && (
+              <div id={selectHintId} className="text-xs text-slate-500 mt-1">
+                {loading
+                  ? 'フォームを読み込み中です'
+                  : 'フォームがないため選択できません'}
+              </div>
+            )}
           </div>
           <LoadingButton
             onClick={handleDownload}
             loading={downloading}
-            disabled={!exportFormId}
+            disabled={!selectedForm}
             icon={Download}
-            title={!exportFormId ? "ダウンロード対象のフォームを選択してください" : "選択したフォームのCSVをダウンロード"}
-            aria-label={!exportFormId ? "ダウンロード対象のフォームを選択してください" : "選択したフォームのCSVをダウンロード"}
+            // LoadingButton は loading 中もボタンを非活性化するため、
+            // downloading を最優先にして実際の状態と説明を一致させる。
+            // アクセシブル名は children（可視テキスト）に任せる。
+            // aria-label で上書きすると WCAG 2.5.3 Label in Name に反し、
+            // 音声コントロールで「CSVダウンロード」と発話しても一致しなくなる
+            title={downloadButtonLabel}
+            aria-describedby={forms.length === 0 ? selectHintId : undefined}
             className="inline-flex items-center gap-2 px-4 py-2 bg-slate-900 text-white text-sm rounded-md disabled:opacity-50 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-slate-900 focus-visible:ring-offset-2 transition-colors"
           >
             {downloading ? 'ダウンロード中…' : 'CSVダウンロード'}
