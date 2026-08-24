@@ -1,7 +1,7 @@
 # ビルドコンテキスト: リポジトリルート
 #
 # ベースイメージは Bun のバージョンを明示固定する。`.github/workflows/deploy.yml` の
-# `oven-sh/setup-bun` で migrations 用ランナーも同じ Bun (1.3.14) を使うため、両者が
+# `oven-sh/setup-bun` で migrations 用ランナーも同じ Bun (1.4.0) を使うため、両者が
 # ズレない構成になっている。Bun を上げる際は両方を同時に更新する。
 FROM oven/bun:1.4.0-alpine AS base
 WORKDIR /app
