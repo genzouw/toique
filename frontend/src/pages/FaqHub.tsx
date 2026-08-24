@@ -13,19 +13,22 @@ import {
 import SiteHeader from '../components/SiteHeader';
 import SiteFooter from '../components/SiteFooter';
 
+// ⚡ Bolt: Pre-compute searchable strings outside the component to avoid
+// O(N) string allocations and transformations on every keystroke during render.
+const SEARCHABLE_FAQS = FAQS.map((f) => ({
+  faq: f,
+  searchTarget: [f.question, ...f.answerParagraphs].join(' ').toLowerCase(),
+}));
+
 export default function FaqHub() {
   const [query, setQuery] = useState('');
   const normalizedQuery = query.trim().toLowerCase();
 
   const matchedFaqs: FaqArticle[] = useMemo(() => {
     if (!normalizedQuery) return [];
-    return FAQS.filter(
-      (f) =>
-        f.question.toLowerCase().includes(normalizedQuery) ||
-        f.answerParagraphs.some((p) =>
-          p.toLowerCase().includes(normalizedQuery),
-        ),
-    );
+    return SEARCHABLE_FAQS.filter((item) =>
+      item.searchTarget.includes(normalizedQuery),
+    ).map((item) => item.faq);
   }, [normalizedQuery]);
 
   return (
