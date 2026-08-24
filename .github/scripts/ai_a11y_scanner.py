@@ -93,8 +93,10 @@ def main():
 
     try:
         rdjson_str = generate_rdjson(diff_text, api_key)
-        # 確実に有効なJSONとなるようにパースしてから再度ダンプ
+        # json.loadsはJSON構文のみを検証するため、reviewdogが要求する型（diagnosticsの
+        # 構造など）まではRDJsonモデルで検証してから出力する
         rdjson_obj = json.loads(rdjson_str)
+        RDJson.model_validate(rdjson_obj)
         print(json.dumps(rdjson_obj, indent=2))
     except Exception:
         # AIレビューはベストエフォートのため、失敗時はスタックトレースを記録した
