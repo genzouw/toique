@@ -7,7 +7,7 @@
 #
 # Bun バージョンは backend/Dockerfile および `.github/workflows/deploy.yml` の
 # `setup-bun` と揃える。
-FROM oven/bun:1.3.14-alpine AS base
+FROM oven/bun:1.4.0-alpine AS base
 WORKDIR /app
 COPY frontend/package.json frontend/bun.lock ./
 RUN --mount=type=cache,target=/root/.bun,sharing=locked bun install --frozen-lockfile
