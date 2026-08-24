@@ -10,6 +10,7 @@
 # ///
 
 import os
+import secrets
 import sys
 import json
 import urllib.request
@@ -28,7 +29,7 @@ def get_jina_reader_content(url: str) -> str:
     jina_url = f"{JINA_READER_BASE_URL}/{url}"
     try:
         req = urllib.request.Request(jina_url, headers={'User-Agent': 'Mozilla/5.0'})
-        with urllib.request.urlopen(req) as response:
+        with urllib.request.urlopen(req, timeout=10) as response:
             return response.read().decode('utf-8')
     except Exception as e:
         return f"Error fetching full content: {e}"
@@ -97,7 +98,7 @@ def search_wikipedia(query: str, max_results: int) -> List[Dict[str, str]]:
     import requests
     url = f"{WIKIPEDIA_API_URL}?action=query&list=search&srsearch={urllib.parse.quote(query)}&utf8=&format=json"
     try:
-        response = requests.get(url)
+        response = requests.get(url, timeout=10)
         data = response.json()
         if "error" in data:
             print(f"Wikipedia API error: {data['error']}", file=sys.stderr)
@@ -190,8 +191,9 @@ def main():
     github_output = os.environ.get("GITHUB_OUTPUT")
     if github_output:
         with open(github_output, "a") as f:
-            # Bashの複数行文字列
-            delimiter = "EOF_SEARCH_RESULTS"
+            # Bashの複数行文字列。検索結果に固定文字列が含まれる出力インジェクションを防ぐため、
+            # delimiterは実行のたびにランダム生成する
+            delimiter = secrets.token_hex(16)
             f.write(f"results<<{delimiter}\n")
             f.write(output_md)
             f.write(f"\n{delimiter}\n")
