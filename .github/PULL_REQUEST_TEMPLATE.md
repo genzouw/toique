@@ -34,7 +34,7 @@
 - [ ] インデックス変更を含む場合、`CREATE INDEX` / `DROP INDEX` を `IF (NOT) EXISTS` で冪等化し、必要なら本番に CONCURRENTLY で先行適用した（`docs/migrations.md`）
 - [ ] secret / 個人情報を含むコードや設定が含まれていない
 - [ ] `Push Protection` の警告やブロックが発生していないこと
-- [ ] （AI連携機能を含むPRの場合）`GEMINI_API_KEY`、`TAVILY_API_KEY`、`EXA_API_KEY` などの手動事前セットアップ要件を満たしていること
+- [ ] （変更対象がAI連携機能の場合）変更した機能が実際に必要とするシークレットのみを確認した（例: `gemini-review.yml`/`ai-a11y-scanner.yml`/`ai-auto-documenter.yml` は `GEMINI_API_KEY`、`ai-web-search` Action を呼び出すワークフローを新設する場合は `TAVILY_API_KEY`/`EXA_API_KEY`。詳細は `.github/AI_AUTOMATION_SETUP.md`）
 
 ## デプロイ時の注意
 

@@ -44,9 +44,11 @@ GitHub Models は 2026-07-30 に playground・モデルカタログ・推論 API
 - Composite Action `.github/actions/ai-web-search`（利用者が上記のみだったため）
 - 上記に付随する `EXA_API_KEY` / `TAVILY_API_KEY`（RAG 用 Web 検索キー。他に利用者はありません）
 
+> **注記（本PRで再導入）:** 上記のうち **Auto-Documenter**（`ai-auto-documenter.yml`）と **a11y Scanner**（`ai-a11y-scanner.yml`）、および Composite Action `.github/actions/ai-web-search` は、GitHub Models ではなく **Gemini API を直接呼び出す実装**（`google-genai` SDK 経由、`GEMINI_API_KEY` を使用）として本PRで再導入しています。GitHub Models の推論 API には依存しないため、上記の提供終了の影響は受けません。現在の運用方針は第6節「ツール連携に向けた追加設定」を参照してください。`ai-web-search` はまだどのワークフローからも呼び出されておらず、現時点で `EXA_API_KEY` / `TAVILY_API_KEY` を使用する処理はありません。
+
 **シークレットの取り扱い:**
 
-- `EXA_API_KEY` / `TAVILY_API_KEY` — 利用者が無くなったため、登録されている場合はリポジトリの Secrets から削除して構いません。
+- `EXA_API_KEY` / `TAVILY_API_KEY` — `ai-web-search` Action 自体は再導入済みですが、これを呼び出すワークフローは現時点でありません。未登録のままで問題なく、`ai-web-search` を呼び出すワークフローを新設する場合にのみ登録してください。
 - `PAT_FOR_MODELS` — 本リポジトリには**登録されていません**。「GitHub Models 用のトークンを削除するか残すか」という判断自体が対象不在で成立しません。
   - 確認範囲: Actions secrets / Dependabot secrets / Environment secrets の 3 面をそれぞれ API で確認済み（`gh api repos/genzouw/toique/actions/secrets`、`.../dependabot/secrets`、`.../environments`）。**User 所有リポジトリでも Environment secrets と Dependabot secrets は利用可能**なので、Actions secrets の結果だけでは未登録と断定できない点に注意してください。対象外となるのは Organization secrets の階層だけです（owner が User のため存在しません）。
   - `pre-commit-autoupdate.yml` は PR 作成用トークンとして `secrets.PAT_FOR_AUTOMATION` を参照します（`GITHUB_TOKEN` で PR を作ると後続の Actions がトリガーされないため専用トークンが必要）が、これも上記 3 面のいずれにも未登録です。**このワークフローは現状のままではトークン未設定により失敗します。** `with:` にキーを指定している以上、`peter-evans/create-pull-request` 側の `default: ${{ github.token }}` は適用されず空文字が渡り、v8.1.1 は API を叩く前に `Input 'token' not supplied. Unable to continue.` で終了します（401 にはなりません）。
@@ -86,13 +88,17 @@ AI によるレビュー・トリアージは、リポジトリ側に API キー
 - **GitHub Models**: 2026-07-30 に提供終了。新規採用・再導入とも不可です。
 - **GitHub Copilot / Microsoft Foundry**: GitHub Models の後継として案内されていますが、いずれも premium request 消費（課金）または API キー管理を伴うため、上記の無料方針と両立しません。
 - **GitHub Agentic Workflows (`gh-aw`)**: 2026年に一度導入しましたが、`copilot` エンジンが GitHub Copilot の premium request / AI クレジットを消費する**有料**サービスであり、無料方針と両立しないため撤去しました。関連ファイル（`.github/workflows/*-agent.md`、`*.lock.yml`、`.github/aw/`）はすべて削除済みです。`gh aw compile` で再生成すると課金と CI 失敗が復活するため、再導入しないでください。
-- **外部AIプロバイダの API キーを要するもの**（Gemini API、OpenAI API、Anthropic API など）: 無料枠があるものでもキー管理と枯渇時の CI 失敗が発生するため採用しません。
+- **外部AIプロバイダの API キーを要するもの**（OpenAI API、Anthropic API など。下記「例外」の Gemini API を除く）: 無料枠があるものでもキー管理と枯渇時の CI 失敗が発生するため採用しません。
+
+**例外: Gemini API（`GEMINI_API_KEY`）**
+
+`gemini-review.yml` / `ai-a11y-scanner.yml`（`ai_a11y_scanner.py`）/ `ai-auto-documenter.yml`（`ai_auto_documenter.py`）は Gemini API を直接呼び出します。いずれも `GEMINI_API_KEY` 未設定時はエラーにせず空の結果へフォールバックしCIを止めない設計としており、Google AI Studio の無料枠内での利用を前提とします。第3節の注記も参照してください。
 
 **本方針の適用範囲（AI 推論と Web 検索の区別）:**
 
 上記の「API キーを要するものは採用しない」は **AI 推論（LLM 呼び出し）** に対する方針です。RAG 用の **Web 検索 API**（Exa / Tavily）は、無料枠の範囲でのみ利用し API キーを任意とする限りにおいて例外として許容していました。
 
-ただしこれらを利用していたのは GitHub Models 依存のワークフローのみで、それらの撤去に伴い `.github/actions/ai-web-search` ごと削除済みです。現在 CI 上に Web 検索を行う仕組みは存在しません。
+`.github/actions/ai-web-search` Composite Action は第3節の注記のとおり本PRで再導入していますが、これを呼び出すワークフローは現時点でありません。現在 CI 上で実際に Web 検索を実行する仕組みはありませんが、Action 自体はいつでも組み込み可能な状態で存在します。
 
 ## 6. 新規導入した自動化ツールの運用ルール (2024年導入)
 
@@ -136,10 +142,9 @@ PRマージ前に以下の作業を確認してください。
 3. **StepSecurity Harden-Runner のインストール**: AIコーディングエージェントからのクレデンシャル漏洩やサプライチェーン攻撃を防ぐため、主要なワークフローに `step-security/harden-runner` を導入しています。
    - StepSecurity の GitHub App を対象リポジトリにインストールし、初期設定を行ってください（公開リポジトリは無料で利用可能です）。
    - 現在はCIのダウンタイムを防ぐため `audit` モードで運用していますが、StepSecurity Dashboard 上で学習が完了し、必要な通信先リストが整備された段階で、ワークフローファイル側を `block` モードに変更（必要に応じて `allowed-endpoints` を追記）して完全なアウトバウンド通信の保護を有効化してください。
-4. **AI連携ワークフロー用APIキーの登録**: GeminiによるPRのコードレビュー（`gemini-review.yml`）、A11yスキャン（`ai-a11y-scanner.yml`）、自動ドキュメント生成（`ai-auto-documenter.yml`）、およびRAG Web検索機能（`ai-web-search` Action）を利用するため、以下のシークレットをリポジトリの Settings > Secrets and variables > Actions に登録してください。
-   - `GEMINI_API_KEY`: Gemini APIを利用するためのキー（Google AI Studioから取得。必須）。
-   - `TAVILY_API_KEY`: Tavily検索機能用キー（オプション。AI Web検索機能のTavilyプロバイダ使用時に必要）。
-   - `EXA_API_KEY`: Exa検索機能用キー（オプション。AI Web検索機能のExaプロバイダ使用時に必要）。
+4. **AI連携ワークフロー用APIキーの登録**: Gemini APIによるPRのコードレビュー（`gemini-review.yml`）、A11yスキャン（`ai-a11y-scanner.yml`）、自動ドキュメント生成（`ai-auto-documenter.yml`）を利用するため、以下のシークレットをリポジトリの Settings > Secrets and variables > Actions に登録してください。
+   - `GEMINI_API_KEY`: Gemini APIを利用するためのキー（Google AI Studioから取得。上記3ワークフローが使用します。未設定の場合はエラーにせずAI機能をスキップします）。
+   - `TAVILY_API_KEY` / `EXA_API_KEY`: RAG Web検索機能（`ai-web-search` Action）用のキーです。同Actionを呼び出すワークフローは現時点で存在しないため、現状では登録不要です。呼び出し元ワークフローを新設する場合にのみ登録してください（第3節の注記を参照）。
 
 ## 7. サプライチェーン・セキュリティとローカル AI 連携
 
