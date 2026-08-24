@@ -17,7 +17,9 @@ import SiteFooter from '../components/SiteFooter';
 // O(N) string allocations and transformations on every keystroke during render.
 const SEARCHABLE_FAQS = FAQS.map((f) => ({
   faq: f,
-  searchTarget: [f.question, ...f.answerParagraphs].join(' ').toLowerCase(),
+  searchTargets: [f.question, ...f.answerParagraphs].map((s) =>
+    s.toLowerCase(),
+  ),
 }));
 
 export default function FaqHub() {
@@ -27,7 +29,7 @@ export default function FaqHub() {
   const matchedFaqs: FaqArticle[] = useMemo(() => {
     if (!normalizedQuery) return [];
     return SEARCHABLE_FAQS.filter((item) =>
-      item.searchTarget.includes(normalizedQuery),
+      item.searchTargets.some((s) => s.includes(normalizedQuery)),
     ).map((item) => item.faq);
   }, [normalizedQuery]);
 
