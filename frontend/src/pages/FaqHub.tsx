@@ -13,8 +13,8 @@ import {
 import SiteHeader from '../components/SiteHeader';
 import SiteFooter from '../components/SiteFooter';
 
-// ⚡ Bolt: Pre-compute searchable string targets at the module level
-// This avoids expensive O(N) string allocations (.toLowerCase()) on every keystroke during render.
+// 静的なFAQの検索用文字列をモジュールレベルで事前計算する。
+// 各キーストロークのレンダリング時に発生する文字列割り当てを削減する。
 const SEARCHABLE_FAQS = FAQS.map((faq) => ({
   faq,
   searchableText: [faq.question, ...faq.answerParagraphs]
