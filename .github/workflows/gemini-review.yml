@@ -33,8 +33,8 @@ jobs:
           prDiff=$(gh pr view "${{ github.event.pull_request.number }}" --json additions,deletions -q '.additions + .deletions')
           changedFiles=$(gh pr view "${{ github.event.pull_request.number }}" --json changedFiles -q '.changedFiles | length')
 
-          echo "diff_size=$prDiff" >> $GITHUB_OUTPUT
-          echo "changed_files=$changedFiles" >> $GITHUB_OUTPUT
+          echo "diff_size=$prDiff" >> "$GITHUB_OUTPUT"
+          echo "changed_files=$changedFiles" >> "$GITHUB_OUTPUT"
 
       - name: Run Gemini Review Action
         if: steps.pr_details.outputs.diff_size >= 20 && steps.pr_details.outputs.changed_files >= 1
