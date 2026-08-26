@@ -3,19 +3,10 @@ name: '🤖 Gemini Code Review & Triage'
 on:
   pull_request:
     types: [opened, synchronize, reopened, ready_for_review]
-  issue_comment:
-    types: [created]
 
 jobs:
   review:
-    if: |
-      (github.event_name == 'pull_request' && !github.event.pull_request.draft) ||
-      (
-        github.event_name == 'issue_comment' &&
-        github.event.issue.pull_request &&
-        startsWith(github.event.comment.body, '/gemini-review') &&
-        contains(fromJSON('["OWNER", "MEMBER", "COLLABORATOR"]'), github.event.comment.author_association)
-      )
+    if: ${{ !github.event.pull_request.draft }}
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -30,13 +21,12 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
         with:
-          ref: ${{ github.event.pull_request.head.sha || format('refs/pull/{0}/head', github.event.issue.number) }}
+          ref: ${{ github.event.pull_request.head.sha }}
           fetch-depth: 0
           persist-credentials: false
 
       - name: Get PR details
         id: pr_details
-        if: github.event_name == 'pull_request'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
@@ -47,9 +37,7 @@ jobs:
           echo "changed_files=$changedFiles" >> $GITHUB_OUTPUT
 
       - name: Run Gemini Review Action
-        if: |
-          github.event_name == 'issue_comment' ||
-          (github.event_name == 'pull_request' && steps.pr_details.outputs.diff_size >= 20 && steps.pr_details.outputs.changed_files >= 1)
+        if: steps.pr_details.outputs.diff_size >= 20 && steps.pr_details.outputs.changed_files >= 1
         uses: petarzarkov/gemini-code-review-action@db0558aaebc97373346194ed926bef6b15962512
         with:
           model: 'gemini-1.5-pro'
