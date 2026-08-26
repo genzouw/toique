@@ -13,19 +13,24 @@ import {
 import SiteHeader from '../components/SiteHeader';
 import SiteFooter from '../components/SiteFooter';
 
+// ⚡ Bolt: 静的データ検索用の文字列をモジュールレベルで事前計算し、
+// コンポーネント再レンダリング時の文字列割り当てや変換を回避します。
+const SEARCHABLE_FAQS = FAQS.map((faq) => ({
+  faq,
+  searchableText: [faq.question, ...faq.answerParagraphs]
+    .join(' ')
+    .toLowerCase(),
+}));
+
 export default function FaqHub() {
   const [query, setQuery] = useState('');
   const normalizedQuery = query.trim().toLowerCase();
 
   const matchedFaqs: FaqArticle[] = useMemo(() => {
     if (!normalizedQuery) return [];
-    return FAQS.filter(
-      (f) =>
-        f.question.toLowerCase().includes(normalizedQuery) ||
-        f.answerParagraphs.some((p) =>
-          p.toLowerCase().includes(normalizedQuery),
-        ),
-    );
+    return SEARCHABLE_FAQS.filter((item) =>
+      item.searchableText.includes(normalizedQuery),
+    ).map((item) => item.faq);
   }, [normalizedQuery]);
 
   return (

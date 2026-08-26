@@ -1,0 +1,3 @@
+## 2025-02-12 - [Pre-compute Searchable Text for Static Datasets]
+**Learning:** For frontend search filtering on static datasets (like FAQs), dynamically extracting and converting strings to lowercase within the `useMemo` block during a render cycle causes unnecessary O(N) string allocations and performance overhead on every keystroke.
+**Action:** Pre-compute the searchable string targets (e.g. concatenated lowercased strings) once at the module level outside the React component. Use this pre-computed array in the filter loop inside `useMemo` to eliminate string allocation overhead during rendering.
