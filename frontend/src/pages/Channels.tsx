@@ -4,6 +4,7 @@ import { api, type LineChannel } from '../lib/api';
 import { ICON_SIZE } from '../lib/icon-size';
 import EmptyState from '../components/EmptyState';
 import LoadingButton from '../components/LoadingButton';
+import { RequiredMark } from '../components/RequiredMark';
 import { buildWebhookUrl } from '../lib/webhook-url';
 
 const COPY_FEEDBACK_DURATION_MS = 2000;
@@ -251,21 +252,23 @@ function Field({
   onChange,
   placeholder,
   type = 'text',
+  required = true,
 }: {
   label: string;
   value: string;
   onChange: (v: string) => void;
   placeholder?: string;
   type?: string;
+  // 任意項目のフィールドを追加したときに必須マークが嘘にならないよう、
+  // 表示と <input required> を同じ値で連動させる。
+  required?: boolean;
 }) {
   const id = useId();
   return (
     <div>
       <label htmlFor={id} className="block text-sm font-medium text-slate-700">
         {label}
-        <span className="text-red-500 ml-1" aria-hidden="true">
-          *
-        </span>
+        {required && <RequiredMark />}
       </label>
       <input
         id={id}
@@ -273,7 +276,7 @@ function Field({
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
-        required
+        required={required}
         className="mt-1 w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-900"
       />
     </div>
