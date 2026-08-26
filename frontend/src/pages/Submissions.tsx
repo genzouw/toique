@@ -46,7 +46,7 @@ export default function Submissions() {
     refresh();
   }, [refresh]);
 
-  // 中間配列のアロケーションを避けるため明示的なループを使用
+  // 行ごとに forms を線形探索しないよう、id 検索用のマップを作る
   const formsById: Record<string, FormListItem> = {};
   for (const f of forms) {
     formsById[f.id] = f;
