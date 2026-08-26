@@ -10,7 +10,7 @@ CI を経由しないため、対応するチェックや承認フローがス�
 
 - `gcloud` CLI (`gcloud components install`)
 - `docker` (Docker Desktop もしくは互換ランタイム)
-- `bun` (1.3.14 推奨。`.github/workflows/deploy.yml` の `setup-bun` と同じバージョン)
+- `bun` (`.github/workflows/deploy.yml` の `setup-bun` に記載のバージョンを使用)
 
 ### 認証セットアップ (初回 or 期限切れ時のみ)
 
