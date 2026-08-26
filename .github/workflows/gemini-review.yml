@@ -32,6 +32,7 @@ jobs:
         with:
           ref: ${{ github.event.pull_request.head.sha || format('refs/pull/{0}/head', github.event.issue.number) }}
           fetch-depth: 0
+          persist-credentials: false
 
       - name: Get PR details
         id: pr_details
