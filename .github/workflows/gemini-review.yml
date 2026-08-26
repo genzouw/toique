@@ -30,8 +30,8 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          prDiff=$(gh pr view ${{ github.event.pull_request.number }} --json additions,deletions -q '.additions + .deletions')
-          changedFiles=$(gh pr view ${{ github.event.pull_request.number }} --json changedFiles -q '.changedFiles | length')
+          prDiff=$(gh pr view "${{ github.event.pull_request.number }}" --json additions,deletions -q '.additions + .deletions')
+          changedFiles=$(gh pr view "${{ github.event.pull_request.number }}" --json changedFiles -q '.changedFiles | length')
 
           echo "diff_size=$prDiff" >> $GITHUB_OUTPUT
           echo "changed_files=$changedFiles" >> $GITHUB_OUTPUT
