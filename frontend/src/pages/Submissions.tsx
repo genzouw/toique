@@ -91,7 +91,7 @@ export default function Submissions() {
   }
 
   /**
-   * ⚡ Bolt: 不要な再レンダーを防ぐためにリストのレンダリング結果を useMemo でラップしています。
+   * ⚡ 最適化: 不要な再レンダーを防ぐためにリストのレンダリング結果を useMemo でラップしています。
    * Submissions コンポーネントで exportFormId や downloading の状態が変わって
    * 再レンダーが発生した場合でも、items（回答一覧）が変わらない限り
    * O(N) のマッピング処理（React Elementの生成）をスキップし、描画負荷を軽減します。
