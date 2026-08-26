@@ -132,11 +132,10 @@ function CsvExportPanel({
   // 選択中フォームが一覧から一時的に消えている間は先頭へフォールバックし、
   // 戻ってきたら元の選択へ復帰する。selectedId 自体は書き換えないので、
   // 再取得のたびに選択がリセットされることはない。
-  const effectiveId = forms.some((f) => f.id === selectedId)
-    ? selectedId
-    : (forms[0]?.id ?? '');
-  // 一覧に存在するフォームが選択されているときだけダウンロードを許可する
-  const selectedForm = forms.find((f) => f.id === effectiveId);
+  // 選択の解決とフォールバックを1回の探索から導き、一覧を二重に走査しない。
+  // ダウンロードの可否も selectedForm の有無で判定する。
+  const selectedForm = forms.find((f) => f.id === selectedId) ?? forms[0];
+  const effectiveId = selectedForm?.id ?? '';
 
   const downloadButtonLabel = downloading
     ? 'CSVをダウンロード中です'
