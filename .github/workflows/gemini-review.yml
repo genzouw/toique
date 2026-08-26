@@ -40,7 +40,7 @@ jobs:
         if: steps.pr_details.outputs.diff_size >= 20 && steps.pr_details.outputs.changed_files >= 1
         uses: petarzarkov/gemini-code-review-action@db0558aaebc97373346194ed926bef6b15962512
         with:
-          model: 'gemini-1.5-pro'
+          model: 'gemini-2.5-flash'
           language: 'ja'
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
