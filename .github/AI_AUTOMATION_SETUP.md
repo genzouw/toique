@@ -86,7 +86,7 @@ AI によるレビュー・トリアージは、リポジトリ側に API キー
 - **GitHub Models**: 2026-07-30 に提供終了。新規採用・再導入とも不可です。
 - **GitHub Copilot / Microsoft Foundry**: GitHub Models の後継として案内されていますが、いずれも premium request 消費（課金）または API キー管理を伴うため、上記の無料方針と両立しません。
 - **GitHub Agentic Workflows (`gh-aw`)**: 2026年に一度導入しましたが、`copilot` エンジンが GitHub Copilot の premium request / AI クレジットを消費する**有料**サービスであり、無料方針と両立しないため撤去しました。関連ファイル（`.github/workflows/*-agent.md`、`*.lock.yml`、`.github/aw/`）はすべて削除済みです。`gh aw compile` で再生成すると課金と CI 失敗が復活するため、再導入しないでください。
-- **外部AIプロバイダの API キーを要するもの**（Gemini API、OpenAI API、Anthropic API など）: 無料枠があるものでもキー管理と枯渇時の CI 失敗が発生するため採用しません。
+- **外部AIプロバイダの API キーを要するもの**: 例外として、無料枠（Google AI Studio 経由など）が提供されている Gemini 1.5 Pro に関しては、コードレビューおよび issue トリアージの精度向上のために限定的に採用しています。
 
 **本方針の適用範囲（AI 推論と Web 検索の区別）:**
 
@@ -131,7 +131,9 @@ Rust製の高速なスペルチェッカー `typos` がCIに追加されてい�
 当リポジトリでは生成AIによるコードの大量生成やそれに伴うCI/CDパイプラインへの負荷増大に対応するため、静的解析ツールとAIの連携を強化しています。
 PRマージ前に以下の作業を確認してください。
 
-1. **Qodo Merge / PR-Agent のインストール**: PR-Agent などのレビューツールを GitHub App として対象リポジトリにインストールし、適切な権限 (Issues: Write, Pull Requests: Write 等) を付与してください。インストール前に無料利用の条件を満たすか確認してください（Qodo Merge は Qodo for Open Source の承認が必要で、本リポジトリは現時点で対象外です）。
+1. **Gemini API Key の設定**: `gemini-review.yml` による AI コードレビューと Issue トリアージを利用するため、Google AI Studio 等で発行した `GEMINI_API_KEY` をリポジトリの **Actions Secrets** に登録してください。このキーは `gemini-1.5-pro` モデルの呼び出しに利用されます。
+
+2. **Qodo Merge / PR-Agent のインストール**: PR-Agent などのレビューツールを GitHub App として対象リポジトリにインストールし、適切な権限 (Issues: Write, Pull Requests: Write 等) を付与してください。インストール前に無料利用の条件を満たすか確認してください（Qodo Merge は Qodo for Open Source の承認が必要で、本リポジトリは現時点で対象外です）。
 2. **セキュリティスキャナの有効化確認**: `Gitleaks`, `Trufflehog` が適切に動作するよう、GitHub の設定 > Security から Secret Scanning と Push Protection が有効になっているか確認してください。また、`Zizmor` による解析結果が Code scanning alerts に適切に反映されるよう設定されているか確認してください。
 3. **StepSecurity Harden-Runner のインストール**: AIコーディングエージェントからのクレデンシャル漏洩やサプライチェーン攻撃を防ぐため、主要なワークフローに `step-security/harden-runner` を導入しています。
    - StepSecurity の GitHub App を対象リポジトリにインストールし、初期設定を行ってください（公開リポジトリは無料で利用可能です）。
