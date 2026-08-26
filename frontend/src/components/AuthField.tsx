@@ -46,6 +46,9 @@ export function AuthField({
     <div>
       <label htmlFor={id} className="block text-sm font-medium text-slate-700">
         {label}
+        <span className="text-red-500 ml-1" aria-hidden="true">
+          *
+        </span>
       </label>
       <div className="mt-1 relative">
         <input

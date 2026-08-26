@@ -13,7 +13,7 @@ bun x lint-staged
 # `.env.example` 等のテンプレート（機密値を含まない雛形）は正当にコミットされるため、
 # 2 段目の `grep -Ev` で明示的に許可リスト化して誤検知を防ぐ（CI 側 forbidden-paths.yml と揃える）。
 FORBIDDEN_FILES=$(git diff --cached --name-only --diff-filter=d \
-  | grep -E '((^|/)\.env.*|\.cursor/.*|\.claude/.*|\.aider.*|\.windsurf/.*|\.jules/.*|\.Jules/.*|.*credentials.*\.json|.*secret.*\.json|.*\.pem|.*\.key|.*\.p12|.*\.p8|.*\.keystore|.*\.jks|.*_rsa|.*_ed25519|.*_ecdsa|.*\.sqlite|.*\.db|.*\.log|\.npmrc|\.netrc|.*\.tfstate(\..*)?|(^|/)cdktf\.out(/.*)?|(^|/)\.terraform(/.*)?|.*\.(http|rest|patch|diff|local))$' \
+  | grep -E '((^|/)\.env.*|\.cursor/.*|\.claude/.*|\.aider.*|\.windsurf/.*|\.jules/.*|\.Jules/.*|.*credentials.*\.json|.*secret.*\.json|.*\.pem|.*\.key|.*\.p12|.*\.p8|.*\.keystore|.*\.jks|.*_rsa|.*_ed25519|.*_ecdsa|.*\.sqlite|.*\.db|.*\.log|\.npmrc|\.netrc|.*\.tfstate(\..*)?|(^|/)cdktf\.out(/.*)?|(^|/)\.terraform(/.*)?|(^|/)(pr_body|pr_description|issue_body).*\.txt|.*\.(http|rest|patch|diff|local))$' \
   | grep -Ev '(^|/)\.env\.(example|sample|template|dist)$' \
   || true)
 
@@ -25,12 +25,73 @@ if [ -n "$FORBIDDEN_FILES" ]; then
 fi
 # ---------------------------------------------------------
 
+# --- Security: Reject a tampered .secrets.baseline before it can execute code ---
+# detect-secrets は `--baseline <file>` 実行時に <file> の filters_used をそのまま
+# ロードし、`path` が `file://...` スキームだと importlib 経由でそのファイルの Python
+# コードを実行する (detect_secrets.settings.get_filters -> import_file_as_module)。
+# .pre-commit-config.yaml の detect-secrets hook、および下段の detect-secrets-hook
+# フォールバックはどちらも `--baseline .secrets.baseline` を渡すため、攻撃者が改変した
+# .secrets.baseline を含むブランチを checkout してコミットしただけで任意コード実行に
+# 繋がる。CI 側 (.github/workflows/detect-secrets.yml) は同じ理由から --baseline を
+# 一切渡さない設計を採っているが、ローカルは既知シークレットの抑制に baseline を使い
+# 続けるため、代わりに実行前のゲートで file:// フィルタの混入を検知して止める。
+if [ -f .secrets.baseline ] && grep -qE '"path"[[:space:]]*:[[:space:]]*"file://' .secrets.baseline; then
+  echo "🚨 [Security Error] .secrets.baseline references a file:// filter."
+  echo "   detect-secrets would import and execute that file as Python code when loading the baseline."
+  echo "   Refusing to run detect-secrets locally. Review .secrets.baseline for tampering before committing."
+  exit 1
+fi
+# ---------------------------------------------------------
+
+# --- Security: pre-commit framework delegation ---
+# Pythonの pre-commit がインストールされている場合は、そちらへ委譲する
+# (gitleaks と detect-secrets を .pre-commit-config.yaml で一元管理)。
+# 無い場合はフォールバックとして旧来の個別シェルスクリプト実行へ進む。
+if command -v pre-commit >/dev/null 2>&1; then
+  echo "🔍 Running pre-commit framework..."
+  # stages を指定しないとすべてのフックが走るが、デフォルト設定でコミット時用フックとして
+  # 設定されているものが走る。
+  # SKIP= で呼び出し元シェルの環境変数を無効化する: 環境に SKIP=gitleaks,detect-secrets
+  # 等が残っていると、当該フックが Skipped 扱いになり `pre-commit run` 自体は exit 0 で
+  # 成功してしまう。その結果 PRE_COMMIT_RAN=1 が立ち、以降のフォールバックスキャンも
+  # 実行されず、秘密検出が丸ごとすり抜けてしまうため。
+  if SKIP='' pre-commit run --color always; then
+    # pre-commit framework 側でシークレットチェック（gitleaks, detect-secrets）を
+    # 実行完了したため、以降のフォールバックスキャンをスキップするフラグを立てる。
+    PRE_COMMIT_RAN=1
+  else
+    # オフライン/プロキシ/初回セットアップ失敗等の環境要因で pre-commit run 自体が
+    # 失敗した場合でも、旧来のフォールバックスキャン（本PR導入前は唯一の防御手段
+    # だった実装）へ確実に降りられるようにする。フォールバック側でも gitleaks /
+    # detect-secrets を再実行するため、実際のシークレット検知については本PR導入前
+    # と同等以上の防御水準が維持される。
+    echo "⚠️  pre-commit run failed (environment issue, or a hook reported a finding)."
+    echo "   Falling back to the legacy scanners below."
+    PRE_COMMIT_RAN=0
+  fi
+else
+  PRE_COMMIT_RAN=0
+fi
+
 # --- Security: Detect-Secrets entropy scan ---
 # エントロピーベースのシークレットスキャンを実行し、gitleaks で検知しきれないカスタム形式の鍵や
 # 高エントロピー文字列の混入を防ぐ。
 # ベースライン (.secrets.baseline) に登録済みのものは除外される。
 # コマンドが存在しない場合はスキップする。
-if command -v detect-secrets-hook >/dev/null 2>&1; then
+if [ "$PRE_COMMIT_RAN" -eq 1 ]; then
+  # すでに pre-commit 側で実行済みの場合はスキップ
+  :
+elif command -v detect-secrets-hook >/dev/null 2>&1; then
+  # .secrets.baseline は detect-secrets==1.5.0 を前提に生成・運用されている。PATH 上の
+  # 実行ファイルが別バージョンだと、プラグイン構成の差異により検知漏れ・誤検知が
+  # 生じる恐れがあるため、フォールバックでのスキャン実行前にバージョンを検証する。
+  DETECT_SECRETS_VERSION=$(detect-secrets --version 2>/dev/null || true)
+  if [ "$DETECT_SECRETS_VERSION" != "1.5.0" ]; then
+    echo "🚨 [Security Error] detect-secrets version mismatch (found: ${DETECT_SECRETS_VERSION:-unknown}, required: 1.5.0)."
+    echo ".secrets.baseline was generated with detect-secrets==1.5.0; a different version may scan inconsistently."
+    echo "Please run: pip install detect-secrets==1.5.0"
+    exit 1
+  fi
   echo "🔍 Running detect-secrets on staged files..."
   # ステージされたファイルを NUL 区切りで取得し、detect-secrets-hook へ個別の引数として渡す。
   # 改行区切りの文字列をそのまま単一引数として渡すと、複数ファイルがステージされた際に
@@ -71,6 +132,11 @@ fi
 # バイナリがインストールされていない場合はユーザーキャッシュに自動ダウンロードして実行する。
 # オフライン環境・未対応OS/ARCH・チェックサム検証失敗時はローカルスキャンをスキップし、
 # コミット自体はブロックしない（CIでの検知に委ねる）。
+# NOTE: ダウンロード/キャッシュ処理は PRE_COMMIT_RAN の値に関わらず実行する。pre-commit
+# framework が管理するバイナリはフレームワーク独自のキャッシュ配下に置かれ、
+# .husky/pre-push が参照する ${XDG_CACHE_HOME:-$HOME/.cache}/gitleaks とは別物のため、
+# 委譲時にここをスキップすると pre-push が gitleaks を発見できず content scan が
+# fail-open になってしまう。実際のスキャン実行のみを PRE_COMMIT_RAN で制御する。
 GITLEAKS_CMD="gitleaks"
 if ! command -v gitleaks >/dev/null 2>&1; then
   echo "⚠️  gitleaks is not installed globally. Downloading automatically..."
@@ -141,7 +207,11 @@ if ! command -v gitleaks >/dev/null 2>&1; then
   fi
 fi
 
-if [ -n "$GITLEAKS_CMD" ]; then
+if [ "$PRE_COMMIT_RAN" -eq 1 ]; then
+  # すでに pre-commit 側で gitleaks を実行済みのため、ここでの再スキャンはスキップする
+  # (上記のダウンロード/キャッシュ処理自体はスキップしていない点に注意)。
+  :
+elif [ -n "$GITLEAKS_CMD" ]; then
   echo "🔍 Running gitleaks on staged files..."
   # `--staged`: ステージされたファイルのみをスキャン対象とする
   # `--redact`: ターミナル出力でシークレットの生値をマスクする

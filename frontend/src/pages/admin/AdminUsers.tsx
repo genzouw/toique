@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, memo } from 'react';
 import { Link } from 'react-router';
 import { Users } from 'lucide-react';
 import { formatDate } from '../../lib/format-date';
@@ -64,42 +64,7 @@ export default function AdminUsers() {
             </thead>
             <tbody className="divide-y divide-slate-100">
               {rows.map((row) => (
-                <tr key={row.id} className="hover:bg-slate-50">
-                  <td className="px-4 py-2 text-slate-600 whitespace-nowrap">
-                    {formatDate(row.createdAt)}
-                  </td>
-                  <td className="px-4 py-2">
-                    <Link
-                      to={`/admin/users/${row.id}`}
-                      className="text-slate-900 hover:underline"
-                    >
-                      {row.name}
-                    </Link>
-                  </td>
-                  <td className="px-4 py-2 text-slate-700 break-all">
-                    {row.email}
-                  </td>
-                  <td className="px-4 py-2">
-                    <span
-                      className={`inline-flex px-2 py-0.5 rounded-full text-xs ${
-                        row.emailVerified
-                          ? 'bg-green-100 text-green-800'
-                          : 'bg-slate-200 text-slate-600'
-                      }`}
-                    >
-                      {row.emailVerified ? '認証済み' : '未認証'}
-                    </span>
-                  </td>
-                  <td className="px-4 py-2 text-slate-700">
-                    {row.tenantName ?? '—'}
-                  </td>
-                  <td className="px-4 py-2 text-slate-700">
-                    {row.tenantPlan ?? '—'}
-                  </td>
-                  <td className="px-4 py-2 text-slate-700">
-                    {row.tenantRole ?? '—'}
-                  </td>
-                </tr>
+                <AdminUserRow key={row.id} row={row} />
               ))}
             </tbody>
           </table>
@@ -108,3 +73,45 @@ export default function AdminUsers() {
     </div>
   );
 }
+
+/**
+ * ⚡ Bolt: 不要な再レンダーを防ぐために React.memo() でラップしています。
+ * AdminUsers コンポーネントの状態（例: error）が変わっても、
+ * 個別の行（ユーザーデータ）が変わらない限り再レンダーをスキップし、描画時間を短縮します。
+ */
+const AdminUserRow = memo(function AdminUserRow({
+  row,
+}: {
+  row: AdminUserListItem;
+}) {
+  return (
+    <tr className="hover:bg-slate-50">
+      <td className="px-4 py-2 text-slate-600 whitespace-nowrap">
+        {formatDate(row.createdAt)}
+      </td>
+      <td className="px-4 py-2">
+        <Link
+          to={`/admin/users/${row.id}`}
+          className="text-slate-900 hover:underline"
+        >
+          {row.name}
+        </Link>
+      </td>
+      <td className="px-4 py-2 text-slate-700 break-all">{row.email}</td>
+      <td className="px-4 py-2">
+        <span
+          className={`inline-flex px-2 py-0.5 rounded-full text-xs ${
+            row.emailVerified
+              ? 'bg-green-100 text-green-800'
+              : 'bg-slate-200 text-slate-600'
+          }`}
+        >
+          {row.emailVerified ? '認証済み' : '未認証'}
+        </span>
+      </td>
+      <td className="px-4 py-2 text-slate-700">{row.tenantName ?? '—'}</td>
+      <td className="px-4 py-2 text-slate-700">{row.tenantPlan ?? '—'}</td>
+      <td className="px-4 py-2 text-slate-700">{row.tenantRole ?? '—'}</td>
+    </tr>
+  );
+});

@@ -1,0 +1,152 @@
+name: Pre-commit Auto-update
+
+on:
+  schedule:
+    # 毎週月曜 08:00 JST (= 日曜 23:00 UTC) に実行
+    - cron: '0 23 * * 0'
+  workflow_dispatch:
+
+# schedule と workflow_dispatch が両方トリガーのため、週次実行中に手動実行が
+# 重なると同一ブランチへ同時に push しうる。create-pull-request は既存ブランチを
+# force push で更新するため、後勝ちでどちらかの結果が失われるのを防ぐ。
+concurrency:
+  group: pre-commit-autoupdate
+  cancel-in-progress: false
+
+# PR 作成は PAT_FOR_AUTOMATION で行い、checkout も persist-credentials: false のため
+# GITHUB_TOKEN には読み取り以上の権限は不要 (最小権限の原則)。
+# 本ジョブは pre-commit install-hooks で外部リポジトリのフックをビルド・実行する
+# 場所でもあるため、書き込み可能なトークンを同居させない。
+permissions:
+  contents: read
+
+jobs:
+  auto-update:
+    name: Auto-update pre-commit hooks
+    runs-on: ubuntu-latest
+    steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@05e31511f85b41b11d1cf0ef85d0992719546e2c # v2.21.0
+        with:
+          egress-policy: audit
+
+      # PAT_FOR_AUTOMATION が未登録でも、ジョブは autoupdate と gitleaks 検証を
+      # 数分走らせ切ってから最後の create-pull-request で初めて落ちる。しかも
+      # v8.1.1 のエラーは "Input 'token' not supplied. Unable to continue." で、
+      # シークレット未登録が原因だと読み取れない (with: にキーを書いている以上
+      # action 側の default: ${{ github.token }} は適用されず空文字が渡るため)。
+      # 原因と対処が一目で分かるよう、実作業に入る前にここで打ち切る。
+      - name: Verify automation token is configured
+        env:
+          AUTOMATION_TOKEN: ${{ secrets.PAT_FOR_AUTOMATION }}
+        run: |
+          set -euo pipefail
+          if [ -z "${AUTOMATION_TOKEN}" ]; then
+            echo "::error::secrets.PAT_FOR_AUTOMATION is not registered. Create a fine-grained PAT scoped to this repository with Contents: write and Pull requests: write, then register it as the PAT_FOR_AUTOMATION repository secret. See section 3 of .github/AI_AUTOMATION_SETUP.md."
+            exit 1
+          fi
+
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Setup Python
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: '3.12'
+
+      # このピンは Dependabot の対象外 (github-actions エコシステムが見るのは uses: の
+      # 参照のみで run: 内の pip install は見ない) のため、版上げは手動で行う。
+      # requirements ファイルに切り出して pip エコシステムに登録する案は、OSV-Scanner が
+      # pre-commit の依存を推定解決して実際に pip が入れる版と異なる版で脆弱性を報告し、
+      # 恒常的な偽陽性でセキュリティ CI を赤くするため見送っている (PR #681 で検証済み)。
+      # .pre-commit-config.yaml の minimum_pre_commit_version により最低要件は担保される。
+      # 目安として半年に一度、https://pypi.org/project/pre-commit/ を見て更新すること。
+      - name: Install pre-commit
+        run: pip install pre-commit==4.6.2
+
+      # detect-secrets の版は .pre-commit-config.yaml の rev だけでなく
+      # .secrets.baseline / .husky/pre-commit / package.json / docs にも固定されており、
+      # rev だけを上げるとフォールバック経路 (pre-commit framework 未導入の環境) が
+      # バージョン不一致で実行を拒否し、エントロピースキャンが丸ごと止まる。
+      # ベースライン再生成を伴うため自動更新の対象外とし、gitleaks のみ追従させる。
+      #
+      # --repo は allow-list ではなく deny-list として運用する。allow-list
+      # (例: --repo gitleaks のみ指定) だと、.pre-commit-config.yaml に新しい
+      # フックを追加しても autoupdate 側は指定漏れに気付けず exit 0 のまま
+      # 静かに取り残される。deny-list なら新規フックは自動的に対象へ入る。
+      - name: Run pre-commit autoupdate
+        run: |
+          set -euo pipefail
+          mapfile -t repo_args < <(python -c "import yaml; skip = ('local', 'meta', 'https://github.com/Yelp/detect-secrets'); print('\n'.join('--repo=' + r['repo'] for r in yaml.safe_load(open('.pre-commit-config.yaml'))['repos'] if r['repo'] not in skip))")
+          if [ "${#repo_args[@]}" -eq 0 ]; then
+            echo "::error::no repository is targeted for autoupdate"
+            exit 1
+          fi
+          pre-commit autoupdate --freeze "${repo_args[@]}"
+
+      # 更新後のフックが実際に動作することを確認する。
+      # 本リポジトリには .pre-commit-config.yaml を検証するCIジョブが無く、
+      # 生成PRのCIが全て緑でも設定の妥当性は担保されないため、ここで検証する。
+      # 失敗した場合はPRを作らず、壊れた更新が取り込まれるのを防ぐ。
+      - name: Verify updated hooks
+        run: |
+          # 更新後の rev が解決でき、フックがビルドできることの確認 (ここが本命)。
+          pre-commit install-hooks
+          # detect-secrets はステージ非依存で動くためここで実際に検証される。
+          # 一方 gitleaks フックの entry は --staged 前提のため、CI のクリーンな
+          # チェックアウトではステージが空になり、何もスキャンせずに成功する。
+          # gitleaks の実質的な検証は次のステップで行う。
+          pre-commit run --all-files --show-diff-on-failure
+
+      # gitleaks の更新事故で最も影響が大きいのは .gitleaks.toml のスキーマ非互換
+      # (ルール定義の仕様変更) だが、上記 --all-files では空振りして検出できない。
+      # かといってリポジトリ全体をスキャンすると、.gitleaksignore のフィンガープリントが
+      # 全履歴スキャン (--log-opts=--all) 前提で記録されており浅いチェックアウトでは
+      # 一致しないため、精査済みの既知検知で必ず失敗してしまう。
+      # そこで空ディレクトリを対象に更新後のバイナリを起動し、設定ファイルを
+      # 読み込めるかどうかだけを検証する (読み込み失敗時は exit 1 になる)。
+      - name: Verify gitleaks config compatibility
+        run: |
+          set -euo pipefail
+          GITLEAKS_BIN="$(find "${PRE_COMMIT_HOME:-$HOME/.cache/pre-commit}" -type f -name gitleaks -perm -u+x -print -quit)"
+          if [ -z "$GITLEAKS_BIN" ]; then
+            echo "::error::gitleaks binary not found in the pre-commit cache"
+            exit 1
+          fi
+          # どの版で検証したかをログに残す。将来 pre-commit キャッシュの復元
+          # (actions/cache 等) が導入された場合に、更新後ではなく古いバイナリを
+          # 誤って検証してしまう事故に後から気付けるようにするため。
+          echo "verifying with: $("$GITLEAKS_BIN" version)"
+          "$GITLEAKS_BIN" dir "$(mktemp -d)" --config .gitleaks.toml --no-banner
+
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@5f6978faf089d4d20b00c7766989d076bb2fc7f1 # v8.1.1
+        with:
+          token: ${{ secrets.PAT_FOR_AUTOMATION }}
+          commit-message: 'chore(security): 🔒 update pre-commit hooks'
+          branch: 'chore/pre-commit-autoupdate'
+          base: 'main'
+          # PR本文は「.pre-commit-config.yaml 内のバージョン更新」とだけ宣言している。
+          # add-paths を省略すると autofix 系フックが作業ツリーを書き換えた際に
+          # その差分まで同梱され、宣言と実差分が黙って乖離するため範囲を固定する。
+          add-paths: .pre-commit-config.yaml
+          title: 'chore(security): 🔒 pre-commit フックの自動更新'
+          body: |
+            ## 概要
+            定期監査の一環として、ローカルのセキュリティ検知ツール `gitleaks` のバージョンを最新に保つため、`pre-commit autoupdate` を実行しました。
+
+            ## 変更内容
+            - `.pre-commit-config.yaml` 内の `gitleaks` のバージョン更新
+
+            なお `detect-secrets` は `.secrets.baseline` の再生成を伴うため自動更新の対象外です (手動更新)。
+
+            ## マージ前の確認事項
+            - CI が正常に通過していることを確認してください。
+            - 検知ツールのメジャーバージョンアップが含まれる場合、破壊的変更（ルールの変更など）がないか確認してください。
+          labels: 'dependencies, github-actions'
+          # PAT_FOR_AUTOMATION の持ち主が生成 PR の作者になるため、同一ユーザーを reviewers に
+          # 指定すると POST /pulls/{n}/requested_reviewers が 422 を返し step が失敗する。
+          # 自己アサインは可能なので assignees のみ指定する。
+          assignees: 'genzouw'
