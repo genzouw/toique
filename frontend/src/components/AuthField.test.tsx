@@ -31,9 +31,10 @@ describe('AuthField', () => {
     expect(input).toBeInTheDocument();
     expect(input).toHaveAttribute('type', 'email');
 
+    // 必須マークの色・aria-hidden の検証は RequiredMark.test.tsx に集約している。
+    // ここでは AuthField がマークを描画していることのみを確認する。
     const requiredMarker = screen.getByText('*', { selector: 'span' });
-    expect(requiredMarker).toHaveClass('text-red-500');
-    expect(requiredMarker).toHaveAttribute('aria-hidden', 'true');
+    expect(requiredMarker).toBeInTheDocument();
 
     // ラベルと必須マークの間隔は `ml-1` のみで表現する（JSX 上に実体スペース
     // `{' '}` を挿入すると `ml-1` と二重に余白が効いてしまうため、
