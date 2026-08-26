@@ -129,9 +129,9 @@ function CsvExportPanel({
   const selectId = useId();
   const selectHintId = useId();
 
-  // 選択中フォームが一覧から消えた場合に古いIDを残さないための調整を、
-  // 再取得時の setState ではなく描画時の導出で行う。フォーム一覧の更新と
-  // 選択の整合が常に1箇所で決まり、同期漏れが起きない。
+  // 選択中フォームが一覧から一時的に消えている間は先頭へフォールバックし、
+  // 戻ってきたら元の選択へ復帰する。selectedId 自体は書き換えないので、
+  // 再取得のたびに選択がリセットされることはない。
   const effectiveId = forms.some((f) => f.id === selectedId)
     ? selectedId
     : (forms[0]?.id ?? '');
