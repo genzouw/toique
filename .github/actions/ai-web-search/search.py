@@ -142,7 +142,6 @@ def main():
         results[0]["full_text"] = results[0]["full_text"][: len(results[0]["full_text"]) // 2]
         if not results[0]["full_text"]:
             del results[0]["full_text"]
-            break
         output = json.dumps(results, indent=2)
 
     print(output)
