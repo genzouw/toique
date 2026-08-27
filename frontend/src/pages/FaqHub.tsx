@@ -15,11 +15,13 @@ import SiteFooter from '../components/SiteFooter';
 
 // ⚡ Bolt: 静的データ検索用の文字列をモジュールレベルで事前計算し、
 // コンポーネント再レンダリング時の文字列割り当てや変換を回避します。
+// フィールドを連結せず個別に保持することで、フィールド境界をまたいだ
+// 偶然の一致（例: 質問文の末尾と回答冒頭の連結によるヒット）を防ぎます。
 const SEARCHABLE_FAQS = FAQS.map((faq) => ({
   faq,
-  searchableText: [faq.question, ...faq.answerParagraphs]
-    .join(' ')
-    .toLowerCase(),
+  searchTargets: [faq.question, ...faq.answerParagraphs].map((s) =>
+    s.toLowerCase(),
+  ),
 }));
 
 export default function FaqHub() {
@@ -29,7 +31,7 @@ export default function FaqHub() {
   const matchedFaqs: FaqArticle[] = useMemo(() => {
     if (!normalizedQuery) return [];
     return SEARCHABLE_FAQS.filter((item) =>
-      item.searchableText.includes(normalizedQuery),
+      item.searchTargets.some((s) => s.includes(normalizedQuery)),
     ).map((item) => item.faq);
   }, [normalizedQuery]);
 
