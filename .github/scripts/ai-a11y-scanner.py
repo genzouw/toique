@@ -111,6 +111,9 @@ Diff:
         if summary_path:
             with open(summary_path, "a", encoding="utf-8") as f:
                 f.write(f"### ⚠️ AI A11y Scanner の実行に失敗しました\n\n```\n{error_msg}\n```\n")
+        # API呼び出しや解析の失敗を空diagnostics + 正常終了で握り潰さず、
+        # ジョブを明示的に失敗させて実行基盤の障害を可視化する。
+        sys.exit(1)
 
 if __name__ == "__main__":
     main()
