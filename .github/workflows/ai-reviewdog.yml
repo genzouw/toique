@@ -1,0 +1,52 @@
+name: AI PR Review with Reviewdog
+
+on:
+  pull_request:
+    types: [opened, synchronize]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  ai-review:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@05e31511f85b41b11d1cf0ef85d0992719546e2c # v2.21.0
+        with:
+          egress-policy: audit
+
+      - name: Checkout Repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+
+      - name: Setup uv
+        uses: astral-sh/setup-uv@887a942a15af3a76af609919aaf320021fdb8227 # v5.1.0
+        with:
+          enable-cache: true
+          cache-dependency-glob: ".github/scripts/ai_pr_review.py"
+
+      - name: Setup Reviewdog
+        uses: reviewdog/action-setup@3f401fc1d1c7cff28911f0a0ea7cfce5c797dc69 # v1.3.0
+        with:
+          reviewdog_version: latest
+
+      - name: Get PR Diff
+        id: diff
+        run: |
+          git fetch origin ${{ github.base_ref }}
+          git diff origin/${{ github.base_ref }}...HEAD > pr.diff
+
+      - name: Run AI Review Script
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: |
+          uv run .github/scripts/ai_pr_review.py pr.diff > reviewdog-rdjson.json
+
+      - name: Run Reviewdog
+        env:
+          REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          cat reviewdog-rdjson.json | reviewdog -f=rdjson -reporter=github-pr-review

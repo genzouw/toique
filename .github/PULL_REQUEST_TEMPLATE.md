@@ -35,6 +35,11 @@
 - [ ] secret / 個人情報を含むコードや設定が含まれていない
 - [ ] `Push Protection` の警告やブロックが発生していないこと
 
+## AI・自動化ツールの導入要件 (該当する場合のみ)
+
+- [ ] `Tavily API`, `Exa API`, `Gemini API` などの外部 API キーが必要な場合、リポジトリの Actions Secrets に手動で登録した
+- [ ] GitHub App (CodeRabbit, Qodo Merge, StepSecurity等) のインストールや設定が必要な場合、PR マージ前に完了していることを確認した
+
 ## デプロイ時の注意
 
 <!-- 環境変数追加 / インフラ変更 / 手動オペレーションが必要なら明記。なければ「なし」。 -->

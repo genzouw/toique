@@ -1,0 +1,33 @@
+name: "AI Web Search via RAG"
+description: "Searches the web (Exa, Tavily, DDG, Wikipedia, Arxiv) and extracts full text via Jina Reader API to provide context for AI agents."
+inputs:
+  query:
+    description: "Search query"
+    required: true
+  provider:
+    description: "Search provider: exa, tavily, duckduckgo, wikipedia, arxiv"
+    required: false
+    default: "duckduckgo"
+outputs:
+  results:
+    description: "Search results formatted in XML"
+    value: ${{ steps.search.outputs.results }}
+runs:
+  using: "composite"
+  steps:
+    - name: Setup uv
+      uses: astral-sh/setup-uv@887a942a15af3a76af609919aaf320021fdb8227 # v5.1.0
+      with:
+        enable-cache: true
+        cache-dependency-glob: ".github/actions/ai-web-search/search.py"
+
+    - name: Run Web Search
+      id: search
+      shell: bash
+      env:
+        EXA_API_KEY: ${{ env.EXA_API_KEY }}
+        TAVILY_API_KEY: ${{ env.TAVILY_API_KEY }}
+        QUERY: ${{ inputs.query }}
+        PROVIDER: ${{ inputs.provider }}
+      run: |
+        uv run .github/actions/ai-web-search/search.py

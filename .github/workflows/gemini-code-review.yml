@@ -1,0 +1,31 @@
+name: "Gemini PR Code Review"
+
+on:
+  pull_request:
+    types: [opened, synchronize, ready_for_review]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  review:
+    if: ${{ !github.event.pull_request.draft }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@05e31511f85b41b11d1cf0ef85d0992719546e2c # v2.21.0
+        with:
+          egress-policy: audit
+
+      - name: Run AI Code Review
+        uses: petarzarkov/gemini-code-review-action@e8e786b3b05e3bb3139072f05ae6c1ad9cba3027
+        with:
+          model: gemini-2.0-flash
+          enable_conversation_context: true
+          skip_draft_prs: true
+          language: Japanese
+          exclude: '*.md,*.json,bun.lock,*.lock.yml,package.json'
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

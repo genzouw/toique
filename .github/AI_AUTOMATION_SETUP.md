@@ -72,27 +72,23 @@ AI によるレビュー・トリアージの代替方針は第5節を参照し�
 > `permissions: models: read` を付与しても推論 API 自体が存在しないため、GitHub Models に依存するワークフローは動作しません。
 > 該当した 23 本のワークフローは**撤去済み**です（第3節）。
 
-**現行の方針: GitHub ネイティブの無料 AI 推論基盤は存在しないため、リポジトリ側で AI 推論を実行するワークフローは新規に追加しません。**
+**現行の方針: 無料枠で利用可能な外部 AI プロバイダ (Gemini API, Tavily API, Exa API等) を活用し、リポジトリ側で高度な自動化ワークフローを再構築します。**
 
-AI によるレビュー・トリアージは、リポジトリ側に API キーも課金設定も必要としない外部 App（CodeRabbit / Qodo Merge、第4節参照）に一本化します。
-
-ただし「App 側で推論が走る」ことと「無料である」ことは別問題です。App ごとに無料条件を確認し、条件を満たさないものは本方針上採用できません。
+AI によるレビュー・トリアージは、外部 App（CodeRabbit 等）と並行して、Gemini API などの無料枠を活用した GitHub Actions ワークフローによって自律的に実行・拡張していきます。
 
 - **CodeRabbit**: 公開リポジトリ向けの無料プラン（Open Source）があり、本リポジトリは対象です。
 - **Qodo Merge**: 無料利用は [Qodo for Open Source](https://docs.qodo.ai/open-source-program) に承認された場合のみ（公開リポジトリ・stars 100 以上・継続的なメンテナンス・利用ポリシー遵守）。本リポジトリは stars が条件未達のため**現時点では無料対象外**で、通常プランはクレジット課金となるため導入を見送っています。
 
-**採用しないもの:**
+**採用するもの:**
 
-- **GitHub Models**: 2026-07-30 に提供終了。新規採用・再導入とも不可です。
-- **GitHub Copilot / Microsoft Foundry**: GitHub Models の後継として案内されていますが、いずれも premium request 消費（課金）または API キー管理を伴うため、上記の無料方針と両立しません。
-- **GitHub Agentic Workflows (`gh-aw`)**: 2026年に一度導入しましたが、`copilot` エンジンが GitHub Copilot の premium request / AI クレジットを消費する**有料**サービスであり、無料方針と両立しないため撤去しました。関連ファイル（`.github/workflows/*-agent.md`、`*.lock.yml`、`.github/aw/`）はすべて削除済みです。`gh aw compile` で再生成すると課金と CI 失敗が復活するため、再導入しないでください。
-- **外部AIプロバイダの API キーを要するもの**（Gemini API、OpenAI API、Anthropic API など）: 無料枠があるものでもキー管理と枯渇時の CI 失敗が発生するため採用しません。
+- **Gemini API**: Google が提供する無料枠（例: Gemini 1.5 Flash/Pro）を活用し、PRの自動コードレビューおよび Issue トリアージを行います。
+- **Exa API / Tavily API / Jina Reader API**: RAG（Retrieval-Augmented Generation）用の Web 検索およびコンテキスト抽出として、無料枠の範囲内で利用します。
 
-**本方針の適用範囲（AI 推論と Web 検索の区別）:**
-
-上記の「API キーを要するものは採用しない」は **AI 推論（LLM 呼び出し）** に対する方針です。RAG 用の **Web 検索 API**（Exa / Tavily）は、無料枠の範囲でのみ利用し API キーを任意とする限りにおいて例外として許容していました。
-
-ただしこれらを利用していたのは GitHub Models 依存のワークフローのみで、それらの撤去に伴い `.github/actions/ai-web-search` ごと削除済みです。現在 CI 上に Web 検索を行う仕組みは存在しません。
+**APIキーの設定 (手動作業):**
+以下のシークレットをリポジトリの **Actions Secrets** として手動で登録してください。
+- `GEMINI_API_KEY`: Gemini APIを利用したコードレビューやトリアージに必要です。
+- `TAVILY_API_KEY`: Tavily検索APIを利用するために必要です。
+- `EXA_API_KEY`: Exa検索APIを利用するために必要です。
 
 ## 6. 新規導入した自動化ツールの運用ルール (2024年導入)
 
