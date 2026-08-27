@@ -13,13 +13,15 @@ import {
 import SiteHeader from '../components/SiteHeader';
 import SiteFooter from '../components/SiteFooter';
 
-// 静的なFAQの検索用文字列をモジュールレベルで事前計算する。
+// 静的なFAQの検索対象文字列をモジュールレベルで事前計算する。
 // 各キーストロークのレンダリング時に発生する文字列割り当てを削減する。
+// フィールドを連結せず個別に保持することで、フィールド境界をまたいだ
+// 偶然の一致（例: 質問文の末尾と回答冒頭の連結によるヒット）を防ぐ。
 const SEARCHABLE_FAQS = FAQS.map((faq) => ({
   faq,
-  searchableText: [faq.question, ...faq.answerParagraphs]
-    .join(' ')
-    .toLowerCase(),
+  searchTargets: [faq.question, ...faq.answerParagraphs].map((s) =>
+    s.toLowerCase(),
+  ),
 }));
 
 export default function FaqHub() {
@@ -29,7 +31,7 @@ export default function FaqHub() {
   const matchedFaqs: FaqArticle[] = useMemo(() => {
     if (!normalizedQuery) return [];
     return SEARCHABLE_FAQS.filter((item) =>
-      item.searchableText.includes(normalizedQuery),
+      item.searchTargets.some((s) => s.includes(normalizedQuery)),
     ).map((item) => item.faq);
   }, [normalizedQuery]);
 
