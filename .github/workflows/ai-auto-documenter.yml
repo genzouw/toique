@@ -43,9 +43,15 @@ jobs:
             echo "::error::Failed to fetch PR diff for #$PR_NUMBER"
             exit 1
           fi
-          changed_lines=$(grep -c "^+" pr.diff || true)
-          diff_headers=$(grep -c '^+++ ' pr.diff || true)
-          changed_lines=$((changed_lines - diff_headers))
+          # git自身のパッチパーサでhunk内の追加行数だけを数える。
+          # grepの行頭一致だと、たまたま"++ "で始まる追加コンテンツ行を
+          # "+++ "ファイルヘッダーと誤判定して除外してしまう。
+          if git apply --numstat pr.diff > numstat.txt 2>/dev/null; then
+            changed_lines=$(awk '{sum+=$1} END{print sum+0}' numstat.txt)
+          else
+            # パース失敗時はスキップ側に倒さず、スキャンを実行させる
+            changed_lines=999
+          fi
           char_count=$(wc -m < pr.diff)
           if [ -z "$char_count" ] || [ "$char_count" -lt 20 ] || [ "$changed_lines" -lt 3 ]; then
             echo "skip=true" >> "$GITHUB_OUTPUT"
@@ -59,11 +65,20 @@ jobs:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           GEMINI_MODEL: ${{ secrets.GEMINI_MODEL || vars.GEMINI_MODEL || 'gemini-2.5-flash' }}
         run: |
-          if [ ! -f .github/scripts/ai-auto-documenter.py ]; then
-            echo "::warning::.github/scripts/ai-auto-documenter.py not found on default branch yet (likely introduced by this PR); skipping scan"
-            echo '{"source": {"name": "AI Auto Documenter", "url": "https://github.com"}, "diagnostics": []}' > rdjson.json
+          SCRIPT_PATH=".github/scripts/ai-auto-documenter.py"
+          if [ ! -f "$SCRIPT_PATH" ]; then
+            # スクリプト欠落を「成功扱い（空結果）」で許容するのは、このPR自身が
+            # 当該スクリプトを新規追加/改名するブートストラップ時のみに限定する。
+            # それ以外（誤削除・改名ミス等）はスキャン無効化を見逃さないよう失敗させる。
+            if grep -qF "+++ b/$SCRIPT_PATH" pr.diff || grep -qF "rename to $SCRIPT_PATH" pr.diff; then
+              echo "::warning::$SCRIPT_PATH not found on default branch yet (introduced by this PR); skipping scan"
+              echo '{"source": {"name": "AI Auto Documenter", "url": "https://github.com"}, "diagnostics": []}' > rdjson.json
+            else
+              echo "::error::$SCRIPT_PATH not found on default branch and is not being added by this PR"
+              exit 1
+            fi
           else
-            uv run .github/scripts/ai-auto-documenter.py < pr.diff > rdjson.json
+            uv run "$SCRIPT_PATH" < pr.diff > rdjson.json
           fi
 
       - name: Setup reviewdog
