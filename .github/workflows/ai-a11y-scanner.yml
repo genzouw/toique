@@ -50,6 +50,8 @@ jobs:
           fi
 
           changed_lines=$(grep -c "^+" pr.diff || true)
+          diff_headers=$(grep -c '^+++ ' pr.diff || true)
+          changed_lines=$((changed_lines - diff_headers))
           char_count=$(wc -m < pr.diff)
           if [ -z "$char_count" ] || [ "$char_count" -lt 20 ] || [ "$changed_lines" -lt 3 ]; then
             echo "skip=true" >> "$GITHUB_OUTPUT"
