@@ -39,7 +39,10 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
         run: |
-          gh pr diff "$PR_NUMBER" > pr.diff || echo "" > pr.diff
+          if ! gh pr diff "$PR_NUMBER" > pr.diff; then
+            echo "::error::Failed to fetch PR diff for #$PR_NUMBER"
+            exit 1
+          fi
           # Only process if there are frontend changes
           if ! grep -q "a/frontend/" pr.diff && ! grep -q "b/frontend/" pr.diff; then
             echo "skip=true" >> "$GITHUB_OUTPUT"

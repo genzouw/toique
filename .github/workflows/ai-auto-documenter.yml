@@ -39,7 +39,10 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
         run: |
-          gh pr diff "$PR_NUMBER" > pr.diff || echo "" > pr.diff
+          if ! gh pr diff "$PR_NUMBER" > pr.diff; then
+            echo "::error::Failed to fetch PR diff for #$PR_NUMBER"
+            exit 1
+          fi
           changed_lines=$(grep -c "^+" pr.diff || echo 0)
           char_count=$(wc -m < pr.diff)
           if [ -z "$char_count" ] || [ "$char_count" -lt 20 ] || [ "$changed_lines" -lt 3 ]; then
