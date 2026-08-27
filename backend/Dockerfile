@@ -1,9 +1,9 @@
 # ビルドコンテキスト: リポジトリルート
 #
 # ベースイメージは Bun のバージョンを明示固定する。`.github/workflows/deploy.yml` の
-# `oven-sh/setup-bun` で migrations 用ランナーも同じ Bun (1.3.14) を使うため、両者が
+# `oven-sh/setup-bun` で migrations 用ランナーも同じ Bun (1.4.0) を使うため、両者が
 # ズレない構成になっている。Bun を上げる際は両方を同時に更新する。
-FROM oven/bun:1.3.14-alpine AS base
+FROM oven/bun:1.4.0-alpine AS base
 WORKDIR /app
 COPY backend/package.json backend/bun.lock ./
 RUN --mount=type=cache,target=/root/.bun,sharing=locked bun install --frozen-lockfile
@@ -43,7 +43,7 @@ USER bun
 RUN bun run build
 
 # 本番実行用
-FROM oven/bun:1.3.14-alpine AS production
+FROM oven/bun:1.4.0-alpine AS production
 WORKDIR /app
 ENV NODE_ENV=production
 # COPY は `--chown=bun:bun` を付与して、後段の `USER bun` 切替後に権限不整合で

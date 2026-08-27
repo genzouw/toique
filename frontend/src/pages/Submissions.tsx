@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState, useId, memo } from 'react';
+import { useCallback, useEffect, useState, useId } from 'react';
 import { Inbox, Download, RefreshCw } from 'lucide-react';
 import { formatDate } from '../lib/format-date';
 import { api, type Submission, type FormListItem } from '../lib/api';
@@ -23,18 +23,6 @@ export default function Submissions() {
   const [forms, setForms] = useState<FormListItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [exportFormId, setExportFormId] = useState<string>('');
-  const [downloading, setDownloading] = useState(false);
-  const selectId = useId();
-
-  // 中間配列のアロケーションを避けるため明示的なループを使用
-  const formsById = useMemo(() => {
-    const map: Record<string, FormListItem> = {};
-    for (const f of forms) {
-      map[f.id] = f;
-    }
-    return map;
-  }, [forms]);
 
   const refresh = useCallback(async () => {
     setLoading(true);
@@ -45,12 +33,6 @@ export default function Submissions() {
       ]);
       setItems(subs);
       setForms(fs);
-      setExportFormId((prev) => {
-        if (!prev && fs.length > 0) {
-          return fs[0].id;
-        }
-        return prev;
-      });
       setError(null);
     } catch (e) {
       setError((e as Error).message);
@@ -64,21 +46,10 @@ export default function Submissions() {
     refresh();
   }, [refresh]);
 
-  async function handleDownload() {
-    if (!exportFormId) return;
-    const form = formsById[exportFormId];
-    setDownloading(true);
-    setError(null);
-    try {
-      await api.downloadSubmissionsCsv(
-        exportFormId,
-        form?.name ?? 'submissions',
-      );
-    } catch (e) {
-      setError((e as Error).message);
-    } finally {
-      setDownloading(false);
-    }
+  // 行ごとに forms を線形探索しないよう、id 検索用のマップを作る
+  const formsById: Record<string, FormListItem> = {};
+  for (const f of forms) {
+    formsById[f.id] = f;
   }
 
   return (
@@ -97,51 +68,7 @@ export default function Submissions() {
 
       <ErrorAlert error={error} />
 
-      {/* CSV エクスポート */}
-      <div className="mt-6 bg-white border border-slate-200 rounded-lg p-4">
-        <div className="flex items-end gap-3 flex-wrap">
-          <div className="flex-1 min-w-[240px]">
-            <label
-              htmlFor={selectId}
-              className="block text-sm font-medium text-slate-700"
-            >
-              CSVダウンロード対象のフォーム
-            </label>
-            <select
-              id={selectId}
-              value={exportFormId}
-              onChange={(e) => setExportFormId(e.target.value)}
-              disabled={forms.length === 0}
-              className="mt-1 w-full px-3 py-2 border border-slate-300 rounded-md text-sm disabled:bg-slate-50 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-slate-900 focus-visible:ring-offset-2"
-            >
-              {forms.length === 0 ? (
-                <option>フォームがありません</option>
-              ) : (
-                forms.map((f) => (
-                  <option key={f.id} value={f.id}>
-                    {f.name}
-                  </option>
-                ))
-              )}
-            </select>
-          </div>
-          <LoadingButton
-            onClick={handleDownload}
-            loading={downloading}
-            disabled={!exportFormId}
-            icon={Download}
-            title="選択したフォームのCSVをダウンロード"
-            aria-label="選択したフォームのCSVをダウンロード"
-            className="inline-flex items-center gap-2 px-4 py-2 bg-slate-900 text-white text-sm rounded-md disabled:opacity-50 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-slate-900 focus-visible:ring-offset-2 transition-colors"
-          >
-            {downloading ? 'ダウンロード中…' : 'CSVダウンロード'}
-          </LoadingButton>
-        </div>
-        <p className="text-xs text-slate-500 mt-2">
-          選択したフォームのスキーマに応じたカラム構成のCSVを出力します (UTF-8 /
-          Excel対応)。
-        </p>
-      </div>
+      <CsvExportPanel forms={forms} loading={loading} onError={setError} />
 
       {/* 一覧 */}
       <div className="mt-6 bg-white border border-slate-200 rounded-lg overflow-hidden">
@@ -180,10 +107,132 @@ export default function Submissions() {
 }
 
 /**
- * ⚡ Bolt: React.memo により、親コンポーネントの状態（例: exportFormId, downloading）が変化した際に、
- * リスト項目（および JSON.stringify を含むネストされた AnswerSummary）が不要に再レンダリングされるのを防ぐ。
+ * CSVエクスポートUI。
+ *
+ * 選択中フォーム（`selectedId`）とダウンロード中フラグ（`downloading`）は
+ * このブロックでしか使わないため、親ではなくここに閉じ込める。親に置くと
+ * プルダウンを1回操作するたびに回答一覧まで再レンダーの対象となり、
+ * それを打ち消すためのメモ化（一覧の useMemo、行の memo）が必要になる。
+ * state をここへ置けば、その原因そのものが無くなる。
  */
-const SubmissionRow = memo(function SubmissionRow({
+function CsvExportPanel({
+  forms,
+  loading,
+  onError,
+}: {
+  forms: FormListItem[];
+  loading: boolean;
+  onError: (message: string | null) => void;
+}) {
+  const [selectedId, setSelectedId] = useState<string>('');
+  const [downloading, setDownloading] = useState(false);
+  const selectId = useId();
+  const selectHintId = useId();
+
+  // 選択中フォームが一覧から一時的に消えている間は先頭へフォールバックし、
+  // 戻ってきたら元の選択へ復帰する。selectedId 自体は書き換えないので、
+  // 再取得のたびに選択がリセットされることはない。
+  // 選択の解決とフォールバックを1回の探索から導き、一覧を二重に走査しない。
+  // ダウンロードの可否も selectedForm の有無で判定する。
+  const selectedForm = forms.find((f) => f.id === selectedId) ?? forms[0];
+  const effectiveId = selectedForm?.id ?? '';
+
+  const downloadButtonLabel = downloading
+    ? 'CSVをダウンロード中です'
+    : !selectedForm
+      ? loading
+        ? 'フォームを読み込み中です'
+        : 'ダウンロード可能なフォームがありません'
+      : '選択したフォームのCSVをダウンロード';
+
+  async function handleDownload() {
+    if (!selectedForm) return;
+    setDownloading(true);
+    onError(null);
+    try {
+      await api.downloadSubmissionsCsv(selectedForm.id, selectedForm.name);
+    } catch (e) {
+      onError((e as Error).message);
+    } finally {
+      setDownloading(false);
+    }
+  }
+
+  return (
+    <div className="mt-6 bg-white border border-slate-200 rounded-lg p-4">
+      <div className="flex items-end gap-3 flex-wrap">
+        <div className="flex-1 min-w-[240px]">
+          <label
+            htmlFor={selectId}
+            className="block text-sm font-medium text-slate-700"
+          >
+            CSVダウンロード対象のフォーム
+          </label>
+          <select
+            id={selectId}
+            value={effectiveId}
+            onChange={(e) => setSelectedId(e.target.value)}
+            disabled={forms.length === 0}
+            title={
+              forms.length === 0
+                ? loading
+                  ? 'フォームを読み込み中です'
+                  : 'フォームがありません'
+                : undefined
+            }
+            // title だけではスクリーンリーダーへ非活性理由が確実に伝わらないため、
+            // 可視の注記を aria-describedby で関連付ける
+            aria-describedby={forms.length === 0 ? selectHintId : undefined}
+            className="mt-1 w-full px-3 py-2 border border-slate-300 rounded-md text-sm disabled:bg-slate-50 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-slate-900 focus-visible:ring-offset-2"
+          >
+            {forms.length === 0 ? (
+              // 値としての意味を持たないプレースホルダなので、
+              // 文言由来の value が乗らないよう明示的に空文字を指定する
+              <option value="">
+                {loading ? 'フォームを読み込み中です' : 'フォームがありません'}
+              </option>
+            ) : (
+              forms.map((f) => (
+                <option key={f.id} value={f.id}>
+                  {f.name}
+                </option>
+              ))
+            )}
+          </select>
+          {forms.length === 0 && (
+            <div id={selectHintId} className="text-xs text-slate-500 mt-1">
+              {loading
+                ? 'フォームを読み込み中です'
+                : 'フォームがないため選択できません'}
+            </div>
+          )}
+        </div>
+        <LoadingButton
+          onClick={handleDownload}
+          loading={downloading}
+          disabled={!selectedForm}
+          icon={Download}
+          // LoadingButton は loading 中もボタンを非活性化するため、
+          // downloading を最優先にして実際の状態と説明を一致させる。
+          // アクセシブル名は children（可視テキスト）に任せる。
+          // aria-label で上書きすると WCAG 2.5.3 Label in Name に反し、
+          // 音声コントロールで「CSVダウンロード」と発話しても一致しなくなる
+          title={downloadButtonLabel}
+          aria-describedby={forms.length === 0 ? selectHintId : undefined}
+          className="inline-flex items-center gap-2 px-4 py-2 bg-slate-900 text-white text-sm rounded-md disabled:opacity-50 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-slate-900 focus-visible:ring-offset-2 transition-colors"
+        >
+          {downloading ? 'ダウンロード中…' : 'CSVダウンロード'}
+        </LoadingButton>
+      </div>
+      <p className="text-xs text-slate-500 mt-2">
+        選択したフォームのスキーマに応じたカラム構成のCSVを出力します (UTF-8 /
+        Excel対応)。
+      </p>
+    </div>
+  );
+}
+
+function SubmissionRow({
   submission: s,
   formName,
 }: {
@@ -210,7 +259,7 @@ const SubmissionRow = memo(function SubmissionRow({
       </td>
     </tr>
   );
-});
+}
 
 function AnswerSummary({ answers }: { answers: Record<string, unknown> }) {
   const entries = Object.entries(answers);

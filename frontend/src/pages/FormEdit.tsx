@@ -128,6 +128,7 @@ export default function FormEdit() {
 
   const nameInputId = useId();
   const lineChannelInputId = useId();
+  const lineChannelHintId = useId();
   const statusInputId = useId();
   const triggerInputId = useId();
 
@@ -337,6 +338,10 @@ export default function FormEdit() {
             value={lineChannelId}
             onChange={(e) => setLineChannelId(e.target.value)}
             disabled={!isNew}
+            title={!isNew ? '作成後はチャネル変更できません' : undefined}
+            // title だけではスクリーンリーダーへ非活性理由が確実に伝わらないため、
+            // 可視の注記を aria-describedby で関連付ける
+            aria-describedby={!isNew ? lineChannelHintId : undefined}
             className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm disabled:bg-slate-50 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-slate-900 focus-visible:ring-offset-2"
           >
             <option value="">選択してください</option>
@@ -347,7 +352,7 @@ export default function FormEdit() {
             ))}
           </select>
           {!isNew && (
-            <div className="text-xs text-slate-500 mt-1">
+            <div id={lineChannelHintId} className="text-xs text-slate-500 mt-1">
               作成後はチャネル変更できません
             </div>
           )}
@@ -473,7 +478,20 @@ export default function FormEdit() {
           <LoadingButton
             onClick={handleSave}
             loading={saving}
-            disabled={!name || !lineChannelId || !!jsonError}
+            disabled={!name || !lineChannelId || Boolean(jsonError)}
+            // LoadingButton は loading 中もボタンを非活性化するため、
+            // saving を最優先にして実際の非活性理由と説明を一致させる
+            title={
+              saving
+                ? '保存中です'
+                : !name
+                  ? '表示名を入力してください'
+                  : !lineChannelId
+                    ? 'LINE チャネルを選択してください'
+                    : jsonError
+                      ? 'JSON の構文エラーを修正してください'
+                      : undefined
+            }
             className="px-4 py-2 bg-slate-900 text-white text-sm rounded-md flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {saving ? '保存中…' : '保存'}

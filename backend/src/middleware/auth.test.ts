@@ -290,10 +290,8 @@ describe('requireOperator middleware', () => {
     expect(afterWindow.status).toBe(401);
   });
 
-  it('does not evict an actively-limited IP when the bucket cap is reached (LRU touch on check)', async () => {
-    // バケット上限を小さく設定し、以下のループで実際に evictOldestBucket が
-    // 呼ばれる（=対象の回帰が検出できる）ようにする。
-    vi.stubEnv('RATE_LIMIT_MAX_BUCKETS', '5');
+  it('does not extend the lockout while rejected requests keep arriving (no touch on reject)', async () => {
+    vi.useFakeTimers();
     const requireOperator = await loadRequireOperator();
     const app = buildApp(requireOperator);
     const targetIp = '203.0.113.16';
@@ -304,26 +302,24 @@ describe('requireOperator middleware', () => {
         headers: { Authorization: badAuth, 'x-forwarded-for': targetIp },
       });
     }
-    const limitedFirst = await app.request('/test', {
-      headers: { Authorization: badAuth, 'x-forwarded-for': targetIp },
-    });
-    expect(limitedFirst.status).toBe(429);
 
-    // バケット上限(5)を超える数の別IPからのアクセスが挟まり、その都度
-    // evictOldestBucket が呼ばれるが、対象IPは都度チェックされて挿入順が
-    // touch により更新され続けるため、evict されず制限状態が維持される。
+    // 制限中の拒否リクエストでは失敗履歴を追加せず、バケットの挿入順も更新しない。
+    // （更新すると lastTimestamp が古いバケットが Map 末尾へ逃げ、evict 時に
+    //   期限切れバケットではなく有効なバケットが削除される。lib/rate-limiter.ts 参照）
     for (let i = 0; i < 20; i++) {
-      await app.request('/test', {
-        headers: {
-          Authorization: badAuth,
-          'x-forwarded-for': `198.51.100.${i}`,
-        },
-      });
+      vi.advanceTimersByTime(10 * 1000);
       const stillLimited = await app.request('/test', {
         headers: { Authorization: badAuth, 'x-forwarded-for': targetIp },
       });
       expect(stillLimited.status).toBe(429);
     }
+
+    // 最初の失敗から15分でロックアウトは必ず解除される（拒否リクエストで延長されない）
+    vi.advanceTimersByTime(15 * 60 * 1000 - 20 * 10 * 1000 + 1);
+    const afterWindow = await app.request('/test', {
+      headers: { Authorization: badAuth, 'x-forwarded-for': targetIp },
+    });
+    expect(afterWindow.status).toBe(401);
   });
 });
 
