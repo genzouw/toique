@@ -36,8 +36,9 @@ jobs:
         id: get_diff
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
         run: |
-          gh pr diff ${{ github.event.pull_request.number }} > pr.diff || echo "" > pr.diff
+          gh pr diff "$PR_NUMBER" > pr.diff || echo "" > pr.diff
           changed_lines=$(grep -c "^+" pr.diff || echo 0)
           char_count=$(wc -m < pr.diff)
           if [ -z "$char_count" ] || [ "$char_count" -lt 20 ] || [ "$changed_lines" -lt 3 ]; then

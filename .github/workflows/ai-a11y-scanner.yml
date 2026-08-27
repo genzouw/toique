@@ -36,8 +36,9 @@ jobs:
         id: get_diff
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
         run: |
-          gh pr diff ${{ github.event.pull_request.number }} > pr.diff || echo "" > pr.diff
+          gh pr diff "$PR_NUMBER" > pr.diff || echo "" > pr.diff
           # Only process if there are frontend changes
           if ! grep -q "a/frontend/" pr.diff && ! grep -q "b/frontend/" pr.diff; then
             echo "skip=true" >> "$GITHUB_OUTPUT"
