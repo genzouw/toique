@@ -13,14 +13,15 @@ import {
 import SiteHeader from '../components/SiteHeader';
 import SiteFooter from '../components/SiteFooter';
 
-// ⚡ Bolt: Pre-compute lowercased text for all FAQs once outside the component
-// to avoid O(N*M) string allocations and expensive .toLowerCase() calls
-// on every keystroke during the filter operation.
+// ⚡ Bolt: コンポーネント外で全FAQの検索対象文字列を事前に小文字化しておくことで、
+// キー入力のたびに発生する O(N*M) の文字列生成・.toLowerCase() 呼び出しを回避する。
+// 元の FaqArticle インスタンスへの参照（faq）を保持し、FAQS / FAQ_MAP /
+// CATEGORY_FAQS_MAP が共有する同一性を壊さないようにする。
 const SEARCHABLE_FAQS = FAQS.map((faq) => ({
-  ...faq,
-  _searchTarget: [faq.question, ...faq.answerParagraphs]
-    .join('\n')
-    .toLowerCase(),
+  faq,
+  searchTargets: [faq.question, ...faq.answerParagraphs].map((s) =>
+    s.toLowerCase(),
+  ),
 }));
 
 export default function FaqHub() {
@@ -29,9 +30,9 @@ export default function FaqHub() {
 
   const matchedFaqs: FaqArticle[] = useMemo(() => {
     if (!normalizedQuery) return [];
-    return SEARCHABLE_FAQS.filter((f) =>
-      f._searchTarget.includes(normalizedQuery),
-    );
+    return SEARCHABLE_FAQS.filter((item) =>
+      item.searchTargets.some((s) => s.includes(normalizedQuery)),
+    ).map((item) => item.faq);
   }, [normalizedQuery]);
 
   return (
