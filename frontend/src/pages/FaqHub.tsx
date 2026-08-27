@@ -17,6 +17,8 @@ import SiteFooter from '../components/SiteFooter';
 // キー入力のたびに発生する O(N*M) の文字列生成・.toLowerCase() 呼び出しを回避する。
 // 元の FaqArticle インスタンスへの参照（faq）を保持し、FAQS / FAQ_MAP /
 // CATEGORY_FAQS_MAP が共有する同一性を壊さないようにする。
+// また、フィールドを連結せず個別に保持することで、フィールド境界をまたいだ
+// 偶然の一致（例: 質問文の末尾と回答冒頭の連結によるヒット）を防ぐ。
 const SEARCHABLE_FAQS = FAQS.map((faq) => ({
   faq,
   searchTargets: [faq.question, ...faq.answerParagraphs].map((s) =>
