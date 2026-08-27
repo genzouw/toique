@@ -62,7 +62,12 @@ jobs:
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
         run: |
-          uv run .github/scripts/ai-a11y-scanner.py < pr.diff > rdjson.json
+          if [ ! -f .github/scripts/ai-a11y-scanner.py ]; then
+            echo "::warning::.github/scripts/ai-a11y-scanner.py not found on default branch yet (likely introduced by this PR); skipping scan"
+            echo '{"source": {"name": "AI A11y Scanner", "url": "https://github.com"}, "diagnostics": []}' > rdjson.json
+          else
+            uv run .github/scripts/ai-a11y-scanner.py < pr.diff > rdjson.json
+          fi
 
       - name: Setup reviewdog
         if: steps.get_diff.outputs.skip == 'false'
