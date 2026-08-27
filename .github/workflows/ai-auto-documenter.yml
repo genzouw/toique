@@ -55,13 +55,7 @@ jobs:
         if: steps.get_diff.outputs.skip == 'false'
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-        run: |
-          if [ ! -f .github/scripts/ai-auto-documenter.py ]; then
-            echo "::warning::.github/scripts/ai-auto-documenter.py not found on default branch yet (likely introduced by this PR); skipping scan"
-            echo '{"source": {"name": "AI Auto Documenter", "url": "https://github.com"}, "diagnostics": []}' > rdjson.json
-          else
-            uv run .github/scripts/ai-auto-documenter.py < pr.diff > rdjson.json
-          fi
+        run: uv run .github/scripts/ai-auto-documenter.py < pr.diff > rdjson.json
 
       - name: Setup reviewdog
         if: steps.get_diff.outputs.skip == 'false'
