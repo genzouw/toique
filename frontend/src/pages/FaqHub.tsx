@@ -13,11 +13,13 @@ import {
 import SiteHeader from '../components/SiteHeader';
 import SiteFooter from '../components/SiteFooter';
 
-// ⚡ 静的な検索対象文字列をコンポーネント外で事前計算し、
-// 入力中のレンダーごとの O(N) の文字列割り当てと変換を避ける。
-const SEARCHABLE_FAQS = FAQS.map((f) => ({
-  faq: f,
-  searchTargets: [f.question, ...f.answerParagraphs].map((s) =>
+// ⚡ Bolt: 静的データ検索用の文字列をモジュールレベルで事前計算し、
+// コンポーネント再レンダリング時の文字列割り当てや変換を回避します。
+// フィールドを連結せず個別に保持することで、フィールド境界をまたいだ
+// 偶然の一致（例: 質問文の末尾と回答冒頭の連結によるヒット）を防ぎます。
+const SEARCHABLE_FAQS = FAQS.map((faq) => ({
+  faq,
+  searchTargets: [faq.question, ...faq.answerParagraphs].map((s) =>
     s.toLowerCase(),
   ),
 }));
