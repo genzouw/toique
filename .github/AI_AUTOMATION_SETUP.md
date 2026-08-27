@@ -41,12 +41,12 @@ GitHub Models は 2026-07-30 に playground・モデルカタログ・推論 API
 そのため以下を撤去しました。
 
 - `ai-*.yml` 23 本（Issue Triage / ChatOps / PR Review / PR Description / Weekly Summary / Release Drafter / CI Analyzer / Threat Modeling / Test Generator / Auto-Fix / Issue Solver / Auto-Documenter / OpenAPI Generator / Blog Generator / a11y Scanner / i18n Translator / Tech Debt Analyzer / Architecture Diagram / PR Labeler / PR Summary / Security Approval / Dependabot Analyzer / Agent Rules Sync）
-- Composite Action `.github/actions/ai-web-search`（利用者が上記のみだったため）
-- 上記に付随する `EXA_API_KEY` / `TAVILY_API_KEY`（RAG 用 Web 検索キー。他に利用者はありません）
+
+これらのワークフローが唯一の利用者だった Composite Action `.github/actions/ai-web-search` は、その後 RAG 用 Web 検索機能として再導入し、現在は稼働を継続しています（第5節参照）。
 
 **シークレットの取り扱い:**
 
-- `EXA_API_KEY` / `TAVILY_API_KEY` — 利用者が無くなったため、登録されている場合はリポジトリの Secrets から削除して構いません。
+- `EXA_API_KEY` / `TAVILY_API_KEY` — Composite Action `.github/actions/ai-web-search`（第5節参照）が任意入力として使用します。設定すればそれぞれ Exa / Tavily を検索プロバイダーとして利用し、両方とも未設定の場合は DuckDuckGo（API キー不要）にフォールバックします。登録は必須ではありませんが、削除すると検索プロバイダーが意図せず DuckDuckGo に切り替わる点に注意してください。
 - `PAT_FOR_MODELS` — 本リポジトリには**登録されていません**。「GitHub Models 用のトークンを削除するか残すか」という判断自体が対象不在で成立しません。
   - 確認範囲: Actions secrets / Dependabot secrets / Environment secrets の 3 面をそれぞれ API で確認済み（`gh api repos/genzouw/toique/actions/secrets`、`.../dependabot/secrets`、`.../environments`）。**User 所有リポジトリでも Environment secrets と Dependabot secrets は利用可能**なので、Actions secrets の結果だけでは未登録と断定できない点に注意してください。対象外となるのは Organization secrets の階層だけです（owner が User のため存在しません）。
   - `pre-commit-autoupdate.yml` は PR 作成用トークンとして `secrets.PAT_FOR_AUTOMATION` を参照します（`GITHUB_TOKEN` で PR を作ると後続の Actions がトリガーされないため専用トークンが必要）が、これも上記 3 面のいずれにも未登録です。**このワークフローは現状のままではトークン未設定により失敗します。** `with:` にキーを指定している以上、`peter-evans/create-pull-request` 側の `default: ${{ github.token }}` は適用されず空文字が渡り、v8.1.1 は API を叩く前に `Input 'token' not supplied. Unable to continue.` で終了します（401 にはなりません）。
