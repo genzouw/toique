@@ -2,6 +2,7 @@ import { useState, useId } from 'react';
 import type { InputHTMLAttributes } from 'react';
 import { Eye, EyeOff } from 'lucide-react';
 import { ICON_SIZE } from '../lib/icon-size';
+import { RequiredMark } from './RequiredMark';
 
 export type AuthFieldVariant = 'user' | 'admin';
 
@@ -46,9 +47,7 @@ export function AuthField({
     <div>
       <label htmlFor={id} className="block text-sm font-medium text-slate-700">
         {label}
-        <span className="text-red-500 ml-1" aria-hidden="true">
-          *
-        </span>
+        <RequiredMark />
       </label>
       <div className="mt-1 relative">
         <input
