@@ -63,6 +63,7 @@ jobs:
         if: steps.get_diff.outputs.skip == 'false'
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GEMINI_MODEL: ${{ secrets.GEMINI_MODEL || vars.GEMINI_MODEL || 'gemini-2.5-flash' }}
         run: |
           if [ ! -f .github/scripts/ai-a11y-scanner.py ]; then
             echo "::warning::.github/scripts/ai-a11y-scanner.py not found on default branch yet (likely introduced by this PR); skipping scan"
