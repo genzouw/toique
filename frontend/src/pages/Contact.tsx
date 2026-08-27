@@ -4,6 +4,7 @@ import { api, type ContactCategory } from '../lib/api';
 import { useSession } from '../lib/auth-client';
 import SEOMetadata from '../components/SEOMetadata';
 import LoadingButton from '../components/LoadingButton';
+import { RequiredMark } from '../components/RequiredMark';
 
 const CATEGORY_OPTIONS: { value: ContactCategory; label: string }[] = [
   { value: 'bug', label: '不具合の報告' },
@@ -328,7 +329,7 @@ function Field({
         className="block text-sm font-medium text-slate-900 mb-1"
       >
         {label}
-        {required && <span className="text-red-600 ml-0.5">*</span>}
+        {required && <RequiredMark />}
       </label>
       {children}
     </div>
