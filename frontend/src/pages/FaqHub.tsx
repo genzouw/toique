@@ -13,19 +13,24 @@ import {
 import SiteHeader from '../components/SiteHeader';
 import SiteFooter from '../components/SiteFooter';
 
+// ⚡ 静的な検索対象文字列をコンポーネント外で事前計算し、
+// 入力中のレンダーごとの O(N) の文字列割り当てと変換を避ける。
+const SEARCHABLE_FAQS = FAQS.map((f) => ({
+  faq: f,
+  searchTargets: [f.question, ...f.answerParagraphs].map((s) =>
+    s.toLowerCase(),
+  ),
+}));
+
 export default function FaqHub() {
   const [query, setQuery] = useState('');
   const normalizedQuery = query.trim().toLowerCase();
 
   const matchedFaqs: FaqArticle[] = useMemo(() => {
     if (!normalizedQuery) return [];
-    return FAQS.filter(
-      (f) =>
-        f.question.toLowerCase().includes(normalizedQuery) ||
-        f.answerParagraphs.some((p) =>
-          p.toLowerCase().includes(normalizedQuery),
-        ),
-    );
+    return SEARCHABLE_FAQS.filter((item) =>
+      item.searchTargets.some((s) => s.includes(normalizedQuery)),
+    ).map((item) => item.faq);
   }, [normalizedQuery]);
 
   return (
