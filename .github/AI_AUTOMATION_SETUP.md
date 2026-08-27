@@ -42,7 +42,7 @@ GitHub Models は 2026-07-30 に playground・モデルカタログ・推論 API
 
 - `ai-*.yml` 23 本（Issue Triage / ChatOps / PR Review / PR Description / Weekly Summary / Release Drafter / CI Analyzer / Threat Modeling / Test Generator / Auto-Fix / Issue Solver / Auto-Documenter / OpenAPI Generator / Blog Generator / a11y Scanner / i18n Translator / Tech Debt Analyzer / Architecture Diagram / PR Labeler / PR Summary / Security Approval / Dependabot Analyzer / Agent Rules Sync）
 
-これらのワークフローが唯一の利用者だった Composite Action `.github/actions/ai-web-search` は、その後 RAG 用 Web 検索機能として再導入し、現在は稼働を継続しています（第5節参照）。
+これらのワークフローが唯一の利用者だった Composite Action `.github/actions/ai-web-search` は、その後 RAG 用 Web 検索機能として再導入しましたが、現時点でこれを呼び出すワークフローは存在しません（第5節参照）。将来 RAG を組む際に接続する想定で、Composite Action としてのみ用意しています。
 
 **シークレットの取り扱い:**
 
@@ -93,7 +93,7 @@ AI によるレビュー・トリアージには、`derailed-dash/gemini-review-
 
 **本方針の適用範囲（AI 推論と Web 検索の区別）:**
 
-RAG 用の **Web 検索 API**（Exa / Tavily / DuckDuckGo など）は、無料枠の範囲でのみ利用し API キーを任意とする限りにおいて例外として許容します。RAG 検索は `.github/actions/ai-web-search` Composite Action を通じて統合されています。
+RAG 用の **Web 検索 API**（Exa / Tavily / DuckDuckGo など）は、無料枠の範囲でのみ利用し API キーを任意とする限りにおいて例外として許容します。RAG 検索は `.github/actions/ai-web-search` Composite Action として実装済みですが、現時点でこれを呼び出すワークフローはなく、将来 RAG を組む際に接続する想定です。
 
 ## 6. 新規導入した自動化ツールの運用ルール (2024年導入)
 
