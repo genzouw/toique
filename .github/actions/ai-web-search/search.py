@@ -135,6 +135,14 @@ def search_arxiv(query):
         })
     return results
 
+SEARCH_PROVIDERS = {
+    'tavily': search_tavily,
+    'exa': search_exa,
+    'wikipedia': search_wikipedia,
+    'arxiv': search_arxiv,
+    'duckduckgo': search_duckduckgo,
+}
+
 def main():
     query = os.environ.get('QUERY')
     provider = os.environ.get('PROVIDER', 'duckduckgo').lower()
@@ -144,16 +152,8 @@ def main():
         return
 
     try:
-        if provider == 'tavily':
-            results = search_tavily(query)
-        elif provider == 'exa':
-            results = search_exa(query)
-        elif provider == 'wikipedia':
-            results = search_wikipedia(query)
-        elif provider == 'arxiv':
-            results = search_arxiv(query)
-        else:
-            results = search_duckduckgo(query)
+        search_fn = SEARCH_PROVIDERS.get(provider, search_duckduckgo)
+        results = search_fn(query)
 
         xml_output = format_xml(results)
         set_output('results', xml_output)
