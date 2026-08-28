@@ -180,8 +180,12 @@ def main():
         results = duckduckgo_search(query, max_results)
 
     # Jina Readerを使用してフルテキストを取得するオプション
-    # GITHUB_OUTPUTは1ジョブあたり1MBの上限があるため、full_textおよび
-    # シリアライズ後のJSON全体を上限未満に収める
+    # GITHUB_OUTPUTは1ジョブあたり1MB（UTF-16換算）の上限があるため、full_textおよび
+    # シリアライズ後のJSON全体を上限未満に収める。
+    # ASCII主体の出力はUTF-8では小さく見えてもUTF-16では約2倍のバイト数になるため、
+    # 判定は必ずUTF-16基準（output.encode("utf-16-le")）で行う。
+    # MAX_OUTPUT_BYTES=900_000 は実際の上限（1,048,576バイト）よりフレーミング分の
+    # 余裕を持たせた保守的な値。
     MAX_FULL_TEXT_CHARS = 200_000
     MAX_OUTPUT_BYTES = 900_000
     if use_jina and results:
@@ -192,7 +196,7 @@ def main():
                 results[0]["full_text"] = full_text[:MAX_FULL_TEXT_CHARS]
 
     output = json.dumps(results, indent=2)
-    while len(output.encode("utf-8")) > MAX_OUTPUT_BYTES and results and "full_text" in results[0]:
+    while len(output.encode("utf-16-le")) > MAX_OUTPUT_BYTES and results and "full_text" in results[0]:
         # それでも上限を超える場合はfull_textを段階的に切り詰める
         results[0]["full_text"] = results[0]["full_text"][: len(results[0]["full_text"]) // 2]
         if not results[0]["full_text"]:
@@ -203,10 +207,10 @@ def main():
     # 無い場合（Tavily の content が長い等）は上のループを素通りする。
     # そのまま print すると呼び出し元の $GITHUB_OUTPUT 書き込みが1MB上限で落ちるため、
     # 結果件数を減らし、それでも収まらなければ黙って諦めず明示的に失敗させる。
-    while len(output.encode("utf-8")) > MAX_OUTPUT_BYTES and len(results) > 1:
+    while len(output.encode("utf-16-le")) > MAX_OUTPUT_BYTES and len(results) > 1:
         results.pop()
         output = json.dumps(results, indent=2)
-    if len(output.encode("utf-8")) > MAX_OUTPUT_BYTES:
+    if len(output.encode("utf-16-le")) > MAX_OUTPUT_BYTES:
         print("Search results exceed GITHUB_OUTPUT limit", file=sys.stderr)
         sys.exit(1)
 
