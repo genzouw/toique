@@ -23,10 +23,10 @@ jobs:
           fetch-depth: 0
 
       - name: Setup uv
-        uses: astral-sh/setup-uv@887a942a15af3a76af609919aaf320021fdb8227 # v5.1.0
+        uses: astral-sh/setup-uv@887a942a15af3a7626099df99e897a18d9e5ab3a # v5.1.0
         with:
           enable-cache: true
-          cache-dependency-glob: ".github/scripts/ai_pr_review.py"
+          cache-dependency-glob: '.github/scripts/ai_pr_review.py'
 
       - name: Setup Reviewdog
         uses: reviewdog/action-setup@3f401fc1d1c7cff28911f0a0ea7cfce5c797dc69 # v1.3.0
