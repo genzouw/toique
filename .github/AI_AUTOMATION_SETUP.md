@@ -230,3 +230,5 @@ AI エージェント（Cursor, Claude Desktop など）が開発プロジェク
    - **本リポジトリの状況**: stars が 100 に届いておらず条件未達のため、現時点では無料対象外です。第5節の「CI から呼び出す AI は無料枠のみ」方針に従い、条件を満たすまでインストールは行いません。
 3. **Qodo Merge の設定統合**
    - これまで `.pr-agent.toml` と `.pr_agent.toml` が混在していたため、`.pr_agent.toml` に設定を一本化しました。これにより、日本語出力(`response_language="ja-JP"`)と `gpt-4o` モデルの利用設定が正しく一貫して適用されます。設定の変更が必要な場合は `.pr_agent.toml` のみを編集してください。
+4. **Gemini PR Review Action の設定**
+   - Gemini を利用した自動コードレビュー機能 (`ai-pr-review.yml`) を実行するために、Google AI Studio で無料の API キーを発行し、GitHub リポジトリの Secret に `GEMINI_API_KEY` として登録してください。
