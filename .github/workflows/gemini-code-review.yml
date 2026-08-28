@@ -1,4 +1,4 @@
-name: "Gemini PR Code Review"
+name: 'Gemini PR Code Review'
 
 on:
   pull_request:
@@ -21,7 +21,7 @@ jobs:
       - name: Run AI Code Review
         uses: petarzarkov/gemini-code-review-action@e8e786b3b05e3bb3139072f05ae6c1ad9cba3027
         with:
-          model: gemini-2.0-flash
+          model: gemini-3.5-flash
           enable_conversation_context: true
           skip_draft_prs: true
           language: Japanese
