@@ -36,9 +36,11 @@ jobs:
 
       - name: Get PR Diff
         id: diff
+        env:
+          BASE_REF: ${{ github.base_ref }}
         run: |
-          git fetch origin ${{ github.base_ref }}
-          git diff origin/${{ github.base_ref }}...HEAD > pr.diff
+          git fetch origin "$BASE_REF"
+          git diff "origin/$BASE_REF...HEAD" > pr.diff
 
       - name: Run AI Review Script
         env:
