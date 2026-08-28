@@ -44,9 +44,14 @@ GitHub Models は 2026-07-30 に playground・モデルカタログ・推論 API
 - Composite Action `.github/actions/ai-web-search`（利用者が上記のみだったため）
 - 上記に付随する `EXA_API_KEY` / `TAVILY_API_KEY`（RAG 用 Web 検索キー。他に利用者はありません）
 
-**シークレットの取り扱い:**
+> **⚠️ その後の変更に関する注記:** Composite Action `.github/actions/ai-web-search` および
+> `EXA_API_KEY` / `TAVILY_API_KEY` は、第5節の方針に基づき Gemini API を用いた自動化
+> ワークフローの利用者として**再導入済み**です。本節の記述は撤去当時の経緯を残すための
+> 履歴であり、下記「シークレットの取り扱い」の削除案内は**現在は適用されません**。
 
-- `EXA_API_KEY` / `TAVILY_API_KEY` — 利用者が無くなったため、登録されている場合はリポジトリの Secrets から削除して構いません。
+**シークレットの取り扱い（撤去当時の記録。現在は第5節を参照）:**
+
+- `EXA_API_KEY` / `TAVILY_API_KEY` — ~~利用者が無くなったため、登録されている場合はリポジトリの Secrets から削除して構いません。~~ 現在は Composite Action `.github/actions/ai-web-search` の利用者として必要です。削除しないでください（第5節を参照）。
 - `PAT_FOR_MODELS` — 本リポジトリには**登録されていません**。「GitHub Models 用のトークンを削除するか残すか」という判断自体が対象不在で成立しません。
   - 確認範囲: Actions secrets / Dependabot secrets / Environment secrets の 3 面をそれぞれ API で確認済み（`gh api repos/genzouw/toique/actions/secrets`、`.../dependabot/secrets`、`.../environments`）。**User 所有リポジトリでも Environment secrets と Dependabot secrets は利用可能**なので、Actions secrets の結果だけでは未登録と断定できない点に注意してください。対象外となるのは Organization secrets の階層だけです（owner が User のため存在しません）。
   - `pre-commit-autoupdate.yml` は PR 作成用トークンとして `secrets.PAT_FOR_AUTOMATION` を参照します（`GITHUB_TOKEN` で PR を作ると後続の Actions がトリガーされないため専用トークンが必要）が、これも上記 3 面のいずれにも未登録です。**このワークフローは現状のままではトークン未設定により失敗します。** `with:` にキーを指定している以上、`peter-evans/create-pull-request` 側の `default: ${{ github.token }}` は適用されず空文字が渡り、v8.1.1 は API を叩く前に `Input 'token' not supplied. Unable to continue.` で終了します（401 にはなりません）。
