@@ -199,6 +199,17 @@ def main():
             del results[0]["full_text"]
         output = json.dumps(results, indent=2)
 
+    # full_text を削っても収まらない場合や、use_jina=false で full_text が最初から
+    # 無い場合（Tavily の content が長い等）は上のループを素通りする。
+    # そのまま print すると呼び出し元の $GITHUB_OUTPUT 書き込みが1MB上限で落ちるため、
+    # 結果件数を減らし、それでも収まらなければ黙って諦めず明示的に失敗させる。
+    while len(output.encode("utf-8")) > MAX_OUTPUT_BYTES and len(results) > 1:
+        results.pop()
+        output = json.dumps(results, indent=2)
+    if len(output.encode("utf-8")) > MAX_OUTPUT_BYTES:
+        print("Search results exceed GITHUB_OUTPUT limit", file=sys.stderr)
+        sys.exit(1)
+
     print(output)
 
 if __name__ == "__main__":
