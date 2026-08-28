@@ -11,16 +11,18 @@
 # ///
 
 import os
-import sys
-import json
+import uuid
 import requests
 from xml.sax.saxutils import escape
 
 # GitHub Actionsの出力用ヘルパー関数
 def set_output(name, value):
+    # 呼び出しごとに一意な区切り文字を生成し、出力内容に単独行のEOFが
+    # 含まれていても複数行出力が途中で終端されないようにする
+    delimiter = f"gha_{uuid.uuid4().hex}"
     with open(os.environ['GITHUB_OUTPUT'], 'a') as f:
         # 複数行の出力をサポートするための形式
-        f.write(f"{name}<<EOF\n{value}\nEOF\n")
+        f.write(f"{name}<<{delimiter}\n{value}\n{delimiter}\n")
 
 def fetch_jina_reader(url):
     try:
