@@ -16,7 +16,10 @@ jobs:
   documenter:
     runs-on: ubuntu-latest
     env:
-      GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+      # シークレット本体はAI実行ステップのenvにのみ渡す。ジョブレベルには
+      # 非秘匿の利用可否フラグだけを置き、checkout・setup・reviewdog等の
+      # 不要なステップにGEMINI_API_KEYが渡らないようにする。
+      GEMINI_API_KEY_SET: ${{ secrets.GEMINI_API_KEY != '' }}
     if: github.event.pull_request.head.repo.full_name == github.repository
     steps:
       - name: Harden Runner
@@ -66,8 +69,9 @@ jobs:
           fi
 
       - name: Run AI Documenter
-        if: steps.get_diff.outputs.skip == 'false' && env.GEMINI_API_KEY != ''
+        if: steps.get_diff.outputs.skip == 'false' && env.GEMINI_API_KEY_SET == 'true'
         env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           GEMINI_MODEL: ${{ secrets.GEMINI_MODEL || vars.GEMINI_MODEL || 'gemini-2.5-flash' }}
         run: |
           SCRIPT_PATH=".github/scripts/ai_review.py"
@@ -87,11 +91,11 @@ jobs:
           fi
 
       - name: Setup reviewdog
-        if: steps.get_diff.outputs.skip == 'false' && env.GEMINI_API_KEY != ''
+        if: steps.get_diff.outputs.skip == 'false' && env.GEMINI_API_KEY_SET == 'true'
         uses: reviewdog/action-setup@d8a7baabd7f3e8544ee4dbde3ee41d0011c3a93f # v1.5.0
 
       - name: Run reviewdog
-        if: steps.get_diff.outputs.skip == 'false' && env.GEMINI_API_KEY != ''
+        if: steps.get_diff.outputs.skip == 'false' && env.GEMINI_API_KEY_SET == 'true'
         env:
           REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
