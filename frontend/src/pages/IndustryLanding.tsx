@@ -1,4 +1,3 @@
-import { useMemo } from 'react';
 import { Link, useParams } from 'react-router';
 import { getIndustry, INDUSTRIES } from '../lib/industries';
 import type { IndustryContent } from '../lib/industries';
@@ -65,9 +64,7 @@ export default function IndustryLanding() {
 
 function IndustryLandingView({ content }: { content: IndustryContent }) {
   const HeroIcon = content.heroIcon;
-  const relatedIndustries = useMemo(() => {
-    return INDUSTRIES.filter((i) => i.slug !== content.slug);
-  }, [content.slug]);
+  const relatedIndustries = INDUSTRIES.filter((i) => i.slug !== content.slug);
 
   return (
     <div className="min-h-full bg-white">
