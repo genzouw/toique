@@ -170,7 +170,12 @@ def main():
 
     api_key = os.environ.get("GEMINI_API_KEY")
     if not api_key:
+        # 無言で空結果を返して成功扱いにすると、シークレットのローテーション漏れや
+        # 誤削除でチェックが永久に無検査のままグリーンを返し続ける。
+        # 呼び出し元のワークフローでもジョブをスキップさせるが、直接実行された
+        # 場合に備えてアノテーションを残す。
         print(empty_rdjson(source_name))
+        print(f"::warning::GEMINI_API_KEY is not set; {source_name} was skipped", file=sys.stderr)
         return
 
     diff = sys.stdin.read()
