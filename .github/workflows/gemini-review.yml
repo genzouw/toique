@@ -3,6 +3,18 @@ name: Gemini Code Review
 on:
   pull_request:
     types: [opened, synchronize, reopened]
+    # 依存更新PRの lockfile 差分は数千行に達し、レビューの価値が無いまま
+    # Gemini の無料枠を消費する。lockfile だけの変更ではジョブを起動しない。
+    paths-ignore:
+      - '**/bun.lock'
+      - '**/package-lock.json'
+      - '**/pnpm-lock.yaml'
+      - '**/yarn.lock'
+      - '**/uv.lock'
+
+concurrency:
+  group: gemini-review-${{ github.ref }}
+  cancel-in-progress: true
 
 permissions:
   contents: read

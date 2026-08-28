@@ -3,6 +3,14 @@ name: AI A11y Scanner
 on:
   pull_request:
     types: [opened, synchronize, reopened]
+    paths:
+      - 'frontend/**'
+      - '.github/scripts/ai_review.py'
+      - '.github/workflows/ai-a11y-scanner.yml'
+
+concurrency:
+  group: ai-a11y-scanner-${{ github.ref }}
+  cancel-in-progress: true
 
 permissions:
   contents: read
