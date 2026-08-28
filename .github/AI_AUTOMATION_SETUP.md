@@ -91,6 +91,7 @@ AI によるレビュー・トリアージは、外部 App（CodeRabbit 等）�
 
 **APIキーの設定 (手動作業):**
 以下のシークレットをリポジトリの **Actions Secrets** として手動で登録してください。
+
 - `GEMINI_API_KEY`: Gemini APIを利用したコードレビューやトリアージに必要です。
 - `TAVILY_API_KEY`: Tavily検索APIを利用するために必要です。
 - `EXA_API_KEY`: Exa検索APIを利用するために必要です。
