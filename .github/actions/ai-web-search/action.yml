@@ -46,10 +46,15 @@ runs:
         USE_JINA: ${{ inputs.use_jina }}
         ACTION_PATH: ${{ github.action_path }}
       run: |
-        uv run "$ACTION_PATH/search.py" > output.json
+        # 出力先を相対パスにすると呼び出し元ジョブのカレント（既定では
+        # $GITHUB_WORKSPACE = checkout 済みのリポジトリ直下）に output.json が生え、
+        # 後続ステップの git status --porcelain や git diff ベースの lint が誤検知する。
+        # Composite Action は呼び出し元の作業ツリーを汚さず $RUNNER_TEMP を使う。
+        out="$RUNNER_TEMP/ai-web-search-output.json"
+        uv run "$ACTION_PATH/search.py" > "$out"
         # 複数行の出力を安全に処理する
         {
           echo "results<<EOF"
-          cat output.json
+          cat "$out"
           echo "EOF"
         } >> "$GITHUB_OUTPUT"
