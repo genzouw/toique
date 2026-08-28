@@ -15,27 +15,73 @@ from html.parser import HTMLParser
 
 
 class _DuckDuckGoResultParser(HTMLParser):
-    """DuckDuckGo HTML版のレスポンスから検索結果リンクを構造的に抽出する。
+    """DuckDuckGo HTML版のレスポンスから検索結果のURL・タイトル・スニペットを抽出する。
 
-    固定文字列split（属性の出現順序に依存）ではなく、result__a / result__url
-    クラスを持つ <a> タグのhref属性を対象にすることで、ボット検証ページなど
-    構造が異なるHTMLに対しても例外を出さず・結果を捏造せずに空リストで済ませる。
+    固定文字列split（属性の出現順序に依存）ではなく、result__a / result__url /
+    result__snippet クラスを対象にすることで、ボット検証ページなど構造が異なる
+    HTMLに対しても例外を出さず・結果を捏造せずに空リストで済ませる。
+
+    アンカーのテキストが検索結果のタイトルそのものなので、href だけでなくタグ内の
+    テキストも収集する。URLの羅列だけではRAGの入力として成立しないため、
+    exa_search と同じく url / title / snippet の3点を揃える。
     """
 
+    # 1件の検索結果は result__a（タイトル付きリンク）で始まり、
+    # result__url（URL表示用の同一リンク）と result__snippet が続く。
+    # タイトル・スニペットは <b> でハイライトされるため、収集中は開始タグを
+    # 無視し、収集を始めたタグと同じ終了タグでのみ確定させる。
     def __init__(self):
         super().__init__()
-        self.links = []
+        self.results = []  # [{"url": ..., "title": ..., "snippet": ...}, ...]
+        self._kind = None  # "title" / "url" / "snippet"
+        self._tag = None
+        self._depth = 0
+        self._href = None
+        self._text = []
+
+    def _start(self, kind, tag, href):
+        self._kind, self._tag, self._depth, self._href, self._text = kind, tag, 0, href, []
+
+    def _flush(self):
+        text = "".join(self._text).strip()
+        if self._kind == "title":
+            self.results.append({"url": self._href, "title": text, "snippet": ""})
+        elif self._kind == "url" and self.results and not self.results[-1]["url"]:
+            self.results[-1]["url"] = self._href
+        elif self._kind == "snippet" and self.results and not self.results[-1]["snippet"]:
+            self.results[-1]["snippet"] = text
+        self._kind = self._tag = self._href = None
+        self._text = []
 
     def handle_starttag(self, tag, attrs):
-        if tag != "a":
+        if self._kind is not None:
+            # 収集中のハイライトタグ等。同名タグのネストだけ深さを数える。
+            if tag == self._tag:
+                self._depth += 1
             return
+
         attrs_dict = dict(attrs)
-        href = attrs_dict.get("href")
-        if not href:
-            return
         classes = (attrs_dict.get("class") or "").split()
-        if "result__a" in classes or "result__url" in classes:
-            self.links.append(href)
+        href = attrs_dict.get("href")
+
+        if "result__a" in classes and href:
+            self._start("title", tag, href)
+        elif "result__url" in classes and href:
+            self._start("url", tag, href)
+        elif "result__snippet" in classes:
+            self._start("snippet", tag, None)
+
+    def handle_data(self, data):
+        if self._kind is not None:
+            self._text.append(data)
+
+    def handle_endtag(self, tag):
+        if self._kind is None or tag != self._tag:
+            return
+        if self._depth > 0:
+            self._depth -= 1
+            return
+        self._flush()
 
 
 def duckduckgo_search(query, max_results):
@@ -50,13 +96,22 @@ def duckduckgo_search(query, max_results):
 
         results = []
         seen = set()
-        for link in parser.links:
+        for item in parser.results:
+            link = item["url"]
+            if not link:
+                continue
             if link.startswith('//duckduckgo.com/l/?uddg='):
                 link = urllib.parse.unquote(link.split('uddg=')[1].split('&')[0])
             if link in seen:
                 continue
             seen.add(link)
-            results.append({"url": link, "title": "DuckDuckGo Result", "snippet": "Snippet not available"})
+            # タイトルが取れなかった場合のみURLをフォールバックに使う。
+            # 取れていない事実を固定文字列で塗り潰さない。
+            results.append({
+                "url": link,
+                "title": item["title"] or link,
+                "snippet": item["snippet"],
+            })
             if len(results) >= max_results:
                 break
         return results
