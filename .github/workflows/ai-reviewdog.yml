@@ -29,9 +29,9 @@ jobs:
           cache-dependency-glob: '.github/scripts/ai_pr_review.py'
 
       - name: Setup Reviewdog
-        uses: reviewdog/action-setup@3f401fc1d1c7cff28911f0a0ea7cfce5c797dc69 # v1.3.0
+        uses: reviewdog/action-setup@3f401fe1d58fe77e10d665ab713057375e39b887 # v1.3.0
         with:
-          reviewdog_version: latest
+          reviewdog_version: v0.21.0
 
       - name: Get PR Diff
         id: diff
