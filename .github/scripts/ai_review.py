@@ -18,7 +18,10 @@ import sys
 
 import requests
 
-# 出力フォーマットの取り決め。全チェック共通の仕様としてここで一元的に定義する。
+# 出力フォーマットの取り決め。file / line がどの座標系を指すのかを明示しないと、
+# reviewdog の -filter-mode=added が解釈のズレた diagnostic を例外もエラーも出さずに
+# 破棄し、「指摘0件」と「全部フィルタで落ちた」が区別できなくなる。
+# 全チェック共通の仕様としてここで一元的に定義する。
 OUTPUT_SPEC = """
 Output ANY issues you find in EXACTLY this JSON array format (do not output markdown blocks or any other text).
 All messages must be in Japanese:
@@ -30,6 +33,14 @@ All messages must be in Japanese:
   }
 ]
 If there are no issues, output an empty array [].
+
+Rules for "file" and "line" (these are strict; violations are silently discarded downstream):
+- "file" must be the repository-root-relative path exactly as it appears after "b/" in the
+  diff header (e.g. "frontend/src/components/Button.tsx"). Do NOT include the "b/" prefix.
+- "line" must be the line number in the POST-CHANGE file. Derive it from the hunk header
+  "@@ -a,b +c,d @@" by starting at c and counting context lines and added lines only
+  (never count removed lines, and never count the hunk header itself).
+- Only report issues on lines that are ADDED (prefixed with "+") in the diff.
 """
 
 A11Y_INSTRUCTIONS = """

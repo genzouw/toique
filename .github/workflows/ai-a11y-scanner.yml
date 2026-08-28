@@ -96,5 +96,20 @@ jobs:
         env:
           REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          # -filter-mode=added は file / line の解釈がズレた diagnostic を例外もエラーも
+          # 出さずに破棄するため、投稿前にローカルレポーターで生存件数を数え、
+          # 「生成件数」と「投稿件数」の差を Step Summary に残す。差が出続ける場合は
+          # プロンプトの行番号規約がモデルに守られていないことを示す。
+          total=$(jq '.diagnostics | length' rdjson.json)
+          kept=$(reviewdog -f=rdjson -reporter=local -filter-mode=added -fail-level=none \
+            -level=warning -name="AI A11y Scanner" -diff="cat pr.diff" < rdjson.json | grep -c . || true)
+          {
+            echo "### AI A11y Scanner"
+            echo ""
+            echo "- Gemini が生成した指摘: ${total} 件"
+            echo "- 差分行に紐付いて投稿された指摘: ${kept} 件"
+            echo "- フィルタで破棄された指摘: $((total - kept)) 件（0 以外なら file / line の解釈ズレを疑う）"
+          } >> "$GITHUB_STEP_SUMMARY"
+
           reviewdog -f=rdjson -reporter=github-pr-review -filter-mode=added \
             -fail-level=none -level=warning -name="AI A11y Scanner" < rdjson.json
