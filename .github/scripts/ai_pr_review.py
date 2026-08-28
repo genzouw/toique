@@ -8,10 +8,37 @@
 
 import sys
 import os
+import re
 import json
 from google import genai
 from google.genai import types
 from pydantic import BaseModel, Field
+
+# 既知の秘匿情報パターン（APIキー・トークン・秘密鍵・パスワード代入など）を
+# マスクするための正規表現。完全なサニタイズを保証するものではないが、
+# 無料枠APIへ機密情報が誤って送信されるリスクを実用的な範囲で低減する。
+SECRET_PATTERNS = [
+    # -----BEGIN ... PRIVATE KEY----- ブロック全体
+    re.compile(r"-----BEGIN [A-Z ]*PRIVATE KEY-----.*?-----END [A-Z ]*PRIVATE KEY-----", re.DOTALL),
+    # AWS Access Key ID
+    re.compile(r"\bAKIA[0-9A-Z]{16}\b"),
+    # GitHub Personal Access Token
+    re.compile(r"\bgh[pousr]_[A-Za-z0-9]{36,}\b"),
+    # Slack Token
+    re.compile(r"\bxox[baprs]-[A-Za-z0-9-]{10,}\b"),
+    # JWT (header.payload.signature)
+    re.compile(r"\beyJ[A-Za-z0-9_-]{5,}\.[A-Za-z0-9_-]{5,}\.[A-Za-z0-9_-]{5,}\b"),
+    # api_key / secret / token / password などの代入
+    re.compile(
+        r"(?i)\b(api[_-]?key|secret|token|password|passwd|pwd)\b\s*[:=]\s*['\"]?[A-Za-z0-9\-_./+=]{8,}['\"]?"
+    ),
+]
+
+def sanitize_diff_content(diff_content: str) -> str:
+    sanitized = diff_content
+    for pattern in SECRET_PATTERNS:
+        sanitized = pattern.sub("[REDACTED]", sanitized)
+    return sanitized
 
 class ReviewComment(BaseModel):
     file: str = Field(description="The path of the file to comment on.")
@@ -64,6 +91,10 @@ def main():
         # diffが空の場合は空のrdjsonを返す
         print(generate_rdjson([]))
         sys.exit(0)
+
+    # 無料枠のGemini APIには入力・出力がGoogleの製品改善に利用され得るため、
+    # 送信前に既知の秘匿情報パターンをマスクする
+    diff_content = sanitize_diff_content(diff_content)
 
     api_key = os.environ.get('GEMINI_API_KEY')
     if not api_key:
