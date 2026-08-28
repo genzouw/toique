@@ -232,3 +232,4 @@ AI エージェント（Cursor, Claude Desktop など）が開発プロジェク
    - これまで `.pr-agent.toml` と `.pr_agent.toml` が混在していたため、`.pr_agent.toml` に設定を一本化しました。これにより、日本語出力(`response_language="ja-JP"`)と `gpt-4o` モデルの利用設定が正しく一貫して適用されます。設定の変更が必要な場合は `.pr_agent.toml` のみを編集してください。
 4. **Gemini PR Review Action の設定**
    - Gemini を利用した自動コードレビュー機能 (`ai-pr-review.yml`) を実行するために、Google AI Studio で無料の API キーを発行し、GitHub リポジトリの Secret に `GEMINI_API_KEY` として登録してください。
+   - **フォークからの PR には対応していません**: フォーク由来の `pull_request` イベントでは `secrets.GEMINI_API_KEY` にアクセスできず、`GITHUB_TOKEN` も既定で読み取り専用になるため、ワークフロー側で `if: github.event.pull_request.head.repo.full_name == github.repository` によりジョブ自体を明示的にスキップしています。フォーク PR でもレビューを行いたい場合は、`pull_request_target` への変更とフォークコードを実行しない安全な設計が別途必要です。

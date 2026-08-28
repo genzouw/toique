@@ -11,6 +11,9 @@ permissions:
 jobs:
   review:
     runs-on: ubuntu-latest
+    # フォークからの PR は GEMINI_API_KEY にアクセスできず GITHUB_TOKEN も読み取り専用のため、
+    # 認証情報不足によるジョブ失敗を避けるため明示的にスキップする。
+    if: github.event.pull_request.head.repo.full_name == github.repository
     steps:
       - name: Harden Runner
         uses: step-security/harden-runner@05e31511f85b41b11d1cf0ef85d0992719546e2c # v2.21.0
