@@ -78,7 +78,7 @@ def search_tavily(query):
             'title': r.get('title'),
             'url': r.get('url'),
             'snippet': r.get('content'),
-            'content': r.get('raw_content', fetch_jina_reader(r.get('url')))
+            'content': r['raw_content'] if r.get('raw_content') else fetch_jina_reader(r.get('url'))
         })
     return results
 
