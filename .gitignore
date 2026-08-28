@@ -99,3 +99,7 @@ cdktf.out/
 pr_body*.txt
 pr_description*.txt
 issue_body*.txt
+
+# Python
+__pycache__/
+*.py[cod]
