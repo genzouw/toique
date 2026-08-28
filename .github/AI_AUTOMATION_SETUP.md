@@ -74,7 +74,7 @@ AI によるレビュー・トリアージの代替方針は第5節を参照し�
 
 **現行の方針: GitHub ネイティブの無料 AI 推論基盤は存在しないため、リポジトリ側で AI 推論を実行するワークフローは Google Gemini API の無料枠モデルを利用して構築します。**
 
-> **モデルのバージョンについて**: `gemini-1.5-pro` は 2025-09-29 に提供終了済みのため使用しません。カスタム Python スクリプト（`ai-a11y-scanner.py` / `ai-auto-documenter.py`）は既定で無料枠モデル（`gemini-2.5-flash`）を使用し、`GEMINI_MODEL` 環境変数で上書き可能です。呼び出し元の `ai-a11y-scanner.yml` / `ai-auto-documenter.yml` は `GEMINI_MODEL: ${{ secrets.GEMINI_MODEL || vars.GEMINI_MODEL || 'gemini-2.5-flash' }}` としてスクリプトへ明示的にマッピングしているため、モデルの提供終了・変更が発生した場合は `GEMINI_MODEL` シークレットまたはワークフロー変数を設定するだけで切り替えられます（未設定時は `gemini-2.5-flash` にフォールバック）。
+> **モデルのバージョンについて**: `gemini-1.5-pro` は 2025-09-29 に提供終了済みのため使用しません。カスタム Python スクリプト（`ai_review.py`。`--check a11y` / `--check docs` で切り替え）は既定で無料枠モデル（`gemini-2.5-flash`）を使用し、`GEMINI_MODEL` 環境変数で上書き可能です。呼び出し元の `ai-a11y-scanner.yml` / `ai-auto-documenter.yml` は `GEMINI_MODEL: ${{ secrets.GEMINI_MODEL || vars.GEMINI_MODEL || 'gemini-2.5-flash' }}` としてスクリプトへ明示的にマッピングしているため、モデルの提供終了・変更が発生した場合は `GEMINI_MODEL` シークレットまたはワークフロー変数を設定するだけで切り替えられます（未設定時は `gemini-2.5-flash` にフォールバック）。
 
 AI によるレビュー・トリアージには、`derailed-dash/gemini-review-action` などの Actions や、カスタム Python スクリプトを使用し、API キー（`GEMINI_API_KEY`）はリポジトリシークレットとして管理します。また、外部 App（CodeRabbit / Qodo Merge、第4節参照）も併用します。
 
@@ -146,7 +146,7 @@ DevSecOps およびサプライチェーンセキュリティの観点に基づ�
 ### プロンプト作成規約: 外部由来コンテキストは必ずタグで囲む
 
 > **適用範囲についての注記:** 第3節の撤去対象だった旧 GitHub Models 系ワークフローには本規約は適用されません。
-> 一方、現行の `ai-a11y-scanner.py` / `ai-auto-documenter.py`（Google Gemini API を利用、第5節参照）は
+> 一方、現行の `ai_review.py`（Google Gemini API を利用、第5節参照）は
 > PR diff を `<pr_diff>` タグで囲み、タグ内は指示ではなく非信頼のレビュー対象データである旨を明記した上で
 > プロンプトに含めており、本規約を遵守しています。
 

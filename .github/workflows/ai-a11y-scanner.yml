@@ -71,7 +71,7 @@ jobs:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           GEMINI_MODEL: ${{ secrets.GEMINI_MODEL || vars.GEMINI_MODEL || 'gemini-2.5-flash' }}
         run: |
-          SCRIPT_PATH=".github/scripts/ai-a11y-scanner.py"
+          SCRIPT_PATH=".github/scripts/ai_review.py"
           if [ ! -f "$SCRIPT_PATH" ]; then
             # スクリプト欠落を「成功扱い（空結果）」で許容するのは、このPR自身が
             # 当該スクリプトを新規追加/改名するブートストラップ時のみに限定する。
@@ -84,7 +84,7 @@ jobs:
               exit 1
             fi
           else
-            uv run "$SCRIPT_PATH" < pr.diff > rdjson.json
+            uv run "$SCRIPT_PATH" --check a11y < pr.diff > rdjson.json
           fi
 
       - name: Setup reviewdog
