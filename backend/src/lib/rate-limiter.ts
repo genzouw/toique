@@ -138,12 +138,29 @@ function reportSaturation(state: LimiterState, now: number): void {
  * 期限切れが1件も無い場合は、残り有効期間が最短のバケットを落とすことになる。
  */
 function evictOldest(state: LimiterState, now: number): void {
+  const windowStart = now - state.windowMs;
+  let evictedCount = 0;
+
+  for (const [key, history] of state.buckets) {
+    const lastTimestamp = history[history.length - 1];
+    if (lastTimestamp !== undefined && lastTimestamp <= windowStart) {
+      state.buckets.delete(key);
+      evictedCount++;
+    } else {
+      break;
+    }
+  }
+
+  if (evictedCount > 0) return;
+
+  if (state.buckets.size < state.maxBuckets) return;
+
   const entry = state.buckets.entries().next().value;
   if (!entry) return;
 
   const [oldestKey, history] = entry;
   const lastTimestamp = history[history.length - 1];
-  if (lastTimestamp !== undefined && lastTimestamp > now - state.windowMs) {
+  if (lastTimestamp !== undefined && lastTimestamp > windowStart) {
     reportSaturation(state, now);
   }
   state.buckets.delete(oldestKey);
