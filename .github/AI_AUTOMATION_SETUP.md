@@ -67,6 +67,8 @@ AI によるレビュー・トリアージの代替方針は第5節を参照し�
 
 **当リポジトリの CI/CD から呼び出す AI モデル・外部サービスは、すべて無料で利用できるものに限定します。**
 
+本方針の規範版 (MUST / MUST NOT / MAY の形式で AI コーディングエージェントが従うべきルール) はリポジトリルートの [AGENTS.md](../AGENTS.md) にあります。ポリシー判断は AGENTS.md を正典としてください。
+
 > **⚠️ GitHub Models は 2026-07-30 をもって完全に終了しました。**
 > playground・モデルカタログ・推論 API・BYOK のいずれも利用できません（[GitHub Changelog](https://github.blog/changelog/2026-07-30-github-models-is-now-retired/)）。
 > `permissions: models: read` を付与しても推論 API 自体が存在しないため、GitHub Models に依存するワークフローは動作しません。
