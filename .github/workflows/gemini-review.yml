@@ -25,7 +25,10 @@ jobs:
     runs-on: ubuntu-latest
     if: github.event.pull_request.head.repo.full_name == github.repository
     env:
-      GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+      # シークレット本体はAI実行ステップのenvにのみ渡す。ジョブレベルには
+      # 非秘匿の利用可否フラグだけを置き、checkout等の不要なステップに
+      # GEMINI_API_KEYが渡らないようにする。
+      GEMINI_API_KEY_SET: ${{ secrets.GEMINI_API_KEY != '' }}
     steps:
       - name: Harden Runner
         uses: step-security/harden-runner@05e31511f85b41b11d1cf0ef85d0992719546e2c # v2.21.0
@@ -38,8 +41,10 @@ jobs:
           persist-credentials: false
 
       - name: Run Gemini Review
-        if: env.GEMINI_API_KEY != ''
+        if: env.GEMINI_API_KEY_SET == 'true'
         uses: derailed-dash/gemini-review-action@827d74180d81a4497261d8cb32139ac29eb680b0 # v1.6.2
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
         with:
           gemini_api_key: ${{ env.GEMINI_API_KEY }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
