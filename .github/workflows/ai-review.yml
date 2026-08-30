@@ -1,0 +1,36 @@
+name: Gemini AI Code Review
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  review:
+    name: Code Review
+    runs-on: ubuntu-latest
+    steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@05e31511f85b41b11d1cf0ef85d0992719546e2c # v2.21.0
+        with:
+          egress-policy: audit
+
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Gemini AI Code Review
+        uses: petarzarkov/gemini-code-review-action@db0558aaebc97373346194ed926bef6b15962512 # v1.1.3
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          language: 'ja-JP'
+          model: 'gemini-1.5-pro-latest'
+          enable_conversation_context: 'true'
+          skip_draft_prs: 'true'
+          exclude: "*.md,*.json,package-lock.json,*.yaml,*.yml,*.test.ts,migrations/*,*.spec.ts,*.e2e.ts,test/*,tests/*"
