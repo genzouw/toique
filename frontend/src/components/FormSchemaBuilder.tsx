@@ -142,7 +142,7 @@ export default function FormSchemaBuilder({
                       : 'ステップを上へ移動'
                   }
                 >
-                  <ChevronUp size={ICON_SIZE.sm} />
+                  <ChevronUp size={ICON_SIZE.sm} aria-hidden="true" />
                 </button>
                 <button
                   onClick={() => moveStep(idx, 1)}
@@ -161,7 +161,7 @@ export default function FormSchemaBuilder({
                       : 'ステップを下へ移動'
                   }
                 >
-                  <ChevronDown size={ICON_SIZE.sm} />
+                  <ChevronDown size={ICON_SIZE.sm} aria-hidden="true" />
                 </button>
               </div>
             )}
@@ -200,6 +200,7 @@ export default function FormSchemaBuilder({
                   <ChevronDown
                     size={ICON_SIZE.xs}
                     className="absolute right-1.5 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400"
+                    aria-hidden="true"
                   />
                 </div>
                 <button
@@ -208,7 +209,7 @@ export default function FormSchemaBuilder({
                   title="削除"
                   aria-label="ステップを削除"
                 >
-                  <Trash2 size={ICON_SIZE.sm} />
+                  <Trash2 size={ICON_SIZE.sm} aria-hidden="true" />
                 </button>
               </>
             )}
@@ -265,7 +266,7 @@ export default function FormSchemaBuilder({
                             : '選択肢を削除'
                         }
                       >
-                        <Trash2 size={ICON_SIZE.xs} />
+                        <Trash2 size={ICON_SIZE.xs} aria-hidden="true" />
                       </button>
                     </div>
                   ))}
@@ -273,7 +274,7 @@ export default function FormSchemaBuilder({
                     onClick={() => addChoice(idx)}
                     className="text-xs text-slate-600 hover:text-slate-900 flex items-center gap-1 rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-900 focus-visible:ring-offset-1 transition-colors p-1"
                   >
-                    <Plus size={ICON_SIZE.xs} /> 選択肢を追加
+                    <Plus size={ICON_SIZE.xs} aria-hidden="true" /> 選択肢を追加
                   </button>
                 </div>
               )}
@@ -286,7 +287,7 @@ export default function FormSchemaBuilder({
         onClick={addStep}
         className="w-full py-2 border-2 border-dashed border-slate-300 rounded-lg text-sm text-slate-600 hover:border-slate-400 hover:text-slate-900 flex items-center justify-center gap-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-900 focus-visible:ring-offset-2 transition-colors"
       >
-        <Plus size={ICON_SIZE.sm} /> ステップを追加
+        <Plus size={ICON_SIZE.sm} aria-hidden="true" /> ステップを追加
       </button>
     </div>
   );
