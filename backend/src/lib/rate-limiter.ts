@@ -142,7 +142,10 @@ function evictOldest(state: LimiterState, now: number): void {
   let evictedCount = 0;
 
   // 挿入順の不変条件により、先頭から連続して期限切れのバケットが存在する。
-  // それらを O(1) 相当でまとめて evict し、キャッシュ溢れ攻撃を防ぐ。
+  // それらをまとめて evict し、キャッシュ溢れ攻撃を防ぐ。1回の呼び出しで
+  // 最大 maxBuckets 件を同期的に削除しうるため、呼び出し単位のレイテンシが
+  // O(1) というわけではない。エントリ1件あたり生涯で1回しか削除処理を
+  // 受けない、という意味で償却 O(1) である。
   for (const [key, history] of state.buckets) {
     const lastTimestamp = history[history.length - 1];
     if (lastTimestamp !== undefined && lastTimestamp > windowStart) {
