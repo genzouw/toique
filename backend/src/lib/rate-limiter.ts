@@ -157,6 +157,15 @@ function evictOldest(state: LimiterState, now: number): void {
 
   // 期限切れが1件も無かった場合はキャッシュ飽和状態なので、
   // やむを得ず先頭（＝最も古い）のアクティブバケットを1つ落として枠を空ける。
+  //
+  // 残存リスク: このフォールバックは、上の一括削除が防いだ「期限切れゴミの
+  // 蓄積によるバイパス」とは異なる攻撃（ウィンドウ内に一度も期限切れを
+  // 挟まず maxBuckets 件超の"アクティブな"別キーを送り続ける）に対しては
+  // 無力で、他者のアクティブなバケットを evict しうる。ただし key は実IP
+  // （clientIp は XFF の右端を採用するため偽装不可。冒頭コメント参照）なので、
+  // 悪用には maxBuckets 件規模の実IPを同時稼働させる大規模ボットネットが
+  // 必要になる。そのレベルの攻撃者は本経路を使わずとも直接送信で制限を
+  // 圧倒できるため、この残存リスクは許容する（reportSaturation で可視化はする）。
   if (evictedCount === 0) {
     const entry = state.buckets.entries().next().value;
     if (entry) {
