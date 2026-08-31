@@ -51,23 +51,33 @@ if command -v pre-commit >/dev/null 2>&1; then
   echo "🔍 Running pre-commit framework..."
   # stages を指定しないとすべてのフックが走るが、デフォルト設定でコミット時用フックとして
   # 設定されているものが走る。
+  # まずフック実行環境（venv等）のセットアップだけを行う。ここが失敗するのは
+  # オフライン/プロキシ/初回セットアップ失敗等の「環境要因」に限られるため、
+  # この場合に限って旧来のフォールバックスキャン（本PR導入前は唯一の防御手段
+  # だった実装）へ確実に降りる。フォールバック側でも gitleaks / detect-secrets を
+  # 再実行するため、実際のシークレット検知については本PR導入前と同等以上の
+  # 防御水準が維持される。
+  if ! SKIP='' pre-commit install-hooks; then
+    echo "⚠️  pre-commit failed to set up hook environments (offline/proxy/first-time setup issue)."
+    echo "   Falling back to the legacy scanners below."
+    PRE_COMMIT_RAN=0
   # SKIP= で呼び出し元シェルの環境変数を無効化する: 環境に SKIP=gitleaks,detect-secrets
   # 等が残っていると、当該フックが Skipped 扱いになり `pre-commit run` 自体は exit 0 で
   # 成功してしまう。その結果 PRE_COMMIT_RAN=1 が立ち、以降のフォールバックスキャンも
   # 実行されず、秘密検出が丸ごとすり抜けてしまうため。
-  if SKIP='' pre-commit run --color always; then
+  elif SKIP='' pre-commit run --color always; then
     # pre-commit framework 側でシークレットチェック（gitleaks, detect-secrets）を
     # 実行完了したため、以降のフォールバックスキャンをスキップするフラグを立てる。
     PRE_COMMIT_RAN=1
   else
-    # オフライン/プロキシ/初回セットアップ失敗等の環境要因で pre-commit run 自体が
-    # 失敗した場合でも、旧来のフォールバックスキャン（本PR導入前は唯一の防御手段
-    # だった実装）へ確実に降りられるようにする。フォールバック側でも gitleaks /
-    # detect-secrets を再実行するため、実際のシークレット検知については本PR導入前
-    # と同等以上の防御水準が維持される。
-    echo "⚠️  pre-commit run failed (environment issue, or a hook reported a finding)."
-    echo "   Falling back to the legacy scanners below."
-    PRE_COMMIT_RAN=0
+    # フック環境のセットアップ自体は成功しているため、ここでの失敗は
+    # detect-private-key / check-merge-conflict / check-added-large-files 等の
+    # フックが実際に違反を検知したことを意味する。フォールバック側には
+    # これらのフックに相当する代替実装が無く、ここでフォールバックへ進むと
+    # 検知結果がレガシースキャナ（gitleaks/detect-secrets）の結果で上書きされて
+    # コミットが成立してしまう。よって非ゼロ終了を保持してコミットを中断する。
+    echo "🚨 [Security Error] pre-commit detected an issue (see above). Aborting commit."
+    exit 1
   fi
 else
   PRE_COMMIT_RAN=0

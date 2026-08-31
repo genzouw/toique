@@ -132,6 +132,42 @@ test('リクエストを受理し続けるアクティブなキーは初回登�
   expect(limiter.isLimited('filler-0')).toBe(false);
 });
 
+// 回帰テスト:
+// evictOldest は先頭から連続する期限切れバケットを1回の呼び出しでまとめて
+// 削除する。旧仕様（先頭1件だけ削除）へ退行しても、evictedCount が1件になる
+// ケースしか無いテストでは検知できないため、2件以上の連続evictを検証する。
+test('先頭に複数の期限切れバケットがある場合は1回の呼び出しでまとめてevictされる', () => {
+  const limiter = build(5);
+
+  // 1. 3件のバケットを上限まで使い切って登録する（lastTimestamp = T0 で期限切れ予定）
+  for (const key of ['expired-0', 'expired-1', 'expired-2']) {
+    for (let i = 0; i < MAX; i++) limiter.consume(key);
+  }
+
+  // 2. 有効なバケットを2件積んで Map を飽和させる（size = maxBuckets = 5）
+  vi.setSystemTime(T0 + 1000);
+  for (const key of ['active-0', 'active-1']) {
+    for (let i = 0; i < MAX; i++) limiter.consume(key);
+  }
+  expect(limiter.size).toBe(5);
+
+  // 3. ウィンドウ経過で expired-* だけが期限切れになる
+  vi.setSystemTime(T0 + WINDOW_MS + 1);
+
+  // 4. 新規キー1件の到来（record() 1回）で先頭の期限切れ3件がまとめて evict される
+  expect(limiter.consume('newcomer')).toBe(false);
+
+  // 期限切れ3件が削除され newcomer 1件が追加されるので size = 5 - 3 + 1 = 3
+  expect(limiter.size).toBe(3);
+  expect(limiter.isLimited('expired-0')).toBe(false);
+  expect(limiter.isLimited('expired-1')).toBe(false);
+  expect(limiter.isLimited('expired-2')).toBe(false);
+  expect(limiter.isLimited('active-0')).toBe(true);
+  expect(limiter.isLimited('active-1')).toBe(true);
+  // 期限切れバケットの evict なので saturation 警告は出ない
+  expect(logger.warn).not.toHaveBeenCalled();
+});
+
 test('期限切れバケットの evict では warn を出さない', () => {
   const limiter = build(2);
   limiter.consume('a');
