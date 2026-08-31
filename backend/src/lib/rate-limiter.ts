@@ -138,15 +138,32 @@ function reportSaturation(state: LimiterState, now: number): void {
  * 期限切れが1件も無い場合は、残り有効期間が最短のバケットを落とすことになる。
  */
 function evictOldest(state: LimiterState, now: number): void {
-  const entry = state.buckets.entries().next().value;
-  if (!entry) return;
+  const windowStart = now - state.windowMs;
+  let evictedCount = 0;
 
-  const [oldestKey, history] = entry;
-  const lastTimestamp = history[history.length - 1];
-  if (lastTimestamp !== undefined && lastTimestamp > now - state.windowMs) {
-    reportSaturation(state, now);
+  // 挿入順の不変条件により、先頭から連続して期限切れのバケットが存在する。
+  // それらをまとめて evict し、キャッシュ溢れ攻撃を防ぐ。1回の呼び出しで
+  // 最大 maxBuckets 件を同期的に削除しうるため、呼び出し単位のレイテンシが
+  // O(1) というわけではない。エントリ1件あたり生涯で1回しか削除処理を
+  // 受けない、という意味で償却 O(1) である。
+  for (const [key, history] of state.buckets) {
+    const lastTimestamp = history[history.length - 1];
+    if (lastTimestamp !== undefined && lastTimestamp > windowStart) {
+      break; // アクティブなバケットに到達したらスイープ終了
+    }
+    state.buckets.delete(key);
+    evictedCount++;
   }
-  state.buckets.delete(oldestKey);
+
+  // 期限切れが1件も無かった場合はキャッシュ飽和状態なので、
+  // やむを得ず先頭（＝最も古い）のアクティブバケットを1つ落として枠を空ける。
+  if (evictedCount === 0) {
+    const entry = state.buckets.entries().next().value;
+    if (entry) {
+      reportSaturation(state, now);
+      state.buckets.delete(entry[0]);
+    }
+  }
 }
 
 function sweep(state: LimiterState): void {
