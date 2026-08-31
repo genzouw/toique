@@ -1,7 +1,7 @@
 minimum_pre_commit_version: '3.0.0'
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.6.0
+    rev: 2c9f875913ee60ca25ce70243dc24d5b6415598c # v4.6.0
     hooks:
       - id: detect-private-key
       - id: check-merge-conflict
