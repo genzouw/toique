@@ -59,8 +59,8 @@ def main():
             try:
                 page = wikipedia.page(res)
                 print(f"Title: {page.title}\nURL: {page.url}\nSummary: {page.summary[:200]}...\n")
-            except:
-                pass
+            except Exception as e:
+                print(f"Failed to fetch Wikipedia page '{res}': {e}")
     except Exception as e:
          print(f"Wikipedia search failed: {e}")
 
