@@ -35,6 +35,12 @@
 - [ ] secret / 個人情報を含むコードや設定が含まれていない
 - [ ] `Push Protection` の警告やブロックが発生していないこと
 
+## 必須作業・手動設定の確認
+
+<!-- GitHub Models PAT、Tavily API keys、Exa API keys、Gemini API Keys、StepSecurity の手動事前設定が済んでいるか確認 -->
+
+- [ ] `.github/AI_AUTOMATION_SETUP.md` に記載された AI および自動化ツールのための手動事前設定（各種 API キーの登録など）が完了している
+
 ## デプロイ時の注意
 
 <!-- 環境変数追加 / インフラ変更 / 手動オペレーションが必要なら明記。なければ「なし」。 -->

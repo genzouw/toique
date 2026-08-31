@@ -1,0 +1,38 @@
+name: AI Issue Triage
+
+on:
+  issues:
+    types: [opened, edited]
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  triage:
+    name: Triage Issue
+    runs-on: ubuntu-latest
+    # Dependabot や自動化ツールによる Issue/PR ではスキップする要件がある場合は条件を追加しますが、
+    # 今回は通常のユーザー Issue を対象として常に実行します。
+    steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@05e31511f85b41b11d1cf0ef85d0992719546e2c # v2.21.0
+        with:
+          egress-policy: audit
+
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Setup uv
+        uses: astral-sh/setup-uv@v5
+
+      - name: Run Triage Script
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ISSUE_DATA: ${{ toJson(github.event.issue) }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+        run: |
+          uv run .github/scripts/issue_triage.py

@@ -84,15 +84,20 @@ AI によるレビュー・トリアージは、リポジトリ側に API キー
 **採用しないもの:**
 
 - **GitHub Models**: 2026-07-30 に提供終了。新規採用・再導入とも不可です。
-- **GitHub Copilot / Microsoft Foundry**: GitHub Models の後継として案内されていますが、いずれも premium request 消費（課金）または API キー管理を伴うため、上記の無料方針と両立しません。
+- **GitHub Copilot / Microsoft Foundry**: GitHub Models の後継として案内されていますが、いずれも premium request 消費（課金）を伴うため、上記の無料方針と両立しません。
 - **GitHub Agentic Workflows (`gh-aw`)**: 2026年に一度導入しましたが、`copilot` エンジンが GitHub Copilot の premium request / AI クレジットを消費する**有料**サービスであり、無料方針と両立しないため撤去しました。関連ファイル（`.github/workflows/*-agent.md`、`*.lock.yml`、`.github/aw/`）はすべて削除済みです。`gh aw compile` で再生成すると課金と CI 失敗が復活するため、再導入しないでください。
-- **外部AIプロバイダの API キーを要するもの**（Gemini API、OpenAI API、Anthropic API など）: 無料枠があるものでもキー管理と枯渇時の CI 失敗が発生するため採用しません。
 
-**本方針の適用範囲（AI 推論と Web 検索の区別）:**
+**本方針の適用範囲と例外（無料枠の活用）:**
 
-上記の「API キーを要するものは採用しない」は **AI 推論（LLM 呼び出し）** に対する方針です。RAG 用の **Web 検索 API**（Exa / Tavily）は、無料枠の範囲でのみ利用し API キーを任意とする限りにおいて例外として許容していました。
+当リポジトリでは、「完全無料で利用できること」を最優先としていますが、**無料枠（Free Tier）が提供されている外部 AI プロバイダや Web 検索 API については、リポジトリの Secrets に API キーを登録して利用することを例外的に許可**します。
 
-ただしこれらを利用していたのは GitHub Models 依存のワークフローのみで、それらの撤去に伴い `.github/actions/ai-web-search` ごと削除済みです。現在 CI 上に Web 検索を行う仕組みは存在しません。
+具体的には以下のサービスが対象です。これらは GitHub Actions の Secrets に登録して利用します。
+
+- **Gemini API** (`GEMINI_API_KEY`): Google Gemini の無料枠を利用。
+- **Exa API** (`EXA_API_KEY`): RAG用のWeb検索（無料枠）。
+- **Tavily API** (`TAVILY_API_KEY`): RAG用のWeb検索（無料枠）。
+
+これらのキーは枯渇時に CI が失敗する可能性がありますが、プロトタイプ検証としての価値を優先し許容します。PR マージ前にこれらの手動設定が必要です。
 
 ## 6. 新規導入した自動化ツールの運用ルール (2024年導入)
 
@@ -131,9 +136,13 @@ Rust製の高速なスペルチェッカー `typos` がCIに追加されてい�
 当リポジトリでは生成AIによるコードの大量生成やそれに伴うCI/CDパイプラインへの負荷増大に対応するため、静的解析ツールとAIの連携を強化しています。
 PRマージ前に以下の作業を確認してください。
 
-1. **Qodo Merge / PR-Agent のインストール**: PR-Agent などのレビューツールを GitHub App として対象リポジトリにインストールし、適切な権限 (Issues: Write, Pull Requests: Write 等) を付与してください。インストール前に無料利用の条件を満たすか確認してください（Qodo Merge は Qodo for Open Source の承認が必要で、本リポジトリは現時点で対象外です）。
-2. **セキュリティスキャナの有効化確認**: `Gitleaks`, `Trufflehog` が適切に動作するよう、GitHub の設定 > Security から Secret Scanning と Push Protection が有効になっているか確認してください。また、`Zizmor` による解析結果が Code scanning alerts に適切に反映されるよう設定されているか確認してください。
-3. **StepSecurity Harden-Runner のインストール**: AIコーディングエージェントからのクレデンシャル漏洩やサプライチェーン攻撃を防ぐため、主要なワークフローに `step-security/harden-runner` を導入しています。
+1. **外部 API キーの登録 (Actions Secrets)**: 以下の環境変数をリポジトリの Settings > Secrets and variables > Actions に登録してください。
+   - `GEMINI_API_KEY`: Google AI Studio で取得した無料枠の API キー
+   - `EXA_API_KEY`: Exa の無料枠の API キー
+   - `TAVILY_API_KEY`: Tavily の無料枠の API キー
+2. **Qodo Merge / PR-Agent のインストール**: PR-Agent などのレビューツールを GitHub App として対象リポジトリにインストールし、適切な権限 (Issues: Write, Pull Requests: Write 等) を付与してください。インストール前に無料利用の条件を満たすか確認してください（Qodo Merge は Qodo for Open Source の承認が必要で、本リポジトリは現時点で対象外です）。
+3. **セキュリティスキャナの有効化確認**: `Gitleaks`, `Trufflehog` が適切に動作するよう、GitHub の設定 > Security から Secret Scanning と Push Protection が有効になっているか確認してください。また、`Zizmor` による解析結果が Code scanning alerts に適切に反映されるよう設定されているか確認してください。
+4. **StepSecurity Harden-Runner のインストール**: AIコーディングエージェントからのクレデンシャル漏洩やサプライチェーン攻撃を防ぐため、主要なワークフローに `step-security/harden-runner` を導入しています。
    - StepSecurity の GitHub App を対象リポジトリにインストールし、初期設定を行ってください（公開リポジトリは無料で利用可能です）。
    - 現在はCIのダウンタイムを防ぐため `audit` モードで運用していますが、StepSecurity Dashboard 上で学習が完了し、必要な通信先リストが整備された段階で、ワークフローファイル側を `block` モードに変更（必要に応じて `allowed-endpoints` を追記）して完全なアウトバウンド通信の保護を有効化してください。
 
