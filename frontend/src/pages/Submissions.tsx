@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState, useId } from 'react';
+import { useCallback, useEffect, useState, useId, useMemo, memo } from 'react';
 import { Inbox, Download, RefreshCw } from 'lucide-react';
 import { formatDate } from '../lib/format-date';
 import { api, type Submission, type FormListItem } from '../lib/api';
@@ -46,11 +46,25 @@ export default function Submissions() {
     refresh();
   }, [refresh]);
 
-  // 行ごとに forms を線形探索しないよう、id 検索用のマップを作る
-  const formsById: Record<string, FormListItem> = {};
-  for (const f of forms) {
-    formsById[f.id] = f;
-  }
+  // ⚡ Bolt: formsById の構築と行要素の生成を useMemo でラップし、
+  // 他の state (errorなど) が変わった際の不要な O(N) 再計算と React 要素生成を防ぎます。
+  const formsById = useMemo(() => {
+    const map = new Map<string, FormListItem>();
+    for (const f of forms) {
+      map.set(f.id, f);
+    }
+    return map;
+  }, [forms]);
+
+  const submissionRows = useMemo(() => {
+    return items.map((s) => (
+      <SubmissionRow
+        key={s.id}
+        submission={s}
+        formName={formsById.get(s.formId)?.name}
+      />
+    ));
+  }, [items, formsById]);
 
   return (
     <div>
@@ -91,13 +105,7 @@ export default function Submissions() {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-200">
-              {items.map((s) => (
-                <SubmissionRow
-                  key={s.id}
-                  submission={s}
-                  formName={formsById[s.formId]?.name}
-                />
-              ))}
+              {submissionRows}
             </tbody>
           </table>
         )}
@@ -232,7 +240,12 @@ function CsvExportPanel({
   );
 }
 
-function SubmissionRow({
+/**
+ * ⚡ Bolt: 不要な再レンダーを防ぐために React.memo() でラップしています。
+ * 親の state 変更時でも、submission や formName が変わらない限り
+ * この行の再レンダーをスキップします。
+ */
+const SubmissionRow = memo(function SubmissionRow({
   submission: s,
   formName,
 }: {
@@ -259,7 +272,7 @@ function SubmissionRow({
       </td>
     </tr>
   );
-}
+});
 
 function AnswerSummary({ answers }: { answers: Record<string, unknown> }) {
   const entries = Object.entries(answers);

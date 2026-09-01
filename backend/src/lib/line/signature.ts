@@ -1,4 +1,4 @@
-import { createHmac, timingSafeEqual } from 'node:crypto';
+import { createHmac, createHash, timingSafeEqual } from 'node:crypto';
 
 export function verifyLineSignature(
   channelSecret: string,
@@ -9,8 +9,8 @@ export function verifyLineSignature(
     .update(rawBody)
     .digest('base64');
 
-  const a = Buffer.from(signature);
-  const b = Buffer.from(expected);
-  if (a.length !== b.length) return false;
-  return timingSafeEqual(a, b);
+  const signatureHash = createHash('sha256').update(signature).digest();
+  const expectedHash = createHash('sha256').update(expected).digest();
+
+  return timingSafeEqual(signatureHash, expectedHash);
 }
