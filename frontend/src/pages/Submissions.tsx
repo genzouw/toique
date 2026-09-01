@@ -49,9 +49,9 @@ export default function Submissions() {
   // ⚡ Bolt: formsById の構築と行要素の生成を useMemo でラップし、
   // 他の state (errorなど) が変わった際の不要な O(N) 再計算と React 要素生成を防ぎます。
   const formsById = useMemo(() => {
-    const map: Record<string, FormListItem> = {};
+    const map = new Map<string, FormListItem>();
     for (const f of forms) {
-      map[f.id] = f;
+      map.set(f.id, f);
     }
     return map;
   }, [forms]);
@@ -61,7 +61,7 @@ export default function Submissions() {
       <SubmissionRow
         key={s.id}
         submission={s}
-        formName={formsById[s.formId]?.name}
+        formName={formsById.get(s.formId)?.name}
       />
     ));
   }, [items, formsById]);
