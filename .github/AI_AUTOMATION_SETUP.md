@@ -109,11 +109,6 @@ AI によるレビュー・トリアージは、リポジトリ側に API キー
 リポジトリにコミットされたコードの中に、AI コーディングエージェントが残したスロップ（不要なコメント、飲み込まれた例外、幻覚によるインポートなど）がないかを自動的にスキャンします。GitHub Code Scanning と連携して、PR や main ブランチでの問題を検知します。
 この機能は `aislop` ツールを使用しており、特別な設定は不要です。
 
-### AI Auto Documenter & AI Accessibility Scanner
-
-PR上で自動的にドキュメントの提案やアクセシビリティのレビューを行う GitHub Actions（`ai-auto-documenter.yml` および `ai-a11y-scanner.yml`）が導入されています。これらは Google Gemini API を活用しています。
-クォータを節約するため、変更が極端に少ない PR では API 呼び出しが自動的にスキップされます。
-
 ### Semantic PR Title の適用
 
 コミット履歴とリリースノートの可読性を保つため、PRのタイトルには **Conventional Commits** フォーマットを強制するチェック (`semantic-pr-title.yml`) が有効になっています。
@@ -237,6 +232,3 @@ AI エージェント（Cursor, Claude Desktop など）が開発プロジェク
    - **本リポジトリの状況**: stars が 100 に届いておらず条件未達のため、現時点では無料対象外です。第5節の「CI から呼び出す AI は無料枠のみ」方針に従い、条件を満たすまでインストールは行いません。
 3. **Qodo Merge の設定統合**
    - これまで `.pr-agent.toml` と `.pr_agent.toml` が混在していたため、`.pr_agent.toml` に設定を一本化しました。これにより、日本語出力(`response_language="ja-JP"`)と `gpt-4o` モデルの利用設定が正しく一貫して適用されます。設定の変更が必要な場合は `.pr_agent.toml` のみを編集してください。
-4. **Gemini API Key の設定**
-   - 新規導入された `ai-auto-documenter` や `ai-a11y-scanner` などの GitHub Actions ワークフローでは、レビューやドキュメント提案のために Google Gemini API を使用しています。
-   - 動作させるには [Google AI Studio](https://aistudio.google.com/) で API キーを取得し、リポジトリの **Settings > Secrets and variables > Actions > Repository secrets** に `GEMINI_API_KEY` という名前で登録してください。（公開リポジトリの無料枠ポリシーに従います）
