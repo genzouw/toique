@@ -78,7 +78,7 @@ export default function AdminContactDetail() {
           to="/admin/contacts"
           className="inline-flex items-center gap-1 text-sm text-slate-600 hover:text-slate-900"
         >
-          <ArrowLeft size={ICON_SIZE.sm} />
+          <ArrowLeft size={ICON_SIZE.sm} aria-hidden="true" />
           一覧へ戻る
         </Link>
       </div>

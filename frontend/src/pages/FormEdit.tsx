@@ -293,7 +293,7 @@ export default function FormEdit() {
         to="/forms"
         className="inline-flex items-center gap-1 text-sm text-slate-600 hover:text-slate-900"
       >
-        <ChevronLeft size={ICON_SIZE.sm} />
+        <ChevronLeft size={ICON_SIZE.sm} aria-hidden="true" />
         フォーム一覧に戻る
       </Link>
 
@@ -308,7 +308,7 @@ export default function FormEdit() {
             title="フォームを削除"
             aria-label="フォームを削除"
           >
-            <Trash2 size={ICON_SIZE.md} />
+            <Trash2 size={ICON_SIZE.md} aria-hidden="true" />
           </button>
         )}
       </div>

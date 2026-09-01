@@ -41,7 +41,7 @@ export default function AdminUserDetail() {
           to="/admin/users"
           className="inline-flex items-center gap-1 text-sm text-slate-600 hover:text-slate-900"
         >
-          <ArrowLeft size={14} />
+          <ArrowLeft size={14} aria-hidden="true" />
           一覧へ戻る
         </Link>
       </div>
