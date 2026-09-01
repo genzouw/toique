@@ -1,0 +1,73 @@
+name: AI Accessibility Scanner
+
+on:
+  pull_request:
+    types: [opened, synchronize, ready_for_review]
+    paths:
+      - 'frontend/**/*.tsx'
+      - 'frontend/**/*.ts'
+      - 'frontend/**/*.jsx'
+      - 'frontend/**/*.js'
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  a11y_scan:
+    name: Run AI Accessibility Scanner
+    runs-on: ubuntu-latest
+    if: github.event.pull_request.draft == false
+    steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@05e31511f85b41b11d1cf0ef85d0992719546e2c # v2.21.0
+        with:
+          egress-policy: audit
+
+      - name: Checkout Code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Check PR Diff Size
+        id: check_diff
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          set -euo pipefail
+          diff=$(gh pr diff $PR_NUMBER || echo "")
+          prDiff=$(echo "$diff" | wc -c)
+          changedLineCount=$(echo "$diff" | wc -l)
+
+          echo "PR Diff Size: $prDiff bytes"
+          echo "Changed Lines: $changedLineCount"
+
+          if [ -z "$diff" ] || [ "$prDiff" -lt 20 ] || [ "$changedLineCount" -lt 3 ]; then
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+            echo "PR diff is trivial or empty. Skipping AI a11y scanner to save quota."
+          else
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Run AI Accessibility Scanner Review
+        if: steps.check_diff.outputs.skip == 'false'
+        uses: petarzarkov/gemini-code-review-action@e8e786b3b05e3bb3139072f05ae6c1ad9cba3027
+        with:
+          model: gemini-2.5-flash
+          enable_conversation_context: true
+          skip_draft_prs: true
+          language: "Japanese"
+          prompt: |
+            あなたはアクセシビリティ(a11y)専門のフロントエンドエンジニアです。
+            React(JSX/TSX)のコード変更におけるアクセシビリティの問題を指摘してください。
+            特に以下の点をチェックしてください：
+            - インタラクティブな要素に対する aria-label や title の不足
+            - 意味のない装飾アイコンに対する aria-hidden="true" の付与漏れ
+            - 必須入力フィールドに対する適切な視覚的インジケータ(例: "*")と aria-required="true"
+            - キーボードナビゲーションのサポート状況
+            問題がない場合はコメントしないでください。
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
