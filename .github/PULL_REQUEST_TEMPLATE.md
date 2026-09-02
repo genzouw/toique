@@ -35,11 +35,10 @@
 - [ ] secret / 個人情報を含むコードや設定が含まれていない
 - [ ] `Push Protection` の警告やブロックが発生していないこと
 
-## コスト方針のセルフチェック (公開 OSS)
+## コスト方針および AI 自動化のセルフチェック (公開 OSS)
 
-- [ ] LLM プロバイダや従量課金 API のキー (`GEMINI_API_KEY` / `OPENAI_API_KEY` / `ANTHROPIC_API_KEY` / `TAVILY_API_KEY` 等) を GitHub Secrets へ追加していない
 - [ ] 追加した SaaS / GitHub App / Action は公開 OSS リポジトリで完全無料であり、その根拠 URL を本文に記載した（外部サービスを追加していない場合はチェック可）
-- [ ] リポジトリオーナーへ新規 Secret の登録を依頼していない
+- [ ] AI 連携に必要な API キー (`GEMINI_API_KEY`, `EXA_API_KEY`, `TAVILY_API_KEY` など) や StepSecurity などの手動事前設定が `.github/AI_AUTOMATION_SETUP.md` に従って完了していることを確認した
 - [ ] [`AGENTS.md`](../AGENTS.md) のポリシーに違反していないことを確認した
 
 ## デプロイ時の注意
