@@ -202,7 +202,7 @@ const ChannelRow = memo(function ChannelRow({
           title={`${ch.displayName} を削除`}
           aria-label={`${ch.displayName} を削除`}
         >
-          <Trash2 size={ICON_SIZE.md} />
+          <Trash2 size={ICON_SIZE.md} aria-hidden="true" />
         </button>
       </div>
       <div className="mt-3">
