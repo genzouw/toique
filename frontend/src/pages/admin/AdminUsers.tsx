@@ -1,4 +1,4 @@
-import { useEffect, useState, memo } from 'react';
+import { useEffect, useState, useMemo, memo } from 'react';
 import { Link } from 'react-router';
 import { Users } from 'lucide-react';
 import { formatDate } from '../../lib/format-date';
@@ -18,6 +18,10 @@ export default function AdminUsers() {
         setError(err instanceof Error ? err.message : '読み込みに失敗しました'),
       );
   }, []);
+
+  const userRows = useMemo(() => {
+    return rows?.map((row) => <AdminUserRow key={row.id} row={row} />);
+  }, [rows]);
 
   return (
     <div className="space-y-4">
@@ -62,11 +66,7 @@ export default function AdminUsers() {
                 <th className="px-4 py-2 font-medium text-slate-700">ロール</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100">
-              {rows.map((row) => (
-                <AdminUserRow key={row.id} row={row} />
-              ))}
-            </tbody>
+            <tbody className="divide-y divide-slate-100">{userRows}</tbody>
           </table>
         </div>
       )}

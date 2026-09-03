@@ -50,6 +50,10 @@ export default function AdminContacts() {
     return rows?.filter((r) => filter === 'all' || r.status === filter) ?? [];
   }, [rows, filter]);
 
+  const contactRows = useMemo(() => {
+    return filtered.map((row) => <AdminContactRow key={row.id} row={row} />);
+  }, [filtered]);
+
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
@@ -108,11 +112,7 @@ export default function AdminContacts() {
                 </th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100">
-              {filtered.map((row) => (
-                <AdminContactRow key={row.id} row={row} />
-              ))}
-            </tbody>
+            <tbody className="divide-y divide-slate-100">{contactRows}</tbody>
           </table>
         </div>
       )}
