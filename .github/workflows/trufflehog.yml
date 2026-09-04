@@ -39,7 +39,7 @@ jobs:
         uses: ./.github/actions/resolve-scan-base
 
       - name: TruffleHog OSS
-        uses: trufflesecurity/trufflehog@20652fbbdefffcdaa493a5bf57ab2ac6b1db715b # v3.97.1
+        uses: trufflesecurity/trufflehog@cc1fe982afc515d2991365ce8d4d0dd07170fcad # v3.97.2
         with:
           # base が空文字の場合は「base 指定なし = head までの履歴全体をスキャン」となり、
           # schedule 実行と同じ経路に落ちる。これは部分検査への劣化ではなく、より広い範囲を
