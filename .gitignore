@@ -93,9 +93,17 @@ cdktf.out/
 cdktf.out/
 .terraform/
 
-# PR/Issue 本文の下書き（一時ファイル。誤コミット防止）
+# PR/Issue 本文・コミットメッセージの下書き（一時ファイル。誤コミット防止）
 # ファイル名の完全一致列挙だと表記ゆれ（例: pr_description.txt）をすり抜けるため、
-# プレフィックス一致のパターンで網羅する。
+# プレフィックス一致のパターンで網羅する。拡張子は .txt / .md の両方を対象にする
+# （実際に pr_body.md / pr_description.md / commit-msg.txt が混入した）。
 pr_body*.txt
+pr_body*.md
 pr_description*.txt
+pr_description*.md
 issue_body*.txt
+issue_body*.md
+commit-msg*.txt
+commit-msg*.md
+commit_msg*.txt
+commit_msg*.md
