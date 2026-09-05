@@ -134,7 +134,7 @@ export default function Contact() {
             <h2
               ref={successHeadingRef}
               tabIndex={-1}
-              className="text-lg font-semibold text-slate-900 mb-2 focus-visible:outline-none"
+              className="text-lg font-semibold text-slate-900 mb-2 focus-visible:outline-hidden"
             >
               送信しました
             </h2>
@@ -309,7 +309,7 @@ export default function Contact() {
 }
 
 const inputCls =
-  'block w-full rounded-md border border-slate-300 px-3 py-2 text-sm text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-900 focus-visible:border-slate-900';
+  'block w-full rounded-md border border-slate-300 px-3 py-2 text-sm text-slate-900 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-slate-900 focus-visible:border-slate-900';
 
 function Field({
   label,

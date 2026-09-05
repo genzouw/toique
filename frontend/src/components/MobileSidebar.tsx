@@ -29,7 +29,7 @@ export function MobileHeader({
         aria-label="メニューを開く"
         title="メニューを開く"
         className={cn(
-          'p-1.5 rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-current transition-colors',
+          'p-1.5 rounded-md focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-current transition-colors',
           menuButtonClassName,
         )}
       >
@@ -94,7 +94,7 @@ export function SidebarPanel({
           aria-label="メニューを閉じる"
           title="メニューを閉じる"
           className={cn(
-            'md:hidden p-1 rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-current transition-colors',
+            'md:hidden p-1 rounded-md focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-current transition-colors',
             closeButtonClassName,
           )}
         >
