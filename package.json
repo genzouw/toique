@@ -25,8 +25,74 @@
     "secretlint": "^13.0.2"
   },
   "lint-staged": {
-    "{**/*.{env*,pem,key,p12,p8,keystore,jks,sqlite,db,log,http,rest,patch,diff,local},**/*_rsa,**/.npmrc,**/.netrc,**/*credentials*.json,**/*secret*.json,**/*.tfstate*,**/cdktf.out/**,**/.terraform/**,**/.{cursor,claude,aider*,windsurf,jules,Jules}/**}": [
-      "node -e \"console.error('[FATAL] Sensitive files or AI footprints detected:', process.argv.slice(1)); process.exit(1);\""
+    "**/*.{pem,key,p12,p8,keystore,jks,sqlite,db,log,http,rest,patch,diff,local}": [
+      "node scripts/fail-on-sensitive-file.mjs"
+    ],
+    "**/.env": [
+      "node scripts/fail-on-sensitive-file.mjs"
+    ],
+    "**/.env.*": [
+      "node scripts/fail-on-sensitive-file.mjs"
+    ],
+    "**/*.env": [
+      "node scripts/fail-on-sensitive-file.mjs"
+    ],
+    "**/*.env.*": [
+      "node scripts/fail-on-sensitive-file.mjs"
+    ],
+    "**/*_rsa": [
+      "node scripts/fail-on-sensitive-file.mjs"
+    ],
+    "**/*_ed25519": [
+      "node scripts/fail-on-sensitive-file.mjs"
+    ],
+    "**/*_ecdsa": [
+      "node scripts/fail-on-sensitive-file.mjs"
+    ],
+    "**/.npmrc": [
+      "node scripts/fail-on-sensitive-file.mjs"
+    ],
+    "**/.netrc": [
+      "node scripts/fail-on-sensitive-file.mjs"
+    ],
+    "**/*credentials*.json": [
+      "node scripts/fail-on-sensitive-file.mjs"
+    ],
+    "**/*secret*.json": [
+      "node scripts/fail-on-sensitive-file.mjs"
+    ],
+    "**/*.tfstate": [
+      "node scripts/fail-on-sensitive-file.mjs"
+    ],
+    "**/*.tfstate.*": [
+      "node scripts/fail-on-sensitive-file.mjs"
+    ],
+    "**/cdktf.out/**": [
+      "node scripts/fail-on-sensitive-file.mjs"
+    ],
+    "**/.terraform/**": [
+      "node scripts/fail-on-sensitive-file.mjs"
+    ],
+    "**/.cursor/**": [
+      "node scripts/fail-on-sensitive-file.mjs"
+    ],
+    "**/.claude/**": [
+      "node scripts/fail-on-sensitive-file.mjs"
+    ],
+    "**/.aider*/**": [
+      "node scripts/fail-on-sensitive-file.mjs"
+    ],
+    "**/.windsurf/**": [
+      "node scripts/fail-on-sensitive-file.mjs"
+    ],
+    "**/.jules/**": [
+      "node scripts/fail-on-sensitive-file.mjs"
+    ],
+    "**/.Jules/**": [
+      "node scripts/fail-on-sensitive-file.mjs"
+    ],
+    "**/{pr_body,pr_description,issue_body,commit-msg,commit_msg}*.{txt,md}": [
+      "node scripts/fail-on-sensitive-file.mjs"
     ],
     "**/*": [
       "secretlint"
