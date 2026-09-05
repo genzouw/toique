@@ -1,0 +1,23 @@
+name: 'AI Web Search'
+description: 'Fetches real-time RAG context using Exa, Tavily, DuckDuckGo, etc.'
+inputs:
+  query:
+    description: 'Search query'
+    required: true
+outputs:
+  result:
+    description: 'Search results in Markdown'
+    value: ${{ steps.search.outputs.result }}
+runs:
+  using: 'composite'
+  steps:
+    - uses: astral-sh/setup-uv@20cfd1bf945f4377ade1205e4dbc17946fc9a30d # v10.0.1
+    - id: search
+      run: |
+        EOF=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
+        echo "result<<$EOF" >> $GITHUB_OUTPUT
+        uv run ${{ github.action_path }}/search.py >> $GITHUB_OUTPUT
+        echo "$EOF" >> $GITHUB_OUTPUT
+      shell: bash
+      env:
+        SEARCH_QUERY: ${{ inputs.query }}

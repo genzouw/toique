@@ -88,11 +88,11 @@ AI によるレビュー・トリアージは、リポジトリ側に API キー
 - **GitHub Models**: 2026-07-30 に提供終了。新規採用・再導入とも不可です。
 - **GitHub Copilot / Microsoft Foundry**: GitHub Models の後継として案内されていますが、いずれも premium request 消費（課金）または API キー管理を伴うため、上記の無料方針と両立しません。
 - **GitHub Agentic Workflows (`gh-aw`)**: 2026年に一度導入しましたが、`copilot` エンジンが GitHub Copilot の premium request / AI クレジットを消費する**有料**サービスであり、無料方針と両立しないため撤去しました。関連ファイル（`.github/workflows/*-agent.md`、`*.lock.yml`、`.github/aw/`）はすべて削除済みです。`gh aw compile` で再生成すると課金と CI 失敗が復活するため、再導入しないでください。
-- **外部AIプロバイダの API キーを要するもの**（Gemini API、OpenAI API、Anthropic API など）: 無料枠があるものでもキー管理と枯渇時の CI 失敗が発生するため採用しません。
+- **外部AIプロバイダの API キーを要するもの**（Gemini API、OpenAI API、Anthropic API など）: 無料枠があるものであれば、パブリックリポジトリでの利用に限り採用を許可します。必要なAPIキー（`GEMINI_API_KEY`など）およびRAG用の検索APIキー（`EXA_API_KEY`, `TAVILY_API_KEY`）はリポジトリのシークレットとして管理します。
 
 **本方針の適用範囲（AI 推論と Web 検索の区別）:**
 
-上記の「API キーを要するものは採用しない」は **AI 推論（LLM 呼び出し）** に対する方針です。RAG 用の **Web 検索 API**（Exa / Tavily）は、無料枠の範囲でのみ利用し API キーを任意とする限りにおいて例外として許容していました。
+上記の通り、現在は AI 推論および Web 検索の双方において、無料枠の範囲内でAPIキーの利用を許可しています。
 
 ただしこれらを利用していたのは GitHub Models 依存のワークフローのみで、それらの撤去に伴い `.github/actions/ai-web-search` ごと削除済みです。現在 CI 上に Web 検索を行う仕組みは存在しません。
 
