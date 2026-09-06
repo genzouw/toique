@@ -36,7 +36,9 @@ jobs:
         id: scan-base
         # 到達性ガードの実装は composite action に一本化している。詳細は
         # .github/actions/resolve-scan-base/action.yml を参照。
-        uses: ./.github/actions/resolve-scan-base
+        # zizmor は self-repository ($/...) 形式を求めるが、actionlint が未対応
+        # (rhysd/actionlint#732 未マージ) のため workspace-relative (./...) を維持する。
+        uses: ./.github/actions/resolve-scan-base # zizmor: ignore[self-repository]
 
       - name: TruffleHog OSS
         uses: trufflesecurity/trufflehog@cc1fe982afc515d2991365ce8d4d0dd07170fcad # v3.97.2
