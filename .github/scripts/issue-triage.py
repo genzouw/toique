@@ -68,9 +68,14 @@ def main():
         comment = output
 
         # 正規表現でラベルとコメントを抽出
+        # プロンプトで案内した4種類のみを許可し、Issue本文やモデル出力に
+        # 含まれる任意の文字列がラベルとしてそのまま適用されないようにする
+        allowed_labels = {"bug", "enhancement", "documentation", "question"}
+
         labels_match = re.search(r"Labels:\s*\[(.*?)\]", output)
         if labels_match:
-            labels = [l.strip() for l in labels_match.group(1).split(",") if l.strip()]
+            candidate_labels = [l.strip() for l in labels_match.group(1).split(",") if l.strip()]
+            labels = [l for l in candidate_labels if l in allowed_labels]
 
         comment_match = re.search(r"Comment:\s*(.*)", output, re.DOTALL)
         if comment_match:
