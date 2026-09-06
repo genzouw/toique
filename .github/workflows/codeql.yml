@@ -2,10 +2,8 @@ name: 'CodeQL'
 
 on:
   push:
-    branches: ['main']
+    branches: ['**']
   pull_request:
-    # The branches below must be a subset of the branches above
-    branches: ['main']
   schedule:
     - cron: '30 1 * * 1' # 毎週月曜 10:30 JST (01:30 UTC) にスキャン
   workflow_dispatch:
@@ -16,13 +14,16 @@ concurrency:
 
 permissions:
   contents: read # リポジトリのチェックアウトに必要
-  security-events: write # CodeQL解析結果（SARIF）のアップロードに必要
 
 jobs:
   analyze:
     name: Analyze (${{ matrix.language }})
+    if: github.event_name == 'push' || github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' || (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name != github.repository)
     runs-on: ubuntu-latest
     timeout-minutes: 360
+    permissions:
+      contents: read
+      security-events: write # CodeQL解析結果（SARIF）のアップロードに必要（analyzeジョブのみに限定）
 
     strategy:
       fail-fast: false
@@ -61,3 +62,7 @@ jobs:
         uses: github/codeql-action/analyze@cdf488f595d80d6e07e03d4674febd5ab45fa938 # v4.37.9
         with:
           category: '/language:${{matrix.language}}'
+          # フォークPRの pull_request イベントは GITHUB_TOKEN が強制的に read-only になり
+          # （workflow の permissions では上書き不可）、既定の upload: always のままだと
+          # SARIF アップロードが権限エラーで失敗するため、フォークPRのみアップロードを抑止する。
+          upload: ${{ (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name != github.repository) && 'never' || 'always' }}
