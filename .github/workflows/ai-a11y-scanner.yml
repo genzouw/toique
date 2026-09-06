@@ -28,20 +28,20 @@ jobs:
           persist-credentials: false
 
       - name: Setup uv
-        uses: astral-sh/setup-uv@887a942a15af3a76af60a460e8d01080b06428c6 # v5.1.0
+        uses: astral-sh/setup-uv@887a942a15af3a7626099df99e897a18d9e5ab3a # v5.1.0
 
       - name: Check PR diff size
         id: check_diff
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          DIFF_LINES=$(gh pr view ${{ github.event.pull_request.number }} --json additions,deletions --jq '.additions + .deletions')
+          DIFF_LINES=$(gh pr view "${{ github.event.pull_request.number }}" --json additions,deletions --jq '.additions + .deletions')
           echo "Total changed lines: $DIFF_LINES"
           if [ "$DIFF_LINES" -lt 3 ]; then
-            echo "skip=true" >> $GITHUB_OUTPUT
+            echo "skip=true" >> "$GITHUB_OUTPUT"
             echo "PR is too small, skipping AI review."
           else
-            echo "skip=false" >> $GITHUB_OUTPUT
+            echo "skip=false" >> "$GITHUB_OUTPUT"
           fi
 
       - name: AI UI Review Script
