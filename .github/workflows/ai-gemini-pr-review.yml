@@ -34,6 +34,8 @@ jobs:
       - name: Run Gemini Code Review
         if: steps.check_key.outputs.has_key == 'true'
         uses: petarzarkov/gemini-code-review-action@e8e786b3b05e3bb3139072f05ae6c1ad9cba3027
+        with:
+          model: gemini-2.5-flash-lite
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
