@@ -232,3 +232,23 @@ AI エージェント（Cursor, Claude Desktop など）が開発プロジェク
    - **本リポジトリの状況**: stars が 100 に届いておらず条件未達のため、現時点では無料対象外です。第5節の「CI から呼び出す AI は無料枠のみ」方針に従い、条件を満たすまでインストールは行いません。
 3. **Qodo Merge の設定統合**
    - これまで `.pr-agent.toml` と `.pr_agent.toml` が混在していたため、`.pr_agent.toml` に設定を一本化しました。これにより、日本語出力(`response_language="ja-JP"`)と `gpt-4o` モデルの利用設定が正しく一貫して適用されます。設定の変更が必要な場合は `.pr_agent.toml` のみを編集してください。
+
+### 新規追加のAI自動化パイプライン (2025年)
+
+当リポジトリでは、GitHub Models の提供終了に伴い、`google-genai` と GitHub Actions を活用した新たな生成 AI パイプラインを実験的・プロトタイプとして導入しています。これにより、Issue のトリアージから PR のコードレビュー、アクセシビリティ検査、マージ後のリリースノート草案作成までを自動化します。
+
+導入したワークフロー:
+- **AI Issue Triage (`ai-issue-triage.yml`)**: 新規作成された Issue の内容を分析し、推奨ラベル・優先度・対応方針の提案を自動的にコメントします。
+- **AI PR Review (`ai-pr-review.yml`)**: PR のコード差分を分析し、広範なレビューやバグの指摘を行います（`petarzarkov/gemini-code-review-action` 利用）。APIクオータ節約のため、極端に小さい変更（3行未満）はスキップします。
+- **AI Accessibility & UI Review (`ai-a11y-scanner.yml`)**: フロントエンドのコード変更 (`frontend/**/*.tsx` など) に対して、アクセシビリティ(a11y)の観点に特化したレビューを自動で行います。
+- **AI Auto Documenter (`ai-auto-documenter.yml`)**: PR がマージされた後、変更差分を元に自動的にリリースノート（Changelog）の草案を作成し、コメントとして投稿します。
+
+これらのワークフローで使用するスクリプト（`.github/scripts/` 内）は、`astral-sh/setup-uv` を用いて依存関係を自己管理（PEP 723）し、`uv run` により実行されます。
+
+> [!NOTE]
+> **導入のための手動事前作業:**
+>
+> 1. **Gemini API Keyの取得**: [Google AI Studio](https://aistudio.google.com/) にて無料の API キーを取得してください。
+> 2. **Secretの登録**: リポジトリの `Settings` > `Secrets and variables` > `Actions` に移動し、取得した API キーを `GEMINI_API_KEY` という名前の Repository Secret として登録してください。
+>
+> ※ これらのパイプラインは無料枠での利用を前提として構成されています。利用制限（クオータ）にはご注意ください。
