@@ -6,10 +6,14 @@
 // 独立したスクリプトにしている。
 //
 // package.json 側のパターンは秘匿ファイルの命名慣習を広く拾うため、意図的に
-// コミットされるテンプレートファイルも誤検知する（`.env.example` は `**/.env.*` に
-// マッチしてしまう）。`.husky/pre-commit` と `.github/workflows/forbidden-paths.yml`
-// は同種の誤検知を許可リストの正規表現で除外しており、ここも揃える。
-const SAFE_FILE_PATTERNS = [/(^|\/)\.env\.(example|sample|template|dist)$/];
+// コミットされるテンプレート/設定ファイルも誤検知する（`.env.example` は
+// `**/.env.*` に、`.secretlintrc.json` は `**/*secret*.json` にマッチしてしまう）。
+// `.husky/pre-commit` と `.github/workflows/forbidden-paths.yml` は同種の誤検知を
+// 許可リストの正規表現で除外しており、ここも揃える（3ゲートの許可リストは同期させる）。
+const SAFE_FILE_PATTERNS = [
+  /(^|\/)\.env\.(example|sample|template|dist)$/,
+  /(^|\/)\.secretlintrc\.json$/,
+];
 
 const files = process.argv
   .slice(2)
