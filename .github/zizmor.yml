@@ -21,3 +21,16 @@ rules:
       # (具体的なバージョン番号はここに書かない。バンプのたびに乖離して
       #  抑制理由のコメントが実態と食い違う原因になるため、参照先は各ファイル1か所に限る)
       - repomix.yml
+  self-repository:
+    # zizmor は同一リポジトリ内の複合Action参照に self-repository 構文 ($/...) を
+    # 求めるが、CIで併用している actionlint が $/ を有効なローカルアクション参照と
+    # 認識せずビルドが失敗する (サポートPR rhysd/actionlint#732 は未マージ)。
+    # actionlint が対応するまでは workspace-relative 形式 (./...) を維持する。
+    # 参照先はいずれも自リポジトリ内の複合Actionで、外部リポジトリの混入余地はない。
+    ignore:
+      - detect-secrets.yml
+      - forbidden-paths.yml
+      - trufflehog.yml
+      # 現時点で main には未追加。PR #762 で ai-web-search 複合Action と共に
+      # 追加されるワークフローで、同じ理由の指摘が既に出ているため先に登録する。
+      - ai-issue-triage.yml
