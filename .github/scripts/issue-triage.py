@@ -5,7 +5,6 @@ import os
 import json
 import requests
 from google import genai
-from google.genai import types
 
 def main():
     # イベントパスの取得
