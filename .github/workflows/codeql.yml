@@ -2,6 +2,7 @@ name: 'CodeQL'
 
 on:
   push:
+    branches: ['**']
   pull_request:
   schedule:
     - cron: '30 1 * * 1' # 毎週月曜 10:30 JST (01:30 UTC) にスキャン
@@ -59,3 +60,7 @@ jobs:
         uses: github/codeql-action/analyze@cdf488f595d80d6e07e03d4674febd5ab45fa938 # v4.37.9
         with:
           category: '/language:${{matrix.language}}'
+          # フォークPRの pull_request イベントは GITHUB_TOKEN が強制的に read-only になり
+          # （workflow の permissions では上書き不可）、既定の upload: always のままだと
+          # SARIF アップロードが権限エラーで失敗するため、フォークPRのみアップロードを抑止する。
+          upload: ${{ (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name != github.repository) && 'never' || 'always' }}
