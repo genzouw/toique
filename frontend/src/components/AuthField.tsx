@@ -70,9 +70,9 @@ export function AuthField({
             title={showPassword ? 'パスワードを隠す' : 'パスワードを表示'}
           >
             {showPassword ? (
-              <EyeOff size={ICON_SIZE.sm} />
+              <EyeOff size={ICON_SIZE.sm} aria-hidden="true" />
             ) : (
-              <Eye size={ICON_SIZE.sm} />
+              <Eye size={ICON_SIZE.sm} aria-hidden="true" />
             )}
           </button>
         )}
