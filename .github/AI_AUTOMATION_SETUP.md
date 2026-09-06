@@ -238,6 +238,7 @@ AI エージェント（Cursor, Claude Desktop など）が開発プロジェク
 当リポジトリでは、GitHub Models の提供終了に伴い、`google-genai` と GitHub Actions を活用した新たな生成 AI パイプラインを実験的・プロトタイプとして導入しています。これにより、Issue のトリアージから PR のコードレビュー、アクセシビリティ検査、マージ後のリリースノート草案作成までを自動化します。
 
 導入したワークフロー:
+
 - **AI Issue Triage (`ai-issue-triage.yml`)**: 新規作成された Issue の内容を分析し、推奨ラベル・優先度・対応方針の提案を自動的にコメントします。
 - **AI PR Review (`ai-pr-review.yml`)**: PR のコード差分を分析し、広範なレビューやバグの指摘を行います（`petarzarkov/gemini-code-review-action` 利用）。APIクオータ節約のため、極端に小さい変更（3行未満）はスキップします。
 - **AI Accessibility & UI Review (`ai-a11y-scanner.yml`)**: フロントエンドのコード変更 (`frontend/**/*.tsx` など) に対して、アクセシビリティ(a11y)の観点に特化したレビューを自動で行います。
