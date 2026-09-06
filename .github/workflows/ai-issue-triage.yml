@@ -20,7 +20,7 @@ jobs:
 
       - name: Fetch RAG context using Web Search
         id: search
-        uses: ./.github/actions/ai-web-search
+        uses: $/.github/actions/ai-web-search
         with:
           query: ${{ github.event.issue.title }}
         env:
