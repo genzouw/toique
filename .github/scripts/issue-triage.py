@@ -83,7 +83,8 @@ def main():
                 "Authorization": f"Bearer {github_token}",
                 "Accept": "application/vnd.github.v3+json"
             }
-            requests.post(url, headers=headers, json={"labels": labels})
+            response = requests.post(url, headers=headers, json={"labels": labels}, timeout=30)
+            response.raise_for_status()
 
         # コメントの追加
         url = f"https://api.github.com/repos/{repo_name}/issues/{issue_number}/comments"
@@ -91,10 +92,14 @@ def main():
             "Authorization": f"Bearer {github_token}",
             "Accept": "application/vnd.github.v3+json"
         }
-        requests.post(url, headers=headers, json={"body": comment})
+        response = requests.post(url, headers=headers, json={"body": comment}, timeout=30)
+        response.raise_for_status()
 
         print("トリアージが成功しました。")
 
+    except requests.exceptions.RequestException as e:
+        print(f"GitHub API呼び出しに失敗しました: {e}")
+        sys.exit(1)
     except Exception as e:
         print(f"トリアージ中にエラーが発生しました: {e}")
         sys.exit(1)
