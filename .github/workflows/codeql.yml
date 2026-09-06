@@ -14,7 +14,6 @@ concurrency:
 
 permissions:
   contents: read # リポジトリのチェックアウトに必要
-  security-events: write # CodeQL解析結果（SARIF）のアップロードに必要
 
 jobs:
   analyze:
@@ -22,6 +21,9 @@ jobs:
     if: github.event_name == 'push' || github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' || (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name != github.repository)
     runs-on: ubuntu-latest
     timeout-minutes: 360
+    permissions:
+      contents: read
+      security-events: write # CodeQL解析結果（SARIF）のアップロードに必要（analyzeジョブのみに限定）
 
     strategy:
       fail-fast: false
