@@ -69,6 +69,7 @@ def main():
         print("ドキュメント案のコメント投稿に成功しました")
     except Exception as e:
         print(f"AIドキュメント生成中にエラーが発生しました: {e}")
+        sys.exit(1)
 
 if __name__ == "__main__":
     main()

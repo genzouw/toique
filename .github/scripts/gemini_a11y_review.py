@@ -72,6 +72,7 @@ def main():
         print("アクセシビリティ・レビューのコメント投稿に成功しました")
     except Exception as e:
         print(f"AIレビュー中にエラーが発生しました: {e}")
+        sys.exit(1)
 
 if __name__ == "__main__":
     main()
