@@ -16,8 +16,9 @@ runs:
       run: |
         EOF=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
         echo "result<<$EOF" >> $GITHUB_OUTPUT
-        uv run --locked ${{ github.action_path }}/search.py >> $GITHUB_OUTPUT
+        uv run --locked "$ACTION_PATH/search.py" >> $GITHUB_OUTPUT
         echo "$EOF" >> $GITHUB_OUTPUT
       shell: bash
       env:
         SEARCH_QUERY: ${{ inputs.query }}
+        ACTION_PATH: ${{ github.action_path }}
