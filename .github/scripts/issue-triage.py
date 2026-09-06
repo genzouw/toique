@@ -2,6 +2,7 @@
 # dependencies = ["google-genai", "requests"]
 # ///
 import os
+import sys
 import json
 import requests
 from google import genai
@@ -96,6 +97,7 @@ def main():
 
     except Exception as e:
         print(f"トリアージ中にエラーが発生しました: {e}")
+        sys.exit(1)
 
 if __name__ == "__main__":
     main()
