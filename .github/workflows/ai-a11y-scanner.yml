@@ -1,4 +1,4 @@
-name: AI PR Code Review
+name: AI A11y Scanner
 on:
   pull_request:
     types: [opened, synchronize, ready_for_review]
@@ -8,34 +8,41 @@ permissions:
   contents: read
 
 jobs:
-  review:
+  scan:
     runs-on: ubuntu-latest
     if: '!github.event.pull_request.draft'
     steps:
       - name: Harden Runner
-        uses: step-security/harden-runner@e14015d583714f6e62063499dc959a02595150a1
+        uses: step-security/harden-runner@e14015d583714f6e62063499dc959a02595150a1 # v2.21.1
         with:
           egress-policy: audit
+
       - name: Checkout Code
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
           fetch-depth: 0
-      - name: Check PR diff size
+
+      - name: Setup uv
+        uses: astral-sh/setup-uv@20cfd1bf945f4377ade1205e4dbc17946fc9a30d # v10.0.1
+
+      - name: Check PR diff size and frontend changes
         id: diff-check
         env:
           BASE_REF: ${{ github.event.pull_request.base.ref }}
         run: |
           git fetch origin "$BASE_REF"
-          DIFF=$(git diff origin/$BASE_REF...HEAD)
+          DIFF=$(git diff origin/$BASE_REF...HEAD -- frontend/src)
           DIFF_LENGTH=${#DIFF}
-          CHANGED_LINES=$(git diff origin/$BASE_REF...HEAD | grep -E '^[+-]' | grep -v -E '^(\-\-\-|\+\+\+)' | wc -l)
+          CHANGED_LINES=$(git diff origin/$BASE_REF...HEAD -- frontend/src | grep -E '^[+-]' | grep -v -E '^(\-\-\-|\+\+\+)' | wc -l)
           if [ -z "$DIFF" ] || [ "$DIFF_LENGTH" -lt 20 ] || [ "$CHANGED_LINES" -lt 3 ]; then
             echo "skip=true" >> "$GITHUB_OUTPUT"
-            echo "PR diff is trivial or empty. Skipping."
+            echo "Frontend PR diff is trivial or empty. Skipping."
           else
             echo "skip=false" >> "$GITHUB_OUTPUT"
           fi
+          git diff origin/$BASE_REF...HEAD -- frontend/src > pr_diff.txt
+
       - name: Check for Gemini API Key
         id: check_key
         env:
@@ -45,13 +52,14 @@ jobs:
             echo "has_key=true" >> "$GITHUB_OUTPUT"
           else
             echo "has_key=false" >> "$GITHUB_OUTPUT"
-            echo "::warning::GEMINI_API_KEY is not set. Skipping Gemini Code Review."
+            echo "::warning::GEMINI_API_KEY is not set. Skipping AI A11y Scanner."
           fi
-      - name: Run Gemini Code Review
+
+      - name: Run AI A11y Scanner
         if: steps.diff-check.outputs.skip == 'false' && steps.check_key.outputs.has_key == 'true'
-        uses: petarzarkov/gemini-code-review-action@e8e786b3b05e3bb3139072f05ae6c1ad9cba3027
-        with:
-          model: gemini-2.5-flash-lite
+        run: uv run .github/scripts/ai-a11y-scanner.py
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_EVENT_PATH: ${{ github.event_path }}
+          PR_DIFF_PATH: pr_diff.txt
