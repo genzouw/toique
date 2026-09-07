@@ -251,7 +251,9 @@ AI エージェント（Cursor, Claude Desktop など）が開発プロジェク
 > [!NOTE]
 > **導入のための手動事前作業:**
 >
-> 1. **Gemini API Keyの取得**: [Google AI Studio](https://aistudio.google.com/) にて無料の API キーを取得してください。
+> 1. **Gemini API Keyの取得**: [Google AI Studio](https://aistudio.google.com/) にて API キーを取得してください。
+>    - Gemini API の課金状態は API キー単位ではなく、キーを作成した **Google Cloud プロジェクト単位** で決まります。必ず **Free Tier のプロジェクト** でキーを作成し、課金が有効化されたプロジェクトのキーは使用しないでください。
+>    - 登録前に、対象プロジェクトの [Billing（請求）](https://ai.google.dev/gemini-api/docs/billing) ページで課金が有効化されていないことを確認してください。
 > 2. **Secretの登録**: リポジトリの `Settings` > `Secrets and variables` > `Actions` に移動し、取得した API キーを `GEMINI_API_KEY` という名前の Repository Secret として登録してください。
 >
 > ※ これらのパイプラインは無料枠での利用を前提として構成されています。利用制限（クオータ）にはご注意ください。
