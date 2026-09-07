@@ -41,7 +41,7 @@ jobs:
         uses: ./.github/actions/resolve-scan-base # zizmor: ignore[self-repository]
 
       - name: TruffleHog OSS
-        uses: trufflesecurity/trufflehog@cc1fe982afc515d2991365ce8d4d0dd07170fcad # v3.97.2
+        uses: trufflesecurity/trufflehog@363923b901c911a9164f50b6c423f47c15372b1c # v3.97.4
         with:
           # base が空文字の場合は「base 指定なし = head までの履歴全体をスキャン」となり、
           # schedule 実行と同じ経路に落ちる。これは部分検査への劣化ではなく、より広い範囲を
