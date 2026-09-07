@@ -1,4 +1,4 @@
-import { useEffect, useState, useId, useCallback, memo } from 'react';
+import { useEffect, useState, useId, useCallback, memo, useMemo } from 'react';
 import { Trash2, Copy, Check, MessageCircle } from 'lucide-react';
 import { api, type LineChannel } from '../lib/api';
 import { ICON_SIZE } from '../lib/icon-size';
@@ -84,6 +84,20 @@ export default function Channels() {
     }
   }, []);
 
+  // ⚡ Bolt: items.map を useMemo でラップし、フォーム入力時（form ステート更新）など
+  // 無関係な再レンダー時に O(N) の要素生成コストがかかるのを防ぎます。
+  const channelRows = useMemo(() => {
+    return items.map((ch) => (
+      <ChannelRow
+        key={ch.id}
+        ch={ch}
+        isCopied={copiedId === ch.id}
+        onDelete={handleDelete}
+        onCopy={handleCopy}
+      />
+    ));
+  }, [items, copiedId, handleDelete, handleCopy]);
+
   return (
     <div>
       <h1 className="text-2xl font-bold text-slate-900">LINEチャネル管理</h1>
@@ -153,15 +167,7 @@ export default function Channels() {
           />
         ) : (
           <ul className="mt-4 divide-y divide-slate-200 bg-white border border-slate-200 rounded-lg">
-            {items.map((ch) => (
-              <ChannelRow
-                key={ch.id}
-                ch={ch}
-                isCopied={copiedId === ch.id}
-                onDelete={handleDelete}
-                onCopy={handleCopy}
-              />
-            ))}
+            {channelRows}
           </ul>
         )}
       </div>
