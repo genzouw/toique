@@ -32,16 +32,16 @@ jobs:
           BASE_REF: ${{ github.event.pull_request.base.ref }}
         run: |
           git fetch origin "$BASE_REF"
-          DIFF=$(git diff origin/$BASE_REF...HEAD -- frontend/src)
+          DIFF=$(git diff "origin/$BASE_REF...HEAD" -- frontend/src)
           DIFF_LENGTH=${#DIFF}
-          CHANGED_LINES=$(git diff origin/$BASE_REF...HEAD -- frontend/src | grep -E '^[+-]' | grep -v -E '^(\-\-\-|\+\+\+)' | wc -l)
+          CHANGED_LINES=$(git diff "origin/$BASE_REF...HEAD" -- frontend/src | grep -E '^[+-]' | grep -vc -E '^(\-\-\-|\+\+\+)')
           if [ -z "$DIFF" ] || [ "$DIFF_LENGTH" -lt 20 ] || [ "$CHANGED_LINES" -lt 3 ]; then
             echo "skip=true" >> "$GITHUB_OUTPUT"
             echo "Frontend PR diff is trivial or empty. Skipping."
           else
             echo "skip=false" >> "$GITHUB_OUTPUT"
           fi
-          git diff origin/$BASE_REF...HEAD -- frontend/src > pr_diff.txt
+          git diff "origin/$BASE_REF...HEAD" -- frontend/src > pr_diff.txt
 
       - name: Check for Gemini API Key
         id: check_key
