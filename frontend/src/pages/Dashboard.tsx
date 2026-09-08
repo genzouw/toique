@@ -1,4 +1,4 @@
-import { useEffect, useState, memo } from 'react';
+import { useEffect, useState, useMemo, memo } from 'react';
 import { Link } from 'react-router';
 import { api, type UsageResponse, type ResourceUsage } from '../lib/api';
 import LoadingButton from '../components/LoadingButton';
