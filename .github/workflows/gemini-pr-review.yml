@@ -1,0 +1,67 @@
+name: Gemini PR Code Review
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  gemini-review:
+    runs-on: ubuntu-latest
+    if: github.event.pull_request.head.repo.full_name == github.repository
+    steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@e14015d583714f6e62063499dc959a02595150a1
+        with:
+          egress-policy: audit
+
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Fetch Base Branch and Check Diff Size
+        id: check_diff
+        env:
+          BASE_REF: ${{ github.base_ref }}
+        run: |
+          git fetch origin "$BASE_REF"
+          DIFF_CONTENT=$(git diff "origin/$BASE_REF...HEAD")
+          DIFF_LENGTH=${#DIFF_CONTENT}
+          CHANGED_LINES=$(echo "$DIFF_CONTENT" | grep -E '^(\+|\-)' | grep -Ev '^(---|\+\+\+)' | wc -l || echo 0)
+
+          if [ "$DIFF_LENGTH" -lt 20 ] || [ "$CHANGED_LINES" -lt 3 ]; then
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+            echo "Diff is trivial (length: $DIFF_LENGTH, lines: $CHANGED_LINES). Skipping AI review."
+          else
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Check for Gemini API Key
+        id: check_key
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: |
+          if [ -n "$GEMINI_API_KEY" ]; then
+            echo "has_key=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "has_key=false" >> "$GITHUB_OUTPUT"
+            echo "::warning::GEMINI_API_KEY is not set. Skipping AI Review."
+          fi
+
+      - name: Run Gemini Code Review
+        if: steps.check_diff.outputs.skip != 'true' && steps.check_key.outputs.has_key == 'true'
+        uses: petarzarkov/gemini-code-review-action@db0558aaebc97373346194ed926bef6b15962512
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          gemini-api-key: ${{ secrets.GEMINI_API_KEY }}
+          model: 'gemini-2.5-flash'
+          prompt: |
+            以下の観点を重視してコードレビューを行ってください。必ず日本語でコメントしてください。
+            - セキュリティ (SQLインジェクション、ハードコードされたシークレット、XSSなど)
+            - パフォーマンス (O(N)ループの回避、N+1問題の防止など)
+            - アクセシビリティ (a11y)
+            問題が見つかった場合は、具体的な修正コード（スニペット）とともに提案してください。
