@@ -1,0 +1,3 @@
+## 2025-01-20 - [Avoid memoizing simple array maps without independent state]
+**Learning:** Using `useMemo` on simple JSX array mappings (e.g. `items.map(...)`) is a well-known anti-pattern unless the parent component frequently re-renders due to unrelated state changes. In components where state variables only update together during data-fetching, the cache is never utilized effectively, adding overhead rather than providing a performance boost.
+**Action:** Do not wrap `.map(...)` in `useMemo` unless there is confirmed, independent state (like `managing` in `Dashboard.tsx` controlling a LoadingButton independently of the list data) that frequently triggers unrelated parent re-renders.

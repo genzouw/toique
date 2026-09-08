@@ -18,6 +18,25 @@ export default function Dashboard() {
   const [error, setError] = useState<string | null>(null);
   const [managing, setManaging] = useState(false);
 
+  // ⚡ Bolt: 利用状況のバー一覧要素を useMemo でラップしています。
+  // これにより、サブスクリプション管理ボタンクリック時のローディング状態
+  // (managing) の変更など、親コンポーネント (Dashboard) の無関係な
+  // 状態更新が起きた際に、リスト全体の無駄な再計算と再レンダーを防ぎます。
+  // 期待される効果: 状態遷移時の仮想 DOM 差分計算のオーバーヘッド削減。
+  const usageBars = useMemo(() => {
+    if (!usageData) return null;
+    return (Object.entries(usageData.usage) as [string, ResourceUsage][]).map(
+      ([key, resource]) => (
+        <UsageBar
+          key={key}
+          label={RESOURCE_LABELS[key] ?? key}
+          current={resource.current}
+          limit={resource.limit}
+        />
+      ),
+    );
+  }, [usageData]);
+
   useEffect(() => {
     (async () => {
       try {
@@ -65,18 +84,7 @@ export default function Dashboard() {
       {usageData && (
         <div className="mt-8">
           <h2 className="text-lg font-semibold text-slate-900">利用状況</h2>
-          <div className="mt-4 grid gap-3">
-            {(Object.entries(usageData.usage) as [string, ResourceUsage][]).map(
-              ([key, resource]) => (
-                <UsageBar
-                  key={key}
-                  label={RESOURCE_LABELS[key] ?? key}
-                  current={resource.current}
-                  limit={resource.limit}
-                />
-              ),
-            )}
-          </div>
+          <div className="mt-4 grid gap-3">{usageBars}</div>
           <div className="mt-4 flex gap-4">
             {usageData.plan === 'free' ? (
               <Link
