@@ -29,7 +29,7 @@ jobs:
           git fetch origin "$BASE_REF"
           DIFF=$(git diff "origin/$BASE_REF...HEAD")
           DIFF_LENGTH=${#DIFF}
-          CHANGED_LINES=$(git diff "origin/$BASE_REF...HEAD" | grep -E '^[+-]' | grep -vc -E '^(\-\-\-|\+\+\+)')
+          CHANGED_LINES=$(git diff "origin/$BASE_REF...HEAD" | awk '/^[+-]/ && !/^(---|\+\+\+)/ { count++ } END { print count + 0 }')
           if [ -z "$DIFF" ] || [ "$DIFF_LENGTH" -lt 20 ] || [ "$CHANGED_LINES" -lt 3 ]; then
             echo "skip=true" >> "$GITHUB_OUTPUT"
             echo "PR diff is trivial or empty. Skipping."
