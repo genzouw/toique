@@ -1,4 +1,4 @@
-import { useEffect, useState, useId, useCallback, memo } from 'react';
+import { useEffect, useState, useId, useCallback, memo, useMemo } from 'react';
 import { Trash2, Copy, Check, MessageCircle } from 'lucide-react';
 import { api, type LineChannel } from '../lib/api';
 import { ICON_SIZE } from '../lib/icon-size';
@@ -13,13 +13,6 @@ export default function Channels() {
   const [items, setItems] = useState<LineChannel[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [form, setForm] = useState({
-    channelId: '',
-    channelSecret: '',
-    channelAccessToken: '',
-    displayName: '',
-  });
-  const [submitting, setSubmitting] = useState(false);
   const [copiedId, setCopiedId] = useState<string | null>(null);
 
   const refresh = useCallback(async () => {
@@ -38,25 +31,6 @@ export default function Channels() {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     refresh();
   }, [refresh]);
-
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    setSubmitting(true);
-    try {
-      await api.createChannel(form);
-      setForm({
-        channelId: '',
-        channelSecret: '',
-        channelAccessToken: '',
-        displayName: '',
-      });
-      await refresh();
-    } catch (err) {
-      setError((err as Error).message);
-    } finally {
-      setSubmitting(false);
-    }
-  }
 
   const handleDelete = useCallback(
     async (id: string) => {
@@ -84,6 +58,20 @@ export default function Channels() {
     }
   }, []);
 
+  // ⚡ Bolt: items.map を useMemo でラップし、error などの他 state が
+  // 変わった際の不要な O(N) 再計算と React 要素生成を防ぎます。
+  const channelRows = useMemo(() => {
+    return items.map((ch) => (
+      <ChannelRow
+        key={ch.id}
+        ch={ch}
+        isCopied={copiedId === ch.id}
+        onDelete={handleDelete}
+        onCopy={handleCopy}
+      />
+    ));
+  }, [items, copiedId, handleDelete, handleCopy]);
+
   return (
     <div>
       <h1 className="text-2xl font-bold text-slate-900">LINEチャネル管理</h1>
@@ -97,46 +85,7 @@ export default function Channels() {
         {error}
       </div>
 
-      <form
-        onSubmit={handleSubmit}
-        className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4 bg-white border border-slate-200 rounded-lg p-5"
-      >
-        <Field
-          label="表示名"
-          value={form.displayName}
-          onChange={(v) => setForm({ ...form, displayName: v })}
-          placeholder="例: テスト用チャネル"
-        />
-        <Field
-          label="Channel ID"
-          value={form.channelId}
-          onChange={(v) => setForm({ ...form, channelId: v })}
-          placeholder="2001234567"
-        />
-        <Field
-          label="Channel Secret"
-          value={form.channelSecret}
-          onChange={(v) => setForm({ ...form, channelSecret: v })}
-          placeholder="32文字のシークレット"
-          type="password"
-        />
-        <Field
-          label="Channel Access Token"
-          value={form.channelAccessToken}
-          onChange={(v) => setForm({ ...form, channelAccessToken: v })}
-          placeholder="long-lived token"
-          type="password"
-        />
-        <div className="md:col-span-2 flex justify-end">
-          <LoadingButton
-            type="submit"
-            loading={submitting}
-            className="px-4 py-2 bg-slate-900 text-white rounded-md text-sm disabled:opacity-50"
-          >
-            {submitting ? '登録中…' : 'チャネルを登録'}
-          </LoadingButton>
-        </div>
-      </form>
+      <ChannelForm onCreated={refresh} onError={setError} />
 
       <div className="mt-8">
         <h2 className="text-lg font-semibold text-slate-900">
@@ -153,15 +102,7 @@ export default function Channels() {
           />
         ) : (
           <ul className="mt-4 divide-y divide-slate-200 bg-white border border-slate-200 rounded-lg">
-            {items.map((ch) => (
-              <ChannelRow
-                key={ch.id}
-                ch={ch}
-                isCopied={copiedId === ch.id}
-                onDelete={handleDelete}
-                onCopy={handleCopy}
-              />
-            ))}
+            {channelRows}
           </ul>
         )}
       </div>
@@ -170,8 +111,95 @@ export default function Channels() {
 }
 
 /**
+ * チャネル登録フォームUI。
+ *
+ * フォーム入力値（`form`）と送信中フラグ（`submitting`）はこのブロックでしか
+ * 使わないため、親ではなくここに閉じ込める。親に置くと入力のたびにチャネル
+ * 一覧まで再レンダーの対象となり、それを打ち消すためのメモ化（一覧の
+ * useMemo、行の memo）が必要になる。state をここへ置けば、その原因そのもの
+ * が無くなる。
+ */
+function ChannelForm({
+  onCreated,
+  onError,
+}: {
+  onCreated: () => Promise<void>;
+  onError: (message: string | null) => void;
+}) {
+  const [form, setForm] = useState({
+    channelId: '',
+    channelSecret: '',
+    channelAccessToken: '',
+    displayName: '',
+  });
+  const [submitting, setSubmitting] = useState(false);
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setSubmitting(true);
+    try {
+      await api.createChannel(form);
+      setForm({
+        channelId: '',
+        channelSecret: '',
+        channelAccessToken: '',
+        displayName: '',
+      });
+      await onCreated();
+    } catch (err) {
+      onError((err as Error).message);
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  return (
+    <form
+      onSubmit={handleSubmit}
+      className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4 bg-white border border-slate-200 rounded-lg p-5"
+    >
+      <Field
+        label="表示名"
+        value={form.displayName}
+        onChange={(v) => setForm({ ...form, displayName: v })}
+        placeholder="例: テスト用チャネル"
+      />
+      <Field
+        label="Channel ID"
+        value={form.channelId}
+        onChange={(v) => setForm({ ...form, channelId: v })}
+        placeholder="2001234567"
+      />
+      <Field
+        label="Channel Secret"
+        value={form.channelSecret}
+        onChange={(v) => setForm({ ...form, channelSecret: v })}
+        placeholder="32文字のシークレット"
+        type="password"
+      />
+      <Field
+        label="Channel Access Token"
+        value={form.channelAccessToken}
+        onChange={(v) => setForm({ ...form, channelAccessToken: v })}
+        placeholder="long-lived token"
+        type="password"
+      />
+      <div className="md:col-span-2 flex justify-end">
+        <LoadingButton
+          type="submit"
+          loading={submitting}
+          className="px-4 py-2 bg-slate-900 text-white rounded-md text-sm disabled:opacity-50"
+        >
+          {submitting ? '登録中…' : 'チャネルを登録'}
+        </LoadingButton>
+      </div>
+    </form>
+  );
+}
+
+/**
  * ⚡ Bolt: 不要な再レンダーを防ぐために React.memo() でラップしています。
- * フォーム入力時に親コンポーネントの `form` 状態が頻繁に更新されても、
+ * `Channels` の state（error や copiedId など）が更新されても、
  * この ChannelRow は `ch` などの props が変更されない限り再レンダーされず、
  * パフォーマンスが向上します。
  */
