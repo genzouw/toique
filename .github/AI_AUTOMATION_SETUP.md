@@ -104,14 +104,6 @@ AI によるレビュー・トリアージは、リポジトリ側に API キー
 > および Exa / Tavily による RAG Web 検索の設定手順は、GitHub Models 提供終了に伴うワークフロー撤去
 > （第3節）により削除しました。これらのコマンドは現在利用できません。
 
-### AI Auto Documenter
-
-Pull Request の変更内容を AI が自動で解析し、要約コメントを生成します。設定ファイル `.github/workflows/ai-auto-documenter.yml` および `.github/scripts/ai-auto-documenter.py` を用いて動作します。このツールを利用するには、GitHub Secrets に `GEMINI_API_KEY` を登録する必要があります。
-
-### AI A11y Scanner
-
-フロントエンドの Pull Request の変更内容を AI が自動で解析し、アクセシビリティ (a11y) の観点から問題点や改善提案をコメントします。設定ファイル `.github/workflows/ai-a11y-scanner.yml` および `.github/scripts/ai-a11y-scanner.py` を用いて動作します。このツールを利用するには、GitHub Secrets に `GEMINI_API_KEY` を登録する必要があります。
-
 ### AI Code Scanner (aislop)
 
 リポジトリにコミットされたコードの中に、AI コーディングエージェントが残したスロップ（不要なコメント、飲み込まれた例外、幻覚によるインポートなど）がないかを自動的にスキャンします。GitHub Code Scanning と連携して、PR や main ブランチでの問題を検知します。
@@ -140,11 +132,6 @@ Rust製の高速なスペルチェッカー `typos` がCIに追加されてい�
 
 当リポジトリでは生成AIによるコードの大量生成やそれに伴うCI/CDパイプラインへの負荷増大に対応するため、静的解析ツールとAIの連携を強化しています。
 PRマージ前に以下の作業を確認してください。
-
-0. **API キーの登録 (シークレット)**: AI自動化ワークフロー (Issue Triage, Auto Documenter, A11y Scanner) を利用するため、GitHub リポジトリの Settings > Secrets and variables > Actions より、以下のシークレットを登録してください。
-   - `GEMINI_API_KEY`: Google Gemini API キー (必須)
-   - `EXA_API_KEY`: Exa Search API キー (Web検索用、必要に応じて)
-   - `TAVILY_API_KEY`: Tavily Search API キー (Web検索用、必要に応じて)
 
 1. **Qodo Merge / PR-Agent のインストール**: PR-Agent などのレビューツールを GitHub App として対象リポジトリにインストールし、適切な権限 (Issues: Write, Pull Requests: Write 等) を付与してください。インストール前に無料利用の条件を満たすか確認してください（Qodo Merge は Qodo for Open Source の承認が必要で、本リポジトリは現時点で対象外です）。
 2. **セキュリティスキャナの有効化確認**: `Gitleaks`, `Trufflehog` が適切に動作するよう、GitHub の設定 > Security から Secret Scanning と Push Protection が有効になっているか確認してください。また、`Zizmor` による解析結果が Code scanning alerts に適切に反映されるよう設定されているか確認してください。
