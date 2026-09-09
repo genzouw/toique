@@ -232,15 +232,3 @@ AI エージェント（Cursor, Claude Desktop など）が開発プロジェク
    - **本リポジトリの状況**: stars が 100 に届いておらず条件未達のため、現時点では無料対象外です。第5節の「CI から呼び出す AI は無料枠のみ」方針に従い、条件を満たすまでインストールは行いません。
 3. **Qodo Merge の設定統合**
    - これまで `.pr-agent.toml` と `.pr_agent.toml` が混在していたため、`.pr_agent.toml` に設定を一本化しました。これにより、日本語出力(`response_language="ja-JP"`)と `gpt-4o` モデルの利用設定が正しく一貫して適用されます。設定の変更が必要な場合は `.pr_agent.toml` のみを編集してください。
-
-### 新規AIレビューツール (Gemini Code Review) の導入手順
-
-Gemini API を利用したコードレビュー自動化のため、`Gemini Code Review` を GitHub Actions ワークフローとして導入しました。このツールを有効にするため、以下の手動作業を実施してください。
-
-1. **Gemini API キーの取得と設定**
-   - Google AI Studio (https://aistudio.google.com/) にて、Gemini API キーを発行してください（無料枠が利用可能です）。
-   - 対象リポジトリの **Settings** -> **Secrets and variables** -> **Actions** に移動します。
-   - **Repository secrets** として `GEMINI_API_KEY` を登録し、発行した API キーを設定してください。
-2. **Reviewdog 連携によるインラインコメント**
-   - このワークフローは `reviewdog` と連携し、Pull Request の該当行に直接レビューコメントを投稿します。
-   - `GEMINI_API_KEY` が設定されていない場合は、セキュリティの観点から処理はスキップされます。
