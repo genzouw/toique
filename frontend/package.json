@@ -64,7 +64,7 @@
     "dompurify": "$dompurify",
     "undici": "^8.9.0",
     "brace-expansion": "^5.0.9",
-    "sharp": "^0.35.0",
+    "sharp": "^0.35.4",
     "postcss": "^8.5.18",
     "nanoid": "^3.3.17"
   }
