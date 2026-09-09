@@ -63,7 +63,9 @@ export default function AdminContacts() {
         <select
           value={filter}
           onChange={(e) => setFilter(e.target.value as ContactStatus | 'all')}
-          className="text-sm rounded-md border border-slate-300 px-2 py-1"
+          disabled={rows === null}
+          title={rows === null ? '読み込み中です' : undefined}
+          className="text-sm rounded-md border border-slate-300 px-2 py-1 disabled:opacity-50 disabled:bg-slate-50 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-slate-900 focus-visible:ring-offset-1 transition-colors"
           aria-label="ステータスの絞り込み"
         >
           <option value="all">すべて</option>
