@@ -34,6 +34,7 @@ export default function AdminContacts() {
   const [rows, setRows] = useState<ContactListItem[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [filter, setFilter] = useState<ContactStatus | 'all'>('all');
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     api
@@ -41,7 +42,8 @@ export default function AdminContacts() {
       .then(setRows)
       .catch((err: unknown) =>
         setError(err instanceof Error ? err.message : '読み込みに失敗しました'),
-      );
+      )
+      .finally(() => setLoading(false));
   }, []);
 
   // rows または filter の変更時だけフィルタリングを再計算し、
@@ -63,8 +65,8 @@ export default function AdminContacts() {
         <select
           value={filter}
           onChange={(e) => setFilter(e.target.value as ContactStatus | 'all')}
-          disabled={rows === null}
-          title={rows === null ? '読み込み中です' : undefined}
+          disabled={loading}
+          title={loading ? '読み込み中です' : undefined}
           className="text-sm rounded-md border border-slate-300 px-2 py-1 disabled:opacity-50 disabled:bg-slate-50 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-slate-900 focus-visible:ring-offset-1 transition-colors"
           aria-label="ステータスの絞り込み"
         >
