@@ -1,5 +1,5 @@
 # /// script
-# dependencies = ["google-genai", "requests"]
+# dependencies = ["google-genai==2.22.0", "requests==2.34.2"]
 # ///
 
 import os
