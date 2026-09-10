@@ -74,16 +74,9 @@ AI によるレビュー・トリアージの代替方針は第5節を参照し�
 > `permissions: models: read` を付与しても推論 API 自体が存在しないため、GitHub Models に依存するワークフローは動作しません。
 > 該当した 23 本のワークフローは**撤去済み**です（第3節）。
 
-**現行の方針: GitHub ネイティブの無料 AI 推論基盤は存在しないため、リポジトリ側で AI 推論を実行するワークフローの追加は限定的とします。**
+**現行の方針: GitHub ネイティブの無料 AI 推論基盤は存在しないため、リポジトリ側で AI 推論を実行するワークフローは新規に追加しません。**
 
-ただし、無料枠を利用した Gemini API などの利用は、以下のツールにて採用しています。
-
-- **Gemini AI Code Review**: `petarzarkov/gemini-code-review-action` を利用したプルリクエストのレビュー
-- **AI Accessibility Scanner**: Gemini Flash を用いてフロントエンド変更時のアクセシビリティ（WCAG準拠）の自動検知
-
-**手動設定手順:** これらを機能させるため、リポジトリの Secrets に `GEMINI_API_KEY` を登録してください。
-
-AI によるレビュー・トリアージは、リポジトリ側に API キーも課金設定も必要としない外部 App（CodeRabbit / Qodo Merge、第4節参照）に一本化します。ただし上記の Gemini AI Code Review と AI Accessibility Scanner は、無料枠の Gemini API を利用する明示的な例外として本リポジトリで採用しています。
+AI によるレビュー・トリアージは、リポジトリ側に API キーも課金設定も必要としない外部 App（CodeRabbit / Qodo Merge、第4節参照）に一本化します。
 
 ただし「App 側で推論が走る」ことと「無料である」ことは別問題です。App ごとに無料条件を確認し、条件を満たさないものは本方針上採用できません。
 
