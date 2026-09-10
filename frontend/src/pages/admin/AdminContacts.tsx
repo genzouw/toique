@@ -88,9 +88,9 @@ export default function AdminContacts() {
         </div>
       )}
 
-      {rows === null ? (
+      {loading ? (
         <div className="text-sm text-slate-500">読み込み中…</div>
-      ) : filtered.length === 0 ? (
+      ) : error ? null : filtered.length === 0 ? (
         <EmptyState
           icon={Mail}
           title="システム問い合わせはありません。"
