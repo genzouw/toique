@@ -5,6 +5,7 @@
 import os
 import sys
 import json
+import traceback
 import requests
 from google import genai
 
@@ -92,7 +93,8 @@ def main():
         print(json.dumps(result_json))
 
     except Exception as e:
-        print(f"AI解析中にエラーが発生しました: {e}", file=sys.stderr)
+        print(f"AI解析中にエラーが発生しました: {type(e).__name__}: {e}", file=sys.stderr)
+        traceback.print_exc(file=sys.stderr)
         # パイプラインを失敗させないため、エラー時は空のrdjsonを出力する
         print(json.dumps({"source": {"name": "AI A11y Scanner", "url": ""}, "diagnostics": []}))
 
