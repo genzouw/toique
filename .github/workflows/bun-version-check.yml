@@ -1,0 +1,42 @@
+name: Bun version check
+
+# frontend/Dockerfile の FROM oven/bun タグを単一情報源とし、backend/Dockerfile
+# および各CI workflow の setup-bun (bun-version) との整合を検証する。
+# 参照: scripts/check-bun-version.sh, Issue #725
+on:
+  push:
+    branches: [main, master]
+    paths:
+      - 'frontend/Dockerfile'
+      - 'backend/Dockerfile'
+      - '.github/workflows/*.yml'
+      - 'scripts/check-bun-version.sh'
+  pull_request:
+    branches: [main, master]
+    paths:
+      - 'frontend/Dockerfile'
+      - 'backend/Dockerfile'
+      - '.github/workflows/*.yml'
+      - 'scripts/check-bun-version.sh'
+
+concurrency:
+  group: bun-version-check-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  bun-version-check:
+    name: Verify bun version consistency
+    runs-on: ubuntu-latest
+    steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@e14015d583714f6e62063499dc959a02595150a1 # v2.21.1
+        with:
+          egress-policy: audit
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Check bun version consistency
+        run: bash scripts/check-bun-version.sh
