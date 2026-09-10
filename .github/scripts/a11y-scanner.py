@@ -15,7 +15,7 @@ def get_pr_diff(repo, pr_number, token):
         "Authorization": f"Bearer {token}",
         "Accept": "application/vnd.github.v3.diff"
     }
-    response = requests.get(url, headers=headers)
+    response = requests.get(url, headers=headers, timeout=30)
     response.raise_for_status()
     return response.text
 
