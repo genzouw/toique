@@ -139,6 +139,7 @@ elif command -v detect-secrets-hook >/dev/null 2>&1; then
 else
   echo "⚠️  detect-secrets-hook is not installed locally. Skipping entropy-based scan."
   echo "   To install: pip install detect-secrets==1.5.0 or use pre-commit framework."
+  echo "   This commit will not be blocked; the CI detect-secrets workflow (.github/workflows/detect-secrets.yml) is the backstop."
 fi
 # ---------------------------------------------------------
 
