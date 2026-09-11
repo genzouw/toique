@@ -6,8 +6,8 @@
 
 import os
 import json
+import logging
 import subprocess
-import sys
 from google import genai
 from pydantic import BaseModel
 
@@ -74,8 +74,9 @@ Diff:
         print(response.text)
     except Exception as e:
         # エラーが発生した場合は、パイプラインを壊さないように空のrdjsonを出力する
-        # 標準出力はreviewdog用のrdjson専用のため、エラー内容は標準エラー出力に記録する
-        print(f"AI A11y Scanner error: {e}", file=sys.stderr)
+        # 標準出力はreviewdog用のrdjson専用のため、エラー内容はloggingモジュールで
+        # 標準エラー出力に記録する（詳細な原因調査に使う想定）
+        logging.error("AI A11y Scanner error: %s", e)
         print(json.dumps({"source": {"name": "AI A11y Scanner"}, "diagnostics": []}))
 
 if __name__ == "__main__":
