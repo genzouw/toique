@@ -44,7 +44,8 @@ jobs:
       - name: Run Gemini Code Review
         if: steps.diff-check.outputs.skip != 'true'
         uses: petarzarkov/gemini-code-review-action@e8e786b3b05e3bb3139072f05ae6c1ad9cba3027
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
         with:
-          gemini_api_key: ${{ secrets.GEMINI_API_KEY }}
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          prompt: "You are an expert software engineer reviewing a pull request. Review the PR diff strictly focusing on identifying bugs, code smells, and potential security issues. Output your comments in Japanese."
+          language: 'Japanese'
