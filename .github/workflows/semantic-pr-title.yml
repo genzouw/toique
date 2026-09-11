@@ -26,8 +26,10 @@ jobs:
           requireScope: false
           # PRタイトルが "feat:", "fix:", "chore:" などで始まることを強制する
           # エラーメッセージをカスタマイズ可能
-          subjectPattern: ^(?![A-Z]).+$
+          # 日本語タイトル中の固有名詞（Gemini, GitHub 等）による大文字始まりは許容する
+          subjectPattern: ^(?:(?![A-Z]).+|.*[ぁ-んァ-ヶ一-龠].*)$
           subjectPatternError: |
             The subject \"{subject}\" found in the pull request title \"{title}\"
             didn't match the configured pattern. Please ensure that the subject
-            doesn't start with an uppercase character.
+            doesn't start with an uppercase character (unless the title contains
+            Japanese text).
