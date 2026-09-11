@@ -88,13 +88,12 @@ AI によるレビュー・トリアージは、リポジトリ側に API キー
 - **GitHub Models**: 2026-07-30 に提供終了。新規採用・再導入とも不可です。
 - **GitHub Copilot / Microsoft Foundry**: GitHub Models の後継として案内されていますが、いずれも premium request 消費（課金）または API キー管理を伴うため、上記の無料方針と両立しません。
 - **GitHub Agentic Workflows (`gh-aw`)**: 2026年に一度導入しましたが、`copilot` エンジンが GitHub Copilot の premium request / AI クレジットを消費する**有料**サービスであり、無料方針と両立しないため撤去しました。関連ファイル（`.github/workflows/*-agent.md`、`*.lock.yml`、`.github/aw/`）はすべて削除済みです。`gh aw compile` で再生成すると課金と CI 失敗が復活するため、再導入しないでください。
-- **外部AIプロバイダの API キーを要するもの**（Gemini API、OpenAI API、Anthropic API など）: 無料枠があるものであれば、パブリックリポジトリでの利用に限り採用を許可します。必要なAPIキー（`GEMINI_API_KEY`など）およびRAG用の検索APIキー（`EXA_API_KEY`, `TAVILY_API_KEY`）はリポジトリのシークレットとして管理します。
+- **外部AIプロバイダの API キーを要するもの**（Gemini API、OpenAI API、Anthropic API など）: [AGENTS.md](../AGENTS.md) 第1節のとおり、無料枠の有無にかかわらず採用しません。CI ワークフローから `GEMINI_API_KEY` / `EXA_API_KEY` / `TAVILY_API_KEY` 等の従量課金 API キーを参照する構成の追加は MUST NOT です。
+  - `.github/workflows/ai-gemini-pr-review.yml`（PR #768）、`.github/workflows/ai-issue-triage.yml` と `.github/scripts/issue-triage.py`、および両者が利用していた `.github/actions/ai-web-search` はこの方針に反するため撤去済みです。`GEMINI_API_KEY` 等は本リポジトリの Secrets に未登録で、実害なく削除できることを確認しています。
 
 **本方針の適用範囲（AI 推論と Web 検索の区別）:**
 
-上記の通り、現在は AI 推論および Web 検索の双方において、無料枠の範囲内でAPIキーの利用を許可しています。
-
-ただしこれらを利用していたのは GitHub Models 依存のワークフローのみで、それらの撤去に伴い `.github/actions/ai-web-search` ごと削除済みです。現在 CI 上に Web 検索を行う仕組みは存在しません。
+[AGENTS.md](../AGENTS.md) の方針により、AI 推論・Web 検索のいずれについても、従量課金 API キーを要する構成は無料枠の有無にかかわらず採用しません。現在 CI 上に AI 推論・Web 検索を行う仕組みは存在しません。
 
 ## 6. 新規導入した自動化ツールの運用ルール (2024年導入)
 
