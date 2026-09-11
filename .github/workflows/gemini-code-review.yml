@@ -41,8 +41,21 @@ jobs:
             echo "skip=false" >> "$GITHUB_OUTPUT"
           fi
 
-      - name: Run Gemini Code Review
+      - name: Check for Gemini API Key
+        id: check-key
         if: steps.diff-check.outputs.skip != 'true'
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: |
+          if [ -n "$GEMINI_API_KEY" ]; then
+            echo "has_key=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "has_key=false" >> "$GITHUB_OUTPUT"
+            echo "::warning::GEMINI_API_KEY is not set. Skipping Gemini Code Review."
+          fi
+
+      - name: Run Gemini Code Review
+        if: steps.diff-check.outputs.skip != 'true' && steps.check-key.outputs.has_key == 'true'
         uses: petarzarkov/gemini-code-review-action@e8e786b3b05e3bb3139072f05ae6c1ad9cba3027
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
