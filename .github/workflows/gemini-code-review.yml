@@ -1,0 +1,50 @@
+name: Gemini PR Code Review
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  gemini-review:
+    name: Gemini Code Review
+    runs-on: ubuntu-latest
+    steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@e14015d583714f6e62063499dc959a02595150a1 # v2.21.1
+        with:
+          egress-policy: audit
+
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Check Diff Size
+        id: diff-check
+        env:
+          BASE_REF: ${{ github.base_ref }}
+        run: |
+          git fetch origin "$BASE_REF"
+          DIFF_CONTENT=$(git diff origin/$BASE_REF...HEAD)
+          DIFF_LEN=${#DIFF_CONTENT}
+          CHANGED_LINES=$(git diff origin/$BASE_REF...HEAD | grep -cE '^[+-][^+-]' || true)
+
+          if [ "$DIFF_LEN" -lt 20 ] || [ "$CHANGED_LINES" -lt 3 ]; then
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+            echo "Diff size is trivial (length: $DIFF_LEN, changed lines: $CHANGED_LINES). Skipping AI review to save quotas."
+          else
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Run Gemini Code Review
+        if: steps.diff-check.outputs.skip != 'true'
+        uses: petarzarkov/gemini-code-review-action@e8e786b3b05e3bb3139072f05ae6c1ad9cba3027
+        with:
+          gemini_api_key: ${{ secrets.GEMINI_API_KEY }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          prompt: "You are an expert software engineer reviewing a pull request. Review the PR diff strictly focusing on identifying bugs, code smells, and potential security issues. Output your comments in Japanese."

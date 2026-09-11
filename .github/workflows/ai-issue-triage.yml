@@ -43,7 +43,7 @@ jobs:
 
       - name: Run AI Issue Triage
         if: steps.check_key.outputs.has_key == 'true'
-        run: uv run --locked .github/scripts/issue-triage.py
+        run: uv run .github/scripts/issue-triage.py
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
