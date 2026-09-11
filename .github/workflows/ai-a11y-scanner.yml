@@ -60,7 +60,7 @@ jobs:
 
       - name: Setup Reviewdog
         if: steps.diff-check.outputs.skip != 'true' && steps.a11y-scanner.outputs.skip != 'true'
-        uses: reviewdog/action-setup@3f401fc1d1c7c9e1049f5068fec6b0ea5978f654 # v1.3.0
+        uses: reviewdog/action-setup@3f401fe1d58fe77e10d665ab713057375e39b887 # v1.3.0
         with:
           reviewdog_version: latest
 
