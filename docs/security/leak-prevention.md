@@ -26,7 +26,7 @@
 
 4. **エディタによる保存時整形 (Editor)**
    - **ツール:** VS Code の推奨拡張機能と設定ファイル (`.vscode/settings.json`, `.vscode/extensions.json`)
-   - **役割:** ローカル開発環境での保存時に自動フォーマット・Lint 適用 (`editor.formatOnSave`, `editor.codeActionsOnSave`) を行い、コミット前にコードスタイルの逸脱を早期に解消します。なお VS Code Marketplace には本稿執筆時点で `secretlint` の公式拡張機能は存在しないため、エディタ上でのリアルタイムなシークレット検知は行っていません。シークレットの検知は上記 1〜3 の pre-commit フック・CI・定期監査の各層が担います。
+   - **役割:** ローカル開発環境での保存時に自動フォーマット・Lint 適用 (`editor.formatOnSave`, `editor.codeActionsOnSave`, および `.ts`/`.tsx` に対する `editor.defaultFormatter` の明示指定) を行い、コミット前にコードスタイルの逸脱を早期に解消します。なお VS Code Marketplace には本稿執筆時点で `secretlint` の公式拡張機能は存在しないため、エディタ上でのリアルタイムなシークレット検知は行っていません。シークレットの検知は上記 1〜3 の pre-commit フック・CI・定期監査の各層が担います。
 
 ## 責任分界
 
