@@ -28,6 +28,30 @@
    - **ツール:** VS Code の推奨拡張機能と設定ファイル (`.vscode/settings.json`, `.vscode/extensions.json`)
    - **役割:** ローカル開発環境での保存時に自動フォーマット・Lint 適用 (`editor.formatOnSave`, `editor.codeActionsOnSave`, および `.ts`/`.tsx` に対する `editor.defaultFormatter` の明示指定) を行い、コミット前にコードスタイルの逸脱を早期に解消します。また、エディタの検索・表示対象から `.env` や各種鍵ファイル、状態ファイル、AIの一時作業ファイルなどを外す除外設定 (`search.exclude`, `files.exclude`) により、エディタ上での偶発的な閲覧・混入リスクを低減します（機密管理の補助策であり、ファイルの読み込み自体を完全に防ぐセキュリティ制御ではありません）。なお VS Code Marketplace には本稿執筆時点で `secretlint` の公式拡張機能は存在しないため、エディタ上でのリアルタイムなシークレット検知は行っていません。シークレットの検知は上記 1〜3 の pre-commit フック・CI・定期監査の各層が担います。
 
+## gitleaks のバージョン管理
+
+`gitleaks` はマイナー版でルール追加やパーサ修正が入るため、版がずれると「片方は検知し、片方は見逃す」状態が静かに続きます (#718)。バージョン定義の所在は CI 側とローカルフック側で分かれており、それぞれ更新手段が異なります。
+
+**CI 側（自動追従）**
+
+`genzouw/ci-workflows` の composite action `.github/actions/setup-gitleaks` の `inputs.version` 既定値が単一の信頼できる情報源です。本リポジトリの `.github/workflows/gitleaks.yml`（ci-workflows の reusable workflow 経由）と `.github/workflows/pr-secret-review.yml` の双方がこの action を `uses:` の SHA ピンで参照するため、Dependabot (github-actions ecosystem) が更新対象として拾います。本リポジトリ側でバージョン文字列を持たないため、CI の 2 つのシークレットゲートが別バージョンで走ることは構造的に起こりません。
+
+**ローカルフック側（手動更新）**
+
+GitHub Actions の composite action はローカルの git hook から呼べないため、ローカル側は下記に版を持ちます。**更新時は必ず 2 箇所を同じ版に揃えてください。**
+
+| #   | ファイル                  | 箇所                                                                                               | 用途                                                                                                                                      |
+| --- | ------------------------- | -------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | `.husky/pre-commit`       | `GITLEAKS_VERSION="<version>"`                                                                     | `pre-commit` framework が無い環境でのフォールバック。`${XDG_CACHE_HOME:-$HOME/.cache}/gitleaks/gitleaks-<version>` へ自動ダウンロードする |
+| 2   | `.pre-commit-config.yaml` | `repo: https://github.com/gitleaks/gitleaks` の `rev`（`# v<version>` コメント付きのコミット SHA） | `pre-commit` framework 経由での実行                                                                                                       |
+
+補足:
+
+- `.husky/pre-push` はバージョン文字列を持たず、`${XDG_CACHE_HOME:-$HOME/.cache}/gitleaks/` にキャッシュ済みのバイナリのうち**バージョン順で最新のもの**を選びます。旧版のキャッシュは消されずに残るため辞書順の先頭を選ぶと `gitleaks-8.21.2` が `gitleaks-8.30.1` より先に来てしまい、`.husky/pre-commit` の版を上げても pre-push だけ旧版で走り続けます。これを避けるため `sort -V | tail -n 1` で選択しています。
+- グローバルインストール（`brew install gitleaks` など）された `gitleaks` が `PATH` 上にある場合、`.husky/pre-commit` / `.husky/pre-push` はそちらを優先します。この経路の版は上記の管理下に無いため、CI と揃えるかどうかは各開発者の環境に依存します。
+- **#2 の `rev` を変更した場合は `bun run detect-secrets:update` によるベースライン更新が必須です。** 40 桁のコミット SHA は `detect-secrets` に `Hex High Entropy String` として検知され、`.secrets.baseline` に登録済みのハッシュは旧 SHA のものだからです。更新しないとローカルの `pre-commit` フックと CI の `detect-secrets` ワークフロー（`.github/workflows/detect-secrets.yml`）の双方で失敗します。
+- 週次の `.github/workflows/pre-commit-autoupdate.yml` が上記 #2（`.pre-commit-config.yaml` の `rev`）の更新候補 PR を作成します。#1（`.husky/pre-commit` のシェル変数）は対象外のため手動更新が必要です。また同ワークフローは `add-paths: .pre-commit-config.yaml` で差分範囲を固定しているため `.secrets.baseline` を同梱できません。生成 PR は上記の理由で `detect-secrets` CI が落ちるので、レビュー時に手元でベースラインを再生成して追いコミットしてください。
+
 ## 責任分界
 
 - **開発者（AIエージェント含む）:** コミット前にローカル環境で `secretlint` が正しく動作するように、必ず依存関係 (`bun install`) をインストールしておくこと。また、より強力な保護のために、Python の `pre-commit` framework (`3.0.0` 以上。`.pre-commit-config.yaml` に `minimum_pre_commit_version` として明示) をインストールすること (`pip install pre-commit` または `brew install pre-commit` など) を強く推奨します。`3.0.0` 未満では Gitleaks フック (`language: golang`) が前提とする Go の自動導入が行われず、フック初期化に失敗する可能性があるため、`pre-commit --version` で確認し、古い場合は `pip install -U pre-commit` 等でアップグレードしてください。これにより `gitleaks` と `detect-secrets` の管理と実行が自動化されます。`pre-commit` を使用しない場合は、フォールバック機構のためにローカル環境へ `gitleaks` と `detect-secrets` (`pip install detect-secrets==1.5.0`、`.secrets.baseline` のバージョンと揃える) を手動でインストールしてください。
