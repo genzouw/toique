@@ -1,0 +1,7 @@
+{
+  "recommendations": [
+    "secretlint.secretlint",
+    "dbaeumer.vscode-eslint",
+    "esbenp.prettier-vscode"
+  ]
+}

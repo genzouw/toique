@@ -33,6 +33,11 @@
     "**/.terraform": true,
     "**/.terraform/**": true
   },
+  "editor.formatOnSave": true,
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": "explicit"
+  },
+  "secretlint.enable": true,
   "files.exclude": {
     "**/*.env": true,
     "**/*.env.*": true,
