@@ -11,7 +11,7 @@
         "@commitlint/cli": "^21.2.1",
         "@commitlint/config-conventional": "^21.2.0",
         "@secretlint/secretlint-formatter-sarif": "^13.0.2",
-        "@secretlint/secretlint-rule-preset-recommend": "^13.0.2",
+        "@secretlint/secretlint-rule-preset-recommend": "^13.0.5",
         "husky": "^9.1.0",
         "lint-staged": "^17.1.1",
         "secretlint": "^13.0.2",
@@ -93,7 +93,7 @@
 
     "@secretlint/secretlint-formatter-sarif": ["@secretlint/secretlint-formatter-sarif@13.0.4", "", { "dependencies": { "node-sarif-builder": "^4.1.0" } }, "sha512-5IU9N1QJJYq+HA9ejPBKYnNBw1D775xVzMkT6qNDLft2PezdLo2siAGCNFgYc9JDeubptb8p5tZ67Tcl5CkCeg=="],
 
-    "@secretlint/secretlint-rule-preset-recommend": ["@secretlint/secretlint-rule-preset-recommend@13.0.4", "", {}, "sha512-Nbcr7tvyKuRF4BKh7RQSCEOaif4gFPH/qjK2ajcoUDGL7HAY/C6PzcsmVR1Y0qQCRqrBuMuXn1onXE+wxNNNsw=="],
+    "@secretlint/secretlint-rule-preset-recommend": ["@secretlint/secretlint-rule-preset-recommend@13.0.5", "", {}, "sha512-dxOmTLf1w7I6rQEFPL8Hkdz6dR1FQXF0bzmTahH/Wyezy89TMPLL+8LbZ2YD8trkmYBnS37zUmOsZT6rMVftKQ=="],
 
     "@secretlint/source-creator": ["@secretlint/source-creator@13.0.4", "", { "dependencies": { "@secretlint/types": "13.0.4", "istextorbinary": "^9.5.0" } }, "sha512-YfVVY7GHbHV6CN/tLIf1BGiONVjX2fvmJyvCv2MhonUiWtLPVU4fnOQIrWMLFakeRJ/GVoV8FfqvPW3jnUHfVA=="],
 
