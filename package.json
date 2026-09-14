@@ -22,7 +22,7 @@
     "@secretlint/secretlint-rule-preset-recommend": "^13.0.5",
     "husky": "^9.1.0",
     "lint-staged": "^17.1.1",
-    "secretlint": "^13.0.2"
+    "secretlint": "^13.0.5"
   },
   "lint-staged": {
     "**/*.{pem,key,p12,p8,keystore,jks,sqlite,db,log,http,rest,patch,diff,local}": [
