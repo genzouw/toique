@@ -10,7 +10,7 @@
       "devDependencies": {
         "@commitlint/cli": "^21.2.1",
         "@commitlint/config-conventional": "^21.2.2",
-        "@secretlint/secretlint-formatter-sarif": "^13.0.2",
+        "@secretlint/secretlint-formatter-sarif": "^13.0.5",
         "@secretlint/secretlint-rule-preset-recommend": "^13.0.5",
         "husky": "^9.1.0",
         "lint-staged": "^17.1.1",
@@ -91,7 +91,7 @@
 
     "@secretlint/resolver": ["@secretlint/resolver@13.0.5", "", {}, "sha512-6V3PfSKJTafCMLbPMVZkP1d43Ot9y4hB8tmtA10NEybnV2gqgO8hMrWe2SsZUPBugjUPTise7efs9BFPsO9M6A=="],
 
-    "@secretlint/secretlint-formatter-sarif": ["@secretlint/secretlint-formatter-sarif@13.0.4", "", { "dependencies": { "node-sarif-builder": "^4.1.0" } }, "sha512-5IU9N1QJJYq+HA9ejPBKYnNBw1D775xVzMkT6qNDLft2PezdLo2siAGCNFgYc9JDeubptb8p5tZ67Tcl5CkCeg=="],
+    "@secretlint/secretlint-formatter-sarif": ["@secretlint/secretlint-formatter-sarif@13.0.5", "", { "dependencies": { "node-sarif-builder": "^4.1.0" } }, "sha512-JBmvMPdPqp2jYQwRMnh4lUDIfZ8FxVu7OOHEgA3LsEREjNPDzfzqhJuCV1BJYg+t8VxwlXxsKFrjUl+3jT+wwA=="],
 
     "@secretlint/secretlint-rule-preset-recommend": ["@secretlint/secretlint-rule-preset-recommend@13.0.5", "", {}, "sha512-dxOmTLf1w7I6rQEFPL8Hkdz6dR1FQXF0bzmTahH/Wyezy89TMPLL+8LbZ2YD8trkmYBnS37zUmOsZT6rMVftKQ=="],
 
