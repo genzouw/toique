@@ -31,8 +31,7 @@ export type MailDriver = 'resend' | 'smtp' | 'noop';
  */
 export function createMailerFromEnv(): MailAdapter | null {
   const explicit = (process.env.MAIL_DRIVER || undefined) as
-    | MailDriver
-    | undefined;
+    MailDriver | undefined;
   const driver = explicit ?? inferDriver();
   const defaultFrom = process.env.MAIL_FROM || process.env.CONTACT_FROM || '';
 
