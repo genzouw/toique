@@ -37,6 +37,15 @@
   "editor.codeActionsOnSave": {
     "source.fixAll.eslint": "explicit"
   },
+  "emeraldwalk.runonsave": {
+    "commands": [
+      {
+        "match": "\\.(ts|tsx|js|jsx|json|yaml|yml|md|env.*)$",
+        "isAsync": true,
+        "cmd": "./scripts/run-secretlint-local.sh \"${file}\""
+      }
+    ]
+  },
   "[typescript]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode"
   },
