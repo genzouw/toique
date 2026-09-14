@@ -13,7 +13,7 @@
     "detect-secrets:update": "detect-secrets --version | grep -qx 1.5.0 || { echo '[FATAL] detect-secrets 1.5.0 is required (.secrets.baseline records this version). Install it with: pip install detect-secrets==1.5.0'; exit 1; }; detect-secrets scan --baseline .secrets.baseline"
   },
   "dependencies": {
-    "@modelcontextprotocol/sdk": "^1.29.0"
+    "@modelcontextprotocol/sdk": "^1.30.0"
   },
   "devDependencies": {
     "@commitlint/cli": "^21.2.1",
@@ -22,7 +22,7 @@
     "@secretlint/secretlint-rule-preset-recommend": "^13.0.5",
     "husky": "^9.1.0",
     "lint-staged": "^17.1.1",
-    "secretlint": "^13.0.2"
+    "secretlint": "^13.0.5"
   },
   "lint-staged": {
     "**/*.{pem,key,p12,p8,keystore,jks,sqlite,db,log,http,rest,patch,diff,local}": [
