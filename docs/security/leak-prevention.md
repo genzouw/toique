@@ -129,7 +129,8 @@ if: github.event_name == 'push' || github.event_name == 'schedule' || github.eve
 1. 必須 3 件（`gitleaks` / `trivy` / `zizmor`）が success であること。
 2. **任意のセキュリティ系チェックが failure / cancelled でないことを目視で確認する。** これらは自動ではマージをブロックしないため、確認を省略すると検知を素通しできてしまいます。
 3. `skipped` のジョブについて、上記のイベント分岐によるものか、パスフィルタによるものかを確認する。
-4. Security タブの Code scanning alerts に新規アラートが出ていないこと。
+4. **同一リポジトリの PR の場合:** Security タブの Code scanning alerts に新規アラートが出ていないこと。
+5. **フォークからの PR の場合:** `secretlint.yml` / `osv-scanner.yml` / `codeql.yml` は `pull_request` イベントでは SARIF を Security タブへアップロードしません（`if: ... != 'pull_request'` の条件、および CodeQL の `upload: never` 分岐）。そのためこれら 3 ワークフローについては、Security タブに新規アラートが無いことは検査結果が無いことと区別できません。代わりに各ジョブの成否（必須 / 任意を問わない）とログを個別に確認し、ワークフローがアーティファクトを提供している場合はその内容も確認してください。Security タブでの確認は、マージ後に `main` への push で再実行された結果に対して行ってください（「マージ後に確認すること」参照）。
 
 一括確認には次のコマンドが使えます。
 
