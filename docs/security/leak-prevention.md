@@ -52,6 +52,7 @@
 | `anchore/sbom-action` / `sbom.yml`       | SBOM を生成・アップロードするのみで、内容に対するポリシー判定は行わない                                                                                          | `osv-scanner` / `trivy` / `license-compliance.yml`                                                        |
 | `sbom-policy-check.yml`                  | **名称に反してポリシー判定を行わない。** SBOM の生成とアーティファクトへのアップロードのみで、判定ステップを持たない                                             | 同上。ポリシー判定が必要な場合は本ワークフローに判定ステップを追加すること                                |
 | `license-compliance.yml`                 | 拒否リスト方式のため、列挙した 10 個の SPDX 識別子と**完全一致しない宣言はすべて通過する**（次項参照）                                                           | 依存追加時の目視確認（次項の手順）                                                                        |
+| `emeraldwalk.runonsave`（保存時実行）    | `${file}` 置換後の文字列をシェル経由 `exec()` するため、悪意あるファイル名で任意コマンドが実行され得る（CWE-94）。設定ファイル側からは修正不可                   | 信頼できないブランチを開く前の拡張機能無効化（上記「既知の残存リスク」参照）、CI/pre-commit の各層        |
 
 ### license-compliance.yml の判定方式と限界
 
