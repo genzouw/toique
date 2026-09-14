@@ -54,10 +54,7 @@ export type LinePostbackEvent = {
 };
 
 export type LineWebhookEvent =
-  | LineMessageEvent
-  | LineFollowEvent
-  | LineUnfollowEvent
-  | LinePostbackEvent;
+  LineMessageEvent | LineFollowEvent | LineUnfollowEvent | LinePostbackEvent;
 
 export type LineWebhookPayload = {
   destination: string;
