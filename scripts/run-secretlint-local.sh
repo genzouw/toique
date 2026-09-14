@@ -15,19 +15,40 @@ if ! command -v bunx >/dev/null 2>&1; then
   exit 0
 fi
 
-# We don't want to fail the save operation itself or hang indefinitely,
-# so we run bunx secretlint, and if it fails (finds a secret), we notify the user.
-if ! bunx secretlint "$FILE" >/dev/null 2>&1; then
-  MESSAGE="🚨 [Security Error] Secretlint found a secret leak in $FILE"
+# We don't want to fail the save operation itself or hang indefinitely, so we
+# run bunx secretlint and capture its stdout/stderr instead of discarding
+# them. A non-zero exit code can mean either "a secret was detected" or
+# "secretlint itself failed to run" (package fetch failure, config error,
+# unreadable file, etc.); we tell the two apart so a tooling failure is never
+# reported to the user as a secret leak.
+STDOUT_LOG="$(mktemp)"
+STDERR_LOG="$(mktemp)"
+trap 'rm -f "$STDOUT_LOG" "$STDERR_LOG"' EXIT
+
+if ! bunx secretlint "$FILE" >"$STDOUT_LOG" 2>"$STDERR_LOG"; then
+  if [ -s "$STDOUT_LOG" ]; then
+    # secretlint printed a formatted result, meaning it actually detected a leak.
+    MESSAGE="🚨 [Security Error] Secretlint found a secret leak in $FILE"
+    NOTIFY_TITLE="Secretlint Error"
+    NOTIFY_BODY="Secret leak detected in file: $FILE"
+  else
+    # No findings were printed, so the non-zero exit is secretlint/bunx
+    # failing to run, not a detected leak.
+    MESSAGE="⚠️ [Secretlint Execution Error] Failed to run secretlint on $FILE"
+    NOTIFY_TITLE="Secretlint Execution Error"
+    NOTIFY_BODY="Secretlint failed to run on file: $FILE"
+  fi
+
   echo "$MESSAGE"
+  cat "$STDOUT_LOG" "$STDERR_LOG" >&2
 
   # Try to notify the user via OS notifications
   if command -v notify-send >/dev/null 2>&1; then
     # Linux
-    notify-send -u critical "Secretlint Error" "Secret leak detected in file: $FILE" || true
+    notify-send -u critical "$NOTIFY_TITLE" "$NOTIFY_BODY" || true
   elif command -v osascript >/dev/null 2>&1; then
     # macOS
-    osascript -e "display notification \"Secret leak detected in file: $FILE\" with title \"Secretlint Error\" sound name \"Basso\"" || true
+    osascript -e "display notification \"$NOTIFY_BODY\" with title \"$NOTIFY_TITLE\" sound name \"Basso\"" || true
   fi
   # Windows users will see the output in the VS Code Output channel.
 fi
