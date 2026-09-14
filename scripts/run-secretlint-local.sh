@@ -60,5 +60,12 @@ if ! bunx secretlint "$FILE" >"$STDOUT_LOG" 2>"$STDERR_LOG"; then
     # macOS
     notify_macos "$NOTIFY_TITLE" "$NOTIFY_BODY" "Basso"
   fi
-  # Windows users will see the output in the VS Code Output channel.
+  # Note: on Windows, this hook does not run at all by default. The
+  # `.vscode/settings.json` here does not set `emeraldwalk.runonsave.shell`,
+  # so emeraldwalk.runonsave falls back to Node's default shell (cmd.exe),
+  # which cannot interpret this script's `#!/usr/bin/env bash` shebang. The
+  # script fails to launch before reaching this branch, so no output is
+  # produced anywhere (including the VS Code Output channel). To make this
+  # hook work on Windows, configure `emeraldwalk.runonsave.shell` to point
+  # to a bash-compatible shell (e.g. Git Bash).
 fi
