@@ -1,10 +1,30 @@
 # Dependabot configuration for automatic dependency updates
 # Reference: https://docs.github.com/code-security/dependabot/dependabot-version-updates/configuration-options-for-the-dependabot.yml-file
+#
+# ## package-ecosystem の使い分け (npm / bun)
+#
+# `/`, `/backend`, `/frontend` のロックファイルは `bun.lock`、`/infra` のみ
+# `package-lock.json` を使う。Dependabot の `npm` ecosystem が理解するのは
+# `package-lock.json` / `yarn.lock` / `pnpm-lock.yaml` だけで `bun.lock` は
+# 認識も再生成もしないため、`npm` 指定のままだと `package.json` 1 ファイルだけを
+# 更新する PR が生成され、CI の `bun install --frozen-lockfile` が
+# `lockfile had changes, but lockfile is frozen` で必ず失敗していた
+# (PR #773 / #774 / #778 / #800 は全て手動の bun.lock 同期コミットを要した)。
+#
+# `bun` ecosystem は `package.json` と `bun.lock` を同一コミットで更新するため、
+# bun を使う 3 ディレクトリはこちらを指定する (要 Bun >= 1.1.39 / 本リポジトリは 1.4.2)。
+# `/infra` は `npm ci` 運用なので `npm` のまま据え置く。
+#
+# 制約: `bun` ecosystem は version updates のみ対応で security updates は非対応。
+# ただし `npm` 指定のままでも security update PR は同様に bun.lock を更新できず
+# CI が落ちるため実質的な後退はない。脆弱性の検知自体は CI の OSV-Scanner
+# (`.github/workflows/osv-scanner.yml`) が独立して担保する。
+# 参照: https://docs.github.com/en/code-security/reference/supply-chain-security/supported-ecosystems-and-repositories
 
 version: 2
 updates:
   # Backend Node.js dependencies
-  - package-ecosystem: 'npm'
+  - package-ecosystem: 'bun'
     directory: '/backend'
     schedule:
       interval: 'daily'
@@ -60,7 +80,7 @@ updates:
       - dependency-type: 'all'
 
   # Frontend Node.js dependencies
-  - package-ecosystem: 'npm'
+  - package-ecosystem: 'bun'
     directory: '/frontend'
     schedule:
       interval: 'daily'
@@ -124,7 +144,7 @@ updates:
       - dependency-type: 'all'
 
   # ルートの Node.js 依存関係 (Root Node.js dependencies)
-  - package-ecosystem: 'npm'
+  - package-ecosystem: 'bun'
     directory: '/'
     schedule:
       interval: 'daily'
