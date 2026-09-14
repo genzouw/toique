@@ -73,10 +73,11 @@
 
 **複合 SPDX 式（`AND` / `OR`）の判定・記録基準:** `OR` 式は、選択可能な識別子のいずれかが本リポジトリのライセンスポリシー（GPL / AGPL 非許容）に適合する場合は許可してよく（例: `(MIT OR GPL-3.0-only)` は MIT を選択したものとして扱う）、一律に禁止する必要はありません。`AND` 式は、列挙されたすべてのライセンスの義務を同時に負うため代替の選択肢が無く、拒否対象のライセンスが含まれる場合（例: `(MIT AND GPL-3.0-only)`）は無条件でブロック対象として扱います。`--failOn` の拒否リストはいずれの複合式も機械的には検知しないため、次項の目視確認で判定した結果（許可 / ブロックの別と対象パッケージ）を、依存追加時の PR 説明またはコミットメッセージに記録してください。第三者承認は求めませんが、判断の記録を必須とします。
 
-**依存を新規追加・更新する際の運用:** CI の合否だけに依存せず、次のコマンドでライセンスの内訳を確認し、`UNKNOWN` / `UNLICENSED` / 見慣れない識別子・複合式が増えていないかを目視で確認してください。
+**依存を新規追加・更新する際の運用:** CI の合否だけに依存せず、CI（`license-compliance.yml`）と同じ Root / Backend / Frontend / Infra の 4 ワークスペースそれぞれで次のコマンドを実行し、`UNKNOWN` / `UNLICENSED` / 見慣れない識別子・複合式が増えていないかを目視で確認してください。ルートで 1 回実行するだけでは、Backend / Frontend / Infra 配下にのみ追加した依存関係が確認対象から漏れます。
 
 ```bash
-bun x license-checker-rseidelsohn@4.4.2 --summary
+for d in . backend frontend; do (cd "$d" && bun x license-checker-rseidelsohn@4.4.2 --summary); done
+(cd infra && npx license-checker-rseidelsohn@4.4.2 --summary)
 ```
 
 ## PR マージ前後の検証手順
