@@ -15,6 +15,16 @@ if ! command -v bunx >/dev/null 2>&1; then
   exit 0
 fi
 
+# Show a macOS notification without interpolating $FILE (via $NOTIFY_BODY)
+# into the AppleScript source. Passing it as a "run" argv item instead
+# prevents a filename containing quotes (or other AppleScript-significant
+# characters) from breaking out of the script (CWE-94).
+notify_macos() {
+  osascript -e 'on run argv
+    display notification (item 2 of argv) with title (item 1 of argv) sound name (item 3 of argv)
+  end run' "$1" "$2" "$3" || true
+}
+
 # We don't want to fail the save operation itself or hang indefinitely, so we
 # run bunx secretlint and capture its stdout/stderr instead of discarding
 # them. A non-zero exit code can mean either "a secret was detected" or
@@ -48,7 +58,7 @@ if ! bunx secretlint "$FILE" >"$STDOUT_LOG" 2>"$STDERR_LOG"; then
     notify-send -u critical "$NOTIFY_TITLE" "$NOTIFY_BODY" || true
   elif command -v osascript >/dev/null 2>&1; then
     # macOS
-    osascript -e "display notification \"$NOTIFY_BODY\" with title \"$NOTIFY_TITLE\" sound name \"Basso\"" || true
+    notify_macos "$NOTIFY_TITLE" "$NOTIFY_BODY" "Basso"
   fi
   # Windows users will see the output in the VS Code Output channel.
 fi
