@@ -191,7 +191,14 @@ CI ランナーにシークレットが渡る前にブロックされるため�
   2. 無効化した理由と、その間の代替監視手段（どの層が検知を肩代わりするか。「検知限界と補完統制」の表から補完先を選ぶ）
   3. 再有効化の見込み時期と、再有効化したことを確認する方法（例: `gh run list --workflow <name>.yml --limit 3` で success を確認する）
 - **復旧・再有効化とロールバック:**
-  無効化の解除は、無効化時のコミットを `git revert` して元に戻すことを基本とします（設定変更を手作業で再現しない）。ブランチ保護の必須チェックを外した場合は、`gh api repos/genzouw/toique/branches/main/protection --jq '.required_status_checks.contexts'` の出力が元の 3 件（`zizmor / zizmor`, `trivy / Trivy filesystem scan`, `gitleaks / Scan for leaked secrets`）に戻っていることを確認します。再有効化後は、無効化していた期間に積み上がった変更を取りこぼさないよう、対象ワークフローを `workflow_dispatch` で全履歴・全ファイルに対して 1 回実行し、その結果を確認してください。
+  無効化の解除は、無効化時のコミットを `git revert` して元に戻すことを基本とします（設定変更を手作業で再現しない）。**ただし、ブランチ保護の必須チェック設定はリポジトリ内のどのファイルにも保存されていないため、`git revert` では復元できません。** 必須チェックを外していた場合は、GitHub の Settings > Branches > Branch protection rules 画面、または `gh api --method PUT repos/genzouw/toique/branches/main/protection/required_status_checks` （書き込み権限が必要。`contexts` に元の 3 件を含めて渡す）で、先に必須チェックを元の 3 件へ明示的に復元してください。復元後、次の読み取り専用コマンドで結果を検証します。
+
+  ```console
+  $ gh api repos/genzouw/toique/branches/main/protection --jq '.required_status_checks.contexts'
+  ["zizmor / zizmor","trivy / Trivy filesystem scan","gitleaks / Scan for leaked secrets"]
+  ```
+
+  再有効化後は、無効化していた期間に積み上がった変更を取りこぼさないよう、対象ワークフローを `workflow_dispatch` で全履歴・全ファイルに対して 1 回実行し、その結果を確認してください。
 
 ## 無効化・縮退の記録
 
