@@ -2,9 +2,16 @@ import { useEffect, useId, useRef } from 'react';
 import mermaid from 'mermaid';
 import DOMPurify from 'dompurify';
 
+// mermaid 12.0.0 は既定レイアウトが ELK、既定見た目が neo 系に変更された
+// （リリースノート: "add layout: dagre, theme: default and look: classic to
+// your config to keep the old look"）。本PRは mermaid のバージョン更新のみが
+// 目的であり、見た目の変更を意図せず混入させないため、v11 までの見た目を
+// 明示的に維持する。
 mermaid.initialize({
   startOnLoad: false,
   theme: 'default',
+  layout: 'dagre',
+  look: 'classic',
   securityLevel: 'strict',
 });
 
