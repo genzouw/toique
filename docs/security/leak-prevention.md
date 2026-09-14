@@ -198,7 +198,7 @@ CI ランナーにシークレットが渡る前にブロックされるため�
   ["zizmor / zizmor","trivy / Trivy filesystem scan","gitleaks / Scan for leaked secrets"]
   ```
 
-  再有効化後は、無効化していた期間に積み上がった変更を取りこぼさないよう、対象ワークフローを `workflow_dispatch` で全履歴・全ファイルに対して 1 回実行し、その結果を確認してください。
+  再有効化後は、無効化していた期間に積み上がった変更を取りこぼさないよう、対象ワークフローを `workflow_dispatch` で実行し、その結果を確認してください。**検査範囲はワークフローにより異なります。** `gitleaks` は常に `--log-opts="--all"` で全コミットを検査し、`TruffleHog` は `workflow_dispatch` 実行時に起点なし（履歴全体）で検査するため、いずれも無効化期間中の履歴を含めて検査できます。一方 `detect-secrets` は `workflow_dispatch` / `schedule` 実行時、現在の `HEAD` のツリー1点のみを検査する設計であり、履歴を遡りません。無効化期間中に一時的に追加され復旧前に削除されたシークレットまで検査したい場合は、`gitleaks` または `TruffleHog` の結果で確認してください。
 
 ## 無効化・縮退の記録
 
