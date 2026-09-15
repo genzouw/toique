@@ -8,10 +8,17 @@ useDefault = true
 # 実際のシークレット値は含まれない。しかし hashed_secret の16進文字列はエントロピーが
 # 高く、gitleaks のデフォルトルール (generic-api-key 等) の誤検知対象になりやすいため、
 # ルールを問わずファイル単位でグローバルに除外する。
+#
+# pr-detect-secrets-review.trusted-exceptions.baseline も同じ理由で除外する
+# (`*secret*.json` の .gitignore パターンに巻き込まれないよう拡張子は .baseline としている)。
+# pr-detect-secrets-review.yml が detect-secrets 用の固定例外として保持する
+# file + hashed_secret + type のみを含み、.secrets.baseline と同様に実際の
+# シークレット値は含まれない (詳細は pr-detect-secrets-review.yml 内のコメント参照)。
 [allowlist]
-description = "detect-secrets baseline はハッシュ値のみで実シークレットを含まないため除外"
+description = "detect-secrets baseline / 固定例外ファイルはハッシュ値のみで実シークレットを含まないため除外"
 paths = [
-    '''(^|/)\.secrets\.baseline$'''
+    '''(^|/)\.secrets\.baseline$''',
+    '''(^|/)pr-detect-secrets-review\.trusted-exceptions\.baseline$'''
 ]
 
 [[rules]]
