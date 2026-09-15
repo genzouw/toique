@@ -56,8 +56,8 @@ AI によるレビュー・トリアージの代替方針は第5節を参照し�
 
 ## 4. AIコードレビューの設定最適化
 
-当リポジトリでは CodeRabbit および Qodo Merge (旧 PR Agent) といった外部 AI レビューツールを導入対象としています（Qodo Merge の無料利用条件は「新規AIレビューツール (CodeRabbit & PR-Agent) の導入手順」を参照。本リポジトリは現時点で無料対象外です）。
-生成AIのレビュー精度を向上させるため、各設定ファイル（`.coderabbit.yaml`, `.pr_agent.toml`）には以下のような追加のレビュー観点が定義されています。
+当リポジトリでは外部 AI レビューツールとして CodeRabbit を導入しています。Qodo Merge (旧 PR Agent) は無料条件を満たさないため採用していません（第5節を参照）。
+生成AIのレビュー精度を向上させるため、設定ファイル（`.coderabbit.yaml`）には以下のような追加のレビュー観点が定義されています。
 もし新たなセキュリティやパフォーマンス、アクセシビリティの懸念事項があれば、設定ファイルを手動で調整し、AIのプロンプトを最適化してください。
 
 - パフォーマンス: O(N)ループの回避、N+1問題の防止、不要なDBクエリの削減など
@@ -76,18 +76,18 @@ AI によるレビュー・トリアージの代替方針は第5節を参照し�
 
 **現行の方針: GitHub ネイティブの無料 AI 推論基盤は存在しないため、リポジトリ側で AI 推論を実行するワークフローは新規に追加しません。**
 
-AI によるレビュー・トリアージは、リポジトリ側に API キーも課金設定も必要としない外部 App（CodeRabbit / Qodo Merge、第4節参照）に一本化します。
+AI によるレビュー・トリアージは、リポジトリ側に API キーも課金設定も必要としない外部 App（CodeRabbit、第4節参照）に一本化します。
 
 ただし「App 側で推論が走る」ことと「無料である」ことは別問題です。App ごとに無料条件を確認し、条件を満たさないものは本方針上採用できません。
 
 - **CodeRabbit**: 公開リポジトリ向けの無料プラン（Open Source）があり、本リポジトリは対象です。
-- **Qodo Merge**: 無料利用は [Qodo for Open Source](https://docs.qodo.ai/open-source-program) に承認された場合のみ（公開リポジトリ・stars 100 以上・継続的なメンテナンス・利用ポリシー遵守）。本リポジトリは stars が条件未達のため**現時点では無料対象外**で、通常プランはクレジット課金となるため導入を見送っています。
 
 **採用しないもの:**
 
 - **GitHub Models**: 2026-07-30 に提供終了。新規採用・再導入とも不可です。
 - **GitHub Copilot / Microsoft Foundry**: GitHub Models の後継として案内されていますが、いずれも premium request 消費（課金）または API キー管理を伴うため、上記の無料方針と両立しません。
 - **GitHub Agentic Workflows (`gh-aw`)**: 2026年に一度導入しましたが、`copilot` エンジンが GitHub Copilot の premium request / AI クレジットを消費する**有料**サービスであり、無料方針と両立しないため撤去しました。関連ファイル（`.github/workflows/*-agent.md`、`*.lock.yml`、`.github/aw/`）はすべて削除済みです。`gh aw compile` で再生成すると課金と CI 失敗が復活するため、再導入しないでください。
+- **Qodo Merge (旧 PR-Agent / CodiumAI)**: 恒久的な無料プランがありません（公式料金ページの FAQ に `We don't offer a permanent free tier` と明記）。無料で使えるのは 14 日間のトライアルか、審査制の [Qodo for Open Source](https://docs.qodo.ai/open-source-program)（公開リポジトリかつ **star 200 以上**、または Organization 内に star 200 以上の公開リポジトリが 1 つ以上）のみで、本リポジトリは条件未達です。未使用のまま残っていた `.pr_agent.toml` は 2026-09 に削除しました。自己ホスト版の `The-PR-Agent/pr-agent` Action は LLM の API キー（`OPENAI_KEY` 等）を必須とするため、こちらも採用できません。
 - **外部AIプロバイダの API キーを要するもの**（Gemini API、OpenAI API、Anthropic API など）: [AGENTS.md](../AGENTS.md) 第1節のとおり、無料枠の有無にかかわらず採用しません。CI ワークフローから `GEMINI_API_KEY` / `EXA_API_KEY` / `TAVILY_API_KEY` 等の従量課金 API キーを参照する構成の追加は MUST NOT です。
   - `.github/workflows/ai-gemini-pr-review.yml`（PR #768）、`.github/workflows/ai-issue-triage.yml` と `.github/scripts/issue-triage.py`、および両者が利用していた `.github/actions/ai-web-search` はこの方針に反するため撤去済みです。`GEMINI_API_KEY` 等は本リポジトリの Secrets に未登録で、実害なく削除できることを確認しています。
 
@@ -132,7 +132,7 @@ Rust製の高速なスペルチェッカー `typos` がCIに追加されてい�
 当リポジトリでは生成AIによるコードの大量生成やそれに伴うCI/CDパイプラインへの負荷増大に対応するため、静的解析ツールとAIの連携を強化しています。
 PRマージ前に以下の作業を確認してください。
 
-1. **Qodo Merge / PR-Agent のインストール**: PR-Agent などのレビューツールを GitHub App として対象リポジトリにインストールし、適切な権限 (Issues: Write, Pull Requests: Write 等) を付与してください。インストール前に無料利用の条件を満たすか確認してください（Qodo Merge は Qodo for Open Source の承認が必要で、本リポジトリは現時点で対象外です）。
+1. **AI レビュー App のインストール**: CodeRabbit を GitHub App として対象リポジトリにインストールし、適切な権限 (Issues: Write, Pull Requests: Write 等) を付与してください。Qodo Merge / PR-Agent は無料条件を満たさないため導入しません（第5節を参照）。
 2. **セキュリティスキャナの有効化確認**: `Gitleaks`, `Trufflehog` が適切に動作するよう、GitHub の設定 > Security から Secret Scanning と Push Protection が有効になっているか確認してください。また、`Zizmor` による解析結果が Code scanning alerts に適切に反映されるよう設定されているか確認してください。
 3. **StepSecurity Harden-Runner のインストール**: AIコーディングエージェントからのクレデンシャル漏洩やサプライチェーン攻撃を防ぐため、主要なワークフローに `step-security/harden-runner` を導入しています。
    - StepSecurity の GitHub App を対象リポジトリにインストールし、初期設定を行ってください（公開リポジトリは無料で利用可能です）。
@@ -217,17 +217,12 @@ AI エージェント（Cursor, Claude Desktop など）が開発プロジェク
 
 3. Claude Desktop を再起動すると、`get_db_schema` や `get_api_routes` ツールが使えるようになり、バックエンド構造を正確に踏まえたコード生成が可能になります。
 
-### 新規AIレビューツール (CodeRabbit & PR-Agent) の導入手順
+### AIレビューツール (CodeRabbit) の導入手順
 
-生成AIによるコードレビューの品質向上と自動化のため、`CodeRabbit` および `PR-Agent` の設定ファイルを導入しました。設定内容を有効にするため、以下の手動作業を実施してください。
+生成AIによるコードレビューの品質向上と自動化のため、`CodeRabbit` の設定ファイルを導入しています。設定内容を有効にするため、以下の手動作業を実施してください。
 
 1. **CodeRabbit のインストール**
    - GitHub Marketplace から [CodeRabbit](https://github.com/apps/coderabbitai) を対象のリポジトリまたはOrganizationにインストールしてください。
    - 無料プラン（Open Source / Pro Trial）でパブリックリポジトリにて利用可能です。
-2. **Qodo Merge (旧 PR-Agent / CodiumAI) のインストール**
-   - CodiumAI は Qodo にリブランドされ、PR-Agent(Pro)は Qodo Merge となりました。GitHub Marketplace から [Qodo Merge](https://github.com/apps/qodo-merge) をインストールしてください。
-   - インストール後、PRに `/review` や `/describe` などのコマンドをコメントすることで機能します。
-   - **無料利用の条件**: [Qodo for Open Source](https://docs.qodo.ai/open-source-program) に承認された場合のみ無料です。条件は「公開 GitHub リポジトリであること」「stars 100 以上」「継続的にメンテナンスされていること」「Qodo の利用ポリシーを遵守すること」です。承認されない場合はクレジット課金の通常プランとなります。
-   - **本リポジトリの状況**: stars が 100 に届いておらず条件未達のため、現時点では無料対象外です。第5節の「CI から呼び出す AI は無料枠のみ」方針に従い、条件を満たすまでインストールは行いません。
-3. **Qodo Merge の設定統合**
-   - これまで `.pr-agent.toml` と `.pr_agent.toml` が混在していたため、`.pr_agent.toml` に設定を一本化しました。これにより、日本語出力(`response_language="ja-JP"`)と `gpt-4o` モデルの利用設定が正しく一貫して適用されます。設定の変更が必要な場合は `.pr_agent.toml` のみを編集してください。
+
+**Qodo Merge (旧 PR-Agent / CodiumAI) は導入しません。** Qodo には恒久的な無料プランがなく（公式料金ページの FAQ に `We don't offer a permanent free tier` と明記）、無料で使えるのは 14 日間のトライアルか、審査制の [Qodo for Open Source](https://docs.qodo.ai/open-source-program)（公開リポジトリかつ **star 200 以上**、または Organization 内に star 200 以上の公開リポジトリが 1 つ以上）のみです。本リポジトリは条件未達のため、第5節の「CI から呼び出す AI は無料枠のみ」方針に従い採用しません。未使用のまま残っていた `.pr_agent.toml` は 2026-09 に削除しました。
