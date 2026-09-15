@@ -126,7 +126,7 @@ $ gh api repos/genzouw/toique/branches/main/protection --jq '.required_status_ch
 if: github.event_name == 'push' || github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' || (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name != github.repository)
 ```
 
-このため、**同一リポジトリのブランチから出した PR では `pull_request` 側のジョブはスキップされ、同一コミットに対する `push` 側の実行が結果を報告します**（同じ検査の二重実行とレート制限の回避が目的）。PR の Checks 欄にスキップ表示があっても、検査が行われていないとは限りません。フォークからの PR では逆に `pull_request` 側で実行されます（フォーク元に `push` イベントが発火しないため）。`pr-secret-review.yml` だけは逆で、同一リポジトリ由来の PR でのみ動作します。
+このため、**同一リポジトリのブランチから出した PR では `pull_request` 側のジョブはスキップされ、同一コミットに対する `push` 側の実行が結果を報告します**（同じ検査の二重実行とレート制限の回避が目的）。PR の Checks 欄にスキップ表示があっても、検査が行われていないとは限りません。フォークからの PR では逆に `pull_request` 側で実行されます（フォーク元に `push` イベントが発火しないため）。`pr-secret-review.yml` と `pr-detect-secrets-review.yml` だけは逆で、同一リポジトリ由来の PR でのみ動作します。
 
 ### マージ前に確認すること
 
