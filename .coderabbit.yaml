@@ -75,7 +75,7 @@ reviews:
         - 既存行に対して破壊的 (DROP COLUMN / NOT NULL 追加 / 型変更) になっていないか、なるなら backfill / default 設定が整合しているか。
         - インデックス追加が大規模テーブルでロックを引き起こさないか (CONCURRENTLY の検討)。
     - path: 'frontend/**/*.tsx'
-      instructions: "アクセシビリティ (a11y) とパフォーマンス最適化 (React.memo の使用など) に特に注意してレビューしてください。"
+      instructions: "アクセシビリティ (a11y) とパフォーマンス最適化 (React.memo の使用など) に特に注意してレビューしてください。TSX/JSX の条件分岐では redundant double negations (`!!condition ? A : B`) を避け、truthy な値を直接評価 (`condition ? A : B`) するように指示してください。また、状態変数が独立して更新されない場合は、単純な JSX の配列マッピング (`items.map(...)`) を `useMemo` でラップすることを禁止してください。"
     - path: 'backend/**/*.ts'
       instructions: "セキュリティ (SQLインジェクション、認証・認可、データのサニタイズ) とパフォーマンス (N+1問題の回避など) に注意してレビューしてください。"
     - path: '.github/workflows/**/*.yml'
