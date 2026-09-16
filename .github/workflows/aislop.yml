@@ -43,10 +43,16 @@ jobs:
           if [ "${{ github.event_name }}" == "pull_request" ]; then
             git fetch origin "$BASE_REF"
             prDiff=$(git diff "origin/$BASE_REF...HEAD")
-            changedLineCount=$(echo "$prDiff" | wc -l)
-            if [ -z "$prDiff" ] || [ "${#prDiff}" -lt 20 ] || [ "$changedLineCount" -lt 3 ]; then
+            read -r changedLineCount changedCharCount < <(
+              printf '%s\n' "$prDiff" |
+                awk '/^\+\+\+ b\// || /^--- a\// { next } /^[+-]/ {
+                  lines++
+                  chars += length(substr($0, 2))
+                } END { print lines + 0, chars + 0 }'
+            )
+            if [ -z "$prDiff" ] || [ "$changedCharCount" -lt 20 ] || [ "$changedLineCount" -lt 3 ]; then
               echo "PR diff is trivial or empty. Skipping aislop scan to optimize API quotas."
-              echo '{"$schema": "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json", "version": "2.1.0", "runs": [{"tool": {"driver": {"name": "aislop"}}, "results": []}]}' > .aislop/results.sarif
+              echo "{\"\$schema\": \"https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json\", \"version\": \"2.1.0\", \"runs\": [{\"tool\": {\"driver\": {\"name\": \"aislop\"}}, \"results\": []}]}" > .aislop/results.sarif
             else
               npx aislop@0.14.0 scan --changes --base "origin/$BASE_REF" --sarif > .aislop/results.sarif || true
             fi
