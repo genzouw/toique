@@ -107,8 +107,8 @@ $ gh api repos/genzouw/toique/branches/main/protection --jq '.required_status_ch
 | `codeql.yml`                         | Analyze (...)                        | ⚠️ 任意                        |
 | `deptrust.yml`                       | DepTrust Check                       | ⚠️ 任意                        |
 | `forbidden-paths.yml`                | Check for forbidden file paths       | ⚠️ 任意                        |
-| `pr-detect-secrets-review.yml`       | reviewdog / detect-secrets           | ⚠️ 任意                        |
 | `license-compliance.yml`             | OSS License Compliance Check         | ⚠️ 任意                        |
+| `pr-detect-secrets-review.yml`       | reviewdog / detect-secrets           | ⚠️ 任意                        |
 | `pr-secret-review.yml`               | reviewdog / gitleaks                 | ⚠️ 任意                        |
 | `sbom.yml` / `sbom-policy-check.yml` | Generate SBOM ほか                   | ⚠️ 任意                        |
 | `scorecard.yml`                      | Scorecard analysis                   | ⚠️ 任意（PR では実行されない） |
