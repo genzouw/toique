@@ -19,8 +19,10 @@
 655173abf377882cde3ea9d6f66ee50f6e8c4a7a:docs/public-release-checklist.md:custom-cloudflare-pages-url:171
 75565009eac119da4639d77bf12e7a89d5f729e6:frontend/src/pages/Tokushoho.tsx:custom-cloudflare-pages-url:72
 75565009eac119da4639d77bf12e7a89d5f729e6:frontend/src/pages/Tokushoho.tsx:custom-cloudflare-pages-url:75
+82af9360dfdea483ab1f1fad0e602ab1b042db6a:.github/workflows/pr-detect-secrets-review.trusted-exceptions.baseline:generic-api-key:4
 8cbbd0dae3ddc9892ff1eac8eae35d02c9d71b1f:frontend/src/pages/IndustryLanding.tsx:custom-cloudflare-pages-url:7
 9ac032e57bc48fc073d4ce87be9ed8950658a100:backend/src/lib/client-ip.test.ts:custom-internal-ip:25
+9dd83a77fa8c270fea9c5e2240582a2c0468f18a:.github/workflows/pr-detect-secrets-review.yml:generic-api-key:85
 a1bf113809ee7d0ef7be649f28f8c53264caf2c7:.github/workflows/deploy.yml:custom-cloudflare-pages-url:94
 aedd0e1425c7726a4e3d90e9ad83e53eef185015:docs/csp-inventory.md:custom-cloud-run-url:107
 aedd0e1425c7726a4e3d90e9ad83e53eef185015:docs/csp-inventory.md:custom-cloud-run-url:32
