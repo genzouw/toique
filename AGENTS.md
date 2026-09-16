@@ -58,7 +58,21 @@
 - **MAY**: リポジトリ内で完結するスクリプト / Make ターゲット (外部 SaaS 連携を伴わないもの)。
 - **MAY**: 既存ワークフローのキャッシュ最適化、並列化、Action の SHA pin 更新といった、課金を伴わない構造改善。
 
-### 1.4 ローカル環境と CI の区別
+**MAY に該当するかの判断は「公開リポジトリだから無料だろう」で済ませず、必ず §1.4 の手順で確認してください。**
+
+### 1.4 採用前に必ず確認すること — 「公開リポジトリなら無料」は根拠になりません
+
+GitHub Actions / GitHub App を採用する前に、以下を **MUST** 確認してください。ひとつでも確認できないものは採用できません。
+
+1. **公式の料金ページで「公開 OSS リポジトリでは課金が一切発生しない」ことを確認する**。「Free プランがある」「無料枠がある」は根拠として無効です。
+2. **OSS 無料枠に申請・審査・star 数などの条件がある場合、本リポジトリが現時点でその条件を満たしているかを確認する**。条件を満たしていないなら採用できません。将来満たす見込みがある、というのは理由になりません。
+3. **無料トライアルで動く状態を「無料で使えている」と判断しない**。トライアルは期限が来れば止まり、止まったあとは CI 時間を消費するだけの死んだジョブになります。
+4. **Action 本体が LLM の API キーを必須とするものでないことを、その Action の README / ドキュメントで確認する**。キーを与えなければ黙ってスキップする実装であっても、それは「無料で動いている」のではなく「動いていない」だけです。
+5. **PR 本文に、上記を確認した根拠 URL と確認結果を日本語で明記する**。
+
+導入済みのツールについても、**レビューやジョブが無言で何もしなくなっていないかを定期的に疑ってください**。実行ログが `success` でも、中身がスキップされているだけの場合があります。
+
+### 1.5 ローカル環境と CI の区別
 
 本ポリシーが禁止しているのは **CI/CD および自動化ワークフローへの組み込み** です。
 開発者個人のローカル環境で、自分のアカウント・自分の負担で AI ツール (Claude Code / Cursor / Gemini CLI 等) を使うことは **MAY** です。
@@ -66,7 +80,7 @@
 `ANTHROPIC_API_KEY` / `GEMINI_API_KEY` などを自分のシェルの環境変数として `export` して使うことは **MAY** です。
 一方、同じ鍵を GitHub Secrets へ登録し CI から参照することは **MUST NOT** です。
 
-### 1.5 回避してはならない解釈 (過去に実際に使われた抜け道)
+### 1.6 回避してはならない解釈 (過去に実際に使われた抜け道)
 
 以下はすべて **無効な理由づけ** です。エージェントがこの論法でセルフチェックを通過させた PR は、内容の良し悪しにかかわらずクローズされます。
 
@@ -78,7 +92,7 @@
 | 「公式の料金ページに Free tier の記載があるので完全無料である」 | 無料枠の存在は「完全無料」の根拠になりません。`https://ai.google.dev/pricing` のような **従量課金プランを併記するページは根拠として無効** です。根拠になるのは「公開 OSS リポジトリでは課金が一切発生しない」と明記されたページのみです。 |
 | 「harden-runner の導入や Action の SHA pin を伴うのでセキュアである」 | サプライチェーン対策は課金方針とは別の軸です。安全性は課金リスクを相殺しません。 |
 | 「`chore(security)` など無害に見える種別で出す」 | Conventional Commits の型を変えても違反は解消しません。 |
-| 「既存の AI レビューより高機能なので価値がある」 | 機能の優劣は判断基準に含みません。CodeRabbit / Qodo Merge との重複も別途 MUST NOT です。 |
+| 「既存の AI レビューより高機能なので価値がある」 | 機能の優劣は判断基準に含みません。CodeRabbit との重複も別途 MUST NOT です。 |
 
 **判定基準はただ一つです**: その変更をマージした結果、リポジトリオーナーが従量課金 API キーを発行・登録する必要が生じるなら **MUST NOT** です。
 
@@ -148,7 +162,8 @@ Issue では「なぜ既存の無料サービスでは目的を達成できな�
 - **`.jules/` `.Jules/` はコミット禁止**: AI エージェントの作業用ディレクトリで、`.gitignore` と pre-commit の対象外設定で除外しています。PR に混入した場合は内容を修正するのではなく `git rm` で削除してください。
 - **GitHub Models の再導入は禁止**: 2026-07-30 に提供終了済みです。推論 API 自体が存在しないため、エンドポイントを差し替えても復旧しません。依存していたワークフロー 23 本は撤去済みです。
 - **GitHub Agentic Workflows (`gh-aw`) の再導入は禁止**: `copilot` エンジンが GitHub Copilot の premium request を消費する有料サービスであり、本ポリシーと両立しないため撤去済みです。`gh aw compile` で再生成すると課金と CI 失敗が復活します。
-- **AI コードレビューは追加不要**: CodeRabbit (`.coderabbit.yaml`) / Qodo Merge (`.pr_agent.toml`) を導入対象としています。API キーを使う追加の AI コードレビュー Action は MUST NOT です。
+- **AI コードレビューは追加不要**: CodeRabbit (`.coderabbit.yaml`) が稼働中です。API キーを使う追加の AI コードレビュー Action は MUST NOT です。
+- **Qodo Merge (旧 PR-Agent) の導入は禁止**: 恒久的な無料プランが存在しません (公式料金ページの FAQ に "We don't offer a permanent free tier" と明記)。無料で使えるのは 14 日間のトライアルか、審査制の [Qodo for Open Source](https://docs.qodo.ai/open-source-program) (公開リポジトリかつ **star 200 以上**、または Organization 内に star 200 以上の公開リポジトリが 1 つ以上) のみで、本リポジトリは条件未達です。未使用のまま残っていた `.pr_agent.toml` は 2026-09 に削除済みです。自己ホスト版の `The-PR-Agent/pr-agent` Action は LLM の API キー (`OPENAI_KEY` 等) を必須とするため、こちらも §1.1 により MUST NOT です。
 - **セキュリティスキャンは追加不要**: gitleaks / TruffleHog / secretlint / detect-secrets / CodeQL / Trivy / OSV-Scanner / zizmor / Scorecard / SBOM が既に稼働しています。GitGuardian / Snyk 等の追加 SaaS は不要です。
 - **Lint も追加不要**: actionlint / markdownlint-cli2 / hadolint / ShellCheck / typos / knip / commitlint が既に稼働しています。
 - **ローカル検証**: `bun --cwd backend run lint` / `bun --cwd frontend run lint` / 各 `typecheck` / `bun run test` が通ることを確認してください。
@@ -158,8 +173,8 @@ Issue では「なぜ既存の無料サービスでは目的を達成できな�
 
 以下は本ポリシー違反として **クローズ済み** の代表例です。エージェントは類似の PR を作成しないでください。
 
-- [PR #695](https://github.com/genzouw/toique/pull/695) — `GEMINI_API_KEY` および `TAVILY_API_KEY` / `EXA_API_KEY` を GitHub Secrets に登録することを前提とした AI 自動化ワークフロー (Gemini によるコードレビュー / a11y 診断 / ドキュメント生成、`ai-web-search` composite action) の追加。従量課金 API キー依存と、既存の AI コードレビュー (CodeRabbit / Qodo Merge) との機能重複の二重のポリシー違反。
-- [PR #759](https://github.com/genzouw/toique/pull/759) — `petarzarkov/gemini-code-review-action` を用いた `.github/workflows/gemini-code-review.yml` の追加。`secrets.GEMINI_API_KEY` を参照し、その登録手順を `.github/AI_AUTOMATION_SETUP.md` と PR テンプレートに追記していた。「本 PR では設定方法のみドキュメント化」「Gemini API の無料枠を利用」という注釈付きでコスト方針のセルフチェックを通過させていたが、いずれも 1.5 節のとおり無効な理由づけ。加えて CodeRabbit / Qodo Merge との機能重複。
+- [PR #695](https://github.com/genzouw/toique/pull/695) — `GEMINI_API_KEY` および `TAVILY_API_KEY` / `EXA_API_KEY` を GitHub Secrets に登録することを前提とした AI 自動化ワークフロー (Gemini によるコードレビュー / a11y 診断 / ドキュメント生成、`ai-web-search` composite action) の追加。従量課金 API キー依存と、既存の AI コードレビュー (CodeRabbit) との機能重複の二重のポリシー違反。
+- [PR #759](https://github.com/genzouw/toique/pull/759) — `petarzarkov/gemini-code-review-action` を用いた `.github/workflows/gemini-code-review.yml` の追加。`secrets.GEMINI_API_KEY` を参照し、その登録手順を `.github/AI_AUTOMATION_SETUP.md` と PR テンプレートに追記していた。「本 PR では設定方法のみドキュメント化」「Gemini API の無料枠を利用」という注釈付きでコスト方針のセルフチェックを通過させていたが、いずれも 1.6 節のとおり無効な理由づけ。加えて CodeRabbit との機能重複。
 
 ## 9. 関連ドキュメント
 

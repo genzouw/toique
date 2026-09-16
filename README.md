@@ -245,15 +245,15 @@ curl -s http://localhost:3000/api/v1/messages | jq
 ### コードレビューとAI自動化
 
 - **CodeRabbit** (`.coderabbit.yaml`): profile=assertive。本番自動デプロイ運用のため高感度
-- **Qodo Merge (PR Agent)**: CodiumAI を使用したPR自動レビュー。無料利用は [Qodo for Open Source](https://docs.qodo.ai/open-source-program) の審査を通過した公開リポジトリに限られます（※ GitHub Appとしてのインストール推奨、または Actions経由での実行）。
+- **Qodo Merge (PR Agent)**: 導入していません。恒久的な無料プランが存在せず、本リポジトリは [Qodo for Open Source](https://docs.qodo.ai/open-source-program) の条件（star 200 以上）を満たさないためです。未使用のまま残っていた `.pr_agent.toml` は削除しました。
 
 > [!NOTE]
 > **導入のための手動事前作業:**
 >
 > 1. **CodeRabbit**: [CodeRabbit GitHub App](https://github.com/apps/coderabbitai) をインストールします。公開リポジトリは無料で、`.coderabbit.yaml` を自動的に読み込みます。
-> 2. **Qodo Merge**: [Qodo Merge GitHub App](https://github.com/apps/qodo-merge) をインストールすると `.pr_agent.toml` の設定を自動的に読み込みます。ただし**インストールだけで無料になるわけではありません**。無料枠は [Qodo for Open Source](https://docs.qodo.ai/open-source-program) の対象として承認された場合のみで、公開 GitHub リポジトリであること・stars 100 以上・継続的にメンテナンスされていること・利用ポリシーの遵守が条件です。本リポジトリは stars が条件に届いていないため、現時点では無料対象外です。対象外の場合は Qodo の通常プラン（クレジット課金）となるため、「CI から呼び出す AI は無料枠のみ」の方針（`.github/AI_AUTOMATION_SETUP.md` 第5節）に照らし、条件を満たすまで導入は見送ります。
+> 2. **Qodo Merge**: 導入しません。Qodo には恒久的な無料プランがなく（公式料金ページの FAQ に `We don't offer a permanent free tier` と明記）、無料で使えるのは 14 日間のトライアルか、審査制の [Qodo for Open Source](https://docs.qodo.ai/open-source-program) のみです。後者の条件は「公開 GitHub リポジトリであること」「star 200 以上、または Organization 内に star 200 以上の公開リポジトリが 1 つ以上あること」「継続的にメンテナンスされていること」「利用ポリシーの遵守」で、本リポジトリは star 数が条件に届いていません。対象外の場合はクレジット課金の通常プランとなるため、「CI から呼び出す AI は無料枠のみ」の方針（`.github/AI_AUTOMATION_SETUP.md` 第5節）に従い採用しません。
 >
-> いずれも GitHub App 側で推論が実行されるため、リポジトリに API キーを登録する必要はありません。
+> CodeRabbit は GitHub App 側で推論が実行されるため、リポジトリに API キーを登録する必要はありません。
 
 > [!IMPORTANT]
 > **GitHub Models を利用した自前の AI ワークフローは廃止しました。**
