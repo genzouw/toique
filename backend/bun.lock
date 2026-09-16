@@ -9,7 +9,7 @@
         "better-auth": "^1.7.4",
         "drizzle-orm": "^0.45.2",
         "hono": "^4.13.7",
-        "nodemailer": "^10.0.8",
+        "nodemailer": "^10.0.9",
         "postgres": "^3.4.0",
         "resend": "^6.28.0",
         "stripe": "^22.6.2",
@@ -562,7 +562,7 @@
 
     "node-releases": ["node-releases@2.0.54", "", {}, "sha512-YHs7BmmcsdAI5Ozuf8JZo6PT0mv2GIWC9vMfvUC3dp65M8hn7Ux8CPL+2oBI7juNuj9d0ndhTcznq2ODBps9cQ=="],
 
-    "nodemailer": ["nodemailer@10.0.8", "", {}, "sha512-uCZ0AtFDI46sHwJ6mhwNuIoA/KiTC0ZCzX7g01941+H9VMIXEiZjtgjQkzoBRTeQba0cIrKfwk31q99PfcIMRw=="],
+    "nodemailer": ["nodemailer@10.0.9", "", {}, "sha512-BF0qcyplCwp+jMk6HCjFykBz/YhhZSsxrARhOldLwFWH+8kGjQsd2WIMIZhqEuyXRoGFi0ONbDeWDMDoL8MhLw=="],
 
     "obug": ["obug@2.1.4", "", {}, "sha512-4a+OsYv9UktOJKE+l1A4OufDgdRF9PifWj+tJnHURo/P+WOxpG4GzUFL9qCalmWauao6ogiG+QvnCovwPoyAWA=="],
 
