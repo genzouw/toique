@@ -50,7 +50,7 @@ jobs:
                   chars += length(substr($0, 2))
                 } END { print lines + 0, chars + 0 }'
             )
-            if [ -z "$prDiff" ] || [ "$changedCharCount" -lt 20 ] || [ "$changedLineCount" -lt 3 ]; then
+            if [ -z "$prDiff" ] || { [ "$changedCharCount" -lt 20 ] && [ "$changedLineCount" -lt 3 ]; }; then
               echo "PR diff is trivial or empty. Skipping aislop scan to optimize API quotas."
               echo "{\"\$schema\": \"https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json\", \"version\": \"2.1.0\", \"runs\": [{\"tool\": {\"driver\": {\"name\": \"aislop\"}}, \"results\": []}]}" > .aislop/results.sarif
             else
