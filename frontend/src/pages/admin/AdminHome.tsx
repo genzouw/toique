@@ -23,7 +23,7 @@ export default function AdminHome() {
           className="block bg-white border border-slate-200 rounded-lg p-5 hover:border-slate-400 hover:shadow-sm transition"
         >
           <div className="flex items-center gap-2 text-slate-900 font-semibold">
-            <Inbox size={ICON_SIZE.lg} />
+            <Inbox size={ICON_SIZE.lg} aria-hidden="true" />
             システム問い合わせ
           </div>
           <p className="text-sm text-slate-600 mt-1">
@@ -35,7 +35,7 @@ export default function AdminHome() {
           className="block bg-white border border-slate-200 rounded-lg p-5 hover:border-slate-400 hover:shadow-sm transition"
         >
           <div className="flex items-center gap-2 text-slate-900 font-semibold">
-            <Users size={ICON_SIZE.lg} />
+            <Users size={ICON_SIZE.lg} aria-hidden="true" />
             ユーザー
           </div>
           <p className="text-sm text-slate-600 mt-1">

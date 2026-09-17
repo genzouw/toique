@@ -163,7 +163,7 @@ function FaqArticleContent({ faq }: { faq: FaqArticleType }) {
                   onClick={() => setFeedback('up')}
                   className="inline-flex items-center gap-2 px-4 py-2 border border-slate-300 text-sm text-slate-700 rounded-md hover:bg-slate-50 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-slate-900 focus-visible:ring-offset-2 transition-colors"
                 >
-                  <ThumbsUp size={ICON_SIZE.sm} />
+                  <ThumbsUp size={ICON_SIZE.sm} aria-hidden="true" />
                   役に立った
                 </button>
                 <button
@@ -173,7 +173,7 @@ function FaqArticleContent({ faq }: { faq: FaqArticleType }) {
                   onClick={() => setFeedback('down')}
                   className="inline-flex items-center gap-2 px-4 py-2 border border-slate-300 text-sm text-slate-700 rounded-md hover:bg-slate-50 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-slate-900 focus-visible:ring-offset-2 transition-colors"
                 >
-                  <ThumbsDown size={ICON_SIZE.sm} />
+                  <ThumbsDown size={ICON_SIZE.sm} aria-hidden="true" />
                   役に立たなかった
                 </button>
               </div>
