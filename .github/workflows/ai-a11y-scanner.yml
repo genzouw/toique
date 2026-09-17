@@ -32,8 +32,16 @@ jobs:
         uses: astral-sh/setup-uv@bec219d24cd3e171d82865faccec33120bb574f4 # v10.1.0
 
       - name: Install and Start Ollama
+        env:
+          OLLAMA_VERSION: v0.34.1
         run: |
-          curl -fsSL https://ollama.com/install.sh | sh
+          set -euo pipefail
+          TARBALL="ollama-linux-amd64.tar.zst"
+          curl -fsSL -o "$TARBALL" "https://github.com/ollama/ollama/releases/download/${OLLAMA_VERSION}/${TARBALL}"
+          curl -fsSL -o sha256sum.txt "https://github.com/ollama/ollama/releases/download/${OLLAMA_VERSION}/sha256sum.txt"
+          grep "${TARBALL}\$" sha256sum.txt | sha256sum -c -
+          sudo tar --zstd -C /usr/local -xf "$TARBALL"
+          rm -f "$TARBALL" sha256sum.txt
           ollama serve > ollama.log 2>&1 &
           sleep 5
           ollama pull qwen2.5-coder:0.5b
