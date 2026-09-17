@@ -1,0 +1,118 @@
+name: AI Auto Documenter (Local Ollama)
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  auto-document:
+    name: Generate PR Summary
+    runs-on: ubuntu-latest
+    steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@e14015d583714f6e62063499dc959a02595150a1 # v2.21.1
+        with:
+          egress-policy: audit
+
+      - name: Checkout code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v4.2.2
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Setup uv
+        uses: astral-sh/setup-uv@bec219d24cd3e171d82865faccec33120bb574f4 # v5.3.1
+
+      - name: Install and Start Ollama
+        run: |
+          curl -fsSL https://ollama.com/install.sh | sh
+          ollama serve > ollama.log 2>&1 &
+          sleep 5
+          ollama pull qwen2.5-coder:0.5b
+
+      - name: Generate Summary
+        env:
+          BASE_REF: ${{ github.base_ref }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          git fetch origin "$BASE_REF"
+          prDiff=$(git diff "origin/$BASE_REF...HEAD")
+
+          read -r changedLineCount changedCharCount < <(
+            printf '%s\n' "$prDiff" |
+              awk '/^\+\+\+ b\// || /^--- a\// { next } /^[+-]/ {
+                lines++
+                chars += length(substr($0, 2))
+              } END { print lines + 0, chars + 0 }'
+          )
+
+          if [ -z "$prDiff" ] || { [ "$changedCharCount" -lt 20 ] && [ "$changedLineCount" -lt 3 ]; }; then
+            echo "PR diff is trivial or empty. Skipping AI auto documenter to optimize resources."
+            exit 0
+          fi
+
+          cat << 'EOF' > run_summary.py
+          # /// script
+          # requires-python = ">=3.11"
+          # dependencies = [
+          #     "ollama",
+          # ]
+          # ///
+
+          import sys
+          import os
+          import ollama
+
+          def main():
+              diff_content = os.environ.get('PR_DIFF', '')
+              if not diff_content:
+                  return
+
+              prompt = f"""
+              あなたは優秀なソフトウェアエンジニアです。
+              以下のPull Requestのdiffを読み、変更内容を日本語で要約してください。
+              箇条書きで分かりやすく、3〜5点にまとめてください。
+
+              PR diff:
+              ```diff
+              {diff_content}
+              ```
+              """
+
+              try:
+                  response = ollama.chat(model='qwen2.5-coder:0.5b', messages=[
+                      {
+                          'role': 'system',
+                          'content': 'You are a helpful assistant that summarizes code changes.'
+                      },
+                      {
+                          'role': 'user',
+                          'content': prompt
+                      }
+                  ])
+
+                  result_text = response['message']['content']
+
+                  with open('pr_summary.md', 'w') as f:
+                      f.write("### 🤖 AI Summary (by Local Ollama)\n\n")
+                      f.write(result_text)
+
+              except Exception as e:
+                  print(f"Error during Ollama inference: {e}", file=sys.stderr)
+
+          if __name__ == "__main__":
+              main()
+          EOF
+
+          PR_DIFF="$prDiff" uv run run_summary.py
+
+          if [ -f pr_summary.md ]; then
+            gh pr comment "$PR_NUMBER" --body-file pr_summary.md
+          fi
+
+          rm -f run_summary.py pr_summary.md

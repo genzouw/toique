@@ -1,0 +1,167 @@
+name: AI a11y Scanner (Local Ollama)
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    paths:
+      - 'frontend/src/**/*.tsx'
+      - 'frontend/src/**/*.jsx'
+      - 'frontend/src/**/*.html'
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  a11y-scan:
+    name: Run AI a11y Scanner
+    runs-on: ubuntu-latest
+    steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@e14015d583714f6e62063499dc959a02595150a1 # v2.21.1
+        with:
+          egress-policy: audit
+
+      - name: Checkout code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v4.2.2
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Setup uv
+        uses: astral-sh/setup-uv@bec219d24cd3e171d82865faccec33120bb574f4 # v5.3.1
+
+      - name: Install and Start Ollama
+        run: |
+          curl -fsSL https://ollama.com/install.sh | sh
+          ollama serve > ollama.log 2>&1 &
+          sleep 5
+          ollama pull qwen2.5-coder:0.5b
+
+      - name: Setup Reviewdog
+        uses: reviewdog/action-setup@d8a7baabd7f3e8544ee4dbde3ee41d0011c3a93f # v1.5.0
+
+      - name: Run AI Scanner
+        env:
+          BASE_REF: ${{ github.base_ref }}
+          REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git fetch origin "$BASE_REF"
+          prDiff=$(git diff "origin/$BASE_REF...HEAD" -- frontend/src/)
+
+          read -r changedLineCount changedCharCount < <(
+            printf '%s\n' "$prDiff" |
+              awk '/^\+\+\+ b\// || /^--- a\// { next } /^[+-]/ {
+                lines++
+                chars += length(substr($0, 2))
+              } END { print lines + 0, chars + 0 }'
+          )
+
+          if [ -z "$prDiff" ] || { [ "$changedCharCount" -lt 20 ] && [ "$changedLineCount" -lt 3 ]; }; then
+            echo "PR diff is trivial or empty. Skipping AI a11y scan to optimize resources."
+            echo "{}" > reviewdog_rdjson.json
+            exit 0
+          fi
+
+          cat << 'EOF' > run_scan.py
+          # /// script
+          # requires-python = ">=3.11"
+          # dependencies = [
+          #     "ollama",
+          # ]
+          # ///
+
+          import sys
+          import json
+          import os
+          import ollama
+
+          def main():
+              diff_content = os.environ.get('PR_DIFF', '')
+              if not diff_content:
+                  with open('reviewdog_rdjson.json', 'w') as f:
+                      json.dump({}, f)
+                  return
+
+              prompt = f"""
+              あなたはフロントエンドのアクセシビリティ(a11y)専門家です。
+              以下のPR diffをレビューし、WAI-ARIAの不足、不適切なrole、コントラスト比の懸念、
+              キーボードナビゲーションの欠如など、a11yに関する問題点を見つけてください。
+              日本語で指摘してください。装飾用アイコンのaria-hidden="true"漏れにも注意してください。
+
+              出力は必ず以下のJSONスキーマに従うRDJSON (Reviewdog Diagnostic JSON) 形式のみを出力してください。
+              それ以外のテキストは一切含めないでください。
+
+              {{
+                "source": {{
+                  "name": "ai-a11y-scanner",
+                  "url": "https://github.com/genzouw/toique"
+                }},
+                "diagnostics": [
+                  {{
+                    "message": "指摘内容",
+                    "location": {{
+                      "path": "ファイルパス",
+                      "range": {{
+                        "start": {{ "line": 10 }}
+                      }}
+                    }},
+                    "severity": "WARNING"
+                  }}
+                ]
+              }}
+
+              対象のPR diff:
+              ```diff
+              {diff_content}
+              ```
+              """
+
+              try:
+                  response = ollama.chat(model='qwen2.5-coder:0.5b', messages=[
+                      {
+                          'role': 'system',
+                          'content': 'You are an expert in web accessibility. Output only valid JSON.'
+                      },
+                      {
+                          'role': 'user',
+                          'content': prompt
+                      }
+                  ])
+
+                  result_text = response['message']['content']
+
+                  # Extract JSON if wrapped in markdown
+                  if "```json" in result_text:
+                      result_text = result_text.split("```json")[1].split("```")[0].strip()
+                  elif "```" in result_text:
+                      result_text = result_text.split("```")[1].split("```")[0].strip()
+
+                  # Validate JSON
+                  try:
+                      json_obj = json.loads(result_text)
+                      if "diagnostics" not in json_obj:
+                          json_obj = {"diagnostics": []}
+                  except json.JSONDecodeError:
+                      print(f"Failed to decode JSON from model output: {result_text}", file=sys.stderr)
+                      json_obj = {"diagnostics": []}
+
+                  with open('reviewdog_rdjson.json', 'w') as f:
+                      json.dump(json_obj, f)
+
+              except Exception as e:
+                  print(f"Error during Ollama inference: {e}", file=sys.stderr)
+                  with open('reviewdog_rdjson.json', 'w') as f:
+                      json.dump({"diagnostics": []}, f)
+
+          if __name__ == "__main__":
+              main()
+          EOF
+
+          PR_DIFF="$prDiff" uv run run_scan.py
+
+          if [ -s reviewdog_rdjson.json ] && grep -q '"diagnostics"' reviewdog_rdjson.json; then
+            cat reviewdog_rdjson.json | reviewdog -f=rdjson -reporter=github-pr-review
+          fi
+
+          rm -f run_scan.py reviewdog_rdjson.json
