@@ -47,20 +47,23 @@ jobs:
           BASE_REF: ${{ github.base_ref }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
+          PR_HEAD_REPO: ${{ github.event.pull_request.head.repo.full_name }}
+          BASE_REPO: ${{ github.repository }}
+          PR_AUTHOR: ${{ github.actor }}
         run: |
           git fetch origin "$BASE_REF"
-          prDiff=$(git diff "origin/$BASE_REF...HEAD")
+          git diff "origin/$BASE_REF...HEAD" > pr_diff.txt
 
           read -r changedLineCount changedCharCount < <(
-            printf '%s\n' "$prDiff" |
-              awk '/^\+\+\+ b\// || /^--- a\// { next } /^[+-]/ {
+            awk '/^\+\+\+ b\// || /^--- a\// { next } /^[+-]/ {
                 lines++
                 chars += length(substr($0, 2))
-              } END { print lines + 0, chars + 0 }'
+              } END { print lines + 0, chars + 0 }' pr_diff.txt
           )
 
-          if [ -z "$prDiff" ] || { [ "$changedCharCount" -lt 20 ] && [ "$changedLineCount" -lt 3 ]; }; then
+          if [ ! -s pr_diff.txt ] || { [ "$changedCharCount" -lt 20 ] && [ "$changedLineCount" -lt 3 ]; }; then
             echo "PR diff is trivial or empty. Skipping AI auto documenter to optimize resources."
+            rm -f pr_diff.txt
             exit 0
           fi
 
@@ -73,54 +76,104 @@ jobs:
           # ///
 
           import sys
-          import os
           import ollama
 
-          def main():
-              diff_content = os.environ.get('PR_DIFF', '')
-              if not diff_content:
-                  return
+          # Ollama on GitHub-hosted (VRAM-less) runners defaults num_ctx to 4096,
+          # while qwen2.5-coder:0.5b natively supports up to 32768. Raise the
+          # window explicitly and chunk oversized diffs so large PRs are not
+          # silently truncated by Ollama's internal context shifting.
+          NUM_CTX = 8192
+          CHUNK_CHAR_LIMIT = 12000
 
-              prompt = f"""
+          def chunk_diff(diff_content, limit):
+              chunks = []
+              current = []
+              current_len = 0
+              for line in diff_content.splitlines(keepends=True):
+                  if current_len + len(line) > limit and current:
+                      chunks.append("".join(current))
+                      current = []
+                      current_len = 0
+                  current.append(line)
+                  current_len += len(line)
+              if current:
+                  chunks.append("".join(current))
+              return chunks or [""]
+
+          def build_prompt(diff_chunk, chunk_index, chunk_total):
+              context_note = (
+                  f"これはPull Request diff全体の {chunk_index}/{chunk_total} 番目の断片です。この断片に含まれる変更点のみ要約してください。\n"
+                  if chunk_total > 1 else ""
+              )
+              return f"""
               あなたは優秀なソフトウェアエンジニアです。
-              以下のPull Requestのdiffを読み、変更内容を日本語で要約してください。
+              {context_note}以下のPull Requestのdiffを読み、変更内容を日本語で要約してください。
               箇条書きで分かりやすく、3〜5点にまとめてください。
 
               PR diff:
               ```diff
-              {diff_content}
+              {diff_chunk}
               ```
               """
 
+          def summarize_chunk(diff_chunk, chunk_index, chunk_total):
+              prompt = build_prompt(diff_chunk, chunk_index, chunk_total)
               try:
-                  response = ollama.chat(model='qwen2.5-coder:0.5b', messages=[
-                      {
-                          'role': 'system',
-                          'content': 'You are a helpful assistant that summarizes code changes.'
-                      },
-                      {
-                          'role': 'user',
-                          'content': prompt
-                      }
-                  ])
-
-                  result_text = response['message']['content']
-
-                  with open('pr_summary.md', 'w') as f:
-                      f.write("### 🤖 AI Summary (by Local Ollama)\n\n")
-                      f.write(result_text)
-
+                  response = ollama.chat(
+                      model='qwen2.5-coder:0.5b',
+                      messages=[
+                          {
+                              'role': 'system',
+                              'content': 'You are a helpful assistant that summarizes code changes.'
+                          },
+                          {
+                              'role': 'user',
+                              'content': prompt
+                          }
+                      ],
+                      options={'num_ctx': NUM_CTX}
+                  )
+                  return response['message']['content']
               except Exception as e:
                   print(f"Error during Ollama inference: {e}", file=sys.stderr)
+                  return None
+
+          def main():
+              try:
+                  with open('pr_diff.txt', 'r') as f:
+                      diff_content = f.read()
+              except FileNotFoundError:
+                  diff_content = ''
+
+              if not diff_content:
+                  return
+
+              chunks = chunk_diff(diff_content, CHUNK_CHAR_LIMIT)
+              summaries = []
+              for i, chunk in enumerate(chunks, start=1):
+                  result = summarize_chunk(chunk, i, len(chunks))
+                  if result:
+                      summaries.append(result)
+
+              if not summaries:
+                  return
+
+              with open('pr_summary.md', 'w') as f:
+                  f.write("### 🤖 AI Summary (by Local Ollama)\n\n")
+                  f.write("\n\n".join(summaries))
 
           if __name__ == "__main__":
               main()
           EOF
 
-          PR_DIFF="$prDiff" uv run run_summary.py
+          uv run run_summary.py
 
           if [ -f pr_summary.md ]; then
-            gh pr comment "$PR_NUMBER" --body-file pr_summary.md
+            if [ "$PR_HEAD_REPO" = "$BASE_REPO" ] && [ "$PR_AUTHOR" != "dependabot[bot]" ]; then
+              gh pr comment "$PR_NUMBER" --body-file pr_summary.md
+            else
+              echo "Skipping result posting for fork/Dependabot PR (GITHUB_TOKEN is read-only for these events)."
+            fi
           fi
 
-          rm -f run_summary.py pr_summary.md
+          rm -f run_summary.py pr_summary.md pr_diff.txt
