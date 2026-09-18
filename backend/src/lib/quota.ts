@@ -104,9 +104,9 @@ export async function getTenantUsage(
 ): Promise<TenantUsage> {
   const limits = getPlanLimits(plan);
 
-  // ⚡ Bolt: Use db.batch instead of Promise.all to combine 4 separate count queries
-  // into a single database roundtrip, significantly reducing database latency and connection overhead.
-  const batchResults = await db.batch([
+  // postgres-js driver では db.batch() が実装されていないため、Promise.all で並行実行する。
+  // https://orm.drizzle.team/docs/batch-api （db.batch は Neon HTTP / LibSQL / D1 / PlanetScale 専用）
+  const batchResults = await Promise.all([
     buildLineChannelsCountQuery(tenantId),
     buildFormsCountQuery(tenantId),
     buildSubmissionsCountQuery(tenantId),
