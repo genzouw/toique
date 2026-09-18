@@ -109,7 +109,7 @@ export default function FaqHub() {
             className="mt-6 inline-flex items-center gap-2 px-6 py-2.5 bg-slate-900 text-white text-sm font-medium rounded-md hover:bg-slate-800 focus-ring focus-visible:outline-hidden focus-visible:ring-offset-2 transition-colors"
           >
             お問い合わせはこちら
-            <ArrowRight size={ICON_SIZE.sm} />
+            <ArrowRight size={ICON_SIZE.sm} aria-hidden="true" />
           </Link>
         </div>
       </section>
@@ -167,7 +167,7 @@ function CategoryGrid() {
                 className="mt-4 inline-flex items-center gap-1 text-sm font-medium text-slate-900 hover:text-slate-700"
               >
                 このカテゴリを見る
-                <ArrowRight size={ICON_SIZE.sm} />
+                <ArrowRight size={ICON_SIZE.sm} aria-hidden="true" />
               </Link>
             )}
           </div>

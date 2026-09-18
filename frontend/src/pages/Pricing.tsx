@@ -203,7 +203,7 @@ export default function Pricing() {
               className="inline-flex items-center gap-1 text-sm font-medium text-slate-700 hover:text-slate-900 focus-ring rounded-sm transition-colors"
             >
               すべての FAQ を見る
-              <ArrowRight size={ICON_SIZE.sm} />
+              <ArrowRight size={ICON_SIZE.sm} aria-hidden="true" />
             </Link>
           </div>
         </div>
