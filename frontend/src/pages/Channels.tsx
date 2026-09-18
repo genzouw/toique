@@ -258,12 +258,12 @@ const ChannelRow = memo(function ChannelRow({
           >
             {isCopied ? (
               <>
-                <Check size={ICON_SIZE.xs} />
+                <Check size={ICON_SIZE.xs} aria-hidden="true" />
                 コピー済み
               </>
             ) : (
               <>
-                <Copy size={ICON_SIZE.xs} />
+                <Copy size={ICON_SIZE.xs} aria-hidden="true" />
                 コピー
               </>
             )}
