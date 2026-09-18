@@ -112,6 +112,13 @@ jobs:
               current = []
               current_len = 0
               for line in diff_content.splitlines(keepends=True):
+                  while len(line) > limit:
+                      if current:
+                          chunks.append("".join(current))
+                          current = []
+                          current_len = 0
+                      chunks.append(line[:limit])
+                      line = line[limit:]
                   if current_len + len(line) > limit and current:
                       chunks.append("".join(current))
                       current = []
