@@ -209,7 +209,14 @@ jobs:
                       print(f"Failed to decode JSON from model output: {result_text}", file=sys.stderr)
                       json_obj = {"diagnostics": []}
 
-                  return json_obj.get("diagnostics", [])
+                  diagnostics = json_obj.get("diagnostics", [])
+                  if not isinstance(diagnostics, list):
+                      return []
+                  return [
+                      diagnostic
+                      for diagnostic in diagnostics
+                      if isinstance(diagnostic, dict)
+                  ]
 
               except Exception as e:
                   print(f"Error during Ollama inference: {e}", file=sys.stderr)
