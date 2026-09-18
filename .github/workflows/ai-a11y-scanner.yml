@@ -43,7 +43,16 @@ jobs:
           sudo tar --zstd -C /usr/local -xf "$TARBALL"
           rm -f "$TARBALL" sha256sum.txt
           ollama serve > ollama.log 2>&1 &
-          sleep 5
+          for i in $(seq 1 30); do
+            if curl -fsS http://127.0.0.1:11434/api/version > /dev/null 2>&1; then
+              break
+            fi
+            if [ "$i" -eq 30 ]; then
+              echo "Ollama server did not become ready within 30s" >&2
+              exit 1
+            fi
+            sleep 1
+          done
           ollama pull qwen2.5-coder:0.5b
 
       - name: Setup Reviewdog
