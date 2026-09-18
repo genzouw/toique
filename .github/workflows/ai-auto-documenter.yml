@@ -29,10 +29,35 @@ jobs:
           fetch-depth: 0
           persist-credentials: false
 
+      - name: Check for relevant changes
+        id: check_diff
+        env:
+          BASE_REF: ${{ github.base_ref }}
+        run: |
+          git fetch origin "$BASE_REF"
+          git diff "origin/$BASE_REF...HEAD" > pr_diff.txt
+
+          read -r changedLineCount changedCharCount < <(
+            awk '/^\+\+\+ b\// || /^--- a\// { next } /^[+-]/ {
+                lines++
+                chars += length(substr($0, 2))
+              } END { print lines + 0, chars + 0 }' pr_diff.txt
+          )
+
+          if [ ! -s pr_diff.txt ] || { [ "$changedCharCount" -lt 20 ] && [ "$changedLineCount" -lt 3 ]; }; then
+            echo "PR diff is trivial or empty. Skipping AI auto documenter to optimize resources."
+            rm -f pr_diff.txt
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Setup uv
+        if: steps.check_diff.outputs.skip != 'true'
         uses: astral-sh/setup-uv@bec219d24cd3e171d82865faccec33120bb574f4 # v10.1.0
 
       - name: Install and Start Ollama
+        if: steps.check_diff.outputs.skip != 'true'
         env:
           OLLAMA_VERSION: v0.34.1
         run: |
@@ -57,29 +82,13 @@ jobs:
           ollama pull qwen2.5-coder:0.5b
 
       - name: Generate Summary
+        if: steps.check_diff.outputs.skip != 'true'
         env:
-          BASE_REF: ${{ github.base_ref }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
           PR_HEAD_REPO: ${{ github.event.pull_request.head.repo.full_name }}
           BASE_REPO: ${{ github.repository }}
           PR_AUTHOR: ${{ github.actor }}
         run: |
-          git fetch origin "$BASE_REF"
-          git diff "origin/$BASE_REF...HEAD" > pr_diff.txt
-
-          read -r changedLineCount changedCharCount < <(
-            awk '/^\+\+\+ b\// || /^--- a\// { next } /^[+-]/ {
-                lines++
-                chars += length(substr($0, 2))
-              } END { print lines + 0, chars + 0 }' pr_diff.txt
-          )
-
-          if [ ! -s pr_diff.txt ] || { [ "$changedCharCount" -lt 20 ] && [ "$changedLineCount" -lt 3 ]; }; then
-            echo "PR diff is trivial or empty. Skipping AI auto documenter to optimize resources."
-            rm -f pr_diff.txt
-            exit 0
-          fi
-
           cat << 'EOF' > run_summary.py
           # /// script
           # requires-python = ">=3.11"
