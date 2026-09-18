@@ -181,6 +181,7 @@ jobs:
                   return
 
               with open('pr_summary.md', 'w') as f:
+                  f.write("<!-- ai-auto-documenter-summary -->\n")
                   f.write("### 🤖 AI Summary (by Local Ollama)\n\n")
                   f.write("\n\n".join(summaries))
 
@@ -192,7 +193,16 @@ jobs:
 
           if [ -f pr_summary.md ]; then
             if [ "$PR_HEAD_REPO" = "$BASE_REPO" ] && [ "$PR_AUTHOR" != "dependabot[bot]" ]; then
-              gh pr comment "$PR_NUMBER" --body-file pr_summary.md
+              # 同じ要約コメントを新規投稿し続けると push ごとに蓄積するため、
+              # 固定マーカー <!-- ai-auto-documenter-summary --> を持つ既存コメントを検索し、
+              # 見つかった場合はそれを更新する（無ければ新規作成する）。
+              EXISTING_COMMENT_ID=$(gh api --paginate "repos/$BASE_REPO/issues/$PR_NUMBER/comments" \
+                --jq '[.[] | select(.body | startswith("<!-- ai-auto-documenter-summary -->"))] | last.id // empty')
+              if [ -n "$EXISTING_COMMENT_ID" ]; then
+                gh api --method PATCH "repos/$BASE_REPO/issues/comments/$EXISTING_COMMENT_ID" -f body=@pr_summary.md > /dev/null
+              else
+                gh pr comment "$PR_NUMBER" --body-file pr_summary.md
+              fi
             else
               echo "Skipping result posting for fork/Dependabot PR (GITHUB_TOKEN is read-only for these events)."
             fi
