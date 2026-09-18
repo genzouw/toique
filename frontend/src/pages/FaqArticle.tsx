@@ -230,7 +230,7 @@ function FaqArticleContent({ faq }: { faq: FaqArticleType }) {
             className="mt-4 inline-flex items-center gap-2 px-5 py-2 bg-slate-900 text-white text-sm font-medium rounded-md hover:bg-slate-800"
           >
             お問い合わせへ
-            <ArrowRight size={ICON_SIZE.sm} />
+            <ArrowRight size={ICON_SIZE.sm} aria-hidden="true" />
           </Link>
         </section>
       </main>
