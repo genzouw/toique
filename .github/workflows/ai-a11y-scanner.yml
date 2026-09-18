@@ -68,7 +68,6 @@ jobs:
       - name: Run AI Scanner
         env:
           BASE_REF: ${{ github.base_ref }}
-          REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PR_HEAD_REPO: ${{ github.event.pull_request.head.repo.full_name }}
           BASE_REPO: ${{ github.repository }}
           PR_AUTHOR: ${{ github.actor }}
@@ -245,7 +244,7 @@ jobs:
 
           if [ "$PR_HEAD_REPO" = "$BASE_REPO" ] && [ "$PR_AUTHOR" != "dependabot[bot]" ]; then
             if [ -s reviewdog_rdjson.json ] && grep -q '"diagnostics"' reviewdog_rdjson.json; then
-              reviewdog -f=rdjson -reporter=github-pr-review < reviewdog_rdjson.json
+              REVIEWDOG_GITHUB_API_TOKEN="${{ secrets.GITHUB_TOKEN }}" reviewdog -f=rdjson -reporter=github-pr-review < reviewdog_rdjson.json
             fi
           else
             echo "Skipping result posting for fork/Dependabot PR (GITHUB_TOKEN is read-only for these events)."
