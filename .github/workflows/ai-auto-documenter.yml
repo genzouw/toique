@@ -199,7 +199,7 @@ jobs:
               EXISTING_COMMENT_ID=$(gh api --paginate "repos/$BASE_REPO/issues/$PR_NUMBER/comments" \
                 --jq '[.[] | select(.body | startswith("<!-- ai-auto-documenter-summary -->"))] | last.id // empty')
               if [ -n "$EXISTING_COMMENT_ID" ]; then
-                gh api --method PATCH "repos/$BASE_REPO/issues/comments/$EXISTING_COMMENT_ID" -f body=@pr_summary.md > /dev/null
+                gh api --method PATCH "repos/$BASE_REPO/issues/comments/$EXISTING_COMMENT_ID" -F body=@pr_summary.md > /dev/null
               else
                 gh pr comment "$PR_NUMBER" --body-file pr_summary.md
               fi
