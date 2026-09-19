@@ -139,6 +139,9 @@ PR 説明文には以下を **MUST** で、**日本語で** 含めてくださ�
 - PR タイトル、PR 説明文、コミットメッセージ、ソースコード内コメント、ドキュメントは **日本語** で記載する。
 - 技術用語 (GitHub Actions / CI/CD / API キー / Marketplace 等) と識別子は原語のままでよい。
 - コミットメッセージおよび PR タイトルは [Conventional Commits](https://www.conventionalcommits.org/ja/v1.0.0/) に従う。
+  - PR タイトルは `<type>(<scope>): <subject>` 形式にする。`type` は `build` / `chore` / `ci` / `docs` / `feat` / `fix` / `perf` / `refactor` / `revert` / `style` / `test` のいずれか、`scope` は任意、`subject` は大文字で始めない。
+  - `🎨 Palette: …` `⚡ Bolt: …` `🛡️ Sentinel: …` のようなエージェント固有の接頭辞を **タイトルの先頭に置かない**。残したい場合は `fix(a11y): 🎨 Palette: …` のように `type` の後ろへ置く。
+  - 規約違反のタイトルは `.github/workflows/semantic-pr-title.yml` の `normalize-pr-title` ジョブ (`scripts/normalize-pr-title.mjs`) が自動で `type` を付け直す。コミットメッセージからもペルソナ名からも型を判定できない場合は自動修正されず PR にコメントが付くので、その指示に従ってタイトルを自分で直す。
 
 ## 5. 例外申請プロセス (SHOULD)
 
@@ -168,6 +171,7 @@ Issue では「なぜ既存の無料サービスでは目的を達成できな�
 - **Lint も追加不要**: actionlint / markdownlint-cli2 / hadolint / ShellCheck / typos / knip / commitlint が既に稼働しています。
 - **ローカル検証**: `bun --cwd backend run lint` / `bun --cwd frontend run lint` / 各 `typecheck` / `bun run test` が通ることを確認してください。
 - **トピックブランチ必須**: `main` への直接コミットは行わず、必ずトピックブランチを切って PR を作成してください。
+- **Jules のスケジュール実行ペルソナ (Palette / Bolt / Sentinel)**: プロンプトは Jules の Web UI 側にあり、リポジトリからは変更できません。ペルソナを追加・変更するときは、プロンプトに「PR タイトルは Conventional Commits に従う」ことを明記し、あわせて `scripts/normalize-pr-title.mjs` の `PERSONA_TYPES` に「ペルソナ名 → type」の対応を追記してください。
 
 ## 8. 過去のポリシー違反 PR の参考
 
