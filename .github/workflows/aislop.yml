@@ -54,10 +54,10 @@ jobs:
               echo "PR diff is trivial or empty. Skipping aislop scan to optimize API quotas."
               echo "{\"\$schema\": \"https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json\", \"version\": \"2.1.0\", \"runs\": [{\"tool\": {\"driver\": {\"name\": \"aislop\"}}, \"results\": []}]}" > .aislop/results.sarif
             else
-              npx aislop@0.14.0 scan --changes --base "origin/$BASE_REF" --sarif > .aislop/results.sarif || true
+              npx aislop@0.16.1 scan --changes --base "origin/$BASE_REF" --sarif > .aislop/results.sarif || true
             fi
           else
-            npx aislop@0.14.0 scan --sarif > .aislop/results.sarif || true
+            npx aislop@0.16.1 scan --sarif > .aislop/results.sarif || true
           fi
 
       - name: Upload SARIF to GitHub Code Scanning
