@@ -249,7 +249,7 @@ export default function Landing() {
                       className="mt-3 inline-flex items-center gap-1 text-xs font-medium text-slate-700 hover:text-slate-900"
                     >
                       詳しく見る
-                      <ArrowRight size={ICON_SIZE.xs} />
+                      <ArrowRight size={ICON_SIZE.xs} aria-hidden="true" />
                     </Link>
                   )}
                 </div>
@@ -273,6 +273,7 @@ export default function Landing() {
                     <ArrowRight
                       size={ICON_SIZE.sm}
                       className="text-slate-400"
+                      aria-hidden="true"
                     />
                   </Link>
                 </li>
@@ -358,7 +359,7 @@ export default function Landing() {
               className="inline-flex items-center gap-1 text-sm font-medium text-slate-700 hover:text-slate-900"
             >
               すべての質問を見る
-              <ArrowRight size={ICON_SIZE.sm} />
+              <ArrowRight size={ICON_SIZE.sm} aria-hidden="true" />
             </Link>
           </div>
         </div>
