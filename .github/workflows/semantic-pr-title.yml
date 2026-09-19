@@ -89,6 +89,11 @@ jobs:
 
           例: \`🎨 Palette: 装飾アイコンに aria-hidden を追加\` → \`fix(a11y): 🎨 Palette: 装飾アイコンに aria-hidden を追加\`
           EOF
+                # ヒアドキュメントは run: ブロックの字下げをそのまま含むため、
+                # 先頭の空白を剥がしてから投稿する (剥がさないと GFM に
+                # インデントされたコードブロックとして解釈され、リンクや
+                # コードスパンが展開されないまま表示される)。
+                sed -i 's/^ *//' "$body_file"
                 gh pr comment "$PR_NUMBER" --body-file "$body_file"
               fi
               ;;
