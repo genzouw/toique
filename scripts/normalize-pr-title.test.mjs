@@ -142,6 +142,19 @@ describe('normalizePrTitle', () => {
     expect(result.reason).toBe('subject-starts-with-acronym');
   });
 
+  it('type が既に付いていても subject が連続大文字始まりなら規約適合済み扱いにしない', () => {
+    // `lowerFirst` は `AWS` のような連続大文字を変化させないため、
+    // type 付きでも subjectPattern `^(?![A-Z]).+$` には違反したままになる。
+    // これを `already-conventional` (none) にすると CI が fail するのに
+    // 誰も気づけなくなるため、manual に倒して人間に委ねる。
+    const result = normalizePrTitle({
+      title: 'fix: AWS SDK 更新のためのリトライ処理修正',
+      commitHeadlines: [],
+    });
+    expect(result.action).toBe('manual');
+    expect(result.reason).toBe('subject-starts-with-acronym');
+  });
+
   it('GitHub のタイトル長上限を超える改名はしない', () => {
     const result = normalizePrTitle({
       title: `🎨 Palette: ${'あ'.repeat(250)}`,

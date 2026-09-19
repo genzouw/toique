@@ -129,6 +129,16 @@ export function normalizePrTitle({ title, commitHeadlines = [] }) {
     const subject = matched[4];
     const lowered = lowerFirst(subject);
     if (lowered === subject) {
+      if (startsWithUpperCase(subject)) {
+        // `AWS SDK …` のような連続大文字始まり。type は付いているが
+        // subjectPattern には違反したままなので、規約適合済み扱いにせず
+        // 人間に判断を委ねる。
+        return {
+          action: 'manual',
+          title: original,
+          reason: 'subject-starts-with-acronym',
+        };
+      }
       return {
         action: 'none',
         title: original,
