@@ -7,7 +7,7 @@ set -e
 FILE="$1"
 
 if [ -z "$FILE" ]; then
-  return 0 2>/dev/null || exit 0
+  exit 0
 fi
 
 # macOS の通知を表示する (変数 $FILE が AppleScript のソースに展開され、
