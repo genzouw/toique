@@ -10,7 +10,99 @@ on:
 permissions:
   pull-requests: read
 
+concurrency:
+  # タイトル書き換え → `edited` で再実行、という流れで同じ PR の run が
+  # 重なるため、古い run は打ち切る。
+  group: semantic-pr-title-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
 jobs:
+  # Jules のスケジュール実行エージェント (Palette / Bolt / Sentinel) は
+  # `🎨 Palette: …` のような固定接頭辞でタイトルを作る。この接頭辞は Jules の
+  # Web UI 側で定義されていてリポジトリからは変えられないため、AGENTS.md の
+  # 規約だけでは守られず、下の check ジョブが落ちてオーナーが毎回手で
+  # リネームする状態が続いていた。ここで機械的に直せる分を直してしまう。
+  #
+  # fork からの PR では GITHUB_TOKEN が読み取り専用になり `gh pr edit` が
+  # 失敗するため、同一リポジトリのブランチから出た PR に限定する
+  # (問題になっているエージェントはいずれも本リポジトリへ直接 push する)。
+  normalize-pr-title:
+    if: github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read # スクリプトを checkout するため
+      pull-requests: write # タイトルの貼り直し / 案内コメントのため
+    steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@e14015d583714f6e62063499dc959a02595150a1 # v2.21.1
+        with:
+          egress-policy: audit
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Normalize PR title
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          # タイトルは信頼できない入力なので、必ず env 経由で渡して
+          # `run:` 内に展開しない (template injection 対策)。
+          PR_TITLE: ${{ github.event.pull_request.title }}
+        run: |
+          set -euo pipefail
+
+          PR_COMMITS="$(gh pr view "$PR_NUMBER" --json commits --jq '.commits[].messageHeadline')"
+          export PR_COMMITS
+
+          result="$(node scripts/normalize-pr-title.mjs)"
+          action="$(printf '%s' "$result" | jq -r '.action')"
+          new_title="$(printf '%s' "$result" | jq -r '.title')"
+          reason="$(printf '%s' "$result" | jq -r '.reason')"
+
+          case "$action" in
+            none)
+              echo "PR タイトルは Conventional Commits に適合しています ($reason)。" >> "$GITHUB_STEP_SUMMARY"
+              ;;
+            rename)
+              gh pr edit "$PR_NUMBER" --title "$new_title"
+              {
+                echo "PR タイトルを Conventional Commits へ正規化しました ($reason)。"
+                echo
+                echo '```'
+                printf '%s\n' "before: $PR_TITLE"
+                printf '%s\n' "after : $new_title"
+                echo '```'
+              } >> "$GITHUB_STEP_SUMMARY"
+              ;;
+            manual)
+              echo "::warning::PR タイトルから型を機械的に決められませんでした ($reason)。"
+              marker='<!-- pr-title-normalizer -->'
+              if gh pr view "$PR_NUMBER" --json comments --jq '.comments[].body' | grep -qF "$marker"; then
+                echo "案内コメントは投稿済みのためスキップします。" >> "$GITHUB_STEP_SUMMARY"
+              else
+                body_file="$RUNNER_TEMP/pr-title-normalizer-comment.md"
+                cat > "$body_file" <<EOF
+          $marker
+          この PR のタイトルは [Conventional Commits](https://www.conventionalcommits.org/ja/v1.0.0/) に従っていません (判定: \`$reason\`)。
+
+          自動での付け直しができなかったため、\`feat:\` / \`fix:\` / \`perf:\` / \`chore:\` などの型を先頭に付けてタイトルを編集してください。subject (型より後ろ) は大文字で始めないでください。
+
+          例: \`🎨 Palette: 装飾アイコンに aria-hidden を追加\` → \`fix(a11y): 🎨 Palette: 装飾アイコンに aria-hidden を追加\`
+          EOF
+                # ヒアドキュメントは run: ブロックの字下げをそのまま含むため、
+                # 先頭の空白を剥がしてから投稿する (剥がさないと GFM に
+                # インデントされたコードブロックとして解釈され、リンクや
+                # コードスパンが展開されないまま表示される)。
+                sed -i 's/^ *//' "$body_file"
+                gh pr comment "$PR_NUMBER" --body-file "$body_file"
+              fi
+              ;;
+            *)
+              echo "::error::normalize-pr-title.mjs が未知の action を返しました: $action"
+              exit 1
+              ;;
+          esac
+
   check-semantic-pr-title:
     runs-on: ubuntu-latest
     steps:

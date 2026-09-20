@@ -104,7 +104,9 @@ export async function getTenantUsage(
 ): Promise<TenantUsage> {
   const limits = getPlanLimits(plan);
 
-  const batchResults = await Promise.all([
+  // postgres-js driver では db.batch() が実装されていないため、Promise.all で並行実行する。
+  // https://orm.drizzle.team/docs/batch-api （db.batch は Neon HTTP / LibSQL / D1 / PlanetScale 専用）
+  const results = await Promise.all([
     buildLineChannelsCountQuery(tenantId),
     buildFormsCountQuery(tenantId),
     buildSubmissionsCountQuery(tenantId),
@@ -112,7 +114,7 @@ export async function getTenantUsage(
   ]);
 
   const [[channelsResult], [formsResult], [subsResult], [membersResult]] =
-    batchResults;
+    results;
 
   const channels = channelsResult?.count ?? 0;
   const formCount = formsResult?.count ?? 0;
