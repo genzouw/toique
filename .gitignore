@@ -97,12 +97,21 @@ cdktf.out/
 # ファイル名の完全一致列挙だと表記ゆれ（例: pr_description.txt）をすり抜けるため、
 # プレフィックス一致のパターンで網羅する。拡張子は .txt / .md の両方を対象にする
 # （実際に pr_body.md / pr_description.md / commit-msg.txt が混入した）。
+# 区切り文字（アンダースコア / ハイフン）の表記ゆれも同様にすり抜けるため
+# （実際に pr-description.md がこのパターンをすり抜けて混入した。PR #864）、
+# 両方の区切り文字を列挙する。
 pr_body*.txt
 pr_body*.md
+pr-body*.txt
+pr-body*.md
 pr_description*.txt
 pr_description*.md
+pr-description*.txt
+pr-description*.md
 issue_body*.txt
 issue_body*.md
+issue-body*.txt
+issue-body*.md
 commit-msg*.txt
 commit-msg*.md
 commit_msg*.txt
