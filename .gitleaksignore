@@ -48,3 +48,18 @@ ef6be419dcd19f7530b31da054baed4ac226cddf:frontend/src/lib/useSEO.ts:custom-cloud
 ef6be419dcd19f7530b31da054baed4ac226cddf:frontend/src/pages/Landing.tsx:custom-cloudflare-pages-url:152
 ef6be419dcd19f7530b31da054baed4ac226cddf:frontend/src/pages/Landing.tsx:custom-cloudflare-pages-url:153
 faafa7be1ea93b8767d80b09c9f51cca056236cd:.github/workflows/pr_conflict_notify.yml:custom-ai-traces:172
+
+# 上記は `--log-opts=--all` による git モードの履歴スキャン
+# (`<commit SHA>:<path>:<rule>:<line>` 形式) のベースライン。
+# scripts/run-security-scans-local.sh (保存時フック) は `gitleaks detect --no-git`
+# を使うため、SHA を含まない `<path>:<rule>:<line>` 形式のフィンガープリントになり、
+# かつ「その時点のコミット内容」ではなく「現在ワークツリー上のファイル内容」に対する
+# 行番号になるため、上記の履歴スキャンとは一致しないことがある。同一の許容済み内容
+# （公開URL・テスト用IP・ドキュメント記載値であり実シークレットではないことを確認済み）
+# に対する no-git モード用エントリを以下に個別で追加する (PR #864 の自己レビュー指摘)。
+backend/src/lib/client-ip.test.ts:custom-internal-ip:25
+docs/backup.md:custom-ai-traces:58
+docs/fork-setup.md:custom-cloudflare-pages-url:22
+docs/public-release-checklist.md:custom-cloudflare-pages-url:153
+docs/public-release-checklist.md:custom-cloudflare-pages-url:173
+.github/workflows/pr_conflict_notify.yml:custom-ai-traces:176

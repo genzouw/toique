@@ -95,6 +95,8 @@ jobs:
         run: bun test scripts/fail-on-sensitive-file.test.mjs
       - name: Run normalize-pr-title.mjs regression test
         run: bun test scripts/normalize-pr-title.test.mjs
+      - name: Run find-gitleaks-bin.sh regression test
+        run: bun test scripts/lib/find-gitleaks-bin.test.mjs
 
   frontend:
     name: Frontend (lint / typecheck / format / test / build)

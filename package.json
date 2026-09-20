@@ -91,7 +91,7 @@
     "**/.Jules/**": [
       "node scripts/fail-on-sensitive-file.mjs"
     ],
-    "**/{pr_body,pr_description,issue_body,commit-msg,commit_msg}*.{txt,md}": [
+    "**/{pr_body,pr-body,pr_description,pr-description,issue_body,issue-body,commit-msg,commit_msg}*.{txt,md}": [
       "node scripts/fail-on-sensitive-file.mjs"
     ],
     "**/*": [
