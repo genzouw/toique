@@ -42,7 +42,7 @@
       {
         "match": "\\.(ts|tsx|js|jsx|json|yaml|yml|md|env.*)$",
         "isAsync": true,
-        "cmd": "./scripts/run-secretlint-local.sh \"${file}\""
+        "cmd": "./scripts/run-security-scans-local.sh \"${file}\""
       }
     ]
   },
