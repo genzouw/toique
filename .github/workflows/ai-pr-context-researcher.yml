@@ -182,6 +182,12 @@ jobs:
               bare_urls = set(
                   re.findall(r'(?<!\]\()https?://\S+', summary)
               )
+              # スキームなしの www. 形式は GitHub 側で自動リンク化されるため検査対象に含める。
+              schemeless_urls = set(
+                  re.findall(r'(?<![/.\w])www\.\S+', summary)
+              )
+              if schemeless_urls:
+                  return False
               for url in markdown_urls | bare_urls:
                   url = url.rstrip('.,)')
                   if not url.startswith('https://'):
