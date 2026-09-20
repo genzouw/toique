@@ -63,7 +63,7 @@ jobs:
       - name: Install and Start Ollama
         if: steps.check_diff.outputs.skip != 'true'
         env:
-          OLLAMA_VERSION: v0.34.1
+          OLLAMA_VERSION: v0.34.2
         run: |
           set -euo pipefail
           TARBALL="ollama-linux-amd64.tar.zst"
