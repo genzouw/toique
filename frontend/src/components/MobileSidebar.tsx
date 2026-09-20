@@ -6,6 +6,8 @@ import { ICON_SIZE } from '../lib/icon-size';
 interface MobileHeaderProps {
   header: ReactNode;
   onOpen: () => void;
+  isOpen?: boolean;
+  ariaControls?: string;
   headerClassName?: string;
   menuButtonClassName?: string;
 }
@@ -13,6 +15,8 @@ interface MobileHeaderProps {
 export function MobileHeader({
   header,
   onOpen,
+  isOpen = false,
+  ariaControls,
   headerClassName,
   menuButtonClassName,
 }: MobileHeaderProps) {
@@ -26,6 +30,8 @@ export function MobileHeader({
       {header}
       <button
         onClick={onOpen}
+        aria-expanded={isOpen}
+        aria-controls={ariaControls}
         aria-label="メニューを開く"
         title="メニューを開く"
         className={cn(
@@ -56,6 +62,7 @@ export function SidebarOverlay({
 }
 
 interface SidebarPanelProps {
+  id?: string;
   isOpen: boolean;
   onClose: () => void;
   sidebarHeader: ReactNode;
@@ -66,6 +73,7 @@ interface SidebarPanelProps {
 }
 
 export function SidebarPanel({
+  id,
   isOpen,
   onClose,
   sidebarHeader,
@@ -76,6 +84,7 @@ export function SidebarPanel({
 }: SidebarPanelProps) {
   return (
     <aside
+      id={id}
       className={cn(
         'fixed inset-y-0 left-0 z-50 w-60 flex flex-col transition-transform duration-200 ease-in-out md:static md:translate-x-0',
         isOpen ? 'translate-x-0' : '-translate-x-full',
