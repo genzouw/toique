@@ -47,15 +47,17 @@ if command -v bunx >/dev/null 2>&1; then
 fi
 
 # --- 2. Gitleaks によるチェック ---
+# shellcheck source=SCRIPTDIR/lib/find-gitleaks-bin.sh
+. "$(dirname "$0")/lib/find-gitleaks-bin.sh"
+
 GITLEAKS_CMD="gitleaks"
 if ! command -v gitleaks >/dev/null 2>&1; then
   GITLEAKS_CACHE_DIR="${XDG_CACHE_HOME:-$HOME/.cache}/gitleaks"
-  if [ -d "$GITLEAKS_CACHE_DIR" ]; then
-    # キャッシュされた最新のバイナリを探す (macOS の find は -perm -u+x をサポートしないため考慮)
-    GITLEAKS_BIN=$(find "$GITLEAKS_CACHE_DIR" -type f -name "gitleaks-*" 2>/dev/null | grep -v '\.tar\.gz$' | sort -V | tail -n 1 || true)
-    if [ -n "$GITLEAKS_BIN" ] && [ -x "$GITLEAKS_BIN" ]; then
-      GITLEAKS_CMD="$GITLEAKS_BIN"
-    fi
+  # キャッシュされた最新のバイナリを探す (実装は lib/find-gitleaks-bin.sh を参照。
+  # .husky/pre-push と共有している)。
+  GITLEAKS_BIN=$(find_latest_gitleaks_bin "$GITLEAKS_CACHE_DIR")
+  if [ -n "$GITLEAKS_BIN" ] && [ -x "$GITLEAKS_BIN" ]; then
+    GITLEAKS_CMD="$GITLEAKS_BIN"
   fi
 fi
 
