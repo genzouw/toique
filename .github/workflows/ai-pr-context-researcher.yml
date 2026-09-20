@@ -108,8 +108,8 @@ jobs:
           # /// script
           # requires-python = ">=3.11"
           # dependencies = [
-          #     "ollama",
-          #     "duckduckgo-search",
+          #     "ollama==0.6.2",
+          #     "duckduckgo-search==8.1.1",
           # ]
           # ///
 
