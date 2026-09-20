@@ -18,6 +18,37 @@ notify_macos() {
   end run' "$1" "$2" "$3" || true
 }
 
+# 検知/実行失敗をコンソール出力とデスクトップ通知の両方へ報告する共通処理。
+# Secretlint / Gitleaks の各チェックが同じ通知ロジックを個別に持っていて、
+# 通知経路（notify-send / osascript / 出力先）を1つ変えるたびに2箇所直す
+# 必要があり、片方だけ直す事故が起きやすかったため切り出した
+# (PR #864 の自己レビュー指摘)。
+# $1: ツール名 (Secretlint / Gitleaks), $2: 対象ファイル
+report_scan_result() {
+  local tool_name="$1"
+  local target_file="$2"
+  local message notify_title notify_body
+
+  if [ -s "$STDOUT_LOG" ]; then
+    message="🚨 [Security Error] ${tool_name} がファイルにシークレットを検出しました: $target_file"
+    notify_title="${tool_name} Error"
+    notify_body="シークレット漏洩を検出しました: $target_file"
+  else
+    message="⚠️ [${tool_name} Execution Error] ${tool_name} の実行に失敗しました: $target_file"
+    notify_title="${tool_name} Execution Error"
+    notify_body="${tool_name} の実行に失敗しました: $target_file"
+  fi
+
+  echo "$message"
+  cat "$STDOUT_LOG" "$STDERR_LOG" >&2
+
+  if command -v notify-send >/dev/null 2>&1; then
+    notify-send -u critical "$notify_title" "$notify_body" || true
+  elif command -v osascript >/dev/null 2>&1; then
+    notify_macos "$notify_title" "$notify_body" "Basso"
+  fi
+}
+
 STDOUT_LOG="$(mktemp)"
 STDERR_LOG="$(mktemp)"
 trap 'rm -f "$STDOUT_LOG" "$STDERR_LOG"' EXIT
@@ -25,24 +56,7 @@ trap 'rm -f "$STDOUT_LOG" "$STDERR_LOG"' EXIT
 # --- 1. Secretlint によるチェック ---
 if command -v bunx >/dev/null 2>&1; then
   if ! bunx secretlint "$FILE" >"$STDOUT_LOG" 2>"$STDERR_LOG"; then
-    if [ -s "$STDOUT_LOG" ]; then
-      MESSAGE="🚨 [Security Error] Secretlint がファイルにシークレットを検出しました: $FILE"
-      NOTIFY_TITLE="Secretlint Error"
-      NOTIFY_BODY="シークレット漏洩を検出しました: $FILE"
-    else
-      MESSAGE="⚠️ [Secretlint Execution Error] secretlint の実行に失敗しました: $FILE"
-      NOTIFY_TITLE="Secretlint Execution Error"
-      NOTIFY_BODY="secretlint の実行に失敗しました: $FILE"
-    fi
-
-    echo "$MESSAGE"
-    cat "$STDOUT_LOG" "$STDERR_LOG" >&2
-
-    if command -v notify-send >/dev/null 2>&1; then
-      notify-send -u critical "$NOTIFY_TITLE" "$NOTIFY_BODY" || true
-    elif command -v osascript >/dev/null 2>&1; then
-      notify_macos "$NOTIFY_TITLE" "$NOTIFY_BODY" "Basso"
-    fi
+    report_scan_result "Secretlint" "$FILE"
   fi
 fi
 
@@ -87,23 +101,6 @@ if [ -n "$GITLEAKS_CMD" ]; then
   if ! (cd "$REPO_ROOT" && "$GITLEAKS_CMD" detect --no-git --source "$REL_FILE" \
           --config .gitleaks.toml --gitleaks-ignore-path .gitleaksignore \
           --redact --verbose --no-banner) >"$STDOUT_LOG" 2>"$STDERR_LOG"; then
-    if [ -s "$STDOUT_LOG" ]; then
-      MESSAGE="🚨 [Security Error] Gitleaks がファイルにシークレットを検出しました: $FILE"
-      NOTIFY_TITLE="Gitleaks Error"
-      NOTIFY_BODY="シークレット漏洩を検出しました: $FILE"
-    else
-      MESSAGE="⚠️ [Gitleaks Execution Error] gitleaks の実行に失敗しました: $FILE"
-      NOTIFY_TITLE="Gitleaks Execution Error"
-      NOTIFY_BODY="gitleaks の実行に失敗しました: $FILE"
-    fi
-
-    echo "$MESSAGE"
-    cat "$STDOUT_LOG" "$STDERR_LOG" >&2
-
-    if command -v notify-send >/dev/null 2>&1; then
-      notify-send -u critical "$NOTIFY_TITLE" "$NOTIFY_BODY" || true
-    elif command -v osascript >/dev/null 2>&1; then
-      notify_macos "$NOTIFY_TITLE" "$NOTIFY_BODY" "Basso"
-    fi
+    report_scan_result "Gitleaks" "$FILE"
   fi
 fi
