@@ -62,8 +62,13 @@ if ! command -v gitleaks >/dev/null 2>&1; then
 fi
 
 if command -v "$GITLEAKS_CMD" >/dev/null 2>&1 || [ -x "$GITLEAKS_CMD" ]; then
+  # `detect --source` に単一ファイルを渡す場合、gitleaks はカレントディレクトリの
+  # .gitleaks.toml を自動探索しない（ソースがディレクトリの場合のみ探索する仕様のため）。
+  # 明示的にリポジトリルートの .gitleaks.toml を --config で渡し、allowlist を確実に
+  # 適用する（未指定だとリポジトリ全体で許可しているはずの誤検知が保存時だけ再発する）。
+  REPO_ROOT="$(git rev-parse --show-toplevel 2>/dev/null || echo "$(dirname "$0")/..")"
   # コミットされていない(ステージされていない)ファイルの内容を直接スキャンするために --no-git を使用する
-  if ! "$GITLEAKS_CMD" detect --no-git --source "$FILE" --redact --verbose --no-banner >"$STDOUT_LOG" 2>"$STDERR_LOG"; then
+  if ! "$GITLEAKS_CMD" detect --no-git --source "$FILE" --config "$REPO_ROOT/.gitleaks.toml" --redact --verbose --no-banner >"$STDOUT_LOG" 2>"$STDERR_LOG"; then
     if [ -s "$STDOUT_LOG" ]; then
       MESSAGE="🚨 [Security Error] Gitleaks がファイルにシークレットを検出しました: $FILE"
       NOTIFY_TITLE="Gitleaks Error"
