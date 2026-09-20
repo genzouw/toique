@@ -3,6 +3,11 @@ set -e
 
 # VS Code の emeraldwalk.runonsave 拡張機能から呼び出され、
 # 保存された特定のファイルに対してローカルで secretlint および gitleaks を実行するスクリプト。
+#
+# 既知の制限（Windows）: `.vscode/settings.json` は emeraldwalk.runonsave.shell を
+# 設定していないため、Windows では cmd.exe にフォールバックしこの bash スクリプトの
+# シェバンを解釈できず、保存時チェックが無出力のまま一度も実行されない。詳細と
+# ワークアラウンドは docs/security/leak-prevention.md を参照。
 
 FILE="$1"
 
