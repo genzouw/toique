@@ -159,6 +159,17 @@ jobs:
                   print(f"Error during keyword extraction: {e}", file=sys.stderr)
                   return "TypeScript React best practices"
 
+          def sanitize_query(query):
+              # extract_keywords() の戻り値はローカルLLM（qwen2.5-coder:0.5b）の出力であり、
+              # システムプロンプトで指示していても0.5Bモデルの出力を完全には制御できない。
+              # バッククォートや改行が混ざれば書き込み先Markdownの表示が崩れ、URLが混ざれば
+              # validate_summary()がまさに防ごうとしている「検索結果に由来しない未承認リンク
+              # の混入」がこのフィールド経由でそのまま素通りしてしまうため、書き込み前に除去する。
+              query = query.replace("`", "").replace("\n", " ").strip()
+              if re.search(r'https?://|www\.', query):
+                  return "TypeScript React best practices"
+              return query[:100]
+
           def search_web(query):
               print(f"Searching web for: {query}")
               try:
@@ -252,7 +263,7 @@ jobs:
               pr_title = os.environ.get('PR_TITLE', '')
 
               print("Extracting keywords...")
-              query = extract_keywords(diff_content, pr_title)
+              query = sanitize_query(extract_keywords(diff_content, pr_title))
 
               print(f"Search Query generated: {query}")
               results = search_web(query)
