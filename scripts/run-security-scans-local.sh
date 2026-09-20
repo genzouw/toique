@@ -58,10 +58,19 @@ if ! command -v gitleaks >/dev/null 2>&1; then
   GITLEAKS_BIN=$(find_latest_gitleaks_bin "$GITLEAKS_CACHE_DIR")
   if [ -n "$GITLEAKS_BIN" ] && [ -x "$GITLEAKS_BIN" ]; then
     GITLEAKS_CMD="$GITLEAKS_BIN"
+  else
+    # .husky/pre-push と同様に、見つからない場合は GITLEAKS_CMD を空にする。
+    # 空にせず "gitleaks" のまま残すと、次のチェックがカレントディレクトリの
+    # ./gitleaks という無関係なパスを実行可能ファイルとして拾ってしまう可能性がある上、
+    # 何も出力せず exit 0 になるため「保存時スキャンが動いている」という誤認が
+    # 固定化する (PR #864 の自己レビュー指摘)。fail-open 自体は本リポジトリの既定方針
+    # だが、fail-open したこと自体は必ず可視化する。
+    GITLEAKS_CMD=""
+    echo "⚠️  gitleaks が見つからないため保存時スキャンをスキップしました（一度コミットすればキャッシュへ取得されます）"
   fi
 fi
 
-if command -v "$GITLEAKS_CMD" >/dev/null 2>&1 || [ -x "$GITLEAKS_CMD" ]; then
+if [ -n "$GITLEAKS_CMD" ]; then
   # `detect --source` に単一ファイルを渡す場合、gitleaks はカレントディレクトリの
   # .gitleaks.toml / .gitleaksignore を自動探索しない（ソースがディレクトリの場合のみ
   # 探索する仕様のため）。--config・--gitleaks-ignore-path とも明示的にリポジトリルート
