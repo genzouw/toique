@@ -63,12 +63,21 @@ fi
 
 if command -v "$GITLEAKS_CMD" >/dev/null 2>&1 || [ -x "$GITLEAKS_CMD" ]; then
   # `detect --source` に単一ファイルを渡す場合、gitleaks はカレントディレクトリの
-  # .gitleaks.toml を自動探索しない（ソースがディレクトリの場合のみ探索する仕様のため）。
-  # 明示的にリポジトリルートの .gitleaks.toml を --config で渡し、allowlist を確実に
-  # 適用する（未指定だとリポジトリ全体で許可しているはずの誤検知が保存時だけ再発する）。
-  REPO_ROOT="$(git rev-parse --show-toplevel 2>/dev/null || echo "$(dirname "$0")/..")"
+  # .gitleaks.toml / .gitleaksignore を自動探索しない（ソースがディレクトリの場合のみ
+  # 探索する仕様のため）。--config・--gitleaks-ignore-path とも明示的にリポジトリルート
+  # のものを渡し、allowlist と既存の許容済み検知の抑制を確実に適用する
+  # （未指定だとリポジトリ全体で許可しているはずの誤検知が保存時だけ再発する）。
+  #
+  # さらに --source には repo root からの相対パスを渡す。絶対パスのまま渡すと
+  # フィンガープリント（`<path>:<rule>:<line>`）に実行環境ごとのホームディレクトリ等が
+  # 含まれてしまい、.gitleaksignore に登録しても各開発者のマシンでしか効かない値に
+  # なる（PR #864 の自己レビュー指摘）。
+  REPO_ROOT="$(git rev-parse --show-toplevel 2>/dev/null || (cd "$(dirname "$0")/.." && pwd))"
+  REL_FILE="${FILE#"$REPO_ROOT"/}"
   # コミットされていない(ステージされていない)ファイルの内容を直接スキャンするために --no-git を使用する
-  if ! "$GITLEAKS_CMD" detect --no-git --source "$FILE" --config "$REPO_ROOT/.gitleaks.toml" --redact --verbose --no-banner >"$STDOUT_LOG" 2>"$STDERR_LOG"; then
+  if ! (cd "$REPO_ROOT" && "$GITLEAKS_CMD" detect --no-git --source "$REL_FILE" \
+          --config .gitleaks.toml --gitleaks-ignore-path .gitleaksignore \
+          --redact --verbose --no-banner) >"$STDOUT_LOG" 2>"$STDERR_LOG"; then
     if [ -s "$STDOUT_LOG" ]; then
       MESSAGE="🚨 [Security Error] Gitleaks がファイルにシークレットを検出しました: $FILE"
       NOTIFY_TITLE="Gitleaks Error"
