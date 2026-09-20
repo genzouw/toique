@@ -163,7 +163,9 @@ jobs:
           def search_web(query):
               print(f"Searching web for: {query}")
               try:
-                  results = DDGS().text(query, max_results=3)
+                  with warnings.catch_warnings():
+                      warnings.simplefilter("ignore", category=RuntimeWarning)
+                      results = DDGS().text(query, max_results=3)
                   return results
               except Exception as e:
                   print(f"Error during DuckDuckGo search: {e}", file=sys.stderr)
