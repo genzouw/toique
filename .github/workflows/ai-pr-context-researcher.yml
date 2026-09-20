@@ -58,11 +58,17 @@ jobs:
           fi
 
       - name: Setup uv
-        if: steps.check_diff.outputs.skip != 'true'
+        if: |
+          steps.check_diff.outputs.skip != 'true' &&
+          github.event.pull_request.head.repo.full_name == github.repository &&
+          github.event.pull_request.user.login != 'dependabot[bot]'
         uses: astral-sh/setup-uv@bec219d24cd3e171d82865faccec33120bb574f4 # v10.1.0
 
       - name: Install and Start Ollama
-        if: steps.check_diff.outputs.skip != 'true'
+        if: |
+          steps.check_diff.outputs.skip != 'true' &&
+          github.event.pull_request.head.repo.full_name == github.repository &&
+          github.event.pull_request.user.login != 'dependabot[bot]'
         env:
           OLLAMA_VERSION: v0.34.2
         run: |
@@ -87,7 +93,10 @@ jobs:
           ollama pull qwen2.5-coder:0.5b
 
       - name: Run Web Research
-        if: steps.check_diff.outputs.skip != 'true'
+        if: |
+          steps.check_diff.outputs.skip != 'true' &&
+          github.event.pull_request.head.repo.full_name == github.repository &&
+          github.event.pull_request.user.login != 'dependabot[bot]'
         env:
           PR_NUMBER: ${{ github.event.pull_request.number }}
           PR_HEAD_REPO: ${{ github.event.pull_request.head.repo.full_name }}
