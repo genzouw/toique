@@ -24,24 +24,24 @@
     "hono": "^4.13.7",
     "nodemailer": "^10.0.10",
     "postgres": "^3.4.0",
-    "resend": "^6.28.0",
+    "resend": "^6.28.1",
     "stripe": "^22.6.2",
     "zod": "^4.6.2"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
-    "@types/node": "^26.5.1",
-    "@types/nodemailer": "^8.0.1",
-    "@vitest/coverage-istanbul": "^5.0.0",
+    "@types/node": "^26.6.1",
+    "@types/nodemailer": "^8.0.2",
+    "@vitest/coverage-istanbul": "^5.0.1",
     "drizzle-kit": "^0.31.10",
     "esbuild": "0.28.2",
     "eslint": "^10.10.0",
-    "knip": "^6.35.1",
-    "prettier": "^3.9.6",
+    "knip": "^6.36.0",
+    "prettier": "^3.9.8",
     "tsx": "^4.23.13",
     "typescript": "^6.0.3",
     "typescript-eslint": "^8.70.0",
-    "vitest": "^5.0.0"
+    "vitest": "^5.0.1"
   },
   "overrides": {
     "esbuild": "$esbuild",
