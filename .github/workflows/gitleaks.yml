@@ -29,4 +29,4 @@ jobs:
     # ci-workflows#14 のマージにより本 reusable workflow 自体も composite action 経由に
     # 変更されたため、参照 SHA を main HEAD（pr-secret-review.yml と同じコミット）に更新し、
     # gitleaks のバージョンを single source of truth である composite action の既定値に統一する。
-    uses: genzouw/ci-workflows/.github/workflows/gitleaks.yml@fbeb478a0bf8d8f68035ac4beb7cba356b3382ba # genzouw/ci-workflows#14 (composite action 経由に統一, 8.30.1)
+    uses: genzouw/ci-workflows/.github/workflows/gitleaks.yml@8769c28e03093662f2012c863156180f08d80f5a # genzouw/ci-workflows#14 (composite action 経由に統一, 8.30.1)
