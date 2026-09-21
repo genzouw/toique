@@ -73,6 +73,8 @@ export default function Layout() {
     <div className="flex flex-col md:flex-row h-full bg-slate-50">
       <MobileHeader
         onOpen={openSidebar}
+        isOpen={isSidebarOpen}
+        ariaControls="mobile-sidebar-panel"
         headerClassName="bg-white border-b border-slate-200"
         menuButtonClassName="text-slate-600 hover:bg-slate-100"
         header={
@@ -86,6 +88,7 @@ export default function Layout() {
       <SidebarOverlay isOpen={isSidebarOpen} onClose={closeSidebar} />
 
       <SidebarPanel
+        id="mobile-sidebar-panel"
         isOpen={isSidebarOpen}
         onClose={closeSidebar}
         sidebarClassName="bg-white border-r border-slate-200"

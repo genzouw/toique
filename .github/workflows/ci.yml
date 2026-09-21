@@ -74,7 +74,7 @@ jobs:
         run: bash scripts/check-migrations.sh
 
   scripts-test:
-    name: Scripts (fail-on-sensitive-file regression test)
+    name: Scripts (regression tests)
     # フロントエンド/バックエンドの変更有無に関わらず常に実行する。
     # SAFE_FILE_PATTERNS の許可リストはコミットブロッカーの安全装置そのものであり、
     # このスクリプトを変更していない PR でも依存関係の更新等で bun/node の挙動が
@@ -93,6 +93,10 @@ jobs:
           bun-version: 1.4.2
       - name: Run fail-on-sensitive-file.mjs regression test
         run: bun test scripts/fail-on-sensitive-file.test.mjs
+      - name: Run normalize-pr-title.mjs regression test
+        run: bun test scripts/normalize-pr-title.test.mjs
+      - name: Run find-gitleaks-bin.sh regression test
+        run: bun test scripts/lib/find-gitleaks-bin.test.mjs
 
   frontend:
     name: Frontend (lint / typecheck / format / test / build)
