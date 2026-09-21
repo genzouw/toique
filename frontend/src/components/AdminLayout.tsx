@@ -27,6 +27,8 @@ export default function AdminLayout() {
     <div className="flex flex-col md:flex-row h-full bg-slate-50">
       <MobileHeader
         onOpen={openSidebar}
+        isOpen={isSidebarOpen}
+        ariaControls="admin-mobile-sidebar-panel"
         headerClassName="bg-slate-900 text-slate-100 border-b border-slate-800"
         menuButtonClassName="text-slate-300 hover:bg-slate-800"
         header={
@@ -45,6 +47,7 @@ export default function AdminLayout() {
       <SidebarOverlay isOpen={isSidebarOpen} onClose={closeSidebar} />
 
       <SidebarPanel
+        id="admin-mobile-sidebar-panel"
         isOpen={isSidebarOpen}
         onClose={closeSidebar}
         sidebarClassName="border-r border-slate-800 bg-slate-900 text-slate-100"
