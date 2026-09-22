@@ -3,9 +3,6 @@ name: TruffleHog
 on:
   push:
   pull_request:
-  schedule:
-    # 毎週月曜 06:00 JST (= 日曜 21:00 UTC) に履歴全体を再スキャン
-    - cron: '0 21 * * 0'
   workflow_dispatch:
 
 concurrency:
@@ -18,7 +15,7 @@ permissions:
 jobs:
   trufflehog:
     name: Scan for leaked secrets (TruffleHog)
-    if: github.event_name == 'push' || github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' || (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name != github.repository)
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch' || (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name != github.repository)
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -44,8 +41,8 @@ jobs:
         uses: trufflesecurity/trufflehog@f714bf454f350590f4a24c3ddb1aef02c35bf5b6 # v3.97.5
         with:
           # base が空文字の場合は「base 指定なし = head までの履歴全体をスキャン」となり、
-          # schedule 実行と同じ経路に落ちる。これは部分検査への劣化ではなく、より広い範囲を
-          # 検査する安全側の挙動である。
+          # secret-scan.yml の定期実行と同じ経路に落ちる。これは部分検査への劣化ではなく、
+          # より広い範囲を検査する安全側の挙動である。
           #
           # 逆に到達不能なコミットを base に渡すと TruffleHog は
           # "unable to resolve commit: object not found" で内部エラーになるにもかかわらず
