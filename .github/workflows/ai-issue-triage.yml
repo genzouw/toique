@@ -30,14 +30,19 @@ jobs:
       - name: Install and Start Ollama
         env:
           OLLAMA_VERSION: v0.34.2
+          # SHA-256 of ollama-linux-amd64.tar.zst for OLLAMA_VERSION above, taken from
+          # https://github.com/ollama/ollama/releases/download/v0.34.2/sha256sum.txt.
+          # This must be updated together with OLLAMA_VERSION when bumping the version,
+          # so the checksum comes from a source independent of the release artifact
+          # being verified (a compromised release can't rewrite this file at runtime).
+          OLLAMA_TARBALL_SHA256: e155b83589986d2c581fdbf1381ea3ebdb16549883679cd5a0627f7cdc05b12b
         run: |
           set -euo pipefail
           TARBALL="ollama-linux-amd64.tar.zst"
           curl -fsSL -o "$TARBALL" "https://github.com/ollama/ollama/releases/download/${OLLAMA_VERSION}/${TARBALL}"
-          curl -fsSL -o sha256sum.txt "https://github.com/ollama/ollama/releases/download/${OLLAMA_VERSION}/sha256sum.txt"
-          grep "${TARBALL}\$" sha256sum.txt | sha256sum -c -
+          echo "${OLLAMA_TARBALL_SHA256}  ${TARBALL}" | sha256sum -c -
           sudo tar --zstd -C /usr/local -xf "$TARBALL"
-          rm -f "$TARBALL" sha256sum.txt
+          rm -f "$TARBALL"
           ollama serve > ollama.log 2>&1 &
           for i in $(seq 1 30); do
             if curl -fsS http://127.0.0.1:11434/api/version > /dev/null 2>&1; then
