@@ -69,6 +69,7 @@ AI によるレビュー・トリアージの代替方針は第5節を参照し�
 
 - **AI a11y Scanner (`ai-a11y-scanner.yml`)**: フロントエンドの変更に対して、アクセシビリティ（a11y）の専門的な観点からレビューを行い、`reviewdog` を通じて PR にインラインコメントを投稿します。
 - **AI Auto Documenter (`ai-auto-documenter.yml`)**: PR の差分を解析し、変更内容の要約を自動生成して PR にコメントとして追加します。
+- **AI Issue Triage (`ai-issue-triage.yml`)**: 新規発行された Issue に対して、内容のキーワード抽出と DuckDuckGo を用いた Web 検索を行い、役立つ技術情報や解決策の要約を自動でコメントします。
 
 これらのワークフローは、API クオータや計算リソースを最適化するため、変更が軽微（trivial diff）な場合には推論を自動的にスキップする設計になっています。また、動作にシークレットを必要としないため、フォークや Dependabot からの PR でも安全に動作します。ただし GitHub の仕様上、フォーク PR および Dependabot PR では `GITHUB_TOKEN` が読み取り専用に制限されるため、これらの PR では推論・解析自体は実行しつつ、結果の投稿（`reviewdog` によるインラインコメント、`gh pr comment` による要約コメント）はスキップします。
 
@@ -100,7 +101,7 @@ AI によるレビュー・トリアージは、リポジトリ側に API キー
 - **GitHub Agentic Workflows (`gh-aw`)**: 2026年に一度導入しましたが、`copilot` エンジンが GitHub Copilot の premium request / AI クレジットを消費する**有料**サービスであり、無料方針と両立しないため撤去しました。関連ファイル（`.github/workflows/*-agent.md`、`*.lock.yml`、`.github/aw/`）はすべて削除済みです。`gh aw compile` で再生成すると課金と CI 失敗が復活するため、再導入しないでください。
 - **Qodo Merge (旧 PR-Agent / CodiumAI)**: 恒久的な無料プランがありません（公式料金ページの FAQ に `We don't offer a permanent free tier` と明記）。無料で使えるのは 14 日間のトライアルか、審査制の [Qodo for Open Source](https://docs.qodo.ai/open-source-program)（公開リポジトリかつ **star 200 以上**、または Organization 内に star 200 以上の公開リポジトリが 1 つ以上）のみで、本リポジトリは条件未達です。未使用のまま残っていた `.pr_agent.toml` は 2026-09 に削除しました。自己ホスト版の `The-PR-Agent/pr-agent` Action は LLM の API キー（`OPENAI_KEY` 等）を必須とするため、こちらも採用できません。
 - **外部AIプロバイダの API キーを要するもの**（Gemini API、OpenAI API、Anthropic API など）: [AGENTS.md](../AGENTS.md) 第1節のとおり、無料枠の有無にかかわらず採用しません。CI ワークフローから `GEMINI_API_KEY` / `EXA_API_KEY` / `TAVILY_API_KEY` 等の従量課金 API キーを参照する構成の追加は MUST NOT です。
-  - `.github/workflows/ai-gemini-pr-review.yml`（PR #768）、`.github/workflows/ai-issue-triage.yml` と `.github/scripts/issue-triage.py`、および両者が利用していた `.github/actions/ai-web-search` はこの方針に反するため撤去済みです。`GEMINI_API_KEY` 等は本リポジトリの Secrets に未登録で、実害なく削除できることを確認しています。
+  - `.github/workflows/ai-gemini-pr-review.yml`（PR #768）、および利用していた `.github/actions/ai-web-search` はこの方針に反するため撤去済みです。`GEMINI_API_KEY` 等は本リポジトリの Secrets に未登録で、実害なく削除できることを確認しています。
 
 **本方針の適用範囲（AI 推論と Web 検索の区別）:**
 

@@ -1,0 +1,65 @@
+name: AI Issue Triage (Local Ollama)
+
+on:
+  issues:
+    types: [opened]
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  triage:
+    name: Run AI Issue Triage
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@e14015d583714f6e62063499dc959a02595150a1 # v2.21.1
+        with:
+          egress-policy: audit
+
+      - name: Checkout code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Setup uv
+        uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
+
+      - name: Install and Start Ollama
+        env:
+          OLLAMA_VERSION: v0.34.2
+        run: |
+          set -euo pipefail
+          TARBALL="ollama-linux-amd64.tar.zst"
+          curl -fsSL -o "$TARBALL" "https://github.com/ollama/ollama/releases/download/${OLLAMA_VERSION}/${TARBALL}"
+          curl -fsSL -o sha256sum.txt "https://github.com/ollama/ollama/releases/download/${OLLAMA_VERSION}/sha256sum.txt"
+          grep "${TARBALL}\$" sha256sum.txt | sha256sum -c -
+          sudo tar --zstd -C /usr/local -xf "$TARBALL"
+          rm -f "$TARBALL" sha256sum.txt
+          ollama serve > ollama.log 2>&1 &
+          for i in $(seq 1 30); do
+            if curl -fsS http://127.0.0.1:11434/api/version > /dev/null 2>&1; then
+              break
+            fi
+            if [ "$i" -eq 30 ]; then
+              echo "Ollama server did not become ready within 30s" >&2
+              exit 1
+            fi
+            sleep 1
+          done
+          ollama pull qwen2.5-coder:0.5b
+
+      - name: Run Issue Triage script
+        env:
+          ISSUE_TITLE: ${{ github.event.issue.title }}
+          ISSUE_BODY: ${{ github.event.issue.body }}
+        run: |
+          uv run .github/scripts/issue-triage.py
+
+          if [ -f issue_research.md ]; then
+            GH_TOKEN="${{ secrets.GITHUB_TOKEN }}" gh issue comment "${{ github.event.issue.number }}" --body-file issue_research.md
+          fi
+
+          rm -f issue_research.md
