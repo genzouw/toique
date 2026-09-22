@@ -71,7 +71,7 @@ AI によるレビュー・トリアージの代替方針は第5節を参照し�
 - **AI Auto Documenter (`ai-auto-documenter.yml`)**: PR の差分を解析し、変更内容の要約を自動生成して PR にコメントとして追加します。
 - **AI Issue Triage (`ai-issue-triage.yml`)**: 新規発行された Issue に対して、内容のキーワード抽出と DuckDuckGo を用いた Web 検索を行い、役立つ技術情報や解決策の要約を自動でコメントします。
 
-これらのワークフローは、API クオータや計算リソースを最適化するため、変更が軽微（trivial diff）な場合には推論を自動的にスキップする設計になっています。また、動作にシークレットを必要としないため、フォークや Dependabot からの PR でも安全に動作します。ただし GitHub の仕様上、フォーク PR および Dependabot PR では `GITHUB_TOKEN` が読み取り専用に制限されるため、これらの PR では推論・解析自体は実行しつつ、結果の投稿（`reviewdog` によるインラインコメント、`gh pr comment` による要約コメント）はスキップします。
+PR 向けの AI a11y Scanner と AI Auto Documenter は、API クオータや計算リソースを最適化するため、変更が軽微（trivial diff）な場合には推論を自動的にスキップする設計になっています。また、この2つのワークフローはシークレットを必要としないため、フォークや Dependabot からの PR でも安全に動作します。ただし GitHub の仕様上、フォーク PR および Dependabot PR では `GITHUB_TOKEN` が読み取り専用に制限されるため、この2つのワークフローでは推論・解析自体は実行しつつ、結果の投稿（`reviewdog` によるインラインコメント、`gh pr comment` による要約コメント）はスキップします。
 
 ## 5. AI 実行基盤の方針: 無料枠のみを利用する
 
