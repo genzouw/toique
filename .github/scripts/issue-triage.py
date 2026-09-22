@@ -9,6 +9,7 @@
 import sys
 import os
 import re
+import html
 import ollama
 import warnings
 
@@ -19,14 +20,16 @@ with warnings.catch_warnings():
 NUM_CTX = 8192
 
 def extract_keywords(issue_title, issue_body):
+    safe_title = html.escape(issue_title, quote=True)
+    safe_body = html.escape(issue_body[:3000], quote=True)
     prompt = f"""
     あなたは有能なシニアエンジニアです。以下のIssueのタイトルと本文から、
     このIssueに関連する最新の技術情報や解決策をWeb検索するための
     検索キーワードを3〜5単語程度で1つだけ提案してください。
     出力は検索キーワードの文字列のみとしてください。それ以外の説明やマークダウンは不要です。
 
-    Issue タイトル: <user_input>{issue_title}</user_input>
-    Issue 本文: <user_input>{issue_body[:3000]}</user_input>
+    Issue タイトル: <user_input>{safe_title}</user_input>
+    Issue 本文: <user_input>{safe_body}</user_input>
     """
 
     try:
@@ -95,7 +98,10 @@ def summarize_findings(query, search_results):
 
     formatted_results = []
     for idx, res in enumerate(search_results, start=1):
-        formatted_results.append(f"[{idx}] {res.get('title', '')} ({res.get('href', '')})\n{res.get('body', '')}")
+        safe_title = html.escape(res.get('title', ''), quote=True)
+        safe_href = html.escape(res.get('href', ''), quote=True)
+        safe_body = html.escape(res.get('body', ''), quote=True)
+        formatted_results.append(f"[{idx}] {safe_title} ({safe_href})\n{safe_body}")
 
     results_text = "\n\n".join(formatted_results)
 
