@@ -58,7 +58,7 @@ jobs:
 
       - name: Setup uv
         if: steps.check_diff.outputs.skip != 'true'
-        uses: astral-sh/setup-uv@bec219d24cd3e171d82865faccec33120bb574f4 # v10.1.0
+        uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
 
       - name: Install and Start Ollama
         if: steps.check_diff.outputs.skip != 'true'
@@ -89,7 +89,7 @@ jobs:
         if: steps.check_diff.outputs.skip != 'true'
         uses: reviewdog/action-setup@d8a7baabd7f3e8544ee4dbde3ee41d0011c3a93f # v1.5.0
         with:
-          reviewdog_version: v0.21.0
+          reviewdog_version: v0.21.2
 
       - name: Run AI Scanner
         if: steps.check_diff.outputs.skip != 'true'
