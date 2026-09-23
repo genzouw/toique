@@ -30,7 +30,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
-    "@types/node": "^26.6.1",
+    "@types/node": "^26.6.2",
     "@types/nodemailer": "^8.0.2",
     "@vitest/coverage-istanbul": "^5.0.1",
     "drizzle-kit": "^0.31.10",
