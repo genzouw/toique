@@ -142,7 +142,7 @@ graph TD
                 className="underline inline-flex items-center gap-1"
               >
                 LINE Developers
-                <ExternalLink size={ICON_SIZE.xs} />
+                <ExternalLink size={ICON_SIZE.xs} aria-hidden="true" />
               </a>{' '}
               のトップページ右上にある「
               <strong>コンソールにログイン</strong>」から{' '}
@@ -225,7 +225,7 @@ graph TD
                 className="underline inline-flex items-center gap-1"
               >
                 LINE Developers Console
-                <ExternalLink size={ICON_SIZE.xs} />
+                <ExternalLink size={ICON_SIZE.xs} aria-hidden="true" />
               </a>{' '}
               にログイン
             </li>
