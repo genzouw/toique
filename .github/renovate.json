@@ -63,6 +63,22 @@
       ]
     },
     {
+      "description": [
+        "codeql-action の init/analyze/upload-sarif はバージョンを揃える必要があるためまとめて更新する。",
+        "サブパスが異なる Action は Renovate が別々の依存として扱うため、groupName を明示しないと",
+        "別々の PR に分かれてしまい、config バージョンと実行バージョンが不一致になって",
+        "CodeQL の Analyze ジョブが落ちる (PR #868 / #870, 過去には #746-#748 / #796-#798)。",
+        "削除した .github/dependabot.yml の groups.codeql-action と同じ範囲を維持する。"
+      ],
+      "matchManagers": [
+        "github-actions"
+      ],
+      "matchPackageNames": [
+        "github/codeql-action/**"
+      ],
+      "groupName": "codeql-action"
+    },
+    {
       "description": "Docker ベースイメージの更新には docker ラベルを付ける",
       "matchManagers": [
         "dockerfile",
