@@ -29,19 +29,19 @@ jobs:
 
       - name: Install and Start Ollama
         env:
-          OLLAMA_VERSION: v0.5.7
-          # SHA-256 of ollama-linux-amd64.tgz for OLLAMA_VERSION above, taken from
-          # https://github.com/ollama/ollama/releases/download/v0.5.7/sha256sum.txt.
+          OLLAMA_VERSION: v0.34.2
+          # SHA-256 of ollama-linux-amd64.tar.zst for OLLAMA_VERSION above, taken from
+          # https://github.com/ollama/ollama/releases/download/v0.34.2/sha256sum.txt.
           # This must be updated together with OLLAMA_VERSION when bumping the version,
           # so the checksum comes from a source independent of the release artifact
           # being verified (a compromised release can't rewrite this file at runtime).
-          OLLAMA_TARBALL_SHA256: 8d4e054bc512d53115074c19de5a7915df78180f89c014abbae4497e4a813a3c # pragma: allowlist secret
+          OLLAMA_TARBALL_SHA256: e155b83589986d2c581fdbf1381ea3ebdb16549883679cd5a0627f7cdc05b12b # pragma: allowlist secret
         run: |
           set -euo pipefail
-          TARBALL="ollama-linux-amd64.tgz"
+          TARBALL="ollama-linux-amd64.tar.zst"
           curl -fsSL -o "$TARBALL" "https://github.com/ollama/ollama/releases/download/${OLLAMA_VERSION}/${TARBALL}"
           echo "${OLLAMA_TARBALL_SHA256}  ${TARBALL}" | sha256sum -c -
-          sudo tar -C /usr/local -xzf "$TARBALL"
+          sudo tar --zstd -C /usr/local -xf "$TARBALL"
           rm -f "$TARBALL"
           ollama serve > ollama.log 2>&1 &
           for i in $(seq 1 30); do

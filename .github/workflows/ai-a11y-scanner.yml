@@ -63,14 +63,14 @@ jobs:
       - name: Install and Start Ollama
         if: steps.check_diff.outputs.skip != 'true'
         env:
-          OLLAMA_VERSION: v0.5.7
+          OLLAMA_VERSION: v0.34.2
         run: |
           set -euo pipefail
-          TARBALL="ollama-linux-amd64.tgz"
+          TARBALL="ollama-linux-amd64.tar.zst"
           curl -fsSL -o "$TARBALL" "https://github.com/ollama/ollama/releases/download/${OLLAMA_VERSION}/${TARBALL}"
           curl -fsSL -o sha256sum.txt "https://github.com/ollama/ollama/releases/download/${OLLAMA_VERSION}/sha256sum.txt"
           grep "${TARBALL}\$" sha256sum.txt | sha256sum -c -
-          sudo tar -C /usr/local -xzf "$TARBALL"
+          sudo tar --zstd -C /usr/local -xf "$TARBALL"
           rm -f "$TARBALL" sha256sum.txt
           ollama serve > ollama.log 2>&1 &
           for i in $(seq 1 30); do
