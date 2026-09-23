@@ -23,6 +23,10 @@ def strip_thinking(text):
     # deepseek-r1系モデルは ollama.chat() の `think` オプションを使わない限り、
     # 最終回答の前に <think>...</think> で推論過程を content にそのまま出力する。
     # 除去しないと、この推論テキストが検索語・要約・Issueコメントにそのまま漏れる。
+    # 閉じタグの無い <think> は推論文が残るため、正常な応答として扱わず例外にする
+    # （各呼び出し元の既存フォールバックへ進む）。
+    if "<think>" in text and "</think>" not in text:
+        raise ValueError("Unterminated <think> block")
     return re.sub(r'<think>.*?</think>', '', text, flags=re.DOTALL).strip()
 
 def extract_keywords(issue_title, issue_body):
@@ -60,6 +64,8 @@ def extract_keywords(issue_title, issue_body):
 
 def sanitize_query(query):
     query = query.replace("`", "").replace("\n", " ").strip()
+    if not query:
+        return "software engineering best practices"
     if re.search(r'https?://|www\.', query):
         return "software engineering best practices"
     return query[:100]

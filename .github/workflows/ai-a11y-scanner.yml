@@ -122,6 +122,10 @@ jobs:
               # deepseek-r1系モデルは ollama.chat() の `think` オプションを使わない限り、
               # 最終回答の前に <think>...</think> で推論過程を content にそのまま出力する。
               # 除去しないとRDJSONのパースに失敗し、診断が静かに空になる。
+              # 閉じタグの無い <think> は推論文が残るため、正常な応答として扱わず例外にする
+              # （各呼び出し元の既存フォールバックへ進む）。
+              if "<think>" in text and "</think>" not in text:
+                  raise ValueError("Unterminated <think> block")
               return re.sub(r'<think>.*?</think>', '', text, flags=re.DOTALL).strip()
 
           def chunk_diff(diff_content, limit):
