@@ -1,0 +1,326 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "config:recommended",
+    "helpers:pinGitHubActionDigests"
+  ],
+  "semanticCommits": "enabled",
+  "semanticCommitScope": "deps",
+  "timezone": "Asia/Tokyo",
+  "schedule": [
+    "* 9-11 * * *"
+  ],
+  "minimumReleaseAge": "7 days",
+  "pre-commit": {
+    "description": [
+      "pre-commit manager は無効にする。",
+      ".pre-commit-config.yaml の rev 更新は .github/workflows/pre-commit-autoupdate.yml が",
+      "deny-list 運用で行っており、Renovate を有効にすると同じ rev に対して二重に更新がかかる。",
+      "とくに detect-secrets は .secrets.baseline / .husky/pre-commit / package.json にも",
+      "版が固定されており、rev だけを上げるとフォールバック経路が動かなくなるため、",
+      "当該ワークフローが意図的に対象外にしている。"
+    ],
+    "enabled": false
+  },
+  "prConcurrentLimit": 10,
+  "labels": [
+    "dependencies"
+  ],
+  "reviewers": [
+    "genzouw"
+  ],
+  "vulnerabilityAlerts": {
+    "description": [
+      "脆弱性修正は minimumReleaseAge と schedule の対象外にして即時 PR にする。",
+      "Dependabot の cooldown が security updates に効かなかったのと同じ挙動を保つため。"
+    ],
+    "minimumReleaseAge": null,
+    "schedule": [],
+    "addLabels": [
+      "security"
+    ]
+  },
+  "packageRules": [
+    {
+      "description": [
+        "依存更新はすべて chore プレフィックスで出す。",
+        "config:recommended に含まれる :semanticPrefixFixDepsChoreOthers は本番依存を fix にするが、",
+        "fix は release 生成ツールがリリース対象として扱うため、Dependabot 時代と同じ chore に固定する。"
+      ],
+      "matchPackageNames": [
+        "*"
+      ],
+      "semanticCommitType": "chore"
+    },
+    {
+      "description": "GitHub Actions の更新のプレフィックスとラベル (Dependabot の commit-message.prefix と同じ)",
+      "matchManagers": [
+        "github-actions"
+      ],
+      "semanticCommitType": "ci",
+      "addLabels": [
+        "github-actions"
+      ]
+    },
+    {
+      "description": "Docker ベースイメージの更新には docker ラベルを付ける",
+      "matchManagers": [
+        "dockerfile",
+        "docker-compose"
+      ],
+      "addLabels": [
+        "docker"
+      ]
+    },
+    {
+      "description": "ディレクトリごとのラベル (Dependabot の labels と同じ)",
+      "matchFileNames": [
+        "backend/**"
+      ],
+      "addLabels": [
+        "backend"
+      ]
+    },
+    {
+      "matchFileNames": [
+        "frontend/**"
+      ],
+      "addLabels": [
+        "frontend"
+      ]
+    },
+    {
+      "matchFileNames": [
+        "package.json",
+        "bun.lock"
+      ],
+      "addLabels": [
+        "root"
+      ]
+    },
+    {
+      "description": [
+        "infra (CDKTF) は version update の自動 PR を出さない。",
+        "Dependabot では open-pull-requests-limit: 0 で止めていた。",
+        "Renovate には同等のオプションが無いため dependencyDashboardApproval で",
+        "Dependency Dashboard からの手動承認制にする。",
+        "vulnerabilityAlerts は既定で dependencyDashboardApproval: false のため、",
+        "脆弱性修正だけは従来どおり自動で PR が作られる。"
+      ],
+      "matchFileNames": [
+        "infra/**"
+      ],
+      "addLabels": [
+        "infra"
+      ],
+      "dependencyDashboardApproval": true
+    },
+    {
+      "description": [
+        "cdktf がバンドルする archiver 等の内部依存 (bundleDependencies) にある脆弱性は",
+        "npm overrides でも上書きできず、更新 PR を作っても解決しない。",
+        "cdktf が同梱依存を更新するまで上流待ちのため対象外にする。"
+      ],
+      "matchFileNames": [
+        "infra/**"
+      ],
+      "matchPackageNames": [
+        "minimatch",
+        "glob",
+        "lodash",
+        "brace-expansion"
+      ],
+      "enabled": false
+    },
+    {
+      "description": "backend/frontend の eslint 関連をまとめる",
+      "matchManagers": [
+        "npm",
+        "bun"
+      ],
+      "matchPackageNames": [
+        "eslint",
+        "eslint-*",
+        "@eslint/**",
+        "typescript-eslint",
+        "@typescript-eslint/**"
+      ],
+      "groupName": "eslint"
+    },
+    {
+      "description": "テスト関連をまとめる",
+      "matchManagers": [
+        "npm",
+        "bun"
+      ],
+      "matchPackageNames": [
+        "vitest",
+        "@vitest/**",
+        "@testing-library/**",
+        "jsdom",
+        "@types/jsdom"
+      ],
+      "groupName": "testing"
+    },
+    {
+      "description": "typescript と型定義・tsx をまとめる",
+      "matchManagers": [
+        "npm",
+        "bun"
+      ],
+      "matchPackageNames": [
+        "typescript",
+        "tsx",
+        "@types/**"
+      ],
+      "groupName": "typescript"
+    },
+    {
+      "description": "drizzle をまとめる",
+      "matchManagers": [
+        "npm",
+        "bun"
+      ],
+      "matchPackageNames": [
+        "drizzle-orm",
+        "drizzle-kit"
+      ],
+      "groupName": "drizzle"
+    },
+    {
+      "description": "hono をまとめる",
+      "matchManagers": [
+        "npm",
+        "bun"
+      ],
+      "matchPackageNames": [
+        "hono",
+        "@hono/**"
+      ],
+      "groupName": "hono"
+    },
+    {
+      "description": "react 関連をまとめる",
+      "matchManagers": [
+        "npm",
+        "bun"
+      ],
+      "matchPackageNames": [
+        "react",
+        "react-dom",
+        "react-router"
+      ],
+      "groupName": "react"
+    },
+    {
+      "description": "tailwind 関連をまとめる",
+      "matchManagers": [
+        "npm",
+        "bun"
+      ],
+      "matchPackageNames": [
+        "tailwindcss",
+        "@tailwindcss/**",
+        "tw-animate-css"
+      ],
+      "groupName": "tailwind"
+    },
+    {
+      "description": "vite 関連をまとめる",
+      "matchManagers": [
+        "npm",
+        "bun"
+      ],
+      "matchPackageNames": [
+        "vite",
+        "@vitejs/**",
+        "vite-plugin-*"
+      ],
+      "groupName": "vite"
+    },
+    {
+      "description": [
+        "TypeScript 7 系は typescript-eslint が未対応で (peer の上限が typescript <6.1.0)、",
+        "上げると bun run lint が @typescript-eslint/typescript-estree の内部で",
+        "TypeError クラッシュし CI が必ず失敗する (PR #573 / #607)。",
+        "typescript-eslint が TS7 対応版を公開するまで major を止める。"
+      ],
+      "matchManagers": [
+        "npm",
+        "bun"
+      ],
+      "matchPackageNames": [
+        "typescript"
+      ],
+      "matchUpdateTypes": [
+        "major"
+      ],
+      "enabled": false
+    },
+    {
+      "description": [
+        "Docker の node イメージは LTS (偶数 major) だけを対象にする。",
+        "Dependabot では ignore で 23.x / 25.x / 27.x / 29.x を列挙していたが、",
+        "Renovate の node versioning が奇数 major (非 LTS) を除外するため列挙は不要になる。"
+      ],
+      "matchDatasources": [
+        "docker"
+      ],
+      "matchPackageNames": [
+        "node"
+      ],
+      "versioning": "node"
+    },
+    {
+      "description": [
+        "本番デプロイ経路 (id-token: write / CLOUDFLARE_API_TOKEN を扱う) で使う Action の",
+        "major は破壊的変更の検証が必須なため自動 PR の対象外にする。",
+        "minor / patch / SHA 追従は引き続き自動 PR で受け取る。"
+      ],
+      "matchManagers": [
+        "github-actions"
+      ],
+      "matchPackageNames": [
+        "cloudflare/wrangler-action",
+        "docker/build-push-action",
+        "docker/setup-buildx-action",
+        "dorny/paths-filter",
+        "google-github-actions/**",
+        "oven-sh/setup-bun"
+      ],
+      "matchUpdateTypes": [
+        "major"
+      ],
+      "enabled": false
+    },
+    {
+      "description": [
+        "major 以外と、開発用依存の更新は自動マージする。",
+        "削除した .github/workflows/dependabot-auto-merge.yml の条件",
+        "(update-type != semver-major || dependency-type == direct:development) と同じ範囲。"
+      ],
+      "matchUpdateTypes": [
+        "minor",
+        "patch",
+        "digest",
+        "pin"
+      ],
+      "automerge": true,
+      "platformAutomerge": true,
+      "automergeStrategy": "squash"
+    },
+    {
+      "description": "開発用依存は major も自動マージする (Dependabot の direct:development 条件に相当)",
+      "matchManagers": [
+        "npm",
+        "bun"
+      ],
+      "matchDepTypes": [
+        "devDependencies"
+      ],
+      "automerge": true,
+      "platformAutomerge": true,
+      "automergeStrategy": "squash"
+    }
+  ]
+}

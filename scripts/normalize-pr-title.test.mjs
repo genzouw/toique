@@ -105,10 +105,14 @@ describe('normalizePrTitle', () => {
     });
   });
 
-  it('Dependabot のタイトルを壊さない', () => {
-    const title =
+  it('依存更新 bot のタイトルを壊さない', () => {
+    const dependabotTitle =
       'chore(deps): bump better-auth from 1.7.4 to 1.7.5 in /backend';
-    expect(normalizePrTitle({ title }).action).toBe('none');
+    expect(normalizePrTitle({ title: dependabotTitle }).action).toBe('none');
+
+    // Renovate は `update` 形式のタイトルを出す。
+    const renovateTitle = 'chore(deps): update dependency better-auth to v1.7.5';
+    expect(normalizePrTitle({ title: renovateTitle }).action).toBe('none');
   });
 
   it('subject が大文字始まりの規約タイトルは先頭だけ小文字化する', () => {

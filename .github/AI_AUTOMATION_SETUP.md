@@ -3,9 +3,10 @@
 当リポジトリでは、2024年にパブリックリポジトリ向けに無料化された最新のAI機能および自動化機能を活用し、開発の自動化・セキュリティ向上を試験的に導入・検証しています。
 これらの機能を最大限活用するため、PRをマージする前に**リポジトリの管理者が手動で設定する必要がある項目**を以下に記載します。
 
-## 1. 依存関係の自動マージの有効化 (Dependabot Auto-merge)
+## 1. 依存関係の自動マージの有効化 (Renovate Auto-merge)
 
-Dependabotによるマイナー/パッチアップデートの自動マージ（`.github/workflows/dependabot-auto-merge.yml`）を機能させるために、リポジトリの設定で「Auto-merge」を許可する必要があります。
+Renovateによるマイナー/パッチアップデートおよび開発用依存の自動マージ（`.github/renovate.json` の `automerge`）を機能させるために、リポジトリの設定で「Auto-merge」を許可する必要があります。
+併せて、Mend Renovate App（<https://github.com/apps/renovate>）が本リポジトリにインストールされている必要があります（public リポジトリは無料）。
 
 **設定手順:**
 

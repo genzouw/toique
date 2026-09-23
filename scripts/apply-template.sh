@@ -59,7 +59,7 @@ COMMON_FILES=(
   ".github/workflows/markdownlint.yml"
   ".github/workflows/stale.yml"
   ".github/workflows/pr_conflict_notify.yml"
-  ".github/dependabot.yml"
+  ".github/renovate.json"
   ".github/PULL_REQUEST_TEMPLATE.md"
   ".coderabbit.yaml"
   ".prettierrc"
