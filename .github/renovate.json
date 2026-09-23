@@ -74,7 +74,7 @@
         "github-actions"
       ],
       "matchPackageNames": [
-        "github/codeql-action/**"
+        "github/codeql-action"
       ],
       "groupName": "codeql-action"
     },
