@@ -3,9 +3,11 @@
 当リポジトリでは、2024年にパブリックリポジトリ向けに無料化された最新のAI機能および自動化機能を活用し、開発の自動化・セキュリティ向上を試験的に導入・検証しています。
 これらの機能を最大限活用するため、PRをマージする前に**リポジトリの管理者が手動で設定する必要がある項目**を以下に記載します。
 
-## 1. 依存関係の自動マージの有効化 (Dependabot Auto-merge)
+## 1. 依存関係の自動マージの有効化 (Renovate Auto-merge)
 
-Dependabotによるマイナー/パッチアップデートの自動マージ（`.github/workflows/dependabot-auto-merge.yml`）を機能させるために、リポジトリの設定で「Auto-merge」を許可する必要があります。
+Renovateによるマイナー/パッチアップデートおよび開発用依存の自動マージ（`.github/renovate.json` の `automerge`）を機能させるために、リポジトリの設定で「Auto-merge」を許可する必要があります。
+併せて、Mend Renovate App（<https://github.com/apps/renovate>）が本リポジトリにインストールされている必要があります（public リポジトリは無料）。
+Renovate の脆弱性修正 PR（`vulnerabilityAlerts`）は GitHub の Dependabot alerts を参照します。**Settings → Code security** で「Dependency graph」と「Dependabot alerts」は有効のままにしてください。PR の重複を避けるため、「Dependabot security updates」は無効にしてください（第2節参照）。
 
 **設定手順:**
 
@@ -24,12 +26,12 @@ Dependabotによるマイナー/パッチアップデートの自動マージ（
 
 1. GitHubリポジトリの **Settings** を開く。
 2. 左側メニューの **Code security and analysis** を選択する。
-3. 以下の機能をそれぞれ **Enable**（有効化）する。
-   - **Dependabot alerts**
-   - **Dependabot security updates**
-   - **Code scanning alerts** (CodeQLは既に `.github/workflows/codeql.yml` で構成済み)
-   - **Secret scanning**
-   - **Secret scanning push protection**
+3. 以下の機能を設定する。
+   - **Dependabot alerts**: **Enable**（有効化）する（Renovate の `vulnerabilityAlerts` がこのアラートを参照するため必須）。
+   - **Dependabot security updates**: **Disable**（無効化）する（Renovate の `vulnerabilityAlerts` と重複して脆弱性修正 PR が作られるのを防ぐため。第1節参照）。
+   - **Code scanning alerts** (CodeQLは既に `.github/workflows/codeql.yml` で構成済み): **Enable**（有効化）する。
+   - **Secret scanning**: **Enable**（有効化）する。
+   - **Secret scanning push protection**: **Enable**（有効化）する。
 4. 組織設定（Organization Settings）で Copilot の機能が有効化されている場合、Code scanning の設定内に **Copilot Autofix** のトグルが表示されるので、それを **On** にする。
 
 ## 3. GitHub Models 依存ワークフローの撤去 (2026-07-30 提供終了)
