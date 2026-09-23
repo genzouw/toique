@@ -98,6 +98,7 @@ jobs:
           # ///
 
           import sys
+          import re
           import ollama
 
           # Ollama on GitHub-hosted (VRAM-less) runners defaults num_ctx to 4096,
@@ -106,6 +107,12 @@ jobs:
           # silently truncated by Ollama's internal context shifting.
           NUM_CTX = 8192
           CHUNK_CHAR_LIMIT = 12000
+
+          def strip_thinking(text):
+              # deepseek-r1系モデルは ollama.chat() の `think` オプションを使わない限り、
+              # 最終回答の前に <think>...</think> で推論過程を content にそのまま出力する。
+              # 除去しないと、この推論テキストがそのままPRサマリーコメントに漏れる。
+              return re.sub(r'<think>.*?</think>', '', text, flags=re.DOTALL).strip()
 
           def chunk_diff(diff_content, limit):
               chunks = []
@@ -170,7 +177,7 @@ jobs:
                       ],
                       options={'num_ctx': NUM_CTX}
                   )
-                  return response['message']['content']
+                  return strip_thinking(response['message']['content'])
               except Exception as e:
                   print(f"Error during Ollama inference: {e}", file=sys.stderr)
                   return None

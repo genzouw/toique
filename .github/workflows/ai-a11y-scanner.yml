@@ -108,6 +108,7 @@ jobs:
 
           import sys
           import json
+          import re
           import ollama
 
           # Ollama on GitHub-hosted (VRAM-less) runners defaults num_ctx to 4096,
@@ -116,6 +117,12 @@ jobs:
           # silently truncated by Ollama's internal context shifting.
           NUM_CTX = 8192
           CHUNK_CHAR_LIMIT = 12000
+
+          def strip_thinking(text):
+              # deepseek-r1系モデルは ollama.chat() の `think` オプションを使わない限り、
+              # 最終回答の前に <think>...</think> で推論過程を content にそのまま出力する。
+              # 除去しないとRDJSONのパースに失敗し、診断が静かに空になる。
+              return re.sub(r'<think>.*?</think>', '', text, flags=re.DOTALL).strip()
 
           def chunk_diff(diff_content, limit):
               chunks = []
@@ -204,7 +211,7 @@ jobs:
                       options={'num_ctx': NUM_CTX}
                   )
 
-                  result_text = response['message']['content']
+                  result_text = strip_thinking(response['message']['content'])
 
                   if "```json" in result_text:
                       result_text = result_text.split("```json")[1].split("```")[0].strip()

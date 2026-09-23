@@ -19,6 +19,12 @@ with warnings.catch_warnings():
 
 NUM_CTX = 8192
 
+def strip_thinking(text):
+    # deepseek-r1系モデルは ollama.chat() の `think` オプションを使わない限り、
+    # 最終回答の前に <think>...</think> で推論過程を content にそのまま出力する。
+    # 除去しないと、この推論テキストが検索語・要約・Issueコメントにそのまま漏れる。
+    return re.sub(r'<think>.*?</think>', '', text, flags=re.DOTALL).strip()
+
 def extract_keywords(issue_title, issue_body):
     safe_title = html.escape(issue_title, quote=True)
     safe_body = html.escape(issue_body[:3000], quote=True)
@@ -47,7 +53,7 @@ def extract_keywords(issue_title, issue_body):
             ],
             options={'num_ctx': NUM_CTX}
         )
-        return response['message']['content'].strip()
+        return strip_thinking(response['message']['content'])
     except Exception as e:
         print(f"Error during keyword extraction: {e}", file=sys.stderr)
         return "software engineering best practices"
@@ -132,7 +138,7 @@ def summarize_findings(query, search_results):
             ],
             options={'num_ctx': NUM_CTX}
         )
-        return response['message']['content'].strip()
+        return strip_thinking(response['message']['content'])
     except Exception as e:
         print(f"Error during summarization: {e}", file=sys.stderr)
         return "要約の生成に失敗しました。"
