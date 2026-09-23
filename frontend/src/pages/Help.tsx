@@ -143,6 +143,7 @@ graph TD
               >
                 LINE Developers
                 <ExternalLink size={ICON_SIZE.xs} aria-hidden="true" />
+                <span className="sr-only">（新しいウィンドウで開きます）</span>
               </a>{' '}
               のトップページ右上にある「
               <strong>コンソールにログイン</strong>」から{' '}
@@ -226,6 +227,7 @@ graph TD
               >
                 LINE Developers Console
                 <ExternalLink size={ICON_SIZE.xs} aria-hidden="true" />
+                <span className="sr-only">（新しいウィンドウで開きます）</span>
               </a>{' '}
               にログイン
             </li>
