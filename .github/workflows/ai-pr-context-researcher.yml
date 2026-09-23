@@ -70,14 +70,14 @@ jobs:
           github.event.pull_request.head.repo.full_name == github.repository &&
           github.event.pull_request.user.login != 'dependabot[bot]'
         env:
-          OLLAMA_VERSION: v0.34.2
+          OLLAMA_VERSION: v0.5.7
         run: |
           set -euo pipefail
-          TARBALL="ollama-linux-amd64.tar.zst"
+          TARBALL="ollama-linux-amd64.tgz"
           curl -fsSL -o "$TARBALL" "https://github.com/ollama/ollama/releases/download/${OLLAMA_VERSION}/${TARBALL}"
           curl -fsSL -o sha256sum.txt "https://github.com/ollama/ollama/releases/download/${OLLAMA_VERSION}/sha256sum.txt"
           grep "${TARBALL}\$" sha256sum.txt | sha256sum -c -
-          sudo tar --zstd -C /usr/local -xf "$TARBALL"
+          sudo tar -C /usr/local -xzf "$TARBALL"
           rm -f "$TARBALL" sha256sum.txt
           ollama serve > ollama.log 2>&1 &
           for i in $(seq 1 30); do
@@ -90,7 +90,7 @@ jobs:
             fi
             sleep 1
           done
-          ollama pull qwen2.5-coder:0.5b
+          ollama pull deepseek-r1:1.5b
 
       - name: Run Web Research
         if: |
@@ -141,7 +141,7 @@ jobs:
 
               try:
                   response = ollama.chat(
-                      model='qwen2.5-coder:0.5b',
+                      model='deepseek-r1:1.5b',
                       messages=[
                           {
                               'role': 'system',
@@ -160,7 +160,7 @@ jobs:
                   return "TypeScript React best practices"
 
           def sanitize_query(query):
-              # extract_keywords() の戻り値はローカルLLM（qwen2.5-coder:0.5b）の出力であり、
+              # extract_keywords() の戻り値はローカルLLM（deepseek-r1:1.5b）の出力であり、
               # システムプロンプトで指示していても0.5Bモデルの出力を完全には制御できない。
               # バッククォートや改行が混ざれば書き込み先Markdownの表示が崩れ、URLが混ざれば
               # validate_summary()がまさに防ごうとしている「検索結果に由来しない未承認リンク
@@ -232,7 +232,7 @@ jobs:
 
               try:
                   response = ollama.chat(
-                      model='qwen2.5-coder:0.5b',
+                      model='deepseek-r1:1.5b',
                       messages=[
                           {
                               'role': 'system',
