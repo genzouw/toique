@@ -25,9 +25,11 @@ def strip_thinking(text):
     # 除去しないと、この推論テキストが検索語・要約・Issueコメントにそのまま漏れる。
     # 閉じタグの無い <think> は推論文が残るため、正常な応答として扱わず例外にする
     # （各呼び出し元の既存フォールバックへ進む）。
-    if "<think>" in text and "</think>" not in text:
+    cleaned = re.sub(r'<think>.*?</think>', '', text, flags=re.DOTALL).strip()
+    # 完全なブロックの後ろに閉じタグの無いブロックが続く場合も、除去後に <think> が残る。
+    if "<think>" in cleaned:
         raise ValueError("Unterminated <think> block")
-    return re.sub(r'<think>.*?</think>', '', text, flags=re.DOTALL).strip()
+    return cleaned
 
 def extract_keywords(issue_title, issue_body):
     safe_title = html.escape(issue_title, quote=True)
