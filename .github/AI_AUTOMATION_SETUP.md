@@ -67,7 +67,7 @@ AI によるレビュー・トリアージの代替方針は第5節を参照し�
 
 **ローカル AI を活用した追加のレビュー自動化:**
 
-さらに当リポジトリでは、GitHub Actions 上で動作する完全無料のローカル AI 基盤として **Ollama (`qwen2.5-coder:0.5b`)** を導入しています。外部 API への依存や従量課金 API キー（Secret）の登録を一切必要とせず、以下の機能を提供します。
+さらに当リポジトリでは、GitHub Actions 上で動作する完全無料のローカル AI 基盤として **Ollama (`deepseek-r1:1.5b`)** を導入しています。外部 API への依存や従量課金 API キー（Secret）の登録を一切必要とせず、以下の機能を提供します。
 
 - **AI a11y Scanner (`ai-a11y-scanner.yml`)**: フロントエンドの変更に対して、アクセシビリティ（a11y）の専門的な観点からレビューを行い、`reviewdog` を通じて PR にインラインコメントを投稿します。
 - **AI Auto Documenter (`ai-auto-documenter.yml`)**: PR の差分を解析し、変更内容の要約を自動生成して PR にコメントとして追加します。
@@ -88,7 +88,7 @@ PR 向けの AI a11y Scanner と AI Auto Documenter は、API クオータや計
 
 **現行の方針: GitHub ネイティブの無料 AI 推論基盤は存在しないため、リポジトリ側で AI 推論を実行するワークフローは新規に追加しません。**
 
-**例外: [AGENTS.md](../AGENTS.md) §1.3 が MAY としている、Secrets 不要のローカル LLM（Ollama / llama.cpp 等）を GitHub-hosted runner 上で動かす構成は、上記の「新規に追加しない」方針の対象外です。** 第4節の **AI a11y Scanner** (`ai-a11y-scanner.yml`) と **AI Auto Documenter** (`ai-auto-documenter.yml`) は、外部 API キーを一切使わずローカルの Ollama (`qwen2.5-coder:0.5b`) のみで推論するため、この例外に該当します。フォーク PR でも（結果投稿を除き）実行可能です。
+**例外: [AGENTS.md](../AGENTS.md) §1.3 が MAY としている、Secrets 不要のローカル LLM（Ollama / llama.cpp 等）を GitHub-hosted runner 上で動かす構成は、上記の「新規に追加しない」方針の対象外です。** 第4節の **AI a11y Scanner** (`ai-a11y-scanner.yml`) と **AI Auto Documenter** (`ai-auto-documenter.yml`) は、外部 API キーを一切使わずローカルの Ollama (`deepseek-r1:1.5b`) のみで推論するため、この例外に該当します。フォーク PR でも（結果投稿を除き）実行可能です。
 
 AI によるレビュー・トリアージは、リポジトリ側に API キーも課金設定も必要としない外部 App（CodeRabbit、第4節参照）に一本化します。上記のローカル LLM ワークフローは、この方針に対する Secrets 不要の例外として併用しています。
 
