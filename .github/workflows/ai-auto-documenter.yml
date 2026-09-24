@@ -79,7 +79,7 @@ jobs:
             fi
             sleep 1
           done
-          ollama pull qwen2.5-coder:0.5b
+          ollama pull deepseek-r1:1.5b
 
       - name: Generate Summary
         if: steps.check_diff.outputs.skip != 'true'
@@ -98,14 +98,27 @@ jobs:
           # ///
 
           import sys
+          import re
           import ollama
 
           # Ollama on GitHub-hosted (VRAM-less) runners defaults num_ctx to 4096,
-          # while qwen2.5-coder:0.5b natively supports up to 32768. Raise the
+          # while deepseek-r1:1.5b natively supports up to 32768. Raise the
           # window explicitly and chunk oversized diffs so large PRs are not
           # silently truncated by Ollama's internal context shifting.
           NUM_CTX = 8192
           CHUNK_CHAR_LIMIT = 12000
+
+          def strip_thinking(text):
+              # deepseek-r1系モデルは ollama.chat() の `think` オプションを使わない限り、
+              # 最終回答の前に <think>...</think> で推論過程を content にそのまま出力する。
+              # 除去しないと、この推論テキストがそのままPRサマリーコメントに漏れる。
+              # 閉じタグの無い <think> は推論文が残るため、正常な応答として扱わず例外にする
+              # （各呼び出し元の既存フォールバックへ進む）。
+              cleaned = re.sub(r'<think>.*?</think>', '', text, flags=re.DOTALL).strip()
+              # 完全なブロックの後ろに閉じタグの無いブロックが続く場合も、除去後に <think> が残る。
+              if "<think>" in cleaned:
+                  raise ValueError("Unterminated <think> block")
+              return cleaned
 
           def chunk_diff(diff_content, limit):
               chunks = []
@@ -151,7 +164,7 @@ jobs:
               prompt = build_prompt(diff_chunk, chunk_index, chunk_total)
               try:
                   response = ollama.chat(
-                      model='qwen2.5-coder:0.5b',
+                      model='deepseek-r1:1.5b',
                       messages=[
                           {
                               'role': 'system',
@@ -170,7 +183,7 @@ jobs:
                       ],
                       options={'num_ctx': NUM_CTX}
                   )
-                  return response['message']['content']
+                  return strip_thinking(response['message']['content'])
               except Exception as e:
                   print(f"Error during Ollama inference: {e}", file=sys.stderr)
                   return None

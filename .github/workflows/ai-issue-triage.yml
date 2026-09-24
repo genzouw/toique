@@ -54,7 +54,7 @@ jobs:
             fi
             sleep 1
           done
-          ollama pull qwen2.5-coder:0.5b
+          ollama pull deepseek-r1:1.5b
 
       - name: Run Issue Triage script
         env:
