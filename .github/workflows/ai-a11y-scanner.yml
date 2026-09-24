@@ -229,8 +229,9 @@ jobs:
                       if "diagnostics" not in json_obj:
                           json_obj = {"diagnostics": []}
                   except json.JSONDecodeError:
+                      # 「指摘なし」と区別できるよう、パース失敗は失敗として呼び出し元へ伝える
                       print(f"Failed to decode JSON from model output: {result_text}", file=sys.stderr)
-                      json_obj = {"diagnostics": []}
+                      return None
 
                   diagnostics = json_obj.get("diagnostics", [])
                   if not isinstance(diagnostics, list):
@@ -242,8 +243,9 @@ jobs:
                   ]
 
               except Exception as e:
+                  # 失敗時は [] ではなく None を返し、「指摘なし」と区別できるようにする
                   print(f"Error during Ollama inference: {e}", file=sys.stderr)
-                  return []
+                  return None
 
           def main():
               try:
@@ -259,8 +261,15 @@ jobs:
 
               chunks = chunk_diff(diff_content, CHUNK_CHAR_LIMIT)
               all_diagnostics = []
+              failed = 0
               for i, chunk in enumerate(chunks, start=1):
-                  all_diagnostics.extend(scan_chunk(chunk, i, len(chunks)))
+                  result = scan_chunk(chunk, i, len(chunks))
+                  if result is None:
+                      failed += 1
+                      continue
+                  all_diagnostics.extend(result)
+              if failed:
+                  print(f"::warning::a11y スキャンが {failed}/{len(chunks)} チャンクで失敗しました。診断結果が不完全な可能性があります")
 
               json_obj = {
                   "source": {
