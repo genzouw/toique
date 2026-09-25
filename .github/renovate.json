@@ -255,6 +255,18 @@
       "groupName": "vite"
     },
     {
+      "description": "size-limit 本体と @size-limit/file は peer が完全一致のためまとめる",
+      "matchManagers": [
+        "npm",
+        "bun"
+      ],
+      "matchPackageNames": [
+        "size-limit",
+        "@size-limit/**"
+      ],
+      "groupName": "size-limit"
+    },
+    {
       "description": [
         "TypeScript 7 系は typescript-eslint が未対応で (peer の上限が typescript <6.1.0)、",
         "上げると bun run lint が @typescript-eslint/typescript-estree の内部で",
