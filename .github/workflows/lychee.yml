@@ -33,6 +33,3 @@ permissions:
 jobs:
   lychee:
     uses: genzouw/ci-workflows/.github/workflows/lychee.yml@c7627b6a99d8b3a2c8e8cdeba120c42070f37bd0 # v1.3.1
-    with:
-      # 段階導入。README.md の genzouw/ptasuku リンク (404) を片付けてから削除し、既定の true に戻す
-      fail: false
