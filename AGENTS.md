@@ -168,7 +168,7 @@ Issue では「なぜ既存の無料サービスでは目的を達成できな�
 - **AI コードレビューは追加不要**: CodeRabbit (`.coderabbit.yaml`) が稼働中です。API キーを使う追加の AI コードレビュー Action は MUST NOT です。
 - **Qodo Merge (旧 PR-Agent) の導入は禁止**: 恒久的な無料プランが存在しません (公式料金ページの FAQ に "We don't offer a permanent free tier" と明記)。無料で使えるのは 14 日間のトライアルか、審査制の [Qodo for Open Source](https://docs.qodo.ai/open-source-program) (公開リポジトリかつ **star 200 以上**、または Organization 内に star 200 以上の公開リポジトリが 1 つ以上) のみで、本リポジトリは条件未達です。未使用のまま残っていた `.pr_agent.toml` は 2026-09 に削除済みです。自己ホスト版の `The-PR-Agent/pr-agent` Action は LLM の API キー (`OPENAI_KEY` 等) を必須とするため、こちらも §1.1 により MUST NOT です。
 - **セキュリティスキャンは追加不要**: gitleaks / TruffleHog / secretlint / detect-secrets / CodeQL / Trivy / OSV-Scanner / zizmor / Scorecard / SBOM が既に稼働しています。GitGuardian / Snyk 等の追加 SaaS は不要です。
-- **Lint も追加不要**: actionlint / markdownlint-cli2 / hadolint / ShellCheck / typos / knip / commitlint が既に稼働しています。
+- **Lint も追加不要**: actionlint / markdownlint-cli2 / lychee (リンク切れ検出) / hadolint / ShellCheck / typos / knip / commitlint が既に稼働しています。
 - **ローカル検証**: `bun --cwd backend run lint` / `bun --cwd frontend run lint` / 各 `typecheck` / `bun run test` が通ることを確認してください。
 - **トピックブランチ必須**: `main` への直接コミットは行わず、必ずトピックブランチを切って PR を作成してください。
 - **Jules のスケジュール実行ペルソナ (Palette / Bolt / Sentinel)**: プロンプトは Jules の Web UI 側にあり、リポジトリからは変更できません。ペルソナを追加・変更するときは、プロンプトに「PR タイトルは Conventional Commits に従う」ことを明記し、あわせて `scripts/normalize-pr-title.mjs` の `PERSONA_TYPES` に「ペルソナ名 → type」の対応を追記してください。
