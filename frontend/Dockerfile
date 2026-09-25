@@ -32,4 +32,4 @@ CMD ["bun", "run", "dev"]
 
 # CI: lint + format + build
 FROM base AS ci-check
-RUN bun run format:check && bun run lint && bun run test && bun run build
+RUN bun run format:check && bun run lint && bun run test:coverage && bun run build
