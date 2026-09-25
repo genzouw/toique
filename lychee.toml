@@ -1,4 +1,10 @@
 # lychee (リンク切れ検出) の設定。.github/workflows/lychee.yml から自動で読まれる。
+
+# private / link-local / loopback (localhost を含む) の IP は検査しない。
+# ドキュメント中の例示 URL を誤検知しないためと、runner から内部アドレスへ
+# リクエストを出さないため
+exclude_all_private = true
+
 exclude = [
   # ドキュメント中の例示 URL
   '^https?://localhost',
