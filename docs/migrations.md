@@ -29,6 +29,17 @@ DROP INDEX IF EXISTS "old_idx";
 
 CI の `scripts/check-migrations.sh` が `IF NOT EXISTS` / `IF EXISTS` を強制チェックする。
 
+### 1b. マイグレーションと `meta/_journal.json` を常に一致させる
+
+`drizzle-kit migrate` は `meta/_journal.json` に登録されたエントリだけを適用する。journal に無い `.sql` は CI もデプロイも成功したまま黙って無視される。
+CI の `scripts/check-migration-journal.sh` が次の 3 点を検査する（Issue #857）。
+
+- すべての `*.sql` が journal に登録されている
+- すべての journal エントリに対応する `*.sql` が存在する
+- `NNNN` 連番が重複していない
+
+並行 PR で `NNNN` が重複した場合は、後からマージする側の `.sql` とスナップショットを削除し、rebase 後に `bun --cwd backend run db:generate` で採番し直す。
+
 ### 2. 大規模テーブルへのインデックスは **本番に事前手動適用** する
 
 行数が多いテーブル（例: `inbound_messages` が 100 万行を超えるなど）へインデックスを追加する場合は、以下のフローを取る。
