@@ -11,18 +11,7 @@
 // 認証必要画面 (Dashboard / Channels 等) もセッション戦略の設計が独立するため別 PR。
 
 import { test, expect, type ConsoleMessage } from '@playwright/test';
-
-const PUBLIC_ROUTES = [
-  '/',
-  '/login',
-  '/signup',
-  '/pricing',
-  '/help',
-  '/faq',
-  '/contact',
-  '/specified-commercial-transactions',
-  '/for/salon',
-];
+import { PUBLIC_ROUTES } from './public-routes';
 
 // Chromium が CSP 違反時に出力するコンソールメッセージのパターン。
 // 例: "Refused to load the script 'https://...' because it violates the following Content Security Policy directive: ..."
