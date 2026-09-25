@@ -1,0 +1,16 @@
+# lychee (リンク切れ検出) の設定。.github/workflows/lychee.yml から自動で読まれる。
+
+# private / link-local / loopback (localhost を含む) の IP は検査しない。
+# ドキュメント中の例示 URL を誤検知しないためと、runner から内部アドレスへ
+# リクエストを出さないため
+exclude_all_private = true
+
+exclude = [
+  # 参考として記載している genzouw/ptasuku は存在しない (オーナー権限の gh でも解決できない)。
+  # README と過去の設計記録に参照が残るため、リンクは残したまま検査対象から外す
+  # 部分一致で評価されるため、ptasuku-fork などを巻き込まないよう末尾に境界を置く
+  '^https://github\.com/genzouw/ptasuku(?:[/?#]|$)',
+]
+
+# ビルド時に置換されるプレースホルダ (__SITE_ORIGIN__) とルート相対リンクを含むテンプレート
+exclude_path = ['frontend/index.html']

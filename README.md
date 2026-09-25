@@ -240,6 +240,7 @@ curl -s http://localhost:3000/api/v1/messages | jq
 | `gitleaks.yml`     | コミット履歴を含むシークレットスキャン                                                      |
 | `actionlint.yml`   | GitHub Actions YAML の lint                                                                 |
 | `markdownlint.yml` | Markdown の lint (`.markdownlint-cli2.jsonc`)                                               |
+| `lychee.yml`       | Markdown / HTML のリンク切れ検出 (`lychee.toml`)。push / PR / 週次                          |
 | `knip.yml`         | 未使用コード・未使用依存の検出                                                              |
 
 ### コードレビューとAI自動化
