@@ -6,12 +6,10 @@
 exclude_all_private = true
 
 exclude = [
-  # ドキュメント中の例示 URL
-  '^https?://localhost',
-  '^https?://127\.0\.0\.1',
   # 参考として記載している genzouw/ptasuku は存在しない (オーナー権限の gh でも解決できない)。
   # README と過去の設計記録に参照が残るため、リンクは残したまま検査対象から外す
-  '^https://github\.com/genzouw/ptasuku',
+  # 部分一致で評価されるため、ptasuku-fork などを巻き込まないよう末尾に境界を置く
+  '^https://github\.com/genzouw/ptasuku(?:[/?#]|$)',
 ]
 
 # ビルド時に置換されるプレースホルダ (__SITE_ORIGIN__) とルート相対リンクを含むテンプレート
