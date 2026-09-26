@@ -19,6 +19,7 @@ permissions:
 jobs:
   a11y-scan:
     name: Run AI a11y Scanner
+    if: ${{ !contains(fromJSON('["dependabot[bot]", "renovate[bot]"]'), github.event.pull_request.user.login) }}
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -57,15 +58,11 @@ jobs:
           fi
 
       - name: Setup uv
-        if: |
-          steps.check_diff.outputs.skip != 'true' &&
-          !contains(fromJSON('["dependabot[bot]", "renovate[bot]"]'), github.event.pull_request.user.login)
+        if: steps.check_diff.outputs.skip != 'true'
         uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
 
       - name: Install and Start Ollama
-        if: |
-          steps.check_diff.outputs.skip != 'true' &&
-          !contains(fromJSON('["dependabot[bot]", "renovate[bot]"]'), github.event.pull_request.user.login)
+        if: steps.check_diff.outputs.skip != 'true'
         env:
           OLLAMA_VERSION: v0.34.2
         run: |
@@ -90,17 +87,13 @@ jobs:
           ollama pull deepseek-r1:1.5b
 
       - name: Setup Reviewdog
-        if: |
-          steps.check_diff.outputs.skip != 'true' &&
-          !contains(fromJSON('["dependabot[bot]", "renovate[bot]"]'), github.event.pull_request.user.login)
+        if: steps.check_diff.outputs.skip != 'true'
         uses: reviewdog/action-setup@d8a7baabd7f3e8544ee4dbde3ee41d0011c3a93f # v1.5.0
         with:
           reviewdog_version: v0.21.2
 
       - name: Run AI Scanner
-        if: |
-          steps.check_diff.outputs.skip != 'true' &&
-          !contains(fromJSON('["dependabot[bot]", "renovate[bot]"]'), github.event.pull_request.user.login)
+        if: steps.check_diff.outputs.skip != 'true'
         env:
           PR_HEAD_REPO: ${{ github.event.pull_request.head.repo.full_name }}
           BASE_REPO: ${{ github.repository }}

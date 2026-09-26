@@ -20,6 +20,9 @@ permissions:
 jobs:
   research:
     name: Run AI Context Research
+    if: |
+      github.event.pull_request.head.repo.full_name == github.repository &&
+      !contains(fromJSON('["dependabot[bot]", "renovate[bot]"]'), github.event.pull_request.user.login)
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -58,17 +61,11 @@ jobs:
           fi
 
       - name: Setup uv
-        if: |
-          steps.check_diff.outputs.skip != 'true' &&
-          github.event.pull_request.head.repo.full_name == github.repository &&
-          !contains(fromJSON('["dependabot[bot]", "renovate[bot]"]'), github.event.pull_request.user.login)
+        if: steps.check_diff.outputs.skip != 'true'
         uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
 
       - name: Install and Start Ollama
-        if: |
-          steps.check_diff.outputs.skip != 'true' &&
-          github.event.pull_request.head.repo.full_name == github.repository &&
-          !contains(fromJSON('["dependabot[bot]", "renovate[bot]"]'), github.event.pull_request.user.login)
+        if: steps.check_diff.outputs.skip != 'true'
         env:
           OLLAMA_VERSION: v0.34.2
         run: |
@@ -93,10 +90,7 @@ jobs:
           ollama pull deepseek-r1:1.5b
 
       - name: Run Web Research
-        if: |
-          steps.check_diff.outputs.skip != 'true' &&
-          github.event.pull_request.head.repo.full_name == github.repository &&
-          !contains(fromJSON('["dependabot[bot]", "renovate[bot]"]'), github.event.pull_request.user.login)
+        if: steps.check_diff.outputs.skip != 'true'
         env:
           PR_NUMBER: ${{ github.event.pull_request.number }}
           BASE_REPO: ${{ github.repository }}
