@@ -220,7 +220,7 @@ jobs:
           uv run run_summary.py
 
           if [ -f pr_summary.md ]; then
-            if [ "$PR_HEAD_REPO" = "$BASE_REPO" ] && [ "$PR_AUTHOR" != "dependabot[bot]" ]; then
+            if [ "$PR_HEAD_REPO" = "$BASE_REPO" ] && [ "$PR_AUTHOR" != "dependabot[bot]" ] && [ "$PR_AUTHOR" != "renovate[bot]" ]; then
               # 同じ要約コメントを新規投稿し続けると push ごとに蓄積するため、
               # 固定マーカー <!-- ai-auto-documenter-summary --> を持つ既存コメントを検索し、
               # 見つかった場合はそれを更新する（無ければ新規作成する）。
@@ -232,7 +232,7 @@ jobs:
                 GH_TOKEN="${{ secrets.GITHUB_TOKEN }}" gh pr comment "$PR_NUMBER" --body-file pr_summary.md
               fi
             else
-              echo "Skipping result posting for fork/Dependabot PR (GITHUB_TOKEN is read-only for these events)."
+              echo "Skipping result posting for fork/bot PR (GITHUB_TOKEN is read-only for these events)."
             fi
           fi
 

@@ -61,14 +61,14 @@ jobs:
         if: |
           steps.check_diff.outputs.skip != 'true' &&
           github.event.pull_request.head.repo.full_name == github.repository &&
-          github.event.pull_request.user.login != 'dependabot[bot]'
+          !contains(fromJSON('["dependabot[bot]", "renovate[bot]"]'), github.event.pull_request.user.login)
         uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
 
       - name: Install and Start Ollama
         if: |
           steps.check_diff.outputs.skip != 'true' &&
           github.event.pull_request.head.repo.full_name == github.repository &&
-          github.event.pull_request.user.login != 'dependabot[bot]'
+          !contains(fromJSON('["dependabot[bot]", "renovate[bot]"]'), github.event.pull_request.user.login)
         env:
           OLLAMA_VERSION: v0.34.2
         run: |
@@ -96,7 +96,7 @@ jobs:
         if: |
           steps.check_diff.outputs.skip != 'true' &&
           github.event.pull_request.head.repo.full_name == github.repository &&
-          github.event.pull_request.user.login != 'dependabot[bot]'
+          !contains(fromJSON('["dependabot[bot]", "renovate[bot]"]'), github.event.pull_request.user.login)
         env:
           PR_NUMBER: ${{ github.event.pull_request.number }}
           PR_HEAD_REPO: ${{ github.event.pull_request.head.repo.full_name }}
@@ -310,7 +310,7 @@ jobs:
           uv run run_research.py
 
           if [ -f pr_research.md ]; then
-            if [ "$PR_HEAD_REPO" = "$BASE_REPO" ] && [ "$PR_AUTHOR" != "dependabot[bot]" ]; then
+            if [ "$PR_HEAD_REPO" = "$BASE_REPO" ] && [ "$PR_AUTHOR" != "dependabot[bot]" ] && [ "$PR_AUTHOR" != "renovate[bot]" ]; then
               EXISTING_COMMENT_ID=$(GH_TOKEN="${{ secrets.GITHUB_TOKEN }}" gh api --paginate "repos/$BASE_REPO/issues/$PR_NUMBER/comments" \
                 --jq '[.[] | select(.body | startswith("<!-- ai-pr-context-researcher -->"))] | last.id // empty')
               if [ -n "$EXISTING_COMMENT_ID" ]; then
@@ -319,7 +319,7 @@ jobs:
                 GH_TOKEN="${{ secrets.GITHUB_TOKEN }}" gh pr comment "$PR_NUMBER" --body-file pr_research.md
               fi
             else
-              echo "Skipping result posting for fork/Dependabot PR (GITHUB_TOKEN is read-only for these events)."
+              echo "Skipping result posting for fork/bot PR (GITHUB_TOKEN is read-only for these events)."
             fi
           fi
 
