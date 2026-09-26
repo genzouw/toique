@@ -13,7 +13,7 @@
 #
 # 判定は片方向 (スキャン結果にあって baseline に無いもの) のみで、baseline にだけ
 # 存在するエントリは無視する。detect-secrets.yml が範囲内の途中コミットを走査する
-# とき、HEAD の baseline に登録済みのファイルがそのコミットにまだ存在しないのは
+# とき、比較に使う baseline に登録済みのファイルがそのコミットにまだ存在しないのは
 # 新規シークレットではなく正常な差分であるため。
 def entries($with_line):
   [.results | to_entries[] | .key as $file | .value[]
