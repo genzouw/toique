@@ -272,6 +272,7 @@ export default function FormSchemaBuilder({
                   ))}
                   <button
                     onClick={() => addChoice(idx)}
+                    aria-label={`ステップ ${idx + 1} に選択肢を追加`}
                     className="text-xs text-slate-600 hover:text-slate-900 flex items-center gap-1 rounded focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-slate-900 focus-visible:ring-offset-1 transition-colors p-1"
                   >
                     <Plus size={ICON_SIZE.xs} aria-hidden="true" /> 選択肢を追加
@@ -285,6 +286,7 @@ export default function FormSchemaBuilder({
 
       <button
         onClick={addStep}
+        aria-label="新しいステップを追加"
         className="w-full py-2 border-2 border-dashed border-slate-300 rounded-lg text-sm text-slate-600 hover:border-slate-400 hover:text-slate-900 flex items-center justify-center gap-1 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-slate-900 focus-visible:ring-offset-2 transition-colors"
       >
         <Plus size={ICON_SIZE.sm} aria-hidden="true" /> ステップを追加
