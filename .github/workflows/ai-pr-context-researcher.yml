@@ -99,9 +99,7 @@ jobs:
           !contains(fromJSON('["dependabot[bot]", "renovate[bot]"]'), github.event.pull_request.user.login)
         env:
           PR_NUMBER: ${{ github.event.pull_request.number }}
-          PR_HEAD_REPO: ${{ github.event.pull_request.head.repo.full_name }}
           BASE_REPO: ${{ github.repository }}
-          PR_AUTHOR: ${{ github.event.pull_request.user.login }}
           PR_TITLE: ${{ github.event.pull_request.title }}
         run: |
           cat << 'EOF' > run_research.py
@@ -310,16 +308,12 @@ jobs:
           uv run run_research.py
 
           if [ -f pr_research.md ]; then
-            if [ "$PR_HEAD_REPO" = "$BASE_REPO" ] && [ "$PR_AUTHOR" != "dependabot[bot]" ] && [ "$PR_AUTHOR" != "renovate[bot]" ]; then
-              EXISTING_COMMENT_ID=$(GH_TOKEN="${{ secrets.GITHUB_TOKEN }}" gh api --paginate "repos/$BASE_REPO/issues/$PR_NUMBER/comments" \
-                --jq '[.[] | select(.body | startswith("<!-- ai-pr-context-researcher -->"))] | last.id // empty')
-              if [ -n "$EXISTING_COMMENT_ID" ]; then
-                GH_TOKEN="${{ secrets.GITHUB_TOKEN }}" gh api --method PATCH "repos/$BASE_REPO/issues/comments/$EXISTING_COMMENT_ID" -F body=@pr_research.md > /dev/null
-              else
-                GH_TOKEN="${{ secrets.GITHUB_TOKEN }}" gh pr comment "$PR_NUMBER" --body-file pr_research.md
-              fi
+            EXISTING_COMMENT_ID=$(GH_TOKEN="${{ secrets.GITHUB_TOKEN }}" gh api --paginate "repos/$BASE_REPO/issues/$PR_NUMBER/comments" \
+              --jq '[.[] | select(.body | startswith("<!-- ai-pr-context-researcher -->"))] | last.id // empty')
+            if [ -n "$EXISTING_COMMENT_ID" ]; then
+              GH_TOKEN="${{ secrets.GITHUB_TOKEN }}" gh api --method PATCH "repos/$BASE_REPO/issues/comments/$EXISTING_COMMENT_ID" -F body=@pr_research.md > /dev/null
             else
-              echo "Skipping result posting for fork/bot PR (GITHUB_TOKEN is read-only for these events)."
+              GH_TOKEN="${{ secrets.GITHUB_TOKEN }}" gh pr comment "$PR_NUMBER" --body-file pr_research.md
             fi
           fi
 
