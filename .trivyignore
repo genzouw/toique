@@ -32,3 +32,10 @@ CVE-2026-33750
 
 # brace-expansion (2.0.1): ReDoS via crafted brace patterns (fixed in 2.0.2)
 CVE-2025-5889
+
+# brace-expansion (2.0.1): DoS via exponential-time complexity (fixed in 2.1.2)
+CVE-2026-13149
+# brace-expansion (2.0.1): DoS via memory exhaustion in expand() (fixed in 2.1.3)
+CVE-2026-14257
+# brace-expansion (2.0.1): DoS via unbounded intermediate arrays (fixed in 2.1.4)
+CVE-2026-69152
