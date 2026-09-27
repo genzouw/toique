@@ -24,4 +24,4 @@ permissions:
 jobs:
   zizmor:
     if: github.event_name == 'push' || github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' || (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name != github.repository)
-    uses: genzouw/ci-workflows/.github/workflows/zizmor.yml@eb84d0c974989515c0b26acc055948416f256533 # v1.1.1
+    uses: genzouw/ci-workflows/.github/workflows/zizmor.yml@25d9ccba55e73641a6998b24fe89ddfbb020beed # v1.4.1
