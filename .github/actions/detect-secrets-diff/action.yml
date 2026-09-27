@@ -1,0 +1,29 @@
+name: 'Detect-secrets diff filter'
+description: >-
+  detect-secrets のスキャン結果と baseline を filename + hashed_secret + type で比較し、
+  baseline に無い検知だけを取り出す jq フィルタ (new-secrets.jq) を配置する。
+  この比較を各ワークフローに書き写すと 1 本だけ直し漏れる構造になるため、
+  定義はこの action に一本化する。
+  呼び出し側は `jq -S --slurpfile baseline <信頼済み baseline> --argjson line <true|false>
+  -f "$FILTER" <scan結果>` の形で使う。baseline の取得元 (HEAD / PR base SHA) は
+  呼び出し側の責務とする。
+
+outputs:
+  filter:
+    description: >-
+      new-secrets.jq を複製した先の絶対パス (RUNNER_TEMP 配下)。
+      ワークスペース外に置くのは、detect-secrets.yml がコミット範囲を走査する際に
+      `git checkout` でワークスペースが過去のコミットへ切り替わっても参照を保つため。
+    value: ${{ steps.place.outputs.filter }}
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Place filter
+      id: place
+      shell: bash
+      run: |
+        set -euo pipefail
+        FILTER="${RUNNER_TEMP}/new-secrets.jq"
+        cp "${GITHUB_ACTION_PATH}/new-secrets.jq" "$FILTER"
+        echo "filter=${FILTER}" >> "$GITHUB_OUTPUT"
