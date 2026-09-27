@@ -80,6 +80,21 @@
       "groupName": "codeql-action"
     },
     {
+      "description": [
+        "compose.yml のローカル開発用DBと、CIワークフローのテスト用DBで postgres のバージョンを揃える必要があるためまとめて更新する。",
+        "groupName を明示しないと別々の PR に分かれ、片方だけマージするとローカル開発 DB と CI テスト DB のメジャーバージョンが分裂する (PR #919 / #920)。"
+      ],
+      "matchManagers": [
+        "docker-compose",
+        "github-actions"
+      ],
+      "matchPackageNames": [
+        "postgres",
+        "public.ecr.aws/docker/library/postgres"
+      ],
+      "groupName": "postgres"
+    },
+    {
       "description": "Docker ベースイメージの更新には docker ラベルを付ける",
       "matchManagers": [
         "dockerfile",
