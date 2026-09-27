@@ -7,8 +7,14 @@ services:
       POSTGRES_DB: toique
     ports:
       - '5433:5432'
+    # postgres 18+ の公式イメージは PGDATA をメジャーバージョン別のサブディレクトリ
+    # （例: /var/lib/postgresql/18/docker）に配置する形式に変わっており、
+    # 旧来の /var/lib/postgresql/data への直接マウントはコンテナ起動時にエラーになる。
+    # そのため親ディレクトリ側をマウントする（公式の推奨構成）。
+    # postgres 17 時代のボリュームを使い回している場合は、17→18 移行時に
+    # `docker compose down -v` で pgdata ボリュームを作り直すこと（ローカル開発専用のため再作成で問題ない）。
     volumes:
-      - pgdata:/var/lib/postgresql/data
+      - pgdata:/var/lib/postgresql
     healthcheck:
       test: ['CMD-SHELL', 'pg_isready -U toique']
       interval: 5s
