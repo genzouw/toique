@@ -100,6 +100,8 @@ export function SidebarPanel({
         {sidebarHeader}
         <button
           onClick={onClose}
+          aria-expanded={isOpen}
+          aria-controls={id}
           aria-label="メニューを閉じる"
           title="メニューを閉じる"
           className={cn(
