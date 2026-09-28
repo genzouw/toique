@@ -82,26 +82,15 @@ GitHub Actions / GitHub App を採用する前に、以下を **MUST** 確認し
 
 ### 1.6 回避してはならない解釈 (過去に実際に使われた抜け道)
 
-以下はすべて **無効な理由づけ** です。エージェントがこの論法でセルフチェックを通過させた PR は、内容の良し悪しにかかわらずクローズされます。
-
-| 無効な理由づけ | なぜ無効か |
-| --- | --- |
-| 「Secret は登録していない。設定方法をドキュメント化しただけ」 | PR は仕組み上 Secret を登録できません。禁止しているのは登録行為ではなく **鍵の登録を前提とした構成の持ち込み** です。 |
-| 「オーナーが鍵を登録しなければ動かないので無害」 | 未登録なら CI が失敗またはスキップし続けるだけで、いずれにせよ持ち込んではいけない構成です。 |
-| 「無料枠 (free tier) の範囲で使うので課金は発生しない」 | 1 節のとおり、レート制限超過で課金が始まる構造そのものを禁止しています。 |
-| 「公式の料金ページに Free tier の記載があるので完全無料である」 | 無料枠の存在は「完全無料」の根拠になりません。`https://ai.google.dev/pricing` のような **従量課金プランを併記するページは根拠として無効** です。根拠になるのは「公開 OSS リポジトリでは課金が一切発生しない」と明記されたページのみです。 |
-| 「harden-runner の導入や Action の SHA pin を伴うのでセキュアである」 | サプライチェーン対策は課金方針とは別の軸です。安全性は課金リスクを相殺しません。 |
-| 「`chore(security)` など無害に見える種別で出す」 | Conventional Commits の型を変えても違反は解消しません。 |
-| 「既存の AI レビューより高機能なので価値がある」 | 機能の優劣は判断基準に含みません。CodeRabbit との重複も別途 MUST NOT です。 |
-
 **判定基準はただ一つです**: その変更をマージした結果、リポジトリオーナーが従量課金 API キーを発行・登録する必要が生じるなら **MUST NOT** です。
+「設定方法をドキュメント化しただけ」「無料枠の範囲で使う」など、過去に使われた無効な理由づけの一覧は [`.github/AI_AUTOMATION_SETUP.md`](.github/AI_AUTOMATION_SETUP.md) 第5節を参照してください。
 
 ---
 
 ## 2. PR を作成する前のチェックリスト (MUST すべて満たす)
 
 - [ ] 追加するサービスが「公開 OSS リポジトリで完全無料で利用可能」であることを、**公式の料金ページ / ドキュメントの URL** で証明している。
-- [ ] LLM プロバイダの API キー / 従量課金 API キーを **追加も参照も要求もしていない**。`GEMINI_API_KEY` / `OPENAI_API_KEY` / `ANTHROPIC_API_KEY` 等について、`secrets.*` からの参照・登録手順のドキュメント化・オーナーへの登録依頼のいずれも含まない (下記のコマンドで機械的に確認すること)。
+- [ ] LLM プロバイダの API キー / 従量課金 API キーを **追加も参照も要求もしていない**。`GEMINI_API_KEY` / `OPENAI_API_KEY` / `ANTHROPIC_API_KEY` 等について、`secrets.*` からの参照・登録手順のドキュメント化・オーナーへの登録依頼のいずれも含まない (2.1 節のとおり機械的に確認すること)。
 - [ ] 「無料枠内に収まる前提」の利用ではなく、「課金が一切発生しない構成」であることを PR 本文に明記している。
 - [ ] 追加する GitHub Action は **フルコミット SHA で pin** している。
 - [ ] `.github/workflows/` 配下の既存ワークフローと機能が重複していないことを確認した。
@@ -110,16 +99,7 @@ GitHub Actions / GitHub App を採用する前に、以下を **MUST** 確認し
 
 ### 2.1 チェックリストは自己申告で済ませないこと (MUST)
 
-上記のチェックは「そのつもりで書いた」ではなく、**差分に対して次のコマンドを実行して** 確認してください。
-
-```bash
-git diff origin/main...HEAD -U0 \
-  | grep -E '^\+' \
-  | grep -Ei \
-    'GEMINI_API_KEY|GOOGLE_API_KEY|GOOGLE_GENERATIVE_AI_API_KEY|OPENAI_API_KEY|OPENAI_API_BASE_URL|ANTHROPIC_API_KEY|CLAUDE_API_KEY|CLAUDE_CODE_OAUTH_TOKEN|MISTRAL_API_KEY|COHERE_API_KEY|GROQ_API_KEY|DEEPSEEK_API_KEY|PERPLEXITY_API_KEY|XAI_API_KEY|TOGETHER_API_KEY|HUGGINGFACE_API_TOKEN|TAVILY_API_KEY|EXA_API_KEY|SERPAPI_KEY|BRAVE_API_KEY'
-```
-
-ヒットした行が「禁止事項そのものを説明している箇所」(本ファイルや PR テンプレートの禁止文言) 以外であれば、**PR を作成してはいけません**。
+上記のチェックは「そのつもりで書いた」ではなく、**差分に対して禁止キー名を grep して** 確認してください。確認コマンドは [`.github/AI_AUTOMATION_SETUP.md`](.github/AI_AUTOMATION_SETUP.md) 第5節にあります。
 チェック項目に注釈 (「※ 本 PR では設定方法のみドキュメント化」など) を付けて条件付きでチェックを入れる行為も **MUST NOT** です。注釈を付けたくなった時点で、その PR は作成対象外です。
 
 ## 3. PR 本文に必ず含めるべき情報
@@ -175,10 +155,7 @@ Issue では「なぜ既存の無料サービスでは目的を達成できな�
 
 ## 8. 過去のポリシー違反 PR の参考
 
-以下は本ポリシー違反として **クローズ済み** の代表例です。エージェントは類似の PR を作成しないでください。
-
-- [PR #695](https://github.com/genzouw/toique/pull/695) — `GEMINI_API_KEY` および `TAVILY_API_KEY` / `EXA_API_KEY` を GitHub Secrets に登録することを前提とした AI 自動化ワークフロー (Gemini によるコードレビュー / a11y 診断 / ドキュメント生成、`ai-web-search` composite action) の追加。従量課金 API キー依存と、既存の AI コードレビュー (CodeRabbit) との機能重複の二重のポリシー違反。
-- [PR #759](https://github.com/genzouw/toique/pull/759) — `petarzarkov/gemini-code-review-action` を用いた `.github/workflows/gemini-code-review.yml` の追加。`secrets.GEMINI_API_KEY` を参照し、その登録手順を `.github/AI_AUTOMATION_SETUP.md` と PR テンプレートに追記していた。「本 PR では設定方法のみドキュメント化」「Gemini API の無料枠を利用」という注釈付きでコスト方針のセルフチェックを通過させていたが、いずれも 1.6 節のとおり無効な理由づけ。加えて CodeRabbit との機能重複。
+本ポリシー違反としてクローズ済みの代表例は [`.github/AI_AUTOMATION_SETUP.md`](.github/AI_AUTOMATION_SETUP.md) 第5節にあります。エージェントは類似の PR を作成しないでください。
 
 ## 9. 関連ドキュメント
 
