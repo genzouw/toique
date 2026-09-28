@@ -24,7 +24,7 @@ jobs:
       id-token: write
     services:
       postgres:
-        image: postgres:17-alpine
+        image: postgres:18-alpine
         env:
           POSTGRES_USER: toique
           POSTGRES_PASSWORD: toique
