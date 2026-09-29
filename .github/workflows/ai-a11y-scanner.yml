@@ -64,15 +64,15 @@ jobs:
       - name: Install and Start Ollama
         if: steps.check_diff.outputs.skip != 'true'
         env:
-          OLLAMA_VERSION: v0.34.4
+          OLLAMA_VERSION: v0.35.0
+          OLLAMA_TARBALL_SHA256: 1c114a6b220c5efca2ef2b1e5f01d1e535e26f6cd6d1678c8489325d2835e525 # pragma: allowlist secret
         run: |
           set -euo pipefail
           TARBALL="ollama-linux-amd64.tar.zst"
           curl -fsSL -o "$TARBALL" "https://github.com/ollama/ollama/releases/download/${OLLAMA_VERSION}/${TARBALL}"
-          curl -fsSL -o sha256sum.txt "https://github.com/ollama/ollama/releases/download/${OLLAMA_VERSION}/sha256sum.txt"
-          grep "${TARBALL}\$" sha256sum.txt | sha256sum -c -
+          echo "${OLLAMA_TARBALL_SHA256}  ${TARBALL}" | sha256sum -c -
           sudo tar --zstd -C /usr/local -xf "$TARBALL"
-          rm -f "$TARBALL" sha256sum.txt
+          rm -f "$TARBALL"
           ollama serve > ollama.log 2>&1 &
           for i in $(seq 1 30); do
             if curl -fsS http://127.0.0.1:11434/api/version > /dev/null 2>&1; then
@@ -102,7 +102,7 @@ jobs:
           # /// script
           # requires-python = ">=3.11"
           # dependencies = [
-          #     "ollama",
+          #     "ollama==0.6.3",
           # ]
           # ///
 
