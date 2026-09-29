@@ -1,7 +1,7 @@
 # /// script
 # requires-python = ">=3.11"
 # dependencies = [
-#     "ollama==0.6.2",
+#     "ollama==0.6.3",
 #     "duckduckgo-search==8.1.1",
 # ]
 # ///

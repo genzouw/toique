@@ -29,13 +29,13 @@ jobs:
 
       - name: Install and Start Ollama
         env:
-          OLLAMA_VERSION: v0.34.4
+          OLLAMA_VERSION: v0.35.0
           # SHA-256 of ollama-linux-amd64.tar.zst for OLLAMA_VERSION above, taken from
-          # https://github.com/ollama/ollama/releases/download/v0.34.4/sha256sum.txt.
+          # https://github.com/ollama/ollama/releases/download/v0.35.0/sha256sum.txt.
           # This must be updated together with OLLAMA_VERSION when bumping the version,
           # so the checksum comes from a source independent of the release artifact
           # being verified (a compromised release can't rewrite this file at runtime).
-          OLLAMA_TARBALL_SHA256: c238986e61d40c0cc5f4a9b9e40b9eea104350b77efa34741fc134e105cb9533 # pragma: allowlist secret
+          OLLAMA_TARBALL_SHA256: 1c114a6b220c5efca2ef2b1e5f01d1e535e26f6cd6d1678c8489325d2835e525 # pragma: allowlist secret
         run: |
           set -euo pipefail
           TARBALL="ollama-linux-amd64.tar.zst"
