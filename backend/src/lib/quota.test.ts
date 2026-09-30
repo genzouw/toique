@@ -77,4 +77,15 @@ describe('getTenantUsage with unlimited option', () => {
     expect(usage.members.limit).toBe(5);
     expect(db.execute).toHaveBeenCalledTimes(1);
   });
+
+  it('passes the start of month as an ISO string, not a Date, to the raw SQL', async () => {
+    await getTenantUsage('tenant-id', 'free');
+    const query = vi.mocked(db.execute).mock.calls[0][0] as unknown as {
+      queryChunks: unknown[];
+    };
+    expect(query.queryChunks.some((c) => c instanceof Date)).toBe(false);
+    expect(query.queryChunks).toContainEqual(
+      expect.stringMatching(/^\d{4}-\d{2}-01T00:00:00\.000Z$/),
+    );
+  });
 });

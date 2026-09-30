@@ -106,12 +106,14 @@ export async function getTenantUsage(
 
   // ⚡ Bolt: postgres-js driver では db.batch() が実装されていないため、
   // 個別のクエリを Promise.all で実行するとコネクションのオーバーヘッドやDBラウンドトリップが複数回発生します。
+  // 生 SQL のパラメータには列の mapToDriverValue が掛からず Date が素通しで postgres-js に渡って失敗するため、
+  // 月初は ISO 文字列 + ::timestamptz で渡す。
   // サブクエリをまとめた1つの raw SQL でバッチ取得し、レイテンシと DB I/O を劇的に削減します。
   const result = await db.execute(sql`
     SELECT
       (SELECT COUNT(*) FROM ${lineChannels} WHERE tenant_id = ${tenantId}) as channels,
       (SELECT COUNT(*) FROM ${forms} WHERE tenant_id = ${tenantId}) as forms,
-      (SELECT COUNT(*) FROM ${submissions} WHERE tenant_id = ${tenantId} AND submitted_at >= ${startOfCurrentMonth()}) as subs,
+      (SELECT COUNT(*) FROM ${submissions} WHERE tenant_id = ${tenantId} AND submitted_at >= ${startOfCurrentMonth().toISOString()}::timestamptz) as subs,
       (SELECT COUNT(*) FROM ${tenantMembers} WHERE tenant_id = ${tenantId}) as members
   `);
 
