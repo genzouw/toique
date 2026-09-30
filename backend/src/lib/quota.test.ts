@@ -3,6 +3,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 vi.mock('../db.js', () => {
   const dbMock = {
     select: vi.fn(),
+    execute: vi.fn(),
   };
   return { default: dbMock };
 });
@@ -42,25 +43,11 @@ describe('checkQuota with unlimited option', () => {
 });
 
 describe('getTenantUsage with unlimited option', () => {
-  // テーブルごとに異なる count 値を返すことで、実装側でクエリを取り違えても
-  // テストが検知できるようにする。呼び出し順序ではなく from(table) の引数で
-  // 識別するため、同じクエリを誤って重複指定したケースもFAILとして拾える。
-  const COUNT_BY_TABLE = new Map<unknown, number>([
-    [lineChannels, 3],
-    [forms, 5],
-    [submissions, 11],
-    [tenantMembers, 2],
-  ]);
-
   beforeEach(() => {
     vi.clearAllMocks();
-    const from = vi.fn((table: unknown) => {
-      const value = COUNT_BY_TABLE.get(table) ?? -1;
-      return { where: vi.fn().mockResolvedValue([{ count: value }]) };
-    });
-    vi.mocked(db.select).mockReturnValue({
-      from,
-    } as unknown as ReturnType<typeof db.select>);
+    vi.mocked(db.execute).mockResolvedValue([
+      { channels: '3', forms: '5', subs: '11', members: '2' },
+    ] as never);
   });
 
   it('reports actual current values but reports limit as -1 (unlimited)', async () => {
@@ -73,7 +60,7 @@ describe('getTenantUsage with unlimited option', () => {
       submissionsPerMonth: { current: 11, limit: -1 },
       members: { current: 2, limit: -1 },
     });
-    expect(db.select).toHaveBeenCalledTimes(4);
+    expect(db.execute).toHaveBeenCalledTimes(1);
   });
 
   it('reports plan-derived limits when unlimited is false', async () => {
@@ -88,6 +75,6 @@ describe('getTenantUsage with unlimited option', () => {
     expect(usage.lineChannels.limit).toBe(5);
     expect(usage.submissionsPerMonth.limit).toBe(3000);
     expect(usage.members.limit).toBe(5);
-    expect(db.select).toHaveBeenCalledTimes(4);
+    expect(db.execute).toHaveBeenCalledTimes(1);
   });
 });
