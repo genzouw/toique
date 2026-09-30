@@ -9,7 +9,6 @@ vi.mock('../db.js', () => {
 });
 
 import db from '../db.js';
-import { lineChannels, forms, submissions, tenantMembers } from '../schema.js';
 import { checkQuota, getTenantUsage } from './quota.js';
 
 describe('checkQuota with unlimited option', () => {
