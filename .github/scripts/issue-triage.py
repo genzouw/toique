@@ -19,18 +19,6 @@ with warnings.catch_warnings():
 
 NUM_CTX = 8192
 
-def strip_thinking(text):
-    # deepseek-r1系モデルは ollama.chat() の `think` オプションを使わない限り、
-    # 最終回答の前に <think>...</think> で推論過程を content にそのまま出力する。
-    # 除去しないと、この推論テキストが検索語・要約・Issueコメントにそのまま漏れる。
-    # 閉じタグの無い <think> は推論文が残るため、正常な応答として扱わず例外にする
-    # （各呼び出し元の既存フォールバックへ進む）。
-    cleaned = re.sub(r'<think>.*?</think>', '', text, flags=re.DOTALL).strip()
-    # 完全なブロックの後ろに閉じタグの無いブロックが続く場合も、除去後に <think> が残る。
-    if "<think>" in cleaned:
-        raise ValueError("Unterminated <think> block")
-    return cleaned
-
 def extract_keywords(issue_title, issue_body):
     safe_title = html.escape(issue_title, quote=True)
     safe_body = html.escape(issue_body[:3000], quote=True)
@@ -46,7 +34,7 @@ def extract_keywords(issue_title, issue_body):
 
     try:
         response = ollama.chat(
-            model='deepseek-r1:1.5b',
+            model='qwen2.5-coder:0.5b',
             messages=[
                 {
                     'role': 'system',
@@ -59,7 +47,7 @@ def extract_keywords(issue_title, issue_body):
             ],
             options={'num_ctx': NUM_CTX}
         )
-        return strip_thinking(response['message']['content'])
+        return response['message']['content'].strip()
     except Exception as e:
         print(f"Error during keyword extraction: {e}", file=sys.stderr)
         return "software engineering best practices"
@@ -133,7 +121,7 @@ def summarize_findings(query, search_results):
 
     try:
         response = ollama.chat(
-            model='deepseek-r1:1.5b',
+            model='qwen2.5-coder:0.5b',
             messages=[
                 {
                     'role': 'system',
@@ -146,7 +134,7 @@ def summarize_findings(query, search_results):
             ],
             options={'num_ctx': NUM_CTX}
         )
-        return strip_thinking(response['message']['content'])
+        return response['message']['content'].strip()
     except Exception as e:
         print(f"Error during summarization: {e}", file=sys.stderr)
         return "要約の生成に失敗しました。"
