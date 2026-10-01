@@ -107,7 +107,9 @@ docker compose down -v    # 停止 + DBデータ削除
 ```
 
 > PostgreSQL 17 の頃に作った `pgdata` ボリュームは 18 のコンテナでは使えません。
-> 18 へ更新したあと DB が起動しない場合は、`docker compose down -v` でボリュームを作り直し、マイグレーションを再適用してください (ローカルの DB データは消えます)。
+> 18 へ更新したあと DB が起動せず、`docker compose logs db` に `Error: in 18+, these Docker images are configured to store database data ...` が出ている場合は、`docker compose down -v` でボリュームを作り直し、マイグレーションを再適用してください。
+> ローカルの DB データは消えるため、残したいデータがある場合は、作り直す前に PostgreSQL 17 のコンテナでボリュームを開き `pg_dump` で退避してください。
+> ログにこのエラーが無い場合は原因が別にある (ポートの競合など) ため、ボリュームは削除しないでください。
 
 ### マイグレーション
 
