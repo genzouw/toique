@@ -108,8 +108,32 @@ docker compose down -v    # 停止 + DBデータ削除
 
 > PostgreSQL 17 の頃に作った `pgdata` ボリュームは 18 のコンテナでは使えません。
 > 18 へ更新したあと DB が起動せず、`docker compose logs db` に `Error: in 18+, these Docker images are configured to store database data ...` が出ている場合は、`docker compose down -v` でボリュームを作り直し、マイグレーションを再適用してください。
-> ローカルの DB データは消えるため、残したいデータがある場合は、作り直す前に PostgreSQL 17 のコンテナでボリュームを開き `pg_dump` で退避してください。
+> ローカルの DB データは消えるため、残したいデータがある場合は、作り直す前に下の手順で退避してください。
 > ログにこのエラーが無い場合は原因が別にある (ポートの競合など) ため、ボリュームは削除しないでください。
+
+残したいデータを退避する場合は、17 のイメージでボリュームを `/var/lib/postgresql/data` へ直接マウントして `pg_dump` します。
+`compose.yml` のタグを 17 に戻すだけでは退避できません。`compose.yml` のマウント先 (`/var/lib/postgresql`) では 17 が旧データを見つけられず、空の DB を新しく作るためです。
+
+```bash
+docker compose down
+docker volume ls --filter name=pgdata   # ボリューム名を確認 (既定は toique_pgdata)
+docker run -d --rm --name toique-pg17 \
+  -v toique_pgdata:/var/lib/postgresql/data \
+  public.ecr.aws/docker/library/postgres:17-alpine
+until docker exec toique-pg17 pg_isready -U toique -h 127.0.0.1; do sleep 1; done
+docker exec toique-pg17 pg_dump -U toique toique > toique-pg17.sql
+docker stop toique-pg17
+```
+
+`toique-pg17.sql` にテーブルの定義とデータが入っていることを確認してから、ボリュームを作り直して戻します。
+
+```bash
+docker compose down -v
+docker compose up -d db
+until docker compose exec db pg_isready -U toique -h 127.0.0.1; do sleep 1; done
+docker compose exec -T db psql -U toique toique < toique-pg17.sql
+docker compose up -d
+```
 
 ### マイグレーション
 
