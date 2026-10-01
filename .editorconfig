@@ -11,10 +11,11 @@ trim_trailing_whitespace = true
 [*.md]
 trim_trailing_whitespace = false
 
-# drizzle-kit が生成するマイグレーション SQL はタブインデント。
+# drizzle-kit が生成するマイグレーション SQL はタブインデントで、末尾に改行を持たない。
 # 手で開いて保存したときに生成物の差分を出さないよう、生成物側に合わせる。
 [db/migrations/*.sql]
 indent_style = tab
+insert_final_newline = false
 trim_trailing_whitespace = false
 
 [{Makefile,makefile,GNUmakefile,*.mk}]
