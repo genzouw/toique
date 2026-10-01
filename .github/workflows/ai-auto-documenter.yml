@@ -98,7 +98,6 @@ jobs:
           # ///
 
           import sys
-          import re
           import ollama
 
           # Ollama on GitHub-hosted (VRAM-less) runners defaults num_ctx to 4096,
