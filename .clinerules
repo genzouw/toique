@@ -17,7 +17,7 @@
 判断に迷ったら PR を作らず Issue でオーナー (@genzouw) に相談してください。詳細は [`AGENTS.md`](AGENTS.md) を参照してください。
 
 ## 技術スタック
-- バックエンド: Bun, Hono, Drizzle ORM, PostgreSQL (17)
+- バックエンド: Bun, Hono, Drizzle ORM, PostgreSQL (18)
 - フロントエンド: React 19, Vite, Tailwind CSS 4
 - 認証: better-auth
 - クラウド/インフラ: Google Cloud (Cloud Run), Cloudflare Pages, CDKTF

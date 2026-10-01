@@ -18,7 +18,7 @@
 
 ## 技術スタック
 
-- バックエンド: Bun, Hono, Drizzle ORM, PostgreSQL (17)
+- バックエンド: Bun, Hono, Drizzle ORM, PostgreSQL (18)
 - フロントエンド: React 19, Vite, Tailwind CSS 4
 - 認証: better-auth
 - クラウド/インフラ: Google Cloud (Cloud Run), Cloudflare Pages, CDKTF
