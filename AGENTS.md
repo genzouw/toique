@@ -141,7 +141,7 @@ Issue では「なぜ既存の無料サービスでは目的を達成できな�
 ## 7. 本リポジトリ固有の注意事項
 
 - **パッケージマネージャ**: **Bun のみ**。`npm` / `yarn` / `pnpm` を CI や `package.json` の `scripts` に追加してはいけません (MUST NOT)。
-- **技術スタック**: バックエンド = Bun / Hono / Drizzle ORM / PostgreSQL 17、フロントエンド = React 19 / Vite / Tailwind CSS 4、認証 = better-auth、インフラ = Google Cloud (Cloud Run) / Cloudflare Pages / CDKTF。
+- **技術スタック**: バックエンド = Bun / Hono / Drizzle ORM / PostgreSQL 18、フロントエンド = React 19 / Vite / Tailwind CSS 4、認証 = better-auth、インフラ = Google Cloud (Cloud Run) / Cloudflare Pages / CDKTF。
 - **`.jules/` `.Jules/` はコミット禁止**: AI エージェントの作業用ディレクトリで、`.gitignore` と pre-commit の対象外設定で除外しています。PR に混入した場合は内容を修正するのではなく `git rm` で削除してください。
 - **GitHub Models の再導入は禁止**: 2026-07-30 に提供終了済みです。推論 API 自体が存在しないため、エンドポイントを差し替えても復旧しません。依存していたワークフロー 23 本は撤去済みです。
 - **GitHub Agentic Workflows (`gh-aw`) の再導入は禁止**: `copilot` エンジンが GitHub Copilot の premium request を消費する有料サービスであり、本ポリシーと両立しないため撤去済みです。`gh aw compile` で再生成すると課金と CI 失敗が復活します。

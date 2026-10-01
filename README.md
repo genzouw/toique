@@ -106,6 +106,9 @@ docker compose down       # 停止
 docker compose down -v    # 停止 + DBデータ削除
 ```
 
+> PostgreSQL 17 の頃に作った `pgdata` ボリュームは 18 のコンテナでは使えません。
+> 18 へ更新したあと DB が起動しない場合は、`docker compose down -v` でボリュームを作り直し、マイグレーションを再適用してください (ローカルの DB データは消えます)。
+
 ### マイグレーション
 
 スキーマ変更後:
@@ -209,7 +212,7 @@ curl -s http://localhost:3000/api/v1/messages | jq
 
 ## 技術スタック
 
-- Backend: Hono 4 + Drizzle ORM + PostgreSQL 17 + (Phase 2: better-auth)
+- Backend: Hono 4 + Drizzle ORM + PostgreSQL 18 + (Phase 2: better-auth)
 - Frontend: (Phase 2 で追加) React 19 + Vite + Tailwind 4
 - 参考リポジトリ: [genzouw/ptasuku](https://github.com/genzouw/ptasuku)
 
@@ -271,7 +274,7 @@ curl -s http://localhost:3000/api/v1/messages | jq
 | `PULL_REQUEST_TEMPLATE.md` | PR 説明の標準テンプレート                                                                                                                         |
 | `stale.yml`                | 最終更新から 14 日で `stale`、最終更新から 16 日で自動クローズ（= stale 付与から約 2 日後）。`WIP` / `do-not-close` / `dependencies` ラベルは除外 |
 | `pr_conflict_notify.yml`   | main push 時 / 日次で全 open PR のコンフリクト検出 → author へ通知                                                                                |
-| `renovate.json`            | bun / npm / github-actions / docker を日次でグループ化 PR（Mend Renovate App）                                                                     |
+| `renovate.json`            | bun / npm / github-actions / docker を日次でグループ化 PR（Mend Renovate App）                                                                    |
 | `CODEOWNERS`               | レビュー自動アサイン                                                                                                                              |
 
 ### ローカル開発時の品質ゲート
