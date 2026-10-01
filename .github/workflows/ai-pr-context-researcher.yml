@@ -87,7 +87,7 @@ jobs:
             fi
             sleep 1
           done
-          ollama pull qwen2.5-coder:0.5b
+          ollama pull qwen2.5-coder:1.5b
 
       - name: Run Web Research
         if: steps.check_diff.outputs.skip != 'true'
@@ -133,7 +133,7 @@ jobs:
 
               try:
                   response = ollama.chat(
-                      model='qwen2.5-coder:0.5b',
+                      model='qwen2.5-coder:1.5b',
                       messages=[
                           {
                               'role': 'system',
@@ -153,7 +153,7 @@ jobs:
 
           def sanitize_query(query):
               # extract_keywords() の戻り値はローカルLLMの出力であり、
-              # システムプロンプトで指示していても0.5Bモデルの出力を完全には制御できない。
+              # システムプロンプトで指示していても1.5Bモデルの出力を完全には制御できない。
               # バッククォートや改行が混ざれば書き込み先Markdownの表示が崩れ、URLが混ざれば
               # validate_summary()がまさに防ごうとしている「検索結果に由来しない未承認リンク
               # の混入」がこのフィールド経由でそのまま素通りしてしまうため、書き込み前に除去する。
@@ -226,7 +226,7 @@ jobs:
 
               try:
                   response = ollama.chat(
-                      model='qwen2.5-coder:0.5b',
+                      model='qwen2.5-coder:1.5b',
                       messages=[
                           {
                               'role': 'system',

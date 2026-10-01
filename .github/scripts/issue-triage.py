@@ -34,7 +34,7 @@ def extract_keywords(issue_title, issue_body):
 
     try:
         response = ollama.chat(
-            model='qwen2.5-coder:0.5b',
+            model='qwen2.5-coder:1.5b',
             messages=[
                 {
                     'role': 'system',
@@ -121,7 +121,7 @@ def summarize_findings(query, search_results):
 
     try:
         response = ollama.chat(
-            model='qwen2.5-coder:0.5b',
+            model='qwen2.5-coder:1.5b',
             messages=[
                 {
                     'role': 'system',
