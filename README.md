@@ -131,10 +131,12 @@ docker stop toique-pg17
 docker compose down -v
 docker compose up -d db
 until docker compose exec db pg_isready -U toique -h 127.0.0.1; do sleep 1; done
-docker compose exec -T db psql -U toique toique < toique-pg17.sql
-docker compose up -d
-rm toique-pg17.sql   # ローカル DB の中身が入っているためコミットしない
+docker compose exec -T db psql -v ON_ERROR_STOP=1 -U toique toique < toique-pg17.sql \
+  && docker compose up -d \
+  && rm toique-pg17.sql   # ローカル DB の中身が入っているためコミットしない
 ```
+
+復元が途中で失敗した場合、`toique-pg17.sql` は削除されずに残ります。原因を直してから、`docker compose down -v` からやり直してください。
 
 ### マイグレーション
 
