@@ -141,7 +141,11 @@
         "enabled: false は脆弱性修正にも効いて PR が出なくなるため使わない。",
         "dependencyDashboardApproval は、packageRules に1つでもあると dependencyDashboard: false でも",
         "Dependency Dashboard (Issue) が作られるため使わない。",
-        "infra の通常更新は自動では提案されないため、必要なときに手動で上げる。"
+        "infra の通常更新は自動では提案されないため、必要なときに手動で上げる。",
+        "additionalBranchPrefix は、infra の更新を backend / frontend と同じブランチに載せないために付ける。",
+        "schedule はブランチの先頭の更新からしか読まれないため、typescript グループのように",
+        "infra とそれ以外が同じブランチ (renovate/typescript) に入ると、ブランチ全体が止まるか、",
+        "infra の更新が同乗して automerge されるかが並び順で変わってしまう。"
       ],
       "matchFileNames": [
         "infra/**"
@@ -149,6 +153,7 @@
       "addLabels": [
         "infra"
       ],
+      "additionalBranchPrefix": "infra-",
       "schedule": [
         "* * 31 2 *"
       ]
