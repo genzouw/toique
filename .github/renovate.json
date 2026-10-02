@@ -135,10 +135,13 @@
       "description": [
         "infra (CDKTF) は version update の自動 PR を出さない。",
         "Dependabot では open-pull-requests-limit: 0 で止めていた。",
-        "Renovate には同等のオプションが無いため dependencyDashboardApproval で",
-        "Dependency Dashboard からの手動承認制にする。",
-        "vulnerabilityAlerts は既定で dependencyDashboardApproval: false のため、",
-        "脆弱性修正だけは従来どおり自動で PR が作られる。"
+        "Renovate には同等のオプションが無いため、成立しない schedule (2月31日) で通常更新を止める。",
+        "脆弱性修正は vulnerabilityAlerts の schedule: [] がこの schedule を上書きするため、",
+        "従来どおり自動で PR が作られる。",
+        "enabled: false は脆弱性修正にも効いて PR が出なくなるため使わない。",
+        "dependencyDashboardApproval は、packageRules に1つでもあると dependencyDashboard: false でも",
+        "Dependency Dashboard (Issue) が作られるため使わない。",
+        "infra の通常更新は自動では提案されないため、必要なときに手動で上げる。"
       ],
       "matchFileNames": [
         "infra/**"
@@ -146,7 +149,9 @@
       "addLabels": [
         "infra"
       ],
-      "dependencyDashboardApproval": true
+      "schedule": [
+        "* * 31 2 *"
+      ]
     },
     {
       "description": [
