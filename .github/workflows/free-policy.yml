@@ -25,7 +25,7 @@ jobs:
       # 未判断の検出が残っているため警告のみ。扱いを決めたら削除して既定の true に戻す (genzouw/td#17)。
       enforce: false
       # 課金を伴わないと確認できた Secret 名・変数名だけを許可する (根拠は導入 PR の本文を参照)。
-      allowed_secrets: |
+      allowed_secrets: | # pragma: allowlist secret
         OPERATOR_EMAILS
         ADMIN_USERNAME
         DOGFOODING_EMAILS
