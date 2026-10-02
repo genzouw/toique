@@ -1,0 +1,34 @@
+name: free-policy
+
+# 本ワークフローは genzouw/ci-workflows の reusable workflow を呼び出す薄いスタブ。
+# ロジックの実体・変更は ci-workflows 側で一元管理する (トリガー定義のみここで持つ)。
+# 参照 SHA の更新は Renovate (github-actions manager) が自動で PR を出す。
+# 将来 必須チェック (context: "free-policy / Free-only policy check") にする想定のため
+# paths フィルタは付けない (フィルタで skip されると context が報告されずマージできなくなる)。
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+
+concurrency:
+  group: free-policy-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  free-policy:
+    uses: genzouw/ci-workflows/.github/workflows/free-policy.yml@3223ebdaffdf89c60ee0bdf615f76ee8037a1c83 # v1.5.0
+    with:
+      # 未判断の検出が残っているため警告のみ。扱いを決めたら削除して既定の true に戻す (genzouw/td#17)。
+      enforce: false
+      # 課金を伴わないと確認できた Secret 名・変数名だけを許可する (根拠は導入 PR の本文を参照)。
+      allowed_secrets: |
+        OPERATOR_EMAILS
+        ADMIN_USERNAME
+        DOGFOODING_EMAILS
+        CLOUDFLARE_ACCOUNT_ID
+        PAT_FOR_AUTOMATION
+        REVIEWDOG_GITHUB_API_TOKEN
