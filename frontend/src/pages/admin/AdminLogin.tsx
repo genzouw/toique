@@ -46,7 +46,11 @@ export default function AdminLogin() {
             className="mx-auto w-12 h-12 bg-slate-900 rounded-full flex items-center justify-center"
             aria-hidden="true"
           >
-            <Shield className="text-amber-400" size={ICON_SIZE.xxl} />
+            <Shield
+              className="text-amber-400"
+              size={ICON_SIZE.xxl}
+              aria-hidden="true"
+            />
           </div>
           <h2 className="mt-4 text-2xl font-bold text-slate-900">
             運営者ログイン
