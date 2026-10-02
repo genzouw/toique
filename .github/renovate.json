@@ -1,5 +1,6 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "dependencyDashboard": false,
   "extends": [
     "config:recommended",
     "helpers:pinGitHubActionDigests"
@@ -132,20 +133,19 @@
     },
     {
       "description": [
-        "infra (CDKTF) は version update の自動 PR を出さない。",
+        "infra (CDKTF) は Renovate の対象から外し、更新 PR を出さない。",
         "Dependabot では open-pull-requests-limit: 0 で止めていた。",
-        "Renovate には同等のオプションが無いため dependencyDashboardApproval で",
-        "Dependency Dashboard からの手動承認制にする。",
-        "vulnerabilityAlerts は既定で dependencyDashboardApproval: false のため、",
-        "脆弱性修正だけは従来どおり自動で PR が作られる。"
+        "dependencyDashboardApproval は、packageRules に1つでもあると dependencyDashboard: false でも",
+        "Dependency Dashboard (Issue) が作られるため使わない。",
+        "enabled: false は脆弱性修正にも効くため、infra の脆弱性修正 PR も Renovate からは出ない。",
+        "脆弱性の検知は osv-scanner.yml (infra/osv-scanner.toml)・Trivy・Dependabot alerts で行い、",
+        "修正と通常更新は必要なときに手動で上げる。",
+        "すぐ下の cdktf 同梱依存の除外ルールは、infra を再び対象に戻すときのために残している。"
       ],
       "matchFileNames": [
         "infra/**"
       ],
-      "addLabels": [
-        "infra"
-      ],
-      "dependencyDashboardApproval": true
+      "enabled": false
     },
     {
       "description": [
