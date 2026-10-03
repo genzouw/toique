@@ -95,7 +95,10 @@ export default function AdminContactDetail() {
         <Info
           label="メール"
           value={
-            <a href={`mailto:${detail.email}`} className="underline focus-ring rounded-sm transition-colors">
+            <a
+              href={`mailto:${detail.email}`}
+              className="underline focus-ring rounded-sm transition-colors"
+            >
               {detail.email}
             </a>
           }
