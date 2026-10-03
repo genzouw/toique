@@ -64,8 +64,8 @@ jobs:
       - name: Install and Start Ollama
         if: steps.check_diff.outputs.skip != 'true'
         env:
-          OLLAMA_VERSION: v0.35.0
-          OLLAMA_TARBALL_SHA256: 1c114a6b220c5efca2ef2b1e5f01d1e535e26f6cd6d1678c8489325d2835e525 # pragma: allowlist secret
+          OLLAMA_VERSION: v0.35.1
+          OLLAMA_TARBALL_SHA256: 9fcd79ac4575b2bd31b992eee18b1000c8ad126b451627c8f8cd091714cfbb10 # pragma: allowlist secret
         run: |
           set -euo pipefail
           TARBALL="ollama-linux-amd64.tar.zst"
