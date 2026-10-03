@@ -145,7 +145,7 @@ const AdminContactRow = memo(function AdminContactRow({
       <td className="px-4 py-2">
         <Link
           to={`/admin/contacts/${row.id}`}
-          className="text-slate-900 hover:underline"
+          className="text-slate-900 hover:underline focus-ring rounded-sm transition-colors"
         >
           {row.subject}
         </Link>

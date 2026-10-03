@@ -76,7 +76,7 @@ export default function AdminContactDetail() {
       <div>
         <Link
           to="/admin/contacts"
-          className="inline-flex items-center gap-1 text-sm text-slate-600 hover:text-slate-900"
+          className="inline-flex items-center gap-1 text-sm text-slate-600 hover:text-slate-900 focus-ring rounded-sm transition-colors"
         >
           <ArrowLeft size={ICON_SIZE.sm} aria-hidden="true" />
           一覧へ戻る
@@ -95,7 +95,7 @@ export default function AdminContactDetail() {
         <Info
           label="メール"
           value={
-            <a href={`mailto:${detail.email}`} className="underline">
+            <a href={`mailto:${detail.email}`} className="underline focus-ring rounded-sm transition-colors">
               {detail.email}
             </a>
           }
