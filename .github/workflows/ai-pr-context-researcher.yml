@@ -87,7 +87,7 @@ jobs:
             fi
             sleep 1
           done
-          ollama pull qwen2.5-coder:0.5b
+          ollama pull qwen2.5-coder:1.5b
 
       - name: Run Web Research
         if: steps.check_diff.outputs.skip != 'true'
@@ -133,7 +133,7 @@ jobs:
 
               try:
                   response = ollama.chat(
-                      model='qwen2.5-coder:0.5b',
+                      model='qwen2.5-coder:1.5b',
                       messages=[
                           {
                               'role': 'system',
@@ -226,7 +226,7 @@ jobs:
 
               try:
                   response = ollama.chat(
-                      model='qwen2.5-coder:0.5b',
+                      model='qwen2.5-coder:1.5b',
                       messages=[
                           {
                               'role': 'system',

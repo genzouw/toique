@@ -84,7 +84,7 @@ jobs:
             fi
             sleep 1
           done
-          ollama pull qwen2.5-coder:0.5b
+          ollama pull qwen2.5-coder:1.5b
 
       - name: Setup Reviewdog
         if: steps.check_diff.outputs.skip != 'true'
@@ -111,7 +111,7 @@ jobs:
           import ollama
 
           # Ollama on GitHub-hosted (VRAM-less) runners defaults num_ctx to 4096,
-          # while qwen2.5-coder:0.5b natively supports up to 32768. Raise the
+          # while qwen2.5-coder:1.5b natively supports up to 32768. Raise the
           # window explicitly and chunk oversized diffs so large PRs are not
           # silently truncated by Ollama's internal context shifting.
           NUM_CTX = 8192
@@ -184,7 +184,7 @@ jobs:
               prompt = build_prompt(diff_chunk, chunk_index, chunk_total)
               try:
                   response = ollama.chat(
-                      model='qwen2.5-coder:0.5b',
+                      model='qwen2.5-coder:1.5b',
                       messages=[
                           {
                               'role': 'system',
