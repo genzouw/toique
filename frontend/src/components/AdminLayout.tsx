@@ -25,6 +25,12 @@ export default function AdminLayout() {
 
   return (
     <div className="flex flex-col md:flex-row h-full bg-slate-50">
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:px-4 focus:py-2 focus:bg-white focus:text-slate-900 focus:font-bold focus:shadow-md focus:rounded-br-md left-0 top-0"
+      >
+        メインコンテンツへスキップ
+      </a>
       <MobileHeader
         onOpen={openSidebar}
         isOpen={isSidebarOpen}
@@ -102,7 +108,11 @@ export default function AdminLayout() {
           </button>
         </div>
       </SidebarPanel>
-      <main className="flex-1 overflow-auto p-4 md:p-8">
+      <main
+        id="main-content"
+        tabIndex={-1}
+        className="flex-1 overflow-auto p-4 md:p-8 outline-hidden"
+      >
         <Outlet />
       </main>
     </div>
