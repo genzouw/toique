@@ -43,7 +43,7 @@ jobs:
           BASE_REF: ${{ github.base_ref }}
         run: |
           git fetch origin "$BASE_REF"
-          git diff "origin/$BASE_REF...HEAD" > pr_diff.txt
+          git diff "origin/$BASE_REF...HEAD" -- 'backend/**/*.ts' 'frontend/**/*.ts' 'frontend/**/*.tsx' package.json > pr_diff.txt
 
           read -r changedLineCount changedCharCount < <(
             awk '/^\+\+\+ b\// || /^--- a\// { next } /^[+-]/ {
@@ -83,7 +83,8 @@ jobs:
             fi
             if [ "$i" -eq 30 ]; then
               echo "Ollama server did not become ready within 30s" >&2
-              # Do not exit inside loop in bash, wait for job timeout
+              cat ollama.log >&2 || true
+              exit 1
             fi
             sleep 1
           done
@@ -98,8 +99,7 @@ jobs:
       - name: Run AI Scanner
         if: steps.check_diff.outputs.skip != 'true'
         env:
-          PR_HEAD_REPO: ${{ github.event.pull_request.head.repo.full_name }}
-          BASE_REPO: ${{ github.repository }}
+          REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           cat << 'PY_EOF' > run_scan.py
           # /// script
@@ -178,6 +178,18 @@ jobs:
               </pr_diff>
               """
 
+          def is_valid_diagnostic(diagnostic):
+              # 小型モデルは構造の崩れた要素を返すことがあり、Reviewdog のパース失敗を避けるため除外する
+              if not isinstance(diagnostic, dict) or not isinstance(diagnostic.get("message"), str):
+                  return False
+              location = diagnostic.get("location")
+              if not isinstance(location, dict) or not isinstance(location.get("path"), str):
+                  return False
+              range_ = location.get("range")
+              start = range_.get("start") if isinstance(range_, dict) else None
+              line = start.get("line") if isinstance(start, dict) else None
+              return isinstance(line, int) and not isinstance(line, bool) and line > 0
+
           def scan_chunk(diff_chunk, chunk_index, chunk_total):
               prompt = build_prompt(diff_chunk, chunk_index, chunk_total)
               try:
@@ -221,11 +233,7 @@ jobs:
                   diagnostics = json_obj.get("diagnostics", [])
                   if not isinstance(diagnostics, list):
                       return []
-                  return [
-                      diagnostic
-                      for diagnostic in diagnostics
-                      if isinstance(diagnostic, dict)
-                  ]
+                  return [d for d in diagnostics if is_valid_diagnostic(d)]
 
               except Exception as e:
                   print(f"Error during Ollama inference: {e}", file=sys.stderr)
@@ -254,6 +262,10 @@ jobs:
                   all_diagnostics.extend(result)
               if failed:
                   print(f"::warning::ハルシネーション スキャンが {failed}/{len(chunks)} チャンクで失敗しました。診断結果が不完全な可能性があります")
+              if failed == len(chunks):
+                  # 全チャンク失敗を「ハルシネーションなし」と区別するため、ジョブを失敗させる
+                  print("::error::すべてのチャンクでスキャンに失敗しました", file=sys.stderr)
+                  sys.exit(1)
 
               json_obj = {
                   "source": {
@@ -272,12 +284,8 @@ jobs:
 
           uv run run_scan.py
 
-          if [ "$PR_HEAD_REPO" = "$BASE_REPO" ]; then
-            if [ -s reviewdog_rdjson.json ] && grep -q '"diagnostics"' reviewdog_rdjson.json; then
-              REVIEWDOG_GITHUB_API_TOKEN="${{ secrets.GITHUB_TOKEN }}" reviewdog -f=rdjson -reporter=github-pr-review < reviewdog_rdjson.json
-            fi
-          else
-            echo "Skipping result posting for fork PR (GITHUB_TOKEN is read-only for these events)."
+          if [ -s reviewdog_rdjson.json ] && grep -q '"diagnostics"' reviewdog_rdjson.json; then
+            reviewdog -f=rdjson -reporter=github-pr-review < reviewdog_rdjson.json
           fi
 
           rm -f run_scan.py reviewdog_rdjson.json pr_diff.txt
