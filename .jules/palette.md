@@ -1,0 +1,3 @@
+## 2023-10-24 - Skip-to-content links and focus management
+**Learning:** When implementing skip-to-content links for keyboard users, targeting a container (like `<main>`) with `tabIndex={-1}` is essential to allow programmatic focus. However, if the container doesn't have an explicitly removed outline (e.g., via Tailwind's `outline-hidden`), browsers will draw a prominent, confusing focus ring around the entire main content area when the user skips to it.
+**Action:** When adding skip-to-content functionality, always ensure the target element has both `tabIndex={-1}` and an explicit `outline-hidden` (or equivalent `outline: none`) class to maintain a clean visual experience while satisfying accessibility requirements.
