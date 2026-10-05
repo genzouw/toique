@@ -42,7 +42,7 @@
       {
         "match": "\\.(ts|tsx|js|jsx|json|yaml|yml|md|env.*)$",
         "isAsync": true,
-        "cmd": "./scripts/run-security-scans-local.sh \"${file}\""
+        "cmd": "bash ./scripts/run-security-scans-local.sh \"${file}\""
       }
     ]
   },
