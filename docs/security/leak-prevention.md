@@ -147,7 +147,7 @@ gh pr checks <PR番号>
 ### マージ後に確認すること
 
 1. `main` への push で再実行されるスキャナー群の結果を確認する（`gh run list --branch main --limit 20`）。
-2. 週次の定期監査（`secret-scan.yml` などの各ワークフローの `schedule`）の結果を確認する。**一部の定期監査**（統合型週次 secret scan ワークフローにおける `gitleaks` / `TruffleHog` の全履歴再スキャン、`secretlint` の全ファイルスキャンなど）は全履歴・全ファイルを対象とするため、PR 単位の差分スキャンでは出ない検知がここで出ることがあります。一方、`Dependabot` / `osv-scanner` / `trivy` / `OpenSSF Scorecard` / SBOM 生成は依存関係やワークフロー定義の現在の状態を検査するものであり、全履歴を走査するわけではありません。
+2. 週次の定期監査（`secret-scan.yml` などの各ワークフローの `schedule`、および `.github/dependabot.yml` による依存パッケージの定期スキャン）の結果を確認する。**一部の定期監査**（統合型週次 secret scan ワークフローにおける `gitleaks` / `TruffleHog` の全履歴再スキャン、`secretlint` の全ファイルスキャンなど）は全履歴・全ファイルを対象とするため、PR 単位の差分スキャンでは出ない検知がここで出ることがあります。一方、`Dependabot` / `osv-scanner` / `trivy` / `OpenSSF Scorecard` / SBOM 生成は依存関係やワークフロー定義の現在の状態を検査するものであり、全履歴を走査するわけではありません。
 3. シークレットの検知があった場合は、履歴の書き換えより先に**必ずローテート**する（「運用ルール」参照）。
 
 ## gitleaks のバージョン管理
@@ -212,6 +212,13 @@ CI ランナーにシークレットが渡る前にブロックされるため�
   再有効化後は、無効化していた期間に積み上がった変更を取りこぼさないよう、対象ワークフローを `workflow_dispatch` で実行し、その結果を確認してください。**検査範囲はワークフローにより異なります。** `gitleaks` は常に `--log-opts="--all"` で全コミットを検査し、`TruffleHog` は `workflow_dispatch` 実行時に起点なし（履歴全体）で検査するため、いずれも無効化期間中の履歴を含めて検査できます。一方 `detect-secrets` は `workflow_dispatch` / `schedule` 実行時（および統合型週次 `secret-scan.yml` の実行時）、現在の `HEAD` のツリー1点のみを検査する設計であり、履歴を遡りません。無効化期間中に一時的に追加され復旧前に削除されたシークレットまで検査したい場合は、`gitleaks` または `TruffleHog` の結果で確認してください。
 
   上記の復元・検証が完了したら、「無効化・縮退の記録」の該当項目へ、再有効化日と検証結果（上記コマンドの出力）を追記してください。
+
+## 定期監査 (Periodic Audit)
+
+シークレット漏洩だけでなく、依存するサードパーティ製パッケージ（npmパッケージ、GitHub Actions、Terraformプロバイダなど）を通じたサプライチェーン攻撃や既知の脆弱性（CVE）のリスクを低減するため、定期的な監査を実施しています。
+
+- **Dependabot (`.github/dependabot.yml`)**: リポジトリ全体の `npm`, `github-actions`, `terraform` エコシステムに対して週次で依存関係のアップデートやセキュリティアラートをチェックし、古いパッケージや脆弱性を含むバージョンが利用され続けるのを防ぎます。
+- **統合型週次 Secret Scan (`.github/workflows/secret-scan.yml`)**: 週次で `gitleaks`, `trufflehog`, `secretlint`, `detect-secrets` を用いて履歴全体および現在のファイルを対象にシークレットの流出がないかを走査します。
 
 ## 無効化・縮退の記録
 
