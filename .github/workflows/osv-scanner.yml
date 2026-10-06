@@ -71,20 +71,84 @@ jobs:
 
   # PR では base と head を両方スキャンし、PR で新しく入った脆弱性だけを失敗にする。
   # 既存の脆弱性は main の全件検査 (osv-scanner ジョブ) が拾うため、検出の網は狭まらない。
-  # 公式ドキュメント: https://google.github.io/osv-scanner/github-action/#scan-on-pull-request
+  # 公式の再利用可能ワークフロー (osv-scanner-reusable-pr.yml) と同じ手順を書き下している。
+  # リポジトリの Actions 許可リストに同ワークフローが無く、呼び出すと startup_failure になるため。
+  # 許可済みの osv-scanner-action / osv-reporter-action だけで構成する。
   osv-scanner-pr:
     name: Scan for new vulnerabilities in PR (OSV-Scanner)
     if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
     permissions:
-      # 呼び出される再利用可能ワークフローが要求する権限 (呼び出し側で許可しないと startup_failure になる)
-      actions: read
       contents: read
-      security-events: write
-    uses: google/osv-scanner-action/.github/workflows/osv-scanner-reusable-pr.yml@a345acffa64b0eaede81a3d9aae6141214d9c8fc # v2.6.0
-    with:
-      scan-args: |-
-        -r
-        --config=infra/osv-scanner.toml
-        ./
-      # SARIF のアップロード先 (category: osv-scanner) は全件検査と分けるため、PR では上げない。
-      upload-sarif: false
+    steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@e14015d583714f6e62063499dc959a02595150a1 # v2.21.1
+        with:
+          egress-policy: audit
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          # base ブランチへ切り替えるため全履歴を取得する
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Checkout target branch
+        env:
+          BASE_REF: ${{ github.base_ref }}
+        run: git checkout "origin/${BASE_REF}"
+
+      - name: Run scanner on existing code
+        id: scan-old
+        continue-on-error: true
+        uses: google/osv-scanner-action/osv-scanner-action@a345acffa64b0eaede81a3d9aae6141214d9c8fc # v2.6.0
+        with:
+          scan-args: |-
+            --format=json
+            --output=old-results.json
+            -r
+            --config=infra/osv-scanner.toml
+            ./
+
+      - name: Checkout current branch
+        # osv-scanner が作業ツリーを変更した場合に備えて -f を付ける
+        run: git checkout -f "${GITHUB_SHA}"
+
+      - name: Run scanner on new code
+        id: scan-new
+        continue-on-error: true
+        uses: google/osv-scanner-action/osv-scanner-action@a345acffa64b0eaede81a3d9aae6141214d9c8fc # v2.6.0
+        with:
+          scan-args: |-
+            --format=json
+            --output=new-results.json
+            -r
+            --config=infra/osv-scanner.toml
+            ./
+
+      # osv-scanner は脆弱性を検出したときもスキャン自体が失敗したときも非 0 で終わる。
+      # スキャンが失敗すると結果ファイルが書かれず、reporter は「新規の脆弱性なし」として
+      # 成功扱いにするため、結果ファイルの有無でスキャンの完走を確認する。
+      - name: Check that both scans completed
+        env:
+          OLD_OUTCOME: ${{ steps.scan-old.outcome }}
+          NEW_OUTCOME: ${{ steps.scan-new.outcome }}
+        run: |
+          status=0
+          if [ "${OLD_OUTCOME}" = "failure" ] && [ ! -s old-results.json ]; then
+            echo "::error::base ブランチのスキャンが old-results.json を書かずに失敗しました。"
+            status=1
+          fi
+          if [ "${NEW_OUTCOME}" = "failure" ] && [ ! -s new-results.json ]; then
+            echo "::error::PR のスキャンが new-results.json を書かずに失敗しました。"
+            status=1
+          fi
+          exit "${status}"
+
+      - name: Run osv-scanner-reporter
+        uses: google/osv-scanner-action/osv-reporter-action@a345acffa64b0eaede81a3d9aae6141214d9c8fc # v2.6.0
+        with:
+          scan-args: |-
+            --output=results.sarif
+            --old=old-results.json
+            --new=new-results.json
+            --gh-annotations=true
+            --fail-on-vuln=true
