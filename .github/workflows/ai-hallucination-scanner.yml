@@ -276,7 +276,20 @@ jobs:
                   diagnostics = json_obj.get("diagnostics", [])
                   if not isinstance(diagnostics, list):
                       return []
-                  return [d for d in diagnostics if is_valid_diagnostic(d, known_paths)]
+                  # モデルが返した任意フィールド（例: 不正な severity）で Reviewdog の RDJSON パースが
+                  # 失敗しないよう、検証済みの値だけから診断を作り直す
+                  return [
+                      {
+                          "message": d["message"],
+                          "location": {
+                              "path": d["location"]["path"],
+                              "range": {"start": {"line": d["location"]["range"]["start"]["line"]}},
+                          },
+                          "severity": "WARNING",
+                      }
+                      for d in diagnostics
+                      if is_valid_diagnostic(d, known_paths)
+                  ]
 
               except Exception as e:
                   print(f"Error during Ollama inference: {e}", file=sys.stderr)
