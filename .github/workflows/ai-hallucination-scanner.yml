@@ -128,17 +128,26 @@ jobs:
               paths = set()
               path = None
               new_line = 0
+              in_hunk = False
               for line in diff_content.splitlines():
-                  if line.startswith('+++ '):
-                      target = line[4:]
-                      path = target[2:] if target.startswith('b/') else None
-                      if path:
-                          paths.add(path)
+                  if line.startswith('diff --git '):
+                      in_hunk = False
+                      path = None
                       continue
-                  if line.startswith('--- '):
-                      continue
+                  # ファイルヘッダーはハンクの外にだけ現れる。ハンク内の「+++ 」で始まる行は
+                  # 追加コード（例: `++ counter;`）なので、ヘッダーとして扱わない
+                  if not in_hunk:
+                      if line.startswith('+++ '):
+                          target = line[4:]
+                          path = target[2:] if target.startswith('b/') else None
+                          if path:
+                              paths.add(path)
+                          continue
+                      if line.startswith('--- '):
+                          continue
                   hunk = HUNK_RE.match(line)
                   if hunk:
+                      in_hunk = True
                       new_line = int(hunk.group(1))
                       continue
                   if path and line.startswith('+'):
