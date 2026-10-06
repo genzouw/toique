@@ -43,7 +43,7 @@ jobs:
           BASE_REF: ${{ github.base_ref }}
         run: |
           git fetch origin "$BASE_REF"
-          git diff "origin/$BASE_REF...HEAD" -- 'backend/**/*.ts' 'frontend/**/*.ts' 'frontend/**/*.tsx' package.json > pr_diff.txt
+          git diff -U0 "origin/$BASE_REF...HEAD" -- 'backend/**/*.ts' 'frontend/**/*.ts' 'frontend/**/*.tsx' package.json > pr_diff.txt
 
           read -r changedLineCount changedCharCount < <(
             awk '/^\+\+\+ b\// || /^--- a\// { next } /^[+-]/ {
@@ -111,10 +111,38 @@ jobs:
 
           import sys
           import json
+          import re
           import ollama
 
           NUM_CTX = 8192
           CHUNK_CHAR_LIMIT = 12000
+
+          HUNK_RE = re.compile(r'^@@ -\d+(?:,\d+)? \+(\d+)(?:,\d+)? @@')
+
+          def annotate_diff(diff_content):
+              # 小型モデルはハンクヘッダから行番号を計算できないため、追加行ごとに
+              # 「パス:L実行番号: コード」を前置してモデルへ渡す。パスの一覧も返す
+              annotated = []
+              paths = set()
+              path = None
+              new_line = 0
+              for line in diff_content.splitlines():
+                  if line.startswith('+++ '):
+                      target = line[4:]
+                      path = target[2:] if target.startswith('b/') else None
+                      if path:
+                          paths.add(path)
+                      continue
+                  if line.startswith('--- '):
+                      continue
+                  hunk = HUNK_RE.match(line)
+                  if hunk:
+                      new_line = int(hunk.group(1))
+                      continue
+                  if path and line.startswith('+'):
+                      annotated.append(f"{path}:L{new_line}: {line[1:]}\n")
+                      new_line += 1
+              return "".join(annotated), paths
 
           def chunk_diff(diff_content, limit):
               chunks = []
@@ -147,6 +175,7 @@ jobs:
               あなたは経験豊富なセキュリティエンジニアです。
               {context_note}以下のPR diffをレビューし、AIコーディングアシスタントが生成しがちな「ハルシネーション（存在しないパッケージのインポート、存在しない関数の呼び出し、または非推奨APIの利用）」が含まれていないかを検出してください。
               日本語で指摘してください。
+              diff は追加行だけを「パス:L行番号: コード」の形式で並べたものです。location.path にはその「パス」を、range.start.line には「L」の後ろの数値を、加工せずそのまま使ってください。
 
               出力は必ず以下のJSONスキーマに従うRDJSON (Reviewdog Diagnostic JSON) 形式のみを出力してください。
               それ以外のテキストは一切含めないでください。
@@ -178,19 +207,22 @@ jobs:
               </pr_diff>
               """
 
-          def is_valid_diagnostic(diagnostic):
+          def is_valid_diagnostic(diagnostic, known_paths):
               # 小型モデルは構造の崩れた要素を返すことがあり、Reviewdog のパース失敗を避けるため除外する
               if not isinstance(diagnostic, dict) or not isinstance(diagnostic.get("message"), str):
                   return False
               location = diagnostic.get("location")
               if not isinstance(location, dict) or not isinstance(location.get("path"), str):
                   return False
+              if location["path"] not in known_paths:
+                  # diff に存在しないパスは Reviewdog が投稿できず、無関係な位置に付く恐れがあるため除外する
+                  return False
               range_ = location.get("range")
               start = range_.get("start") if isinstance(range_, dict) else None
               line = start.get("line") if isinstance(start, dict) else None
               return isinstance(line, int) and not isinstance(line, bool) and line > 0
 
-          def scan_chunk(diff_chunk, chunk_index, chunk_total):
+          def scan_chunk(diff_chunk, chunk_index, chunk_total, known_paths):
               prompt = build_prompt(diff_chunk, chunk_index, chunk_total)
               try:
                   response = ollama.chat(
@@ -233,7 +265,7 @@ jobs:
                   diagnostics = json_obj.get("diagnostics", [])
                   if not isinstance(diagnostics, list):
                       return []
-                  return [d for d in diagnostics if is_valid_diagnostic(d)]
+                  return [d for d in diagnostics if is_valid_diagnostic(d, known_paths)]
 
               except Exception as e:
                   print(f"Error during Ollama inference: {e}", file=sys.stderr)
@@ -251,11 +283,17 @@ jobs:
                       json.dump({}, f)
                   return
 
-              chunks = chunk_diff(diff_content, CHUNK_CHAR_LIMIT)
+              annotated, known_paths = annotate_diff(diff_content)
+              if not annotated:
+                  with open('reviewdog_rdjson.json', 'w') as f:
+                      json.dump({}, f)
+                  return
+
+              chunks = chunk_diff(annotated, CHUNK_CHAR_LIMIT)
               all_diagnostics = []
               failed = 0
               for i, chunk in enumerate(chunks, start=1):
-                  result = scan_chunk(chunk, i, len(chunks))
+                  result = scan_chunk(chunk, i, len(chunks), known_paths)
                   if result is None:
                       failed += 1
                       continue
