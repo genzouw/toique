@@ -24,6 +24,25 @@
     ],
     "enabled": false
   },
+  "lockFileMaintenance": {
+    "description": [
+      "ロックファイル内の推移的依存を週次で最新化する。",
+      "更新 PR は package.json の宣言を起点に作られるため、直接宣言していない推移的依存の",
+      "修正版 (OSV-Scanner が検出する脆弱性など) は、この設定がないと取り込まれない。",
+      "実行は月曜 06:30 JST の OSV-Scanner 週次スキャンより前に収める。",
+      "CI を通った場合のみ自動マージする。infra/** は packageRules で Renovate の対象外にしている。"
+    ],
+    "enabled": true,
+    "schedule": [
+      "before 4am on monday"
+    ],
+    "automerge": true,
+    "platformAutomerge": true,
+    "automergeStrategy": "squash",
+    "addLabels": [
+      "dependencies"
+    ]
+  },
   "prConcurrentLimit": 10,
   "labels": [
     "dependencies"
