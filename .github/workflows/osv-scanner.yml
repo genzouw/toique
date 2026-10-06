@@ -1,7 +1,13 @@
 name: OSV-Scanner
 
+# 全件検査は main への push・週次スケジュール・手動実行だけで行う。
+# PR では base との差分検査 (PR で新しく入った脆弱性だけを検出) に切り替える。
+# 全件検査を PR でも走らせると、無関係な新規公開の脆弱性で open な PR がすべて止まる
+# (Renovate の PR が OSV-Scanner で一斉に落ちた事象の再発防止)。
 on:
   push:
+    branches:
+      - main
   pull_request:
   schedule:
     # 毎週月曜 06:30 JST (= 日曜 21:30 UTC) に実行
@@ -18,7 +24,7 @@ permissions:
 jobs:
   osv-scanner:
     name: Scan for vulnerabilities (OSV-Scanner)
-    if: github.event_name == 'push' || github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' || (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name != github.repository)
+    if: github.event_name != 'pull_request'
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -57,8 +63,92 @@ jobs:
             ./
 
       - name: Upload SARIF to GitHub Security
-        if: always() && github.event_name != 'pull_request'
+        if: always()
         uses: github/codeql-action/upload-sarif@2892aa5e19bbd11bc0cff5427e3b750a04d9e3c2 # v4.38.2
         with:
           sarif_file: results.sarif
           category: osv-scanner
+
+  # PR では base と head を両方スキャンし、PR で新しく入った脆弱性だけを失敗にする。
+  # 既存の脆弱性は main の全件検査 (osv-scanner ジョブ) が拾うため、検出の網は狭まらない。
+  # 公式の再利用可能ワークフロー (osv-scanner-reusable-pr.yml) と同じ手順を書き下している。
+  # リポジトリの Actions 許可リストに同ワークフローが無く、呼び出すと startup_failure になるため。
+  # 許可済みの osv-scanner-action / osv-reporter-action だけで構成する。
+  osv-scanner-pr:
+    name: Scan for new vulnerabilities in PR (OSV-Scanner)
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@e14015d583714f6e62063499dc959a02595150a1 # v2.21.1
+        with:
+          egress-policy: audit
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          # base ブランチへ切り替えるため全履歴を取得する
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Checkout target branch
+        env:
+          BASE_REF: ${{ github.base_ref }}
+        run: git checkout "origin/${BASE_REF}"
+
+      - name: Run scanner on existing code
+        id: scan-old
+        continue-on-error: true
+        uses: google/osv-scanner-action/osv-scanner-action@a345acffa64b0eaede81a3d9aae6141214d9c8fc # v2.6.0
+        with:
+          scan-args: |-
+            --format=json
+            --output=old-results.json
+            -r
+            --config=infra/osv-scanner.toml
+            ./
+
+      - name: Checkout current branch
+        # osv-scanner が作業ツリーを変更した場合に備えて -f を付ける
+        run: git checkout -f "${GITHUB_SHA}"
+
+      - name: Run scanner on new code
+        id: scan-new
+        continue-on-error: true
+        uses: google/osv-scanner-action/osv-scanner-action@a345acffa64b0eaede81a3d9aae6141214d9c8fc # v2.6.0
+        with:
+          scan-args: |-
+            --format=json
+            --output=new-results.json
+            -r
+            --config=infra/osv-scanner.toml
+            ./
+
+      # osv-scanner は脆弱性を検出したときもスキャン自体が失敗したときも非 0 で終わる。
+      # スキャンが失敗すると結果ファイルが書かれず、reporter は「新規の脆弱性なし」として
+      # 成功扱いにするため、結果ファイルの有無でスキャンの完走を確認する。
+      - name: Check that both scans completed
+        env:
+          OLD_OUTCOME: ${{ steps.scan-old.outcome }}
+          NEW_OUTCOME: ${{ steps.scan-new.outcome }}
+        run: |
+          status=0
+          if [ "${OLD_OUTCOME}" = "failure" ] && [ ! -s old-results.json ]; then
+            echo "::error::base ブランチのスキャンが old-results.json を書かずに失敗しました。"
+            status=1
+          fi
+          if [ "${NEW_OUTCOME}" = "failure" ] && [ ! -s new-results.json ]; then
+            echo "::error::PR のスキャンが new-results.json を書かずに失敗しました。"
+            status=1
+          fi
+          exit "${status}"
+
+      - name: Run osv-scanner-reporter
+        uses: google/osv-scanner-action/osv-reporter-action@a345acffa64b0eaede81a3d9aae6141214d9c8fc # v2.6.0
+        with:
+          scan-args: |-
+            --output=results.sarif
+            --old=old-results.json
+            --new=new-results.json
+            --gh-annotations=true
+            --fail-on-vuln=true
