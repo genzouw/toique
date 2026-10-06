@@ -88,7 +88,7 @@ PR 向けの AI a11y Scanner と AI Auto Documenter は、API クオータや計
 
 **現行の方針: GitHub ネイティブの無料 AI 推論基盤は存在しないため、リポジトリ側で AI 推論を実行するワークフローは新規に追加しません。**
 
-**例外: [AGENTS.md](../AGENTS.md) §1.3 が MAY としている、Secrets 不要のローカル LLM（Ollama / llama.cpp 等）を GitHub-hosted runner 上で動かす構成は、上記の「新規に追加しない」方針の対象外です。** 第4節の **AI a11y Scanner** (`ai-a11y-scanner.yml`)・**AI Auto Documenter** (`ai-auto-documenter.yml`) と、第8節の **AI Hallucination Scanner** (`ai-hallucination-scanner.yml`) は、外部 API キーを一切使わずローカルの Ollama (`qwen2.5-coder:1.5b`) のみで推論するため、この例外に該当します。フォーク PR でも（結果投稿を除き）実行可能です。
+**例外: [AGENTS.md](../AGENTS.md) §1.3 が MAY としている、Secrets 不要のローカル LLM（Ollama / llama.cpp 等）を GitHub-hosted runner 上で動かす構成は、上記の「新規に追加しない」方針の対象外です。** 第4節の **AI a11y Scanner** (`ai-a11y-scanner.yml`)・**AI Auto Documenter** (`ai-auto-documenter.yml`) と、第8節の **AI Hallucination Scanner** (`ai-hallucination-scanner.yml`) は、外部 API キーを一切使わずローカルの Ollama (`qwen2.5-coder:1.5b`) のみで推論するため、この例外に該当します。a11y / auto-documenter はフォーク PR でも（結果投稿を除き）実行可能ですが、AI Hallucination Scanner は同一リポジトリの PR のみを対象とし、フォーク PR ではジョブ条件により実行されません。
 
 AI によるレビュー・トリアージは、リポジトリ側に API キーも課金設定も必要としない外部 App（CodeRabbit、第4節参照）に一本化します。上記のローカル LLM ワークフローは、この方針に対する Secrets 不要の例外として併用しています。
 
