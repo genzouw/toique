@@ -8,6 +8,8 @@ on:
       - 'frontend/**/*.tsx'
       - 'frontend/**/*.ts'
       - 'package.json'
+      - 'backend/package.json'
+      - 'frontend/package.json'
 
 concurrency:
   group: ai-hallucination-scanner-${{ github.ref }}
@@ -43,7 +45,7 @@ jobs:
           BASE_REF: ${{ github.base_ref }}
         run: |
           git fetch origin "$BASE_REF"
-          git diff -U0 "origin/$BASE_REF...HEAD" -- 'backend/**/*.ts' 'frontend/**/*.ts' 'frontend/**/*.tsx' package.json > pr_diff.txt
+          git diff -U0 "origin/$BASE_REF...HEAD" -- 'backend/**/*.ts' 'frontend/**/*.ts' 'frontend/**/*.tsx' package.json backend/package.json frontend/package.json > pr_diff.txt
 
           read -r changedLineCount changedCharCount < <(
             awk '/^\+\+\+ b\// || /^--- a\// { next } /^[+-]/ {
