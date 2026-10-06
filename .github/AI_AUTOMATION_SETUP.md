@@ -88,7 +88,7 @@ PR 向けの AI a11y Scanner と AI Auto Documenter は、API クオータや計
 
 **現行の方針: GitHub ネイティブの無料 AI 推論基盤は存在しないため、リポジトリ側で AI 推論を実行するワークフローは新規に追加しません。**
 
-**例外: [AGENTS.md](../AGENTS.md) §1.3 が MAY としている、Secrets 不要のローカル LLM（Ollama / llama.cpp 等）を GitHub-hosted runner 上で動かす構成は、上記の「新規に追加しない」方針の対象外です。** 第4節の **AI a11y Scanner** (`ai-a11y-scanner.yml`) と **AI Auto Documenter** (`ai-auto-documenter.yml`) は、外部 API キーを一切使わずローカルの Ollama (`qwen2.5-coder:1.5b`) のみで推論するため、この例外に該当します。フォーク PR でも（結果投稿を除き）実行可能です。
+**例外: [AGENTS.md](../AGENTS.md) §1.3 が MAY としている、Secrets 不要のローカル LLM（Ollama / llama.cpp 等）を GitHub-hosted runner 上で動かす構成は、上記の「新規に追加しない」方針の対象外です。** 第4節の **AI a11y Scanner** (`ai-a11y-scanner.yml`)・**AI Auto Documenter** (`ai-auto-documenter.yml`) と、第8節の **AI Hallucination Scanner** (`ai-hallucination-scanner.yml`) は、外部 API キーを一切使わずローカルの Ollama (`qwen2.5-coder:1.5b`) のみで推論するため、この例外に該当します。a11y / auto-documenter はフォーク PR でも（結果投稿を除き）実行可能ですが、AI Hallucination Scanner は同一リポジトリの PR のみを対象とし、フォーク PR ではジョブ条件により実行されません。
 
 AI によるレビュー・トリアージは、リポジトリ側に API キーも課金設定も必要としない外部 App（CodeRabbit、第4節参照）に一本化します。上記のローカル LLM ワークフローは、この方針に対する Secrets 不要の例外として併用しています。
 
@@ -275,3 +275,7 @@ AI エージェント（Cursor, Claude Desktop など）が開発プロジェク
    - 無料プラン（Open Source / Pro Trial）でパブリックリポジトリにて利用可能です。
 
 **Qodo Merge (旧 PR-Agent / CodiumAI) は導入しません。** Qodo には恒久的な無料プランがなく（公式料金ページの FAQ に `We don't offer a permanent free tier` と明記）、無料で使えるのは 14 日間のトライアルか、審査制の [Qodo for Open Source](https://docs.qodo.ai/open-source-program)（公開リポジトリかつ **star 200 以上**、または Organization 内に star 200 以上の公開リポジトリが 1 つ以上）のみです。本リポジトリは条件未達のため、第5節の「CI から呼び出す AI は無料枠のみ」方針に従い採用しません。未使用のまま残っていた `.pr_agent.toml` は 2026-09 に削除しました。
+
+## 8. AI Hallucination Scanner
+
+手動セットアップは不要です。`ai-hallucination-scanner.yml` はワークフロー内の `permissions: pull-requests: write` だけで Reviewdog のコメント投稿まで完結するため、`Workflow permissions` の既定値を変更する必要はありません。外部 API への依存やシークレットの登録も不要です (Ollama を GitHub-hosted runner 上で起動し完結します)。
