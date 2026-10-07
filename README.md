@@ -331,4 +331,3 @@ curl -s http://localhost:3000/api/v1/messages | jq
 
 MCP サーバーは開発者のローカル環境で動作し、CI 側の推論基盤には依存しません。そのため GitHub Models の終了後も引き続き利用できます。
 
-- **ローカル AI による CI/CD ワークフロー**: GitHub Actions ランナー上で動作するローカル AI（`Ollama`）を活用した、完全無料の Issue トリアージ（`ai-issue-triage.yml`）を稼働させています。外部 API キーを一切必要としません。
