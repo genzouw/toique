@@ -65,15 +65,11 @@ AI によるレビュー・トリアージの代替方針は第5節を参照し�
 - パフォーマンス: O(N)ループの回避、N+1問題の防止、不要なDBクエリの削減など
 - アクセシビリティ: ボタン等のアクション要素における具体的な対象を含んだ aria-label や title の付与、role="tablist" におけるキーボードナビゲーションや roving tabIndex のサポートなど
 
-**ローカル AI を活用した追加のレビュー自動化:**
+**ローカル AI を活用した自動化:**
 
 さらに当リポジトリでは、GitHub Actions 上で動作する完全無料のローカル AI 基盤として **Ollama (`qwen2.5-coder:1.5b`)** を導入しています。外部 API への依存や従量課金 API キー（Secret）の登録を一切必要とせず、以下の機能を提供します。
 
-- **AI a11y Scanner (`ai-a11y-scanner.yml`)**: フロントエンドの変更に対して、アクセシビリティ（a11y）の専門的な観点からレビューを行い、`reviewdog` を通じて PR にインラインコメントを投稿します。
-- **AI Auto Documenter (`ai-auto-documenter.yml`)**: PR の差分を解析し、変更内容の要約を自動生成して PR にコメントとして追加します。
 - **AI Issue Triage (`ai-issue-triage.yml`)**: 新規発行された Issue に対して、内容のキーワード抽出と DuckDuckGo を用いた Web 検索を行い、役立つ技術情報や解決策の要約を自動でコメントします。
-
-PR 向けの AI a11y Scanner と AI Auto Documenter は、API クオータや計算リソースを最適化するため、変更が軽微（trivial diff）な場合には推論を自動的にスキップする設計になっています。また、この2つのワークフローはシークレットを必要としないため、フォーク PR でも安全に動作します。ただし GitHub の仕様上、フォーク PR では `GITHUB_TOKEN` が読み取り専用に制限されるため、推論・解析自体は実行しつつ、結果の投稿（`reviewdog` によるインラインコメント、`gh pr comment` による要約コメント）はスキップします。Dependabot / Renovate が作成した依存更新 PR は、重い推論を無駄に走らせないため、ジョブごと実行を除外しています（ジョブの `if:` で PR 作成者を `github.event.pull_request.user.login` から判定します）。
 
 ## 5. AI 実行基盤の方針: 無料枠のみを利用する
 
@@ -88,7 +84,7 @@ PR 向けの AI a11y Scanner と AI Auto Documenter は、API クオータや計
 
 **現行の方針: GitHub ネイティブの無料 AI 推論基盤は存在しないため、リポジトリ側で AI 推論を実行するワークフローは新規に追加しません。**
 
-**例外: [AGENTS.md](../AGENTS.md) §1.3 が MAY としている、Secrets 不要のローカル LLM（Ollama / llama.cpp 等）を GitHub-hosted runner 上で動かす構成は、上記の「新規に追加しない」方針の対象外です。** 第4節の **AI a11y Scanner** (`ai-a11y-scanner.yml`)・**AI Auto Documenter** (`ai-auto-documenter.yml`) と、第8節の **AI Hallucination Scanner** (`ai-hallucination-scanner.yml`) は、外部 API キーを一切使わずローカルの Ollama (`qwen2.5-coder:1.5b`) のみで推論するため、この例外に該当します。a11y / auto-documenter はフォーク PR でも（結果投稿を除き）実行可能ですが、AI Hallucination Scanner は同一リポジトリの PR のみを対象とし、フォーク PR ではジョブ条件により実行されません。
+**例外: [AGENTS.md](../AGENTS.md) §1.3 が MAY としている、Secrets 不要のローカル LLM（Ollama / llama.cpp 等）を GitHub-hosted runner 上で動かす構成は、上記の「新規に追加しない」方針の対象外です。** 第4節の **AI Issue Triage** (`ai-issue-triage.yml`) は、外部 API キーを一切使わずローカルの Ollama (`qwen2.5-coder:1.5b`) のみで推論するため、この例外に該当します。PR にコメントを投稿するローカル LLM ワークフローは、指摘の品質が実用水準に達しないため撤去済みで、再導入しません。
 
 AI によるレビュー・トリアージは、リポジトリ側に API キーも課金設定も必要としない外部 App（CodeRabbit、第4節参照）に一本化します。上記のローカル LLM ワークフローは、この方針に対する Secrets 不要の例外として併用しています。
 
@@ -194,9 +190,8 @@ DevSecOps およびサプライチェーンセキュリティの観点に基づ�
 ### プロンプト作成規約: 外部由来コンテキストは必ずタグで囲む
 
 > **適用範囲についての注記:** 従量課金 API キーに依存していた CI 上の AI ワークフローは第3節のとおり
-> すべて撤去済みですが、第5節の例外に基づき導入したローカル Ollama ワークフロー
-> （`ai-a11y-scanner.yml` / `ai-auto-documenter.yml`）には本規約が適用されます。両ワークフローは
-> PR diff を `<pr_diff>` タグで囲み、system ロールにも当該タグに関する WARNING を明記しています。
+> すべて撤去済みです。現在の適用対象は、第5節の例外に基づき導入した `ai-issue-triage.yml` です
+> （`.github/scripts/issue-triage.py` が Issue 本文を `<user_input>` タグで囲んでいます）。
 
 LLM に渡すプロンプトの中で、**リポジトリ外の第三者が内容を左右できるデータは、例外なく専用タグで囲む**こと。タグで囲まずに生挿入すると、そのデータ中の文章が指示として解釈され、プロンプトインジェクションの経路になります。
 
@@ -275,7 +270,3 @@ AI エージェント（Cursor, Claude Desktop など）が開発プロジェク
    - 無料プラン（Open Source / Pro Trial）でパブリックリポジトリにて利用可能です。
 
 **Qodo Merge (旧 PR-Agent / CodiumAI) は導入しません。** Qodo には恒久的な無料プランがなく（公式料金ページの FAQ に `We don't offer a permanent free tier` と明記）、無料で使えるのは 14 日間のトライアルか、審査制の [Qodo for Open Source](https://docs.qodo.ai/open-source-program)（公開リポジトリかつ **star 200 以上**、または Organization 内に star 200 以上の公開リポジトリが 1 つ以上）のみです。本リポジトリは条件未達のため、第5節の「CI から呼び出す AI は無料枠のみ」方針に従い採用しません。未使用のまま残っていた `.pr_agent.toml` は 2026-09 に削除しました。
-
-## 8. AI Hallucination Scanner
-
-手動セットアップは不要です。`ai-hallucination-scanner.yml` はワークフロー内の `permissions: pull-requests: write` だけで Reviewdog のコメント投稿まで完結するため、`Workflow permissions` の既定値を変更する必要はありません。外部 API への依存やシークレットの登録も不要です (Ollama を GitHub-hosted runner 上で起動し完結します)。
