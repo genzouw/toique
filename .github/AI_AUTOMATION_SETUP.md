@@ -65,9 +65,9 @@ AI によるレビュー・トリアージの代替方針は第5節を参照し�
 - パフォーマンス: O(N)ループの回避、N+1問題の防止、不要なDBクエリの削減など
 - アクセシビリティ: ボタン等のアクション要素における具体的な対象を含んだ aria-label や title の付与、role="tablist" におけるキーボードナビゲーションや roving tabIndex のサポートなど
 
-**ローカル AI を活用した追加のレビュー自動化:**
+**ローカル AI を活用した自動化:**
 
-さらに当リポジトリでは、GitHub Actions 上で動作する完全無料のローカル AI 基盤として **Ollama (`qwen2.5-coder:1.5b`)** を導入しています。外部 API への依存や従量課金 API キー（Secret）の登録を一切必要とせず、以下の機能を提供します。PR にコメントを投稿する AI ワークフロー（AI a11y Scanner / AI Auto Documenter / AI Hallucination Scanner / AI PR Context Researcher）は、小型モデルでは有害・無関係な指摘が混ざるため撤去しました。
+さらに当リポジトリでは、GitHub Actions 上で動作する完全無料のローカル AI 基盤として **Ollama (`qwen2.5-coder:1.5b`)** を導入しています。外部 API への依存や従量課金 API キー（Secret）の登録を一切必要とせず、以下の機能を提供します。
 
 - **AI Issue Triage (`ai-issue-triage.yml`)**: 新規発行された Issue に対して、内容のキーワード抽出と DuckDuckGo を用いた Web 検索を行い、役立つ技術情報や解決策の要約を自動でコメントします。
 
