@@ -330,4 +330,3 @@ curl -s http://localhost:3000/api/v1/messages | jq
 - **MCP (Model Context Protocol)**: `scripts/mcp-server.ts` を用いて、Claude Desktop や Cursor 等のローカル AI ツールから直接 Hono ルーティングや Drizzle DB スキーマを読み取れる仕組みを導入しています。詳細は `.github/AI_AUTOMATION_SETUP.md` を参照してください。
 
 MCP サーバーは開発者のローカル環境で動作し、CI 側の推論基盤には依存しません。そのため GitHub Models の終了後も引き続き利用できます。
-
