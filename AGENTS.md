@@ -41,6 +41,11 @@
 - **MUST NOT**: 既存テスト / lint / セキュリティスキャンをスキップ / 無効化 / コメントアウトして提出すること。
 - **MUST NOT**: 既に本リポジトリに導入済みのツールと機能が重複する追加 (`.github/workflows/` 配下を必ず事前確認すること)。
 - **MUST NOT**: サードパーティ GitHub Action をタグ参照 (`@v1` 等) のみで導入すること。**フルコミット SHA で pin** してください。
+- **MUST NOT**: ローカル LLM (Ollama / llama.cpp / LocalAI / vLLM 等) を CI の runner 上で起動し、その推論結果を使う自動化の追加。PR レビュー、Issue トリアージ、アクセシビリティ検査、ドキュメント生成、ハルシネーション検知など、用途を問いません。
+  - API キーも課金も不要ですが、それは採用の理由になりません。runner の CPU で動かせる小型モデル (`qwen2.5-coder:0.5b` 等) は出力の質が低く、有害な修正提案を PR に投稿した実例があります ([genzouw/monopo#664](https://github.com/genzouw/monopo/issues/664))。
+  - 「完全無料・シークレットレスな AI 自動化」を掲げた [genzouw/toique#961](https://github.com/genzouw/toique/pull/961) は、同種の PR としてクローズ済みです。類似の PR を作成しないでください。
+  - モデルや実行方法を差し替えても (別のモデル、別のランタイム、コンテナ実行、self-hosted runner) 同じく MUST NOT です。
+  - 禁止しているのは CI/CD および自動化ワークフローへの組み込みです。開発者個人の端末で Ollama 等を動かすことは **MAY** です。
 
 ### 1.2 SHOULD — 強く推奨される慣行
 
@@ -54,7 +59,6 @@
 - **MAY**: GitHub Marketplace の「公開 OSS リポジトリ向け完全無料プラン」で提供される Action / App。
 - **MAY**: GitHub App の「公開 OSS リポジトリ向け完全無料枠」で、API キーの登録が不要なもの (例: CodeRabbit の OSS 無料枠)。
 - **MAY**: 完全無料で配布されている GitHub Action (Marketplace 登録の有無は問わない)。
-- **MAY**: ローカル LLM (llama.cpp 等) を GitHub-hosted runner 上で動作させる、Secrets 不要の自動化。
 - **MAY**: リポジトリ内で完結するスクリプト / Make ターゲット (外部 SaaS 連携を伴わないもの)。
 - **MAY**: 既存ワークフローのキャッシュ最適化、並列化、Action の SHA pin 更新といった、課金を伴わない構造改善。
 
@@ -145,6 +149,7 @@ Issue では「なぜ既存の無料サービスでは目的を達成できな�
 - **`.jules/` `.Jules/` はコミット禁止**: AI エージェントの作業用ディレクトリで、`.gitignore` と pre-commit の対象外設定で除外しています。PR に混入した場合は内容を修正するのではなく `git rm` で削除してください。
 - **GitHub Models の再導入は禁止**: 2026-07-30 に提供終了済みです。推論 API 自体が存在しないため、エンドポイントを差し替えても復旧しません。依存していたワークフロー 23 本は撤去済みです。
 - **GitHub Agentic Workflows (`gh-aw`) の再導入は禁止**: `copilot` エンジンが GitHub Copilot の premium request を消費する有料サービスであり、本ポリシーと両立しないため撤去済みです。`gh aw compile` で再生成すると課金と CI 失敗が復活します。
+- **ローカル LLM (Ollama 等) の再導入は禁止**: runner 上で Ollama を動かしていたワークフロー (PR へコメントを投稿する 4 本と Issue トリアージ) は 2026-10 に撤去済みです ([#959](https://github.com/genzouw/toique/pull/959) / [#960](https://github.com/genzouw/toique/pull/960))。その後に同種の構成を持ち込んだ [#961](https://github.com/genzouw/toique/pull/961) もクローズ済みです。§1.1 のとおり、API キー不要・完全無料であっても MUST NOT です。
 - **AI コードレビューは追加不要**: CodeRabbit (`.coderabbit.yaml`) が稼働中です。API キーを使う追加の AI コードレビュー Action は MUST NOT です。
 - **Qodo Merge (旧 PR-Agent) の導入は禁止**: 恒久的な無料プランが存在しません (公式料金ページの FAQ に "We don't offer a permanent free tier" と明記)。無料で使えるのは 14 日間のトライアルか、審査制の [Qodo for Open Source](https://docs.qodo.ai/open-source-program) (公開リポジトリかつ **star 200 以上**、または Organization 内に star 200 以上の公開リポジトリが 1 つ以上) のみで、本リポジトリは条件未達です。未使用のまま残っていた `.pr_agent.toml` は 2026-09 に削除済みです。自己ホスト版の `The-PR-Agent/pr-agent` Action は LLM の API キー (`OPENAI_KEY` 等) を必須とするため、こちらも §1.1 により MUST NOT です。
 - **セキュリティスキャンは追加不要**: gitleaks / TruffleHog / secretlint / detect-secrets / CodeQL / Trivy / OSV-Scanner / zizmor / Scorecard / SBOM が既に稼働しています。GitGuardian / Snyk 等の追加 SaaS は不要です。
