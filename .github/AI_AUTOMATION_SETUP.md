@@ -261,3 +261,12 @@ AI エージェント（Cursor, Claude Desktop など）が開発プロジェク
    - 無料プラン（Open Source / Pro Trial）でパブリックリポジトリにて利用可能です。
 
 **Qodo Merge (旧 PR-Agent / CodiumAI) は導入しません。** Qodo には恒久的な無料プランがなく（公式料金ページの FAQ に `We don't offer a permanent free tier` と明記）、無料で使えるのは 14 日間のトライアルか、審査制の [Qodo for Open Source](https://docs.qodo.ai/open-source-program)（公開リポジトリかつ **star 200 以上**、または Organization 内に star 200 以上の公開リポジトリが 1 つ以上）のみです。本リポジトリは条件未達のため、第5節の「CI から呼び出す AI は無料枠のみ」方針に従い採用しません。未使用のまま残っていた `.pr_agent.toml` は 2026-09 に削除しました。
+
+### 新規AIワークフロー (Ollama活用)
+当リポジトリでは、APIキーや外部サービスへの依存を排除しつつ、最新の生成AIを活用するため、`Ollama`を用いた完全無料でシークレットレスな自動化を導入しています。これらはGitHub-hosted runner上で直接軽量モデル(`qwen2.5-coder:0.5b`)を実行することで実現しています。
+
+- **AI A11y Scanner**: PRで変更されたフロントエンドコードに対し、アクセシビリティの問題を指摘し、Reviewdogを通じてコメントを行います。
+- **AI Auto Documenter**: PRの差分とWeb検索(`duckduckgo-search`)の結果を組み合わせ、READMEやCONTRIBUTING.mdへの追記内容を提案します。
+
+**手動の事前作業:**
+これらのツールはGitHub-hosted runner内で完結して実行され、追加のAPIキーやSaaSの登録は一切不要です（完全無料）。特別な事前作業はありませんが、GitHub Actionsの設定でPull Requestsへの書き込み権限が許可されていることを確認してください。

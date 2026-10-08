@@ -1,0 +1,73 @@
+name: AI Auto Documenter
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    paths:
+      - 'frontend/**/*.tsx'
+      - 'frontend/**/*.jsx'
+      - 'backend/**/*.ts'
+      - 'package.json'
+      - 'README.md'
+      - 'CONTRIBUTING.md'
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  ai-auto-documenter:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@e14015d583714f6e62063499dc959a02595150a1 # v2.21.1
+        with:
+          egress-policy: audit
+
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Setup uv
+        uses: astral-sh/setup-uv@v3
+
+      - name: Start Ollama
+        run: |
+          docker run -d -p 11434:11434 --name ollama ollama/ollama:latest
+          # 起動完了まで待機
+          until curl -s -f http://localhost:11434/api/tags > /dev/null; do
+            sleep 2
+          done
+          # qwen2.5-coder:0.5b をプル
+          docker exec ollama ollama pull qwen2.5-coder:0.5b
+
+      - name: Run AI Auto Documenter
+        env:
+          BASE_REF: ${{ github.base_ref }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git fetch origin "$BASE_REF"
+          prDiff=$(git diff "origin/$BASE_REF...HEAD")
+
+          # 差分サイズの計算
+          read -r changedLineCount changedCharCount < <(
+            printf '%s\n' "$prDiff" |
+              awk '/^\+\+\+ b\// || /^--- a\// { next } /^[+-]/ {
+                lines++
+                chars += length(substr($0, 2))
+              } END { print lines + 0, chars + 0 }'
+          )
+
+          if [ -z "$prDiff" ] || { [ "$changedCharCount" -lt 20 ] && [ "$changedLineCount" -lt 3 ]; }; then
+            echo "PR diff is trivial or empty. Skipping AI auto documenter."
+            exit 0
+          fi
+
+          OUTPUT=$(printf "%s\n" "$prDiff" | uv run .github/scripts/ai_auto_documenter.py)
+
+          if [ -n "$OUTPUT" ] && [ "$OUTPUT" != "PR diff is empty or too trivial for documentation generation." ]; then
+            # PRコメントとして投稿
+            gh pr comment ${{ github.event.pull_request.number }} -b "$OUTPUT"
+          fi
