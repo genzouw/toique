@@ -1,0 +1,6 @@
+# hadolint の設定
+# https://github.com/hadolint/hadolint#configure
+ignored:
+  # alpine はパッケージの旧バージョンをリポジトリから削除するため、バージョン固定すると
+  # かえってビルドが壊れる。ベースイメージ更新で追随する方針とし DL3018 は抑止する。
+  - DL3018
