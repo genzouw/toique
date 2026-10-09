@@ -44,10 +44,11 @@ echo "Latest backup: ${LATEST_BACKUP}"
 BACKUP_FILENAME=$(basename "${LATEST_BACKUP}")
 DOWNLOAD_PATH="/tmp/${BACKUP_FILENAME}"
 SQL_PATH="/tmp/${BACKUP_FILENAME%.gz}"
+RESTORE_SQL_PATH="${SQL_PATH}.restore"
 
 # 一時ファイルのクリーンアップ（正常終了・エラー時の両方で実行）
 cleanup() {
-  rm -f "${DOWNLOAD_PATH}" "${SQL_PATH}"
+  rm -f "${DOWNLOAD_PATH}" "${SQL_PATH}" "${RESTORE_SQL_PATH}"
 }
 trap cleanup EXIT
 
@@ -66,12 +67,27 @@ gunzip -f "${DOWNLOAD_PATH}"
 echo "Cleaning target database ${POSTGRES_DB}..."
 psql -h "${POSTGRES_HOST}" -p "${POSTGRES_PORT}" -U "${POSTGRES_USER}" -d "${POSTGRES_DB}" -v ON_ERROR_STOP=1 -c "DROP SCHEMA public CASCADE; CREATE SCHEMA public;"
 
+# 所有者・権限の文を取り除く。
+# backup.sh は pg_dump に --no-owner / --no-acl を付けていないため、ダンプには本番側の
+# ロールを参照する `ALTER ... OWNER TO` / `GRANT` / `REVOKE` が含まれる。リストア先には
+# そのロールが存在せず、ON_ERROR_STOP=1 では最初の文で必ず失敗する。
+# 所有者と権限はデータの復元可否に影響しないため、検証対象から外す。
+# COPY ... FROM stdin; から \. までの行はデータなので、内容に関わらず変更しない。
+awk '
+  in_copy { print; if ($0 == "\\.") in_copy = 0; next }
+  /^COPY .* FROM stdin;$/ { in_copy = 1; print; next }
+  /^ALTER .* OWNER TO .*;$/ { next }
+  /^(GRANT|REVOKE) / { next }
+  /^ALTER DEFAULT PRIVILEGES / { next }
+  { print }
+' "${SQL_PATH}" > "${RESTORE_SQL_PATH}"
+
 # リストア実行
 # psql -f は既定で ON_ERROR_STOP が無効で、SQL がエラーになっても最後まで流して
 # 終了コード 0 で終わる。部分的な失敗を成功扱いにしないため、最初のエラーで止める。
 # 失敗時は set -e によりスクリプト全体が非 0 で終了する。
 echo "Restoring backup to ${POSTGRES_DB}..."
-psql -h "${POSTGRES_HOST}" -p "${POSTGRES_PORT}" -U "${POSTGRES_USER}" -d "${POSTGRES_DB}" -v ON_ERROR_STOP=1 -f "${SQL_PATH}"
+psql -h "${POSTGRES_HOST}" -p "${POSTGRES_PORT}" -U "${POSTGRES_USER}" -d "${POSTGRES_DB}" -v ON_ERROR_STOP=1 -f "${RESTORE_SQL_PATH}"
 
 echo "Restore completed successfully."
 

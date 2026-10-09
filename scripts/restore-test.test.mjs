@@ -27,6 +27,7 @@ const BACKUP_NAME = 'toique_backup_20260101_000000.sql.gz';
 let workDir;
 let binDir;
 let psqlLog;
+let psqlSql;
 
 function writeStub(name, body) {
   const path = join(binDir, name);
@@ -39,6 +40,7 @@ beforeEach(() => {
   binDir = join(workDir, 'bin');
   mkdirSync(binDir);
   psqlLog = join(workDir, 'psql.log');
+  psqlSql = join(workDir, 'psql.sql');
   writeFileSync(join(workDir, 'dump.sql.gz'), gzipSync('SELECT 1;\n'));
 
   // `gcloud storage ls` は FAKE_LS_MODE で挙動を切り替え、`gcloud storage cp` は
@@ -63,7 +65,10 @@ esac`,
     'psql',
     `echo "$*" >> "$FAKE_PSQL_LOG"
 case "$*" in
-  *" -f "*) [ -n "$FAKE_PSQL_FAIL" ] && exit 3 ;;
+  *" -f "*)
+    for last in "$@"; do :; done
+    cat "$last" >> "$FAKE_PSQL_SQL"
+    [ -n "$FAKE_PSQL_FAIL" ] && exit 3 ;;
   *information_schema*) echo " 3" ;;
 esac
 exit 0`,
@@ -82,10 +87,11 @@ function runScript(env = {}) {
       GCS_BUCKET: 'bucket',
       POSTGRES_HOST: 'localhost',
       POSTGRES_USER: 'user',
-      POSTGRES_PASSWORD: 'password',
+      POSTGRES_PASSWORD: 'password', // pragma: allowlist secret
       POSTGRES_DB: 'db',
       FAKE_DUMP: join(workDir, 'dump.sql.gz'),
       FAKE_PSQL_LOG: psqlLog,
+      FAKE_PSQL_SQL: psqlSql,
       ...env,
     },
   });
@@ -119,5 +125,31 @@ describe('backup/restore-test.sh', () => {
     expect(drop).toContain('ON_ERROR_STOP=1');
     expect(restore).toContain('ON_ERROR_STOP=1');
     expect(result.stdout).toContain('Restore completed successfully.');
+  });
+
+  it('所有者・権限の文だけを取り除き、COPY のデータ行は変更しない', () => {
+    const dump = [
+      'CREATE TABLE public.users (id integer, note text);',
+      'ALTER TABLE public.users OWNER TO neondb_owner;',
+      'GRANT ALL ON SCHEMA public TO neon_role;',
+      'REVOKE ALL ON SCHEMA public FROM PUBLIC;',
+      'ALTER DEFAULT PRIVILEGES FOR ROLE neondb_owner IN SCHEMA public GRANT ALL ON TABLES TO neon_role;',
+      'COPY public.users (id, note) FROM stdin;',
+      '1\tGRANT ALL ON SCHEMA public TO nobody;',
+      '2\tALTER TABLE x OWNER TO y;',
+      '\\.',
+      '',
+    ].join('\n');
+    writeFileSync(join(workDir, 'dump.sql.gz'), gzipSync(dump));
+
+    const result = runScript();
+    expect(result.status).toBe(0);
+    const restored = readFileSync(psqlSql, 'utf8');
+    expect(restored).toContain('CREATE TABLE public.users');
+    expect(restored).not.toContain('neondb_owner');
+    expect(restored).not.toContain('REVOKE ALL');
+    expect(restored).not.toContain('DEFAULT PRIVILEGES');
+    expect(restored).toContain('1\tGRANT ALL ON SCHEMA public TO nobody;');
+    expect(restored).toContain('2\tALTER TABLE x OWNER TO y;');
   });
 });
