@@ -291,6 +291,14 @@ class MyStack extends TerraformStack {
       });
     });
 
+    // 月次リストアテスト (restore-test.yml) が最新バックアップを一覧・取得するための
+    // 読み取り権限。バケット単位に限定し、Project レベルでは付与しない。
+    new StorageBucketIamMember(this, 'github-deployer-bucket-viewer', {
+      bucket: backupBucket.name,
+      role: 'roles/storage.objectViewer',
+      member: `serviceAccount:${githubDeployerSa.email}`,
+    });
+
     // --- runtime SA への SA User 権限 (個別 binding で PoLP) ---
     //
     // Cloud Run service (toique-backend) は --service-account 指定なしで動いており、

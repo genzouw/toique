@@ -24,11 +24,18 @@ export PGPASSWORD="${POSTGRES_PASSWORD}"
 
 # 最新のバックアップファイルを特定
 echo "Searching for latest backup in gs://${GCS_BUCKET}/..."
-LATEST_BACKUP=$(gcloud storage ls "gs://${GCS_BUCKET}/" 2>/dev/null | grep '\.sql\.gz$' | sort | tail -n 1 || true)
+# `gcloud storage ls` の失敗（権限不足・バケット不在など）を「バックアップ無し」と
+# 区別するため、終了コードを握りつぶさずに取得する。
+if ! BACKUP_LIST=$(gcloud storage ls "gs://${GCS_BUCKET}/"); then
+  echo "Error: Failed to list gs://${GCS_BUCKET}/. Check bucket name and the storage.objects.list permission."
+  exit 1
+fi
+LATEST_BACKUP=$(printf '%s\n' "${BACKUP_LIST}" | grep '\.sql\.gz$' | sort | tail -n 1 || true)
 
+# バックアップが無い状態は「検証できていない」ので成功扱いにしない。
 if [ -z "${LATEST_BACKUP}" ]; then
-  echo "Warning: No backup files found in gs://${GCS_BUCKET}/. Skipping restore test."
-  exit 0
+  echo "Error: No backup files found in gs://${GCS_BUCKET}/. Backups are not being created or are not readable."
+  exit 1
 fi
 
 echo "Latest backup: ${LATEST_BACKUP}"
