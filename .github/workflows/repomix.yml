@@ -37,7 +37,7 @@ jobs:
         # バージョンは zizmor (adhoc-packages) 対策として latest ではなく固定値を指定する。
         run: |
           npm install --global repomix@1.18.1
-          repomix --output repomix-output.xml --compress
+          repomix
 
       - name: Repomix 出力アーティファクトのアップロード
         # 生成されたXMLファイルを、AIツールなどで後から利用できるように保存

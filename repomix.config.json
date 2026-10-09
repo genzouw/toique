@@ -1,0 +1,35 @@
+{
+  "output": {
+    "filePath": "repomix-output.xml",
+    "style": "xml",
+    "parsableStyle": true,
+    "compress": true
+  },
+  "include": [
+    "**/*"
+  ],
+  "ignore": {
+    "useGitignore": true,
+    "useDefaultPatterns": true,
+    "customPatterns": [
+      ".github/workflows/",
+      ".vscode/",
+      ".husky/",
+      "docs/images/",
+      "docs/superpowers/plans/",
+      ".github/**/*.md",
+      "frontend/public/",
+      "**/test/**",
+      "**/tests/**",
+      "**/__tests__/**",
+      "**/*.test.{ts,tsx,js,jsx,mjs}",
+      "**/*.spec.{ts,tsx,js,jsx,mjs}",
+      "frontend/e2e/",
+      ".secrets.baseline",
+      ".aislop/"
+    ]
+  },
+  "security": {
+    "enableSecurityCheck": true
+  }
+}
