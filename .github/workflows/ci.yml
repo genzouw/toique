@@ -102,6 +102,8 @@ jobs:
         run: bun test scripts/lib/find-gitleaks-bin.test.mjs
       - name: Run detect-secrets-diff (new-secrets.jq) regression test
         run: bun test scripts/detect-secrets-diff.test.mjs
+      - name: Run backup/restore-test.sh regression test
+        run: bun test scripts/restore-test.test.mjs
 
   frontend:
     name: Frontend (lint / typecheck / format / test / build)
