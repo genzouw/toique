@@ -11,4 +11,4 @@ infra:
       - any-glob-to-any-file: 'infra/**'
 root:
   - changed-files:
-      - any-glob-to-any-file: ['*', '.github/**']
+      - any-glob-to-any-file: ['*', '.github/**', '.husky/**', '.vscode/**']
