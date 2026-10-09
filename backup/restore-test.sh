@@ -64,17 +64,14 @@ gunzip -f "${DOWNLOAD_PATH}"
 
 # リストア前にDBを初期化（冪等性の確保）
 echo "Cleaning target database ${POSTGRES_DB}..."
-psql -h "${POSTGRES_HOST}" -p "${POSTGRES_PORT}" -U "${POSTGRES_USER}" -d "${POSTGRES_DB}" -c "DROP SCHEMA public CASCADE; CREATE SCHEMA public;" 2>/dev/null || true
+psql -h "${POSTGRES_HOST}" -p "${POSTGRES_PORT}" -U "${POSTGRES_USER}" -d "${POSTGRES_DB}" -v ON_ERROR_STOP=1 -c "DROP SCHEMA public CASCADE; CREATE SCHEMA public;"
 
 # リストア実行
+# psql -f は既定で ON_ERROR_STOP が無効で、SQL がエラーになっても最後まで流して
+# 終了コード 0 で終わる。部分的な失敗を成功扱いにしないため、最初のエラーで止める。
+# 失敗時は set -e によりスクリプト全体が非 0 で終了する。
 echo "Restoring backup to ${POSTGRES_DB}..."
-psql -h "${POSTGRES_HOST}" -p "${POSTGRES_PORT}" -U "${POSTGRES_USER}" -d "${POSTGRES_DB}" -f "${SQL_PATH}"
-RESTORE_EXIT=$?
-
-if [ "${RESTORE_EXIT}" -ne 0 ]; then
-  echo "Error: Restore failed with exit code ${RESTORE_EXIT}"
-  exit 1
-fi
+psql -h "${POSTGRES_HOST}" -p "${POSTGRES_PORT}" -U "${POSTGRES_USER}" -d "${POSTGRES_DB}" -v ON_ERROR_STOP=1 -f "${SQL_PATH}"
 
 echo "Restore completed successfully."
 
