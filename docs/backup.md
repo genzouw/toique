@@ -139,8 +139,11 @@ GitHub Actions の `restore-test.yml` ワークフローが毎月 1 日 午前 4
 
 1. GCS バケットから最新の `.sql.gz` ファイルを特定・ダウンロード
 2. gzip 整合性チェック
-3. テスト用 PostgreSQL データベースへリストア
+3. テスト用 PostgreSQL データベースへリストア（`ON_ERROR_STOP=1` で最初の SQL エラーで失敗。本番側ロールを参照する `OWNER TO` / `GRANT` / `REVOKE` は、リストア先にロールが無いため除外）
 4. テーブル数・レコード数の整合性チェック
+
+バックアップの一覧取得に失敗した場合（権限不足・バケット不在）と、バックアップが 1 件も無い場合は、ワークフローを失敗させます。
+実行 SA (`github-deployer`) には、バケット単位で `roles/storage.objectViewer` を付与しています (`infra/main.ts`)。
 
 ### 手動実行
 

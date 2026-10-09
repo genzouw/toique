@@ -24,11 +24,18 @@ export PGPASSWORD="${POSTGRES_PASSWORD}"
 
 # 最新のバックアップファイルを特定
 echo "Searching for latest backup in gs://${GCS_BUCKET}/..."
-LATEST_BACKUP=$(gcloud storage ls "gs://${GCS_BUCKET}/" 2>/dev/null | grep '\.sql\.gz$' | sort | tail -n 1 || true)
+# `gcloud storage ls` の失敗（権限不足・バケット不在など）を「バックアップ無し」と
+# 区別するため、終了コードを握りつぶさずに取得する。
+if ! BACKUP_LIST=$(gcloud storage ls "gs://${GCS_BUCKET}/"); then
+  echo "Error: Failed to list gs://${GCS_BUCKET}/. Check bucket name and the storage.objects.list permission."
+  exit 1
+fi
+LATEST_BACKUP=$(printf '%s\n' "${BACKUP_LIST}" | grep '\.sql\.gz$' | sort | tail -n 1 || true)
 
+# バックアップが無い状態は「検証できていない」ので成功扱いにしない。
 if [ -z "${LATEST_BACKUP}" ]; then
-  echo "Warning: No backup files found in gs://${GCS_BUCKET}/. Skipping restore test."
-  exit 0
+  echo "Error: No backup files found in gs://${GCS_BUCKET}/. Backups are not being created or are not readable."
+  exit 1
 fi
 
 echo "Latest backup: ${LATEST_BACKUP}"
@@ -37,10 +44,11 @@ echo "Latest backup: ${LATEST_BACKUP}"
 BACKUP_FILENAME=$(basename "${LATEST_BACKUP}")
 DOWNLOAD_PATH="/tmp/${BACKUP_FILENAME}"
 SQL_PATH="/tmp/${BACKUP_FILENAME%.gz}"
+RESTORE_SQL_PATH="${SQL_PATH}.restore"
 
 # 一時ファイルのクリーンアップ（正常終了・エラー時の両方で実行）
 cleanup() {
-  rm -f "${DOWNLOAD_PATH}" "${SQL_PATH}"
+  rm -f "${DOWNLOAD_PATH}" "${SQL_PATH}" "${RESTORE_SQL_PATH}"
 }
 trap cleanup EXIT
 
@@ -57,17 +65,29 @@ gunzip -f "${DOWNLOAD_PATH}"
 
 # リストア前にDBを初期化（冪等性の確保）
 echo "Cleaning target database ${POSTGRES_DB}..."
-psql -h "${POSTGRES_HOST}" -p "${POSTGRES_PORT}" -U "${POSTGRES_USER}" -d "${POSTGRES_DB}" -c "DROP SCHEMA public CASCADE; CREATE SCHEMA public;" 2>/dev/null || true
+psql -h "${POSTGRES_HOST}" -p "${POSTGRES_PORT}" -U "${POSTGRES_USER}" -d "${POSTGRES_DB}" -v ON_ERROR_STOP=1 -c "DROP SCHEMA public CASCADE; CREATE SCHEMA public;"
+
+# 所有者・権限の文を取り除く。
+# backup.sh は pg_dump に --no-owner / --no-acl を付けていないため、ダンプには本番側の
+# ロールを参照する `ALTER ... OWNER TO` / `GRANT` / `REVOKE` が含まれる。リストア先には
+# そのロールが存在せず、ON_ERROR_STOP=1 では最初の文で必ず失敗する。
+# 所有者と権限はデータの復元可否に影響しないため、検証対象から外す。
+# COPY ... FROM stdin; から \. までの行はデータなので、内容に関わらず変更しない。
+awk '
+  in_copy { print; if ($0 == "\\.") in_copy = 0; next }
+  /^COPY .* FROM stdin;$/ { in_copy = 1; print; next }
+  /^ALTER .* OWNER TO .*;$/ { next }
+  /^(GRANT|REVOKE) / { next }
+  /^ALTER DEFAULT PRIVILEGES / { next }
+  { print }
+' "${SQL_PATH}" > "${RESTORE_SQL_PATH}"
 
 # リストア実行
+# psql -f は既定で ON_ERROR_STOP が無効で、SQL がエラーになっても最後まで流して
+# 終了コード 0 で終わる。部分的な失敗を成功扱いにしないため、最初のエラーで止める。
+# 失敗時は set -e によりスクリプト全体が非 0 で終了する。
 echo "Restoring backup to ${POSTGRES_DB}..."
-psql -h "${POSTGRES_HOST}" -p "${POSTGRES_PORT}" -U "${POSTGRES_USER}" -d "${POSTGRES_DB}" -f "${SQL_PATH}"
-RESTORE_EXIT=$?
-
-if [ "${RESTORE_EXIT}" -ne 0 ]; then
-  echo "Error: Restore failed with exit code ${RESTORE_EXIT}"
-  exit 1
-fi
+psql -h "${POSTGRES_HOST}" -p "${POSTGRES_PORT}" -U "${POSTGRES_USER}" -d "${POSTGRES_DB}" -v ON_ERROR_STOP=1 -f "${RESTORE_SQL_PATH}"
 
 echo "Restore completed successfully."
 
