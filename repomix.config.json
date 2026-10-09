@@ -16,10 +16,15 @@
       ".vscode/",
       ".husky/",
       "docs/images/",
-      "*.md",
+      "docs/superpowers/plans/",
+      ".github/**/*.md",
       "frontend/public/",
-      "test/",
-      "tests/",
+      "**/test/**",
+      "**/tests/**",
+      "**/__tests__/**",
+      "**/*.test.{ts,tsx,js,jsx,mjs}",
+      "**/*.spec.{ts,tsx,js,jsx,mjs}",
+      "frontend/e2e/",
       ".secrets.baseline",
       ".aislop/"
     ]
