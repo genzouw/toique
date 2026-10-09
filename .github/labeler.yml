@@ -1,0 +1,14 @@
+# actions/labeler の設定。PR の変更パスに応じて既存ラベルを自動で付ける。
+# ラベルは作成済み (backend / frontend / infra / root)。新しいラベル体系は増やさない。
+backend:
+  - changed-files:
+      - any-glob-to-any-file: 'backend/**'
+frontend:
+  - changed-files:
+      - any-glob-to-any-file: 'frontend/**'
+infra:
+  - changed-files:
+      - any-glob-to-any-file: 'infra/**'
+root:
+  - changed-files:
+      - any-glob-to-any-file: ['*', '.github/**', '.husky/**', '.vscode/**']

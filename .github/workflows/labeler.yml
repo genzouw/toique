@@ -1,0 +1,36 @@
+name: Pull Request Labeler
+
+# 変更パスに応じて backend / frontend / infra / root ラベルを PR に付ける (設定は .github/labeler.yml)。
+# ラベル付けのみで必須チェックにはしない。
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+concurrency:
+  group: labeler-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  labeler:
+    name: Label PR by changed paths
+    # フォーク PR と dependabot の PR は pull_request イベントでは書き込み権限を持たず、
+    # ラベル付けが 403 で失敗するためスキップする (ラベルが付かないだけで CI は失敗させない)。
+    if: >-
+      github.event.pull_request.head.repo.full_name == github.repository
+      && github.actor != 'dependabot[bot]'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write # PR にラベルを付けるために必要
+    steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@e14015d583714f6e62063499dc959a02595150a1 # v2.21.1
+        with:
+          egress-policy: audit
+      - name: Label PR
+        uses: actions/labeler@bf12e9b00b37c5c0ca2b87b79b2daf7891dbda13 # v7.0.0
+        with:
+          sync-labels: true
