@@ -55,9 +55,35 @@ report_scan_result() {
   fi
 }
 
+# 禁止パスを検知したことをコンソール出力とデスクトップ通知の両方へ報告する。
+# fail-on-sensitive-file.mjs は検知内容を stderr にしか出さないため、
+# report_scan_result に渡すと STDOUT_LOG が空で「実行に失敗しました」と誤報告される。
+# 検知（終了コード 1）と実行失敗は呼び出し側で区別し、検知時のみこちらを使う。
+# $1: 対象ファイル
+report_forbidden_path() {
+  local target_file="$1"
+  local notify_title="ForbiddenPaths Error"
+  local notify_body="禁止ファイルパスを検出しました: $target_file"
+
+  echo "🚨 [Security Error] 禁止ファイルパスを検出しました: $target_file"
+  cat "$STDERR_LOG" >&2
+
+  if command -v notify-send >/dev/null 2>&1; then
+    notify-send -u critical "$notify_title" "$notify_body" || true
+  elif command -v osascript >/dev/null 2>&1; then
+    notify_macos "$notify_title" "$notify_body" "Basso"
+  fi
+}
+
 STDOUT_LOG="$(mktemp)"
 STDERR_LOG="$(mktemp)"
 trap 'rm -f "$STDOUT_LOG" "$STDERR_LOG"' EXIT
+
+# repo root からの相対パス。${file} は絶対パスで渡されるため、gitleaks の --source と
+# ForbiddenPaths の判定はこちらを使う（.husky/pre-commit と CI も repo 相対パスで判定しており、
+# 絶対パスに正規表現を当てると親ディレクトリ名（例: ~/.claude/worktrees/）で誤検知する）。
+REPO_ROOT="$(git rev-parse --show-toplevel 2>/dev/null || (cd "$(dirname "$0")/.." && pwd))"
+REL_FILE="${FILE#"$REPO_ROOT"/}"
 
 # --- 1. Secretlint によるチェック ---
 if command -v bunx >/dev/null 2>&1; then
@@ -103,8 +129,6 @@ if [ -n "$GITLEAKS_CMD" ]; then
   # フィンガープリント（`<path>:<rule>:<line>`）に実行環境ごとのホームディレクトリ等が
   # 含まれてしまい、.gitleaksignore に登録しても各開発者のマシンでしか効かない値に
   # なる（PR #864 の自己レビュー指摘）。
-  REPO_ROOT="$(git rev-parse --show-toplevel 2>/dev/null || (cd "$(dirname "$0")/.." && pwd))"
-  REL_FILE="${FILE#"$REPO_ROOT"/}"
   # コミットされていない(ステージされていない)ファイルの内容を直接スキャンするために --no-git を使用する
   if ! (cd "$REPO_ROOT" && "$GITLEAKS_CMD" detect --no-git --source "$REL_FILE" \
           --config .gitleaks.toml --gitleaks-ignore-path .gitleaksignore \
@@ -117,9 +141,14 @@ fi
 # fail-on-sensitive-file.mjs は "渡されたファイルが拒否リスト（package.json 等で定義）に合致した前提" で呼ばれるため、
 # ここで直接すべてのファイルを渡すと正常なファイル（src/index.ts など）も機密ファイルとして誤検知されてしまう。
 # 正規表現は .husky/pre-commit と同等のものを指定し、マッチした場合のみ fail-on-sensitive-file.mjs を呼ぶ。
-if echo "$FILE" | grep -qE '((^|/)\.env.*|.*\.env(\..*)?|\.cursor/.*|\.claude/.*|\.aider.*|\.windsurf/.*|\.jules/.*|\.Jules/.*|.*credentials.*\.json|.*secret.*\.json|.*\.pem|.*\.key|.*\.p12|.*\.p8|.*\.keystore|.*\.jks|.*_rsa|.*_ed25519|.*_ecdsa|.*\.sqlite|.*\.db|.*\.log|\.npmrc|\.netrc|.*\.tfstate(\..*)?|(^|/)cdktf\.out(/.*)?|(^|/)\.terraform(/.*)?|(^|/)(pr[_-]body|pr[_-]description|issue[_-]body|commit[_-]msg)[^/]*\.(txt|md)|.*\.(http|rest|patch|diff|local))$'; then
-  if ! echo "$FILE" | grep -qE '(^|/)(\.env\.(example|sample|template|dist)|\.secretlintrc\.json)$'; then
-    if ! node "$(dirname "$0")/fail-on-sensitive-file.mjs" "$FILE" >"$STDOUT_LOG" 2>"$STDERR_LOG"; then
+if echo "$REL_FILE" | grep -qE '((^|/)\.env.*|.*\.env(\..*)?|\.cursor/.*|\.claude/.*|\.aider.*|\.windsurf/.*|\.jules/.*|\.Jules/.*|.*credentials.*\.json|.*secret.*\.json|.*\.pem|.*\.key|.*\.p12|.*\.p8|.*\.keystore|.*\.jks|.*_rsa|.*_ed25519|.*_ecdsa|.*\.sqlite|.*\.db|.*\.log|\.npmrc|\.netrc|.*\.tfstate(\..*)?|(^|/)cdktf\.out(/.*)?|(^|/)\.terraform(/.*)?|(^|/)(pr[_-]body|pr[_-]description|issue[_-]body|commit[_-]msg)[^/]*\.(txt|md)|.*\.(http|rest|patch|diff|local))$'; then
+  if ! echo "$REL_FILE" | grep -qE '(^|/)(\.env\.(example|sample|template|dist)|\.secretlintrc\.json)$'; then
+    # 終了コード 1 は禁止パスの検知、それ以外（node 未導入の 127 など）は実行失敗として区別する
+    forbidden_rc=0
+    node "$(dirname "$0")/fail-on-sensitive-file.mjs" "$REL_FILE" >"$STDOUT_LOG" 2>"$STDERR_LOG" || forbidden_rc=$?
+    if [ "$forbidden_rc" -eq 1 ] && grep -q 'Sensitive files' "$STDERR_LOG"; then
+      report_forbidden_path "$FILE"
+    elif [ "$forbidden_rc" -ne 0 ]; then
       report_scan_result "ForbiddenPaths" "$FILE"
     fi
   fi

@@ -42,7 +42,7 @@
   "emeraldwalk.runonsave": {
     "commands": [
       {
-        "match": "\\.(ts|tsx|js|jsx|json|yaml|yml|md|env.*)$",
+        "match": ".*",
         "isAsync": true,
         "cmd": "bash ./scripts/run-security-scans-local.sh \"${file}\""
       }
