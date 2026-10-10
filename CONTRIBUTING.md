@@ -29,6 +29,8 @@ bun install
 
 また、より強力な内容ベースのシークレットスキャンのため、ローカルへの `gitleaks` のインストールを推奨しています（例: macOSの場合は `brew install gitleaks`）。未インストールの場合は CI 側での検知に委ねられます。
 
+さらに、VS Code 環境では `.vscode/settings.json` により、UI からのフック回避（`git.allowNoVerifyCommit: false`）や意図しない一括コミット（`git.enableSmartCommit: false`）を防止し、ファイル保存時に機密ファイルの検知を即座に行う「シフトレフト」な対策を実施しています。
+
 ### 2. GitHub Secret Scanning と Push Protection
 
 本リポジトリでは多層的な漏洩防止策を取っています。

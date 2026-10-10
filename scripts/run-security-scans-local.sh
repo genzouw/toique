@@ -112,3 +112,15 @@ if [ -n "$GITLEAKS_CMD" ]; then
     report_scan_result "Gitleaks" "$FILE"
   fi
 fi
+
+# --- 3. Forbidden Paths によるチェック ---
+# fail-on-sensitive-file.mjs は "渡されたファイルが拒否リスト（package.json 等で定義）に合致した前提" で呼ばれるため、
+# ここで直接すべてのファイルを渡すと正常なファイル（src/index.ts など）も機密ファイルとして誤検知されてしまう。
+# 正規表現は .husky/pre-commit と同等のものを指定し、マッチした場合のみ fail-on-sensitive-file.mjs を呼ぶ。
+if echo "$FILE" | grep -qE '((^|/)\.env.*|.*\.env(\..*)?|\.cursor/.*|\.claude/.*|\.aider.*|\.windsurf/.*|\.jules/.*|\.Jules/.*|.*credentials.*\.json|.*secret.*\.json|.*\.pem|.*\.key|.*\.p12|.*\.p8|.*\.keystore|.*\.jks|.*_rsa|.*_ed25519|.*_ecdsa|.*\.sqlite|.*\.db|.*\.log|\.npmrc|\.netrc|.*\.tfstate(\..*)?|(^|/)cdktf\.out(/.*)?|(^|/)\.terraform(/.*)?|(^|/)(pr[_-]body|pr[_-]description|issue[_-]body|commit[_-]msg)[^/]*\.(txt|md)|.*\.(http|rest|patch|diff|local))$'; then
+  if ! echo "$FILE" | grep -qE '(^|/)(\.env\.(example|sample|template|dist)|\.secretlintrc\.json)$'; then
+    if ! node "$(dirname "$0")/fail-on-sensitive-file.mjs" "$FILE" >"$STDOUT_LOG" 2>"$STDERR_LOG"; then
+      report_scan_result "ForbiddenPaths" "$FILE"
+    fi
+  fi
+fi

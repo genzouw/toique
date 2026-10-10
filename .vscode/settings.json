@@ -1,4 +1,6 @@
 {
+  "git.allowNoVerifyCommit": false,
+  "git.enableSmartCommit": false,
   "search.exclude": {
     "**/*.env": true,
     "**/*.env.*": true,
