@@ -1,4 +1,6 @@
 {
+  "git.allowNoVerifyCommit": false,
+  "git.enableSmartCommit": false,
   "search.exclude": {
     "**/*.env": true,
     "**/*.env.*": true,
@@ -40,7 +42,7 @@
   "emeraldwalk.runonsave": {
     "commands": [
       {
-        "match": "\\.(ts|tsx|js|jsx|json|yaml|yml|md|env.*)$",
+        "match": ".*",
         "isAsync": true,
         "cmd": "bash ./scripts/run-security-scans-local.sh \"${file}\""
       }
