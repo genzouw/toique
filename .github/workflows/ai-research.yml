@@ -6,12 +6,22 @@ on:
 
 permissions:
   contents: read
-  issues: write
+
+concurrency:
+  group: ai-research-${{ github.event.issue.number }}
+  cancel-in-progress: false
 
 jobs:
   research:
+    permissions:
+      contents: read
+      issues: write
     runs-on: ubuntu-latest
-    if: contains(github.event.issue.labels.*.name, 'research')
+    # opened: 作成時点で research ラベルが付いている場合のみ。
+    # labeled: 付与されたラベル自体が research の場合のみ（他ラベルの追加で再実行しない）。
+    if: >-
+      (github.event.action == 'opened' && contains(github.event.issue.labels.*.name, 'research'))
+      || (github.event.action == 'labeled' && github.event.label.name == 'research')
     steps:
       - name: Harden Runner
         uses: step-security/harden-runner@ccd8616d44fd3846e67624a50d5aad6d37bf2d25 # v2.22.1
