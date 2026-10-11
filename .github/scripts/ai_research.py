@@ -80,7 +80,7 @@ def main():
     print(f"トピックを調査中: {issue_title}")
 
     try:
-        results = DDGS().text(issue_title, max_results=5)
+        results = DDGS().text(issue_title, backend="duckduckgo", max_results=5)
     except Exception as e:
         fail(f"Web 検索に失敗しました (レート制限や仕様変更の可能性があります): {e}")
 
