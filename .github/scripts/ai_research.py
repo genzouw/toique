@@ -13,10 +13,37 @@ import requests
 from ddgs import DDGS
 
 
+# 投稿済みコメントの識別用マーカー。同じ Issue への重複投稿を防ぐ（冪等化）。
+MARKER = "<!-- ai-research -->"
+
+
 def fail(message):
     """GitHub Actions のエラー注釈を出力して非ゼロ終了する。"""
     print(f"::error::{message}")
     sys.exit(1)
+
+
+def has_research_comment(comments_url, headers):
+    """Issue に投稿済みのリサーチコメント（MARKER 入り）があるかを返す。"""
+    page = 1
+    while True:
+        try:
+            response = requests.get(
+                comments_url,
+                headers=headers,
+                params={"per_page": 100, "page": page},
+                timeout=30,
+            )
+        except requests.RequestException as e:
+            fail(f"Issue のコメント取得リクエストに失敗しました: {e}")
+        if response.status_code != 200:
+            fail(f"Issue のコメント取得に失敗しました: {response.status_code} - {response.text}")
+        comments = response.json()
+        if any(MARKER in (c.get("body") or "") for c in comments):
+            return True
+        if len(comments) < 100:
+            return False
+        page += 1
 
 
 def main():
@@ -29,6 +56,16 @@ def main():
     if not issue_title or not issue_number or not repo_name or not github_token:
         fail("必要な環境変数 (ISSUE_TITLE / ISSUE_NUMBER / REPO_NAME / GITHUB_TOKEN) が不足しています。")
 
+    comments_url = f"https://api.github.com/repos/{repo_name}/issues/{issue_number}/comments"
+    headers = {
+        "Authorization": f"Bearer {github_token}",
+        "Accept": "application/vnd.github.v3+json",
+    }
+
+    if has_research_comment(comments_url, headers):
+        print("既にリサーチコメントが投稿済みのため、処理をスキップします。")
+        return
+
     print(f"トピックを調査中: {issue_title}")
 
     try:
@@ -40,7 +77,7 @@ def main():
     if not results:
         fail("検索結果が 0 件でした。コメントは投稿しません。")
 
-    comment_body = "## AI リサーチ結果\n\nIssueのタイトルに基づいて自動的にWeb検索を行いました。\n\n"
+    comment_body = f"{MARKER}\n## AI リサーチ結果\n\nIssueのタイトルに基づいて自動的にWeb検索を行いました。\n\n"
     for r in results:
         href = r["href"]
         title = r.get("title") or href
@@ -48,14 +85,8 @@ def main():
 
     print("検索が完了しました。Issueにコメントを追加します。")
 
-    url = f"https://api.github.com/repos/{repo_name}/issues/{issue_number}/comments"
-    headers = {
-        "Authorization": f"Bearer {github_token}",
-        "Accept": "application/vnd.github.v3+json",
-    }
-
     try:
-        response = requests.post(url, headers=headers, json={"body": comment_body}, timeout=30)
+        response = requests.post(comments_url, headers=headers, json={"body": comment_body}, timeout=30)
     except requests.RequestException as e:
         fail(f"Issue へのコメント投稿リクエストに失敗しました: {e}")
 
