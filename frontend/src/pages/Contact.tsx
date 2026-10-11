@@ -149,6 +149,7 @@ export default function Contact() {
                 トップへ戻る
               </Link>
               <button
+                type="button"
                 onClick={() => {
                   setDone(false);
                   setSubject('');
