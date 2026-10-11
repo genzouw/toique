@@ -30,6 +30,16 @@ def sanitize_title(title):
     return cleaned.strip()
 
 
+def escape_link_destination(url):
+    """Markdown リンク先として安全な形にする。
+
+    対応する開き括弧のない ) や空白・山括弧でリンクが途切れないよう、パーセントエンコードする。
+    """
+    for ch, encoded in (("(", "%28"), (")", "%29"), (" ", "%20"), ("<", "%3C"), (">", "%3E")):
+        url = url.replace(ch, encoded)
+    return url
+
+
 def fail(message):
     """GitHub Actions のエラー注釈を出力して非ゼロ終了する。"""
     print(f"::error::{message}")
@@ -98,7 +108,7 @@ def main():
 
     comment_body = f"{MARKER}\n## AI リサーチ結果\n\nIssueのタイトルに基づいて自動的にWeb検索を行いました。\n\n"
     for r in results:
-        href = r["href"]
+        href = escape_link_destination(r["href"])
         title = sanitize_title(r.get("title") or "") or href
         comment_body += f"- [{title}]({href})\n"
 
