@@ -172,6 +172,7 @@ PRマージ前に以下の作業を確認してください。
 
 1. **AI レビュー App のインストール**: CodeRabbit を GitHub App として対象リポジトリにインストールし、適切な権限 (Issues: Write, Pull Requests: Write 等) を付与してください。Qodo Merge / PR-Agent は無料条件を満たさないため導入しません（第5節を参照）。
 2. **AI リサーチパイプラインの導入**: `ai-research.yml` により、新しくIssueが作成され `research` ラベルが付与された際、DuckDuckGo APIを介して情報収集を行う自動化パイプラインが導入されました。このパイプラインは完全無料のOSSライブラリ（`ddgs`。旧 `duckduckgo-search`）を使用しておりAPIキーは不要です。検索やコメント投稿に失敗した場合はジョブが失敗しますが、GitHub Actions 上での実行時にIssueへのコメント書き込み権限が必要です。設定状況に問題がないか確認してください。
+   - 起動にはリポジトリに `research` ラベルが必要です。未作成の場合は `gh label create research --description 'AI リサーチ対象'` で作成してください。
 3. **セキュリティスキャナの有効化確認**: `Gitleaks`, `Trufflehog` が適切に動作するよう、GitHub の設定 > Security から Secret Scanning と Push Protection が有効になっているか確認してください。また、`Zizmor` による解析結果が Code scanning alerts に適切に反映されるよう設定されているか確認してください。
 4. **StepSecurity Harden-Runner のインストール**: AIコーディングエージェントからのクレデンシャル漏洩やサプライチェーン攻撃を防ぐため、主要なワークフローに `step-security/harden-runner` を導入しています。
    - StepSecurity の GitHub App を対象リポジトリにインストールし、初期設定を行ってください（公開リポジトリは無料で利用可能です）。
