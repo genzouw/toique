@@ -36,12 +36,15 @@ def main():
     except Exception as e:
         fail(f"Web 検索に失敗しました (レート制限や仕様変更の可能性があります): {e}")
 
+    results = [r for r in (results or []) if r.get("href")]
     if not results:
         fail("検索結果が 0 件でした。コメントは投稿しません。")
 
     comment_body = "## AI リサーチ結果\n\nIssueのタイトルに基づいて自動的にWeb検索を行いました。\n\n"
     for r in results:
-        comment_body += f"- [{r.get('title')}]({r.get('href')})\n"
+        href = r["href"]
+        title = r.get("title") or href
+        comment_body += f"- [{title}]({href})\n"
 
     print("検索が完了しました。Issueにコメントを追加します。")
 
