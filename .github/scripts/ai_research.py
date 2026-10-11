@@ -17,6 +17,17 @@ from ddgs import DDGS
 MARKER = "<!-- ai-research -->"
 
 
+def sanitize_title(title):
+    """検索結果のタイトルを Markdown リンクテキストとして安全な形にする。
+
+    改行を空白にし、リンクを壊す [ ] とメンションになる @ を除去する。
+    """
+    cleaned = " ".join(title.split())
+    for ch in "[]@":
+        cleaned = cleaned.replace(ch, "")
+    return cleaned.strip()
+
+
 def fail(message):
     """GitHub Actions のエラー注釈を出力して非ゼロ終了する。"""
     print(f"::error::{message}")
@@ -80,7 +91,7 @@ def main():
     comment_body = f"{MARKER}\n## AI リサーチ結果\n\nIssueのタイトルに基づいて自動的にWeb検索を行いました。\n\n"
     for r in results:
         href = r["href"]
-        title = r.get("title") or href
+        title = sanitize_title(r.get("title") or "") or href
         comment_body += f"- [{title}]({href})\n"
 
     print("検索が完了しました。Issueにコメントを追加します。")

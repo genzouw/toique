@@ -17,6 +17,7 @@ jobs:
       contents: read
       issues: write
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     # opened: 作成時点で research ラベルが付いている場合のみ。
     # labeled: 付与されたラベル自体が research の場合のみ（他ラベルの追加で再実行しない）。
     if: >-
