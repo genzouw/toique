@@ -148,7 +148,7 @@ export default function Layout() {
               to="/admin"
               className="flex items-center gap-2 px-3 py-2 rounded-md text-sm text-amber-700 hover:bg-amber-50 border border-dashed border-amber-300 mt-2 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-amber-500 focus-visible:ring-offset-1 transition-colors"
             >
-              <Shield size={ICON_SIZE.md} />
+              <Shield size={ICON_SIZE.md} aria-hidden="true" />
               運営者エリア
             </Link>
           )}
@@ -197,7 +197,7 @@ export default function Layout() {
               title="メッセージを閉じる"
               aria-label="メッセージを閉じる"
             >
-              <X size={ICON_SIZE.sm} />
+              <X size={ICON_SIZE.sm} aria-hidden="true" />
             </button>
           </div>
         )}
