@@ -15,6 +15,8 @@ from ddgs import DDGS
 
 # 投稿済みコメントの識別用マーカー。同じ Issue への重複投稿を防ぐ（冪等化）。
 MARKER = "<!-- ai-research -->"
+# リサーチコメントの投稿者。GITHUB_TOKEN で投稿したコメントの user.login はこの値になる。
+BOT_LOGIN = "github-actions[bot]"
 
 
 def sanitize_title(title):
@@ -35,7 +37,10 @@ def fail(message):
 
 
 def has_research_comment(comments_url, headers):
-    """Issue に投稿済みのリサーチコメント（MARKER 入り）があるかを返す。"""
+    """Issue に投稿済みのリサーチコメント（MARKER 入りで投稿者が BOT_LOGIN）があるかを返す。
+
+    他のユーザーが MARKER を含むコメントを書いても、検索を省略しない。
+    """
     page = 1
     while True:
         try:
@@ -50,7 +55,10 @@ def has_research_comment(comments_url, headers):
         if response.status_code != 200:
             fail(f"Issue のコメント取得に失敗しました: {response.status_code} - {response.text}")
         comments = response.json()
-        if any(MARKER in (c.get("body") or "") for c in comments):
+        if any(
+            MARKER in (c.get("body") or "") and (c.get("user") or {}).get("login") == BOT_LOGIN
+            for c in comments
+        ):
             return True
         if len(comments) < 100:
             return False
