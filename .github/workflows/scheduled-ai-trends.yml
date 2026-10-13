@@ -59,7 +59,7 @@ jobs:
     permissions:
       contents: read
       issues: write
-    uses: ./.github/workflows/ai-research.yml
+    uses: ./.github/workflows/ai-research.yml # zizmor: ignore[self-repository]
     with:
       issue_number: ${{ needs.create-issue.outputs.issue_number }}
       issue_title: ${{ needs.create-issue.outputs.issue_title }}
