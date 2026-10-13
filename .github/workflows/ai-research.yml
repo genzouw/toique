@@ -3,12 +3,24 @@ name: AI Research Pipeline
 on:
   issues:
     types: [opened, labeled]
+  # GITHUB_TOKEN で作成した Issue は issues イベントを発火しないため、
+  # scheduled-ai-trends.yml など他のワークフローから直接呼び出せるようにする。
+  workflow_call:
+    inputs:
+      issue_number:
+        description: "調査対象の Issue 番号"
+        required: true
+        type: string
+      issue_title:
+        description: "調査対象の Issue タイトル"
+        required: true
+        type: string
 
 permissions:
   contents: read
 
 concurrency:
-  group: ai-research-${{ github.event.issue.number }}
+  group: ai-research-${{ inputs.issue_number || github.event.issue.number }}
   cancel-in-progress: false
 
 jobs:
@@ -20,8 +32,10 @@ jobs:
     timeout-minutes: 10
     # opened: 作成時点で research ラベルが付いている場合のみ。
     # labeled: 付与されたラベル自体が research の場合のみ（他ラベルの追加で再実行しない）。
+    # workflow_call: 呼び出し元が対象 Issue を inputs で渡すため、無条件で実行する。
     if: >-
-      (github.event.action == 'opened' && contains(github.event.issue.labels.*.name, 'research'))
+      inputs.issue_number != ''
+      || (github.event.action == 'opened' && contains(github.event.issue.labels.*.name, 'research'))
       || (github.event.action == 'labeled' && github.event.label.name == 'research')
     steps:
       - name: Harden Runner
@@ -43,7 +57,7 @@ jobs:
       - name: Run AI Research Script
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          ISSUE_TITLE: ${{ github.event.issue.title }}
-          ISSUE_NUMBER: ${{ github.event.issue.number }}
+          ISSUE_TITLE: ${{ inputs.issue_title || github.event.issue.title }}
+          ISSUE_NUMBER: ${{ inputs.issue_number || github.event.issue.number }}
           REPO_NAME: ${{ github.repository }}
         run: uv run .github/scripts/ai_research.py

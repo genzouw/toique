@@ -1,0 +1,65 @@
+name: Scheduled AI Trends Research
+
+on:
+  schedule:
+    # 毎週月曜日の朝9:00(JST) = 0:00(UTC) に実行
+    - cron: '0 0 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# 手動実行の連打による Issue の重複作成を防ぐ。
+concurrency:
+  group: scheduled-ai-trends
+  cancel-in-progress: false
+
+jobs:
+  create-issue:
+    name: Create AI Trends Issue
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      issues: write
+    outputs:
+      issue_number: ${{ steps.issue.outputs.number }}
+      issue_title: ${{ steps.issue.outputs.title }}
+    steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@ccd8616d44fd3846e67624a50d5aad6d37bf2d25 # v2.22.1
+        with:
+          egress-policy: audit
+
+      - name: Create or find Issue
+        id: issue
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          DATE=$(date -u +'%Y-%m-%d')
+          TITLE="Latest Generative AI Trends (${DATE})"
+          # 同日タイトルの Issue が既にあれば再利用し、重複作成しない。
+          NUMBER=$(gh issue list --label research --state all --search "\"${TITLE}\" in:title" \
+            --json number,title --jq "map(select(.title == \"${TITLE}\")) | first | .number // empty")
+          if [ -z "${NUMBER}" ]; then
+            URL=$(gh issue create \
+              --title "${TITLE}" \
+              --body "This is an automated issue to research the latest Generative AI trends. The AI Research pipeline will post the latest news as a comment." \
+              --label "research")
+            NUMBER="${URL##*/}"
+          fi
+          echo "number=${NUMBER}" >> "$GITHUB_OUTPUT"
+          echo "title=${TITLE}" >> "$GITHUB_OUTPUT"
+
+  research:
+    name: Run AI Research
+    needs: create-issue
+    permissions:
+      contents: read
+      issues: write
+    uses: ./.github/workflows/ai-research.yml # zizmor: ignore[self-repository]
+    with:
+      issue_number: ${{ needs.create-issue.outputs.issue_number }}
+      issue_title: ${{ needs.create-issue.outputs.issue_title }}
