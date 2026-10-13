@@ -337,7 +337,7 @@
     },
     {
       "description": [
-        "本番デプロイ経路 (id-token: write / CLOUDFLARE_API_TOKEN を扱う) で使う Action の",
+        "本番デプロイ経路 (id-token: write や Cloudflare の認証情報を扱う) で使う Action の",
         "major は破壊的変更の検証が必須なため自動 PR の対象外にする。",
         "minor / patch / SHA 追従は引き続き自動 PR で受け取る。"
       ],
