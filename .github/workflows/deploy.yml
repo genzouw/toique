@@ -130,7 +130,7 @@ jobs:
       # 値は Secret Manager 上の名前の対応付けだけで、CI は秘密値を扱わない。
       - id: cloud-run-secrets
         name: Build Cloud Run secrets mapping
-        run: |
+        run: | # pragma: allowlist secret
           {
             echo 'mapping<<MAPPING_EOF'
             echo 'DATABASE_URL=DATABASE_URL:latest'
