@@ -50,7 +50,7 @@ fi
 
 # --- Security: pre-commit framework delegation ---
 # Pythonの pre-commit がインストールされている場合は、そちらへ委譲する
-# (gitleaks と detect-secrets を .pre-commit-config.yaml で一元管理)。
+# (gitleaks・detect-secrets・trufflehog を .pre-commit-config.yaml で一元管理)。
 # 無い場合はフォールバックとして旧来の個別シェルスクリプト実行へ進む。
 if command -v pre-commit >/dev/null 2>&1; then
   echo "🔍 Running pre-commit framework..."
@@ -59,9 +59,9 @@ if command -v pre-commit >/dev/null 2>&1; then
   # まずフック実行環境（venv等）のセットアップだけを行う。ここが失敗するのは
   # オフライン/プロキシ/初回セットアップ失敗等の「環境要因」に限られるため、
   # この場合に限って旧来のフォールバックスキャン（本PR導入前は唯一の防御手段
-  # だった実装）へ確実に降りる。フォールバック側でも gitleaks / detect-secrets を
-  # 再実行するため、実際のシークレット検知については本PR導入前と同等以上の
-  # 防御水準が維持される。
+  # だった実装）へ確実に降りる。フォールバック側でも gitleaks / detect-secrets を再実行する。
+  # trufflehog は含まれない。ただし、実際のシークレット検知については
+  # 本PR導入前と同等以上の防御水準が維持される。
   if ! SKIP='' pre-commit install-hooks; then
     echo "⚠️  pre-commit failed to set up hook environments (offline/proxy/first-time setup issue)."
     echo "   Falling back to the legacy scanners below."
@@ -71,7 +71,7 @@ if command -v pre-commit >/dev/null 2>&1; then
   # 成功してしまう。その結果 PRE_COMMIT_RAN=1 が立ち、以降のフォールバックスキャンも
   # 実行されず、秘密検出が丸ごとすり抜けてしまうため。
   elif SKIP='' pre-commit run --color always; then
-    # pre-commit framework 側でシークレットチェック（gitleaks, detect-secrets）を
+    # pre-commit framework 側でシークレットチェック（gitleaks, detect-secrets, trufflehog）を
     # 実行完了したため、以降のフォールバックスキャンをスキップするフラグを立てる。
     PRE_COMMIT_RAN=1
   else
