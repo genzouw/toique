@@ -8,30 +8,58 @@ on:
 
 permissions:
   contents: read
-  issues: write
+
+# 手動実行の連打による Issue の重複作成を防ぐ。
+concurrency:
+  group: scheduled-ai-trends
+  cancel-in-progress: false
 
 jobs:
   create-issue:
     name: Create AI Trends Issue
     runs-on: ubuntu-latest
     timeout-minutes: 5
+    permissions:
+      contents: read
+      issues: write
+    outputs:
+      issue_number: ${{ steps.issue.outputs.number }}
+      issue_title: ${{ steps.issue.outputs.title }}
     steps:
       - name: Harden Runner
         uses: step-security/harden-runner@ccd8616d44fd3846e67624a50d5aad6d37bf2d25 # v2.22.1
         with:
           egress-policy: audit
 
-      - name: Checkout repository
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          persist-credentials: false
-
-      - name: Create Issue
+      - name: Create or find Issue
+        id: issue
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
         run: |
-          DATE=$(date +'%Y-%m-%d')
-          gh issue create \
-            --title "Latest Generative AI Trends (${DATE})" \
-            --body "This is an automated issue to research the latest Generative AI trends. The AI Research pipeline will automatically fetch and post the latest news." \
-            --label "research"
+          set -euo pipefail
+          DATE=$(date -u +'%Y-%m-%d')
+          TITLE="Latest Generative AI Trends (${DATE})"
+          # 同日タイトルの Issue が既にあれば再利用し、重複作成しない。
+          NUMBER=$(gh issue list --label research --state all --search "\"${TITLE}\" in:title" \
+            --json number,title --jq "map(select(.title == \"${TITLE}\")) | first | .number // empty")
+          if [ -z "${NUMBER}" ]; then
+            URL=$(gh issue create \
+              --title "${TITLE}" \
+              --body "This is an automated issue to research the latest Generative AI trends. The AI Research pipeline will post the latest news as a comment." \
+              --label "research")
+            NUMBER="${URL##*/}"
+          fi
+          echo "number=${NUMBER}" >> "$GITHUB_OUTPUT"
+          echo "title=${TITLE}" >> "$GITHUB_OUTPUT"
+
+  research:
+    name: Run AI Research
+    needs: create-issue
+    permissions:
+      contents: read
+      issues: write
+    uses: ./.github/workflows/ai-research.yml
+    with:
+      issue_number: ${{ needs.create-issue.outputs.issue_number }}
+      issue_title: ${{ needs.create-issue.outputs.issue_title }}
