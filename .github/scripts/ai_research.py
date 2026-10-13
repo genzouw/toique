@@ -1,21 +1,17 @@
 # /// script
 # requires-python = ">=3.10"
 # dependencies = [
-#   "duckduckgo-search==7.3.2",
+#   "ddgs==9.16.0",
 #   "requests==2.34.2",
 # ]
 # ///
 
 import os
+import re
 import sys
-import warnings
-
-# Suppress RuntimeWarning from duckduckgo-search (as requested in memories)
-with warnings.catch_warnings():
-    warnings.simplefilter("ignore", RuntimeWarning)
-    from duckduckgo_search import DDGS
 
 import requests
+from ddgs import DDGS
 
 
 # 投稿済みコメントの識別用マーカー。同じ Issue への重複投稿を防ぐ（冪等化）。
@@ -33,6 +29,17 @@ def sanitize_title(title):
     for ch in "[]@":
         cleaned = cleaned.replace(ch, "")
     return cleaned.strip()
+
+
+def sanitize_snippet(text):
+    """外部ページ本文の抜粋を、Issue コメントの引用として安全な形にする。
+
+    改行を空白にしたうえで、メンション (@)・HTML/Markdown の制御文字・投稿済み判定用の
+    MARKER を除去する。リンクや画像として解釈される余地を残さない。
+    """
+    cleaned = text.replace(MARKER, "")
+    cleaned = re.sub(r"[@<>\[\]!`#]", "", cleaned)
+    return " ".join(cleaned.split())
 
 
 def escape_link_destination(url):
@@ -112,25 +119,33 @@ def main():
         fail("検索結果が 0 件でした。コメントは投稿しません。")
 
     comment_body = f"{MARKER}\n## AI リサーチ結果\n\nIssueのタイトルに基づいて自動的にWeb検索を行いました。\n\n"
+    fetched = 0
     for r in results:
         href = escape_link_destination(r["href"])
         title = sanitize_title(r.get("title") or "") or href
         comment_body += f"- [{title}]({href})\n"
 
-        # Jina Reader APIを利用してページ内容の一部を取得
+        # Jina Reader API (キー不要) でページ内容の一部を取得する。
+        # 取得の失敗は注記にとどめ、検索結果のリンクは残す。
         try:
-            reader_response = requests.get(f"https://r.jina.ai/{r['href']}", timeout=10)
-            if reader_response.status_code == 200:
-                content = reader_response.text
-                # 概要として最初の500文字を抽出して追加
-                snippet = content[:500].replace('\n', ' ').strip()
-                if len(content) > 500:
-                    snippet += "..."
-                comment_body += f"  > {snippet}\n\n"
-            else:
-                comment_body += f"  > *(コンテンツを取得できませんでした: HTTP {reader_response.status_code})*\n\n"
-        except Exception:
-            comment_body += f"  > *(コンテンツを取得できませんでした)*\n\n"
+            reader_response = requests.get(f"https://r.jina.ai/{href}", timeout=10)
+        except requests.RequestException:
+            comment_body += "  > *(コンテンツを取得できませんでした)*\n\n"
+            continue
+        if reader_response.status_code != 200:
+            comment_body += f"  > *(コンテンツを取得できませんでした: HTTP {reader_response.status_code})*\n\n"
+            continue
+        content = reader_response.text
+        snippet = sanitize_snippet(content[:500])
+        if len(content) > 500:
+            snippet += "..."
+        fetched += 1
+        comment_body += f"  > {snippet}\n\n"
+
+    # 全件の取得に失敗した場合は MARKER 付きコメントを残さず失敗させる。
+    # 残すと次回実行が投稿済みと判定し、再取得できなくなるため。
+    if fetched == 0:
+        fail("Jina Reader でページ内容を 1 件も取得できませんでした。コメントは投稿しません（再実行で再取得できます）。")
 
     print("検索が完了しました。Issueにコメントを追加します。")
 
