@@ -135,10 +135,10 @@ jobs:
           title: 'chore(security): 🔒 pre-commit フックの自動更新'
           body: |
             ## 概要
-            定期監査の一環として、ローカルのセキュリティ検知ツール `gitleaks` のバージョンを最新に保つため、`pre-commit autoupdate` を実行しました。
+            定期監査の一環として、ローカルのセキュリティ検知ツール `gitleaks` / `trufflehog` のバージョンを最新に保つため、`pre-commit autoupdate` を実行しました。
 
             ## 変更内容
-            - `.pre-commit-config.yaml` 内の `gitleaks` のバージョン更新
+            - `.pre-commit-config.yaml` 内の `gitleaks` / `trufflehog` のバージョン更新
 
             なお `detect-secrets` は `.secrets.baseline` の再生成を伴うため自動更新の対象外です (手動更新)。
 
