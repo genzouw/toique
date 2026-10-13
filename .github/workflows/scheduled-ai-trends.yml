@@ -1,0 +1,37 @@
+name: Scheduled AI Trends Research
+
+on:
+  schedule:
+    # 毎週月曜日の朝9:00(JST) = 0:00(UTC) に実行
+    - cron: '0 0 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  create-issue:
+    name: Create AI Trends Issue
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@ccd8616d44fd3846e67624a50d5aad6d37bf2d25 # v2.22.1
+        with:
+          egress-policy: audit
+
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Create Issue
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          DATE=$(date +'%Y-%m-%d')
+          gh issue create \
+            --title "Latest Generative AI Trends (${DATE})" \
+            --body "This is an automated issue to research the latest Generative AI trends. The AI Research pipeline will automatically fetch and post the latest news." \
+            --label "research"

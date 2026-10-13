@@ -1,16 +1,21 @@
 # /// script
 # requires-python = ">=3.10"
 # dependencies = [
-#   "ddgs==9.16.0",
+#   "duckduckgo-search==7.3.2",
 #   "requests==2.34.2",
 # ]
 # ///
 
 import os
 import sys
+import warnings
+
+# Suppress RuntimeWarning from duckduckgo-search (as requested in memories)
+with warnings.catch_warnings():
+    warnings.simplefilter("ignore", RuntimeWarning)
+    from duckduckgo_search import DDGS
 
 import requests
-from ddgs import DDGS
 
 
 # 投稿済みコメントの識別用マーカー。同じ Issue への重複投稿を防ぐ（冪等化）。
@@ -111,6 +116,21 @@ def main():
         href = escape_link_destination(r["href"])
         title = sanitize_title(r.get("title") or "") or href
         comment_body += f"- [{title}]({href})\n"
+
+        # Jina Reader APIを利用してページ内容の一部を取得
+        try:
+            reader_response = requests.get(f"https://r.jina.ai/{r['href']}", timeout=10)
+            if reader_response.status_code == 200:
+                content = reader_response.text
+                # 概要として最初の500文字を抽出して追加
+                snippet = content[:500].replace('\n', ' ').strip()
+                if len(content) > 500:
+                    snippet += "..."
+                comment_body += f"  > {snippet}\n\n"
+            else:
+                comment_body += f"  > *(コンテンツを取得できませんでした: HTTP {reader_response.status_code})*\n\n"
+        except Exception:
+            comment_body += f"  > *(コンテンツを取得できませんでした)*\n\n"
 
     print("検索が完了しました。Issueにコメントを追加します。")
 
