@@ -116,6 +116,24 @@
       "groupName": "postgres"
     },
     {
+      "description": [
+        "Bun のバージョンは frontend/backend の Dockerfile (oven/bun) と CI ワークフローの setup-bun (bun-version) で",
+        "完全一致させる必要があるため、groupName で 1 本の PR にまとめる (scripts/check-bun-version.sh が検証する)。",
+        "groupName を明示しないとワークフロー側だけが別 PR で上がり、Dockerfile との不一致で",
+        "Verify bun version consistency が必ず失敗する (PR #988)。"
+      ],
+      "matchManagers": [
+        "dockerfile",
+        "github-actions"
+      ],
+      "matchPackageNames": [
+        "bun",
+        "oven/bun",
+        "oven-sh/bun"
+      ],
+      "groupName": "bun"
+    },
+    {
       "description": "Docker ベースイメージの更新には docker ラベルを付ける",
       "matchManagers": [
         "dockerfile",
