@@ -222,4 +222,7 @@ CI ランナーにシークレットが渡る前にブロックされるため�
 _現時点で無効化・縮退している監査ワークフローはありません。_
 
 ### Dependabot
-Dependabot による定期監査を有効化し、`npm` パッケージ（フロントエンド、バックエンド、インフラ、ルート）および `github-actions` の脆弱性を日次でスキャンしています（`.github/dependabot.yml` 参照）。未対応の脆弱性がある場合は Pull Request が自動作成されるため、適宜確認してマージしてください。
+
+Dependabot は、`npm` パッケージ（ルート・フロントエンド・バックエンド・インフラ）と `github-actions` の更新を日次で確認し、更新用の Pull Request を作成します（`.github/dependabot.yml` 参照）。新しいリリースは 7 日間のクールダウンを置いてから対象にします。
+
+脆弱性が見つかった場合の修正 PR は、スケジュールとは別に、デフォルトブランチの依存関係に Dependabot alert が出たときに作成されます。リポジトリ設定で Dependabot alerts と Dependabot security updates を有効にしておく必要があります。作成された PR は内容を確認してマージしてください。
