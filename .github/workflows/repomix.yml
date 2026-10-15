@@ -36,11 +36,27 @@ jobs:
         # 許可済みの github-owned アクション (actions/setup-node) + npm 経由での直接実行に切り替える。
         # バージョンは zizmor (adhoc-packages) 対策として latest ではなく固定値を指定する。
         run: |
+          if [ "${{ github.event_name }}" == "pull_request" ]; then
+            prDiff=$(curl -sL "${{ github.event.pull_request.diff_url }}")
+            read -r changedLineCount changedCharCount < <(
+              printf '%s\n' "$prDiff" |
+                awk '/^\+\+\+ b\// || /^--- a\// { next } /^[+-]/ {
+                  lines++
+                  chars += length(substr($0, 2))
+                } END { print lines + 0, chars + 0 }'
+            )
+            if [ -z "$prDiff" ] || { [ "$changedCharCount" -lt 20 ] && [ "$changedLineCount" -lt 3 ]; }; then
+              echo "PR diff is trivial or empty. Skipping repomix execution to optimize API quotas."
+              echo "skip=true" >> "$GITHUB_ENV"
+              exit 0
+            fi
+          fi
           npm install --global repomix@1.18.1
-          repomix
+          repomix --config repomix.config.json
 
       - name: Repomix 出力アーティファクトのアップロード
         # 生成されたXMLファイルを、AIツールなどで後から利用できるように保存
+        if: env.skip != 'true'
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: repomix-output

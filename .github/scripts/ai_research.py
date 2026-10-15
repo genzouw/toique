@@ -1,7 +1,7 @@
 # /// script
 # requires-python = ">=3.10"
 # dependencies = [
-#   "ddgs==9.16.0",
+#   "duckduckgo-search",
 #   "requests==2.34.2",
 # ]
 # ///
@@ -11,7 +11,8 @@ import re
 import sys
 
 import requests
-from ddgs import DDGS
+from duckduckgo_search import DDGS
+import warnings
 
 
 # 投稿済みコメントの識別用マーカー。同じ Issue への重複投稿を防ぐ（冪等化）。
@@ -110,9 +111,11 @@ def main():
     print(f"トピックを調査中: {issue_title}")
 
     try:
-        results = DDGS().text(issue_title, backend="duckduckgo", max_results=5)
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore", RuntimeWarning)
+            results = DDGS().text(issue_title, max_results=5)
     except Exception as e:
-        fail(f"Web 検索に失敗しました (レート制限や仕様変更の可能性があります): {e}")
+        fail(f"DuckDuckGo API でエラーが発生しました (レート制限や仕様変更の可能性があります): {e}")
 
     results = [r for r in (results or []) if r.get("href")]
     if not results:
@@ -129,11 +132,11 @@ def main():
         # 取得の失敗は注記にとどめ、検索結果のリンクは残す。
         try:
             reader_response = requests.get(f"https://r.jina.ai/{href}", timeout=10)
-        except requests.RequestException:
-            comment_body += "  > *(コンテンツを取得できませんでした)*\n\n"
+        except requests.RequestException as e:
+            comment_body += f"  > *(コンテンツを取得できませんでした: {e})*\n\n"
             continue
         if reader_response.status_code != 200:
-            comment_body += f"  > *(コンテンツを取得できませんでした: HTTP {reader_response.status_code})*\n\n"
+            comment_body += f"  > *(コンテンツを取得できませんでした: HTTP {reader_response.status_code} - {reader_response.text})*\n\n"
             continue
         content = reader_response.text
         snippet = sanitize_snippet(content[:500])
