@@ -116,3 +116,7 @@ commit-msg*.txt
 commit-msg*.md
 commit_msg*.txt
 commit_msg*.md
+
+# Python のバイトコードキャッシュ
+__pycache__/
+*.pyc
