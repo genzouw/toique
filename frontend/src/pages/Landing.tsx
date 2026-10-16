@@ -340,11 +340,12 @@ export default function Landing() {
                 key={f.question}
                 className="group bg-white border border-slate-200 rounded-lg p-4 open:shadow-sm"
               >
-                <summary className="flex items-center justify-between cursor-pointer list-none text-sm font-semibold text-slate-900">
+                <summary className="flex items-center justify-between cursor-pointer list-none text-sm font-semibold text-slate-900 focus-ring rounded-sm transition-colors">
                   <span>{f.question}</span>
                   <ChevronDown
                     size={ICON_SIZE.lg}
                     className="text-slate-500 transition-transform group-open:rotate-180"
+                    aria-hidden="true"
                   />
                 </summary>
                 <p className="mt-3 text-sm text-slate-600 leading-relaxed">
