@@ -40,15 +40,18 @@ jobs:
           BASE_REF: ${{ github.base_ref }}
         run: |
           # PR の差分が些細（20 文字未満かつ 3 行未満）な場合だけスキップする。
-          # 差分を取得できない場合・バイナリを含む場合は、スキップせず通常実行へ進める。
+          # 差分を取得できない場合・バイナリを含む場合・リネームを含む場合は、
+          # スキップせず通常実行へ進める（リネームは行数が 0 でもファイルパスが変わるため）。
           if [ "$EVENT_NAME" = "pull_request" ]; then
             if numstat=$(git diff --numstat "origin/${BASE_REF}...HEAD") \
+              && nameStatus=$(git diff --name-status "origin/${BASE_REF}...HEAD") \
               && counts=$(git diff -U0 "origin/${BASE_REF}...HEAD" | awk '
                 /^(\+\+\+|---) / { next }
                 /^[+-]/ { lines++; chars += length(substr($0, 2)) }
                 END { print lines + 0, chars + 0 }'); then
               read -r changedLineCount changedCharCount <<< "$counts"
               if [ -n "$numstat" ] && ! printf '%s\n' "$numstat" | grep -q '^-' \
+                && ! printf '%s\n' "$nameStatus" | grep -q '^R' \
                 && [ "$changedCharCount" -lt 20 ] && [ "$changedLineCount" -lt 3 ]; then
                 echo "PR diff is trivial. Skipping repomix execution to optimize API quotas."
                 echo "skip=true" >> "$GITHUB_ENV"
