@@ -1,4 +1,5 @@
 import { Link, useParams } from 'react-router';
+import { ChevronDown } from 'lucide-react';
 import { getIndustry, INDUSTRIES } from '../lib/industries';
 import type { IndustryContent } from '../lib/industries';
 import IndustryNotFound from './IndustryNotFound';
@@ -202,10 +203,15 @@ function IndustryLandingView({ content }: { content: IndustryContent }) {
             {content.faq.map((f) => (
               <details
                 key={f.question}
-                className="bg-white border border-slate-200 rounded-lg p-4"
+                className="group bg-white border border-slate-200 rounded-lg p-4 open:shadow-sm"
               >
-                <summary className="cursor-pointer text-sm font-semibold text-slate-900">
-                  {f.question}
+                <summary className="flex items-center justify-between cursor-pointer list-none text-sm font-semibold text-slate-900 focus-ring rounded-sm transition-colors">
+                  <span>{f.question}</span>
+                  <ChevronDown
+                    size={ICON_SIZE.lg}
+                    className="text-slate-500 transition-transform group-open:rotate-180"
+                    aria-hidden="true"
+                  />
                 </summary>
                 <p className="mt-3 text-sm text-slate-600 leading-relaxed">
                   {f.answer}
