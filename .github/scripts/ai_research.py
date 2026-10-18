@@ -1,7 +1,7 @@
 # /// script
 # requires-python = ">=3.10"
 # dependencies = [
-#   "ddgs==9.16.0",
+#   "duckduckgo-search==8.1.1",
 #   "requests==2.34.2",
 # ]
 # ///
@@ -9,9 +9,13 @@
 import os
 import re
 import sys
+import warnings
 
 import requests
-from ddgs import DDGS
+
+with warnings.catch_warnings():
+    warnings.simplefilter("ignore", RuntimeWarning)
+    from duckduckgo_search import DDGS
 
 
 # 投稿済みコメントの識別用マーカー。同じ Issue への重複投稿を防ぐ（冪等化）。
