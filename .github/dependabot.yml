@@ -10,27 +10,42 @@ updates:
     schedule:
       interval: "weekly"
     open-pull-requests-limit: 0
+    # 公開直後の悪意あるリリースを避けるため、Renovate の minimumReleaseAge (3 days) より長い 7 日の冷却期間を置く
+    cooldown:
+      default-days: 7
 
   - package-ecosystem: "npm"
     directory: "/frontend"
     schedule:
       interval: "weekly"
     open-pull-requests-limit: 0
+    # 公開直後の悪意あるリリースを避けるため、Renovate の minimumReleaseAge (3 days) より長い 7 日の冷却期間を置く
+    cooldown:
+      default-days: 7
 
   - package-ecosystem: "npm"
     directory: "/backend"
     schedule:
       interval: "weekly"
     open-pull-requests-limit: 0
+    # 公開直後の悪意あるリリースを避けるため、Renovate の minimumReleaseAge (3 days) より長い 7 日の冷却期間を置く
+    cooldown:
+      default-days: 7
 
   - package-ecosystem: "npm"
     directory: "/infra"
     schedule:
       interval: "weekly"
     open-pull-requests-limit: 0
+    # 公開直後の悪意あるリリースを避けるため、Renovate の minimumReleaseAge (3 days) より長い 7 日の冷却期間を置く
+    cooldown:
+      default-days: 7
 
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
       interval: "weekly"
     open-pull-requests-limit: 0
+    # 公開直後の悪意あるリリースを避けるため、Renovate の minimumReleaseAge (3 days) より長い 7 日の冷却期間を置く
+    cooldown:
+      default-days: 7
