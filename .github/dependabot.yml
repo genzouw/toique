@@ -1,0 +1,36 @@
+# Toique への自動 PR を生成する Renovate (.github/renovate.json) と競合しないよう、
+# Dependabot は脆弱性スキャン (Dependabot Alerts) 用の設定としてのみ動作させます。
+# PR作成上限を 0 にすることで、Dependabot 自体は PR を作らず、脆弱性の検知のみを行います。
+# リポジトリ内の各 npm エコシステムと GitHub Actions を網羅的にスキャン対象とします。
+
+version: 2
+updates:
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 0
+
+  - package-ecosystem: "npm"
+    directory: "/frontend"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 0
+
+  - package-ecosystem: "npm"
+    directory: "/backend"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 0
+
+  - package-ecosystem: "npm"
+    directory: "/infra"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 0
+
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 0
