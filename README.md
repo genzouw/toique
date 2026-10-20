@@ -265,16 +265,16 @@ curl -s http://localhost:3000/api/v1/messages | jq
 
 ### 静的解析・セキュリティスキャン
 
-| Workflow           | 目的                                                                                        |
-| ------------------ | ------------------------------------------------------------------------------------------- |
-| `codeql.yml`       | GitHub CodeQL (JS/TS) による静的解析。push / PR / 週次                                      |
-| `trivy.yml`        | 依存関係 / IaC / Dockerfile / secret の脆弱性スキャン。SARIF を Security タブにアップロード |
-| `gitleaks.yml`     | コミット履歴を含むシークレットスキャン                                                      |
-| `actionlint.yml`   | GitHub Actions YAML の lint                                                                 |
-| `markdownlint.yml` | Markdown の lint (`.markdownlint-cli2.jsonc`)                                               |
-| `lychee.yml`       | Markdown / HTML のリンク切れ検出 (`lychee.toml`)。push / PR / 週次                          |
-| `knip.yml`         | 未使用コード・未使用依存の検出                                                              |
-| `dependabot.yml`   | リポジトリ全体の `npm` エコシステムに対する脆弱性アラート (Dependabot alerts) の定期監査      |
+| Workflow           | 目的                                                                                                        |
+| ------------------ | ----------------------------------------------------------------------------------------------------------- |
+| `codeql.yml`       | GitHub CodeQL (JS/TS) による静的解析。push / PR / 週次                                                      |
+| `trivy.yml`        | 依存関係 / IaC / Dockerfile / secret の脆弱性スキャン。SARIF を Security タブにアップロード                 |
+| `gitleaks.yml`     | コミット履歴を含むシークレットスキャン                                                                      |
+| `actionlint.yml`   | GitHub Actions YAML の lint                                                                                 |
+| `markdownlint.yml` | Markdown の lint (`.markdownlint-cli2.jsonc`)                                                               |
+| `lychee.yml`       | Markdown / HTML のリンク切れ検出 (`lychee.toml`)。push / PR / 週次                                          |
+| `knip.yml`         | 未使用コード・未使用依存の検出                                                                              |
+| `dependabot.yml`   | `npm` エコシステムの Dependabot 設定 (バージョン更新 PR は無効)。脆弱性アラートは依存関係グラフに基づき検知 |
 
 ### コードレビューとAI自動化
 
