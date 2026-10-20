@@ -274,6 +274,7 @@ curl -s http://localhost:3000/api/v1/messages | jq
 | `markdownlint.yml` | Markdown の lint (`.markdownlint-cli2.jsonc`)                                               |
 | `lychee.yml`       | Markdown / HTML のリンク切れ検出 (`lychee.toml`)。push / PR / 週次                          |
 | `knip.yml`         | 未使用コード・未使用依存の検出                                                              |
+| `dependabot.yml`   | リポジトリ全体の `npm` エコシステムに対する脆弱性アラート (Dependabot alerts) の定期監査      |
 
 ### コードレビューとAI自動化
 
