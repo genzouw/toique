@@ -28,7 +28,7 @@
 
 前回未対応 + 新規観点:
 
-1. **GitHub Repository 設定**: Secret scanning / Push protection / Private vulnerability reporting / CodeQL default setup / Dependabot security updates / Branch protection / Environments `production` + reviewers / Actions の workflow permissions
+1. **GitHub Repository 設定**: Secret scanning / Push protection / Private vulnerability reporting / CodeQL default setup / Dependabot alerts（security updates は無効）/ Branch protection / Environments `production` + reviewers / Actions の workflow permissions
 2. **Cloudflare**: `CLOUDFLARE_API_TOKEN` を Pages:Edit + 単一プロジェクトに縮小、WAF / Bot Fight Mode / Rate Limiting / subdomain takeover
 3. **GCP**: WIF の **本番 apply** 実機確認、課金アラート、Cloud Armor、GCS versioning + retention lock、Audit Logs
 4. **Neon**: IP allowlist、不要 branch/role 削除、最小権限
@@ -78,7 +78,7 @@
 
 | #   | 項目                                                                                                                                                                                                                                                        | 重大度   |
 | --- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------- |
-| 1-1 | Settings → Code security: **Secret scanning / Push protection / Private vulnerability reporting / Dependabot alerts / Dependabot security updates / CodeQL default setup を全て Enabled**                                                                   | Critical |
+| 1-1 | Settings → Code security: **Secret scanning / Push protection / Private vulnerability reporting / Dependabot alerts / CodeQL default setup を Enabled、Dependabot security updates は Disabled（Renovate の `vulnerabilityAlerts` と重複させない）**        | Critical |
 | 1-2 | Settings → Branches → Branch protection (main): Require PR / Require status checks (`Frontend`, `Backend`, `Frontend E2E`) / Required linear history / Require conversation resolution / Web commit signoff / Restrict force pushes / Required reviewers: 1 | Critical |
 | 1-3 | Settings → Environments → `production` を作成。Required reviewers = @genzouw、wait timer 5〜10 分、prod 系 Secret (`CLOUDFLARE_*`, `ADMIN_*`, `OPERATOR_EMAILS`, `DOGFOODING_EMAILS`) を environment-scoped に移動                                          | Critical |
 | 1-4 | Settings → Actions → General: Workflow permissions = `Read repository contents`、`Allow GitHub Actions to create and approve pull requests` = OFF、Fork PR workflows = `Require approval for all outside collaborators`                                     | High     |
@@ -100,7 +100,7 @@
 | #   | 項目                                                                                    |
 | --- | --------------------------------------------------------------------------------------- |
 | 3-1 | 月次の WIF / IAM 棚卸しを Routine 化（`/schedule` で cron 化候補）                      |
-| 3-2 | Dependabot の `dependency-type: all` を `direct` に絞る検討（前回 H-2 一部対応）        |
+| 3-2 | Renovate の更新対象（`lockFileMaintenance` による推移的依存を含む）を直接依存に絞る検討 |
 | 3-3 | Issue / PR templates、CONTRIBUTING.md、CoC 整備（公開後のスパム・低品質 PR 対応）       |
 | 3-4 | Audit log（GitHub / GCP / Cloudflare / Neon）を定期確認するスクリプト or ダッシュボード |
 
@@ -116,15 +116,15 @@
 
 ## 6. 想定される攻撃シナリオと封じ込め対応
 
-| シナリオ                                                                 | 主な対策項目                                            |
-| ------------------------------------------------------------------------ | ------------------------------------------------------- |
-| 供給網攻撃（compromised Action）→ OIDC / Cloudflare Token 奪取           | 全 SHA pin + 1-5                                        |
-| Dependabot 自動 PR で typosquat / dep-confusion を仕込まれて main マージ | 1-2, 1-3, 3-2                                           |
-| fork PR からの secret 奪取                                               | 1-4, pull_request_target 不使用（確認済）               |
-| 公開後の DDoS / マイニング濫用で高額請求                                 | 0-8, Cloud Run max-instances, Cloudflare Bot Fight Mode |
-| DB ダンプ流出時の LINE 全テナント乗っ取り                                | 0-3（LINE 暗号化）                                      |
-| subdomain takeover（古い DNS レコード）                                  | 2-5                                                     |
-| 公開リポジトリから個人 Gmail を特定 → フィッシング                       | 前回 H-3（対応済）, 0-9                                 |
+| シナリオ                                                                     | 主な対策項目                                            |
+| ---------------------------------------------------------------------------- | ------------------------------------------------------- |
+| 供給網攻撃（compromised Action）→ OIDC / Cloudflare Token 奪取               | 全 SHA pin + 1-5                                        |
+| Renovate の依存更新 PR で typosquat / dep-confusion を仕込まれて main マージ | 1-2, 1-3, 3-2                                           |
+| fork PR からの secret 奪取                                                   | 1-4, pull_request_target 不使用（確認済）               |
+| 公開後の DDoS / マイニング濫用で高額請求                                     | 0-8, Cloud Run max-instances, Cloudflare Bot Fight Mode |
+| DB ダンプ流出時の LINE 全テナント乗っ取り                                    | 0-3（LINE 暗号化）                                      |
+| subdomain takeover（古い DNS レコード）                                      | 2-5                                                     |
+| 公開リポジトリから個人 Gmail を特定 → フィッシング                           | 前回 H-3（対応済）, 0-9                                 |
 
 ---
 
@@ -168,6 +168,7 @@ GitHub リポジトリは一度 Public にすると、その瞬間に world-read
    ```
 
    apply 後に `gcloud iam workload-identity-pools providers describe github-provider --location=global --workload-identity-pool=github-pool --project=$GCP_PROJECT_ID` で `attributeCondition` が `assertion.repository == "$GITHUB_REPOSITORY" && assertion.ref == 'refs/heads/main'` になっていること、SA Binding の principalSet にも `:ref:refs/heads/main` が含まれていることを確認。
+
 2. **0-2 Cloudflare Token 縮小**: 上記メモ参照。新規 Token 発行後に `gh secret set CLOUDFLARE_API_TOKEN < /path/to/new-token` で置換。
 3. **0-8 課金アラート**: 上記メモ参照。最低でも GCP の月額予算アラートは公開化前に必須。
 4. **0-9 SPF/DMARC**: 上記メモ参照。SPF 未設定はなりすまし送信に悪用される恐れあり。まず `dig TXT YOUR_DOMAIN` で既存の TXT レコードを確認し、`toique.pages.dev.` のような不正な値が含まれている場合は DNS 管理画面で **削除または置換** してから `v=spf1 include:_spf.resend.com -all` を追加すること（複数の SPF TXT レコードが存在すると SPF 検証が失敗する）。
