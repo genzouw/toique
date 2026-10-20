@@ -28,7 +28,7 @@
 
 前回未対応 + 新規観点:
 
-1. **GitHub Repository 設定**: Secret scanning / Push protection / Private vulnerability reporting / CodeQL default setup / Dependabot security updates / Branch protection / Environments `production` + reviewers / Actions の workflow permissions
+1. **GitHub Repository 設定**: Secret scanning / Push protection / Private vulnerability reporting / CodeQL default setup / Dependabot alerts（security updates は無効）/ Branch protection / Environments `production` + reviewers / Actions の workflow permissions
 2. **Cloudflare**: `CLOUDFLARE_API_TOKEN` を Pages:Edit + 単一プロジェクトに縮小、WAF / Bot Fight Mode / Rate Limiting / subdomain takeover
 3. **GCP**: WIF の **本番 apply** 実機確認、課金アラート、Cloud Armor、GCS versioning + retention lock、Audit Logs
 4. **Neon**: IP allowlist、不要 branch/role 削除、最小権限
