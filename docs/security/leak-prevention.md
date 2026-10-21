@@ -229,5 +229,7 @@ _現時点で無効化・縮退している監査ワークフローはありま�
 
 依存パッケージを通じた脆弱性リスクやサプライチェーン攻撃によるシークレット漏洩・環境変数の流出を防ぐため、`.github/dependabot.yml` を利用してパッケージの定期監査を導入しています。
 
-- ルート、`frontend`、`backend`、`infra` ディレクトリの `npm` パッケージ、およびルートの `github-actions` を対象に、週次で監査を実行します。
-- Renovate が既にバージョン更新のプルリクエストを自動作成しているため、Dependabot は `open-pull-requests-limit: 0` と設定し、依存関係の更新PRが重複しないようにしています。これにより、**GitHub ネイティブの Dependabot セキュリティアラート（Security alerts）機能のみを有効化し、リポジトリ全体の監視** を実現しています。
+- ルート、`frontend`、`backend`、`infra` ディレクトリの `npm` パッケージを `.github/dependabot.yml` の対象にしています。`schedule.interval: weekly` はバージョン更新の確認頻度を指定する設定で、脆弱性検知の周期ではありません。`open-pull-requests-limit: 0` のため、バージョン更新 PR は作成されません。
+- Dependabot alerts はリポジトリ設定（Settings > Advanced Security）で別途有効化が必要です。`dependabot.yml` を置いても有効にはなりません。既存の週次スキャナー（CodeQL・OSV-Scanner など）とは別の機能です。
+- GitHub Actions の `uses:` はコミット SHA で固定しており、Dependabot alerts の対象外です。更新確認は `.github/renovate.json` の `helpers:pinGitHubActionDigests` による Renovate の digest 更新で行います。
+- Renovate が既にバージョン更新のプルリクエストを自動作成しているため、更新 PR が重複しないよう Dependabot は上記のとおり PR 作成数を 0 にしています。Dependabot の対象は npm 依存関係に限ります。
