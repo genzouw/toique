@@ -25,7 +25,7 @@
    - **Dependabot の方針:** 依存更新は `Renovate` に一本化し、Dependabot は次の 3 点に限ります。
      - Dependabot alerts は有効のままにします。アラートを表示するだけで PR は作らないため、`Renovate` と重なりません。`Renovate` の `vulnerabilityAlerts` も Dependabot alerts を入力にするため、無効にすると脆弱性修正 PR も作られなくなります。
      - Dependabot security updates は無効にします。`Renovate` の `vulnerabilityAlerts` と脆弱性修正 PR が重複するためです。
-     - `dependabot.yml` は置きません。`open-pull-requests-limit: 0` にしても security updates には効かず、アラートにも影響しないためです。
+     - `.github/dependabot.yml` は npm 4 ディレクトリを対象に `open-pull-requests-limit: 0` で置きます。バージョン更新 PR は作らず、Renovate と重複しません。この設定は security updates の PR 作成には効かないため、security updates は上記のとおりリポジトリ設定で無効にします。詳細は後述の「パッケージの定期スキャン (Dependabot)」を参照してください。
    - **pre-commit フックの定期更新:** 週次の `pre-commit-autoupdate.yml` により、ローカル検知ツール `gitleaks` と `trufflehog` のバージョンを自動更新する更新候補PRを作成します。ワークフローはフックを直接更新するわけではなく、レビュー・CI確認・マージが完了して初めてローカル検知ツールのバージョンが更新されます。なお **`detect-secrets` は自動更新の対象外（手動更新）** です。`detect-secrets` の版は `.pre-commit-config.yaml` の `rev` だけでなく `.secrets.baseline`（`"version"`）、`.husky/pre-commit`（バージョン不一致時はハードフェイル）、`package.json`（`detect-secrets:update`）、および本ドキュメントにも固定されており、`rev` だけを上げるとフォールバック経路のエントロピースキャンが停止します。更新する場合は上記すべてを揃えて変更し、`bun run detect-secrets:update` でベースラインを再生成してください。`trufflehog` も `--freeze` により 40 桁 SHA へ書き換わるため、`gitleaks` と同様に生成 PR で `detect-secrets` が落ちます（下記「gitleaks のバージョン管理」の補足を参照）。
 
 4. **エディタによる保存時整形・表示除外・保存時検知 (Editor)**
@@ -224,3 +224,12 @@ CI ランナーにシークレットが渡る前にブロックされるため�
 監査ワークフローを無効化・縮退させた場合は、上記「運用ルール」に従ってここへ追記します。
 
 _現時点で無効化・縮退している監査ワークフローはありません。_
+
+### パッケージの定期スキャン (Dependabot)
+
+依存パッケージを通じた脆弱性リスクやサプライチェーン攻撃によるシークレット漏洩・環境変数の流出を防ぐため、`.github/dependabot.yml` を利用してパッケージの定期監査を導入しています。
+
+- ルート、`frontend`、`backend`、`infra` ディレクトリの `npm` パッケージを `.github/dependabot.yml` の対象にしています。`schedule.interval: weekly` はバージョン更新の確認頻度を指定する設定で、脆弱性検知の周期ではありません。`open-pull-requests-limit: 0` のため、バージョン更新 PR は作成されません。
+- Dependabot alerts はリポジトリ設定（Settings > Advanced Security）で別途有効化が必要です。`dependabot.yml` を置いても有効にはなりません。既存の週次スキャナー（CodeQL・OSV-Scanner など）とは別の機能です。
+- GitHub Actions の `uses:` はコミット SHA で固定しており、Dependabot alerts の対象外です。更新確認は `.github/renovate.json` の `helpers:pinGitHubActionDigests` による Renovate の digest 更新で行います。
+- Renovate が既にバージョン更新のプルリクエストを自動作成しているため、更新 PR が重複しないよう Dependabot は上記のとおり PR 作成数を 0 にしています。Dependabot の対象は npm 依存関係に限ります。
