@@ -1,7 +1,7 @@
 # /// script
 # requires-python = ">=3.10"
 # dependencies = [
-#   "ddgs==9.16.0",
+#   "duckduckgo-search",
 #   "requests==2.34.2",
 # ]
 # ///
@@ -11,7 +11,7 @@ import re
 import sys
 
 import requests
-from ddgs import DDGS
+from duckduckgo_search import DDGS
 
 
 # 投稿済みコメントの識別用マーカー。同じ Issue への重複投稿を防ぐ（冪等化）。
@@ -110,7 +110,13 @@ def main():
     print(f"トピックを調査中: {issue_title}")
 
     try:
-        results = DDGS().text(issue_title, backend="duckduckgo", max_results=5)
+        old_stderr = sys.stderr
+        sys.stderr = open(os.devnull, 'w')
+        try:
+            results = DDGS().text(issue_title, backend="duckduckgo", max_results=5)
+        finally:
+            sys.stderr.close()
+            sys.stderr = old_stderr
     except Exception as e:
         fail(f"Web 検索に失敗しました (レート制限や仕様変更の可能性があります): {e}")
 
