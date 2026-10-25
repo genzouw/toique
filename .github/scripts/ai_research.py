@@ -9,9 +9,15 @@
 import os
 import re
 import sys
+import warnings
 
 import requests
-from ddgs import DDGS
+
+# ddgs 由来の RuntimeWarning だけを抑制する。発生箇所が初期化中でも検索中でも効き、
+# stderr を差し替えないため本物のエラー出力は残る。警告全文は未確認のため message では絞らない
+warnings.filterwarnings("ignore", category=RuntimeWarning, module=r"ddgs(\..*)?")
+
+from ddgs import DDGS  # noqa: E402
 
 
 # 投稿済みコメントの識別用マーカー。同じ Issue への重複投稿を防ぐ（冪等化）。
