@@ -298,7 +298,7 @@ jobs:
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }} # free-policy: allow Cloudflare Pages の Free プランの範囲で、課金 API ではない (TASK-54, 人間確認済み)
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          # wrangler v4 は Node 22+ 必須。bun 1.4.3 (setup-bun 参照) の process.version は
+          # wrangler v4 は Node 22+ 必須。bun 1.4.4 (setup-bun 参照) の process.version は
           # v26.3.0 であり要件を満たすため v4 へ引き上げ済み (#726)。
           wranglerVersion: '4'
           command: pages deploy frontend/dist --project-name ${{ env.CF_PAGES_PROJECT }} --commit-dirty=true --commit-hash=${{ github.sha }} --commit-message="Deploy ${{ github.sha }}"
