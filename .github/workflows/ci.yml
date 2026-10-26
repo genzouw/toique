@@ -93,7 +93,7 @@ jobs:
           persist-credentials: false
       - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
         with:
-          bun-version: 1.4.3
+          bun-version: 1.4.4
       - name: Run fail-on-sensitive-file.mjs regression test
         run: bun test scripts/fail-on-sensitive-file.test.mjs
       - name: Run normalize-pr-title.mjs regression test
@@ -156,7 +156,7 @@ jobs:
           node-version: '24'
       - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
         with:
-          bun-version: 1.4.3
+          bun-version: 1.4.4
       - name: Install dependencies
         working-directory: frontend
         run: bun install --frozen-lockfile
