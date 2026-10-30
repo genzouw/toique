@@ -24,4 +24,4 @@ permissions:
 
 jobs:
   renovate-config-validator:
-    uses: genzouw/ci-workflows/.github/workflows/renovate-config-validator.yml@53cba8e406f2414200c290a21c3e560e600f3fab # v1.5.31
+    uses: genzouw/ci-workflows/.github/workflows/renovate-config-validator.yml@3410dbf4dcb4b4f6a85e13aefacda954ef5177b3 # v1.5.36
