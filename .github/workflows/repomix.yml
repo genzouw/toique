@@ -43,6 +43,7 @@ jobs:
           # 差分を取得できない場合・バイナリを含む場合・リネームを含む場合は、
           # スキップせず通常実行へ進める（リネームは行数が 0 でもファイルパスが変わるため）。
           if [ "$EVENT_NAME" = "pull_request" ]; then
+            git fetch origin "$BASE_REF"
             if numstat=$(git diff --numstat "origin/${BASE_REF}...HEAD") \
               && nameStatus=$(git diff --name-status "origin/${BASE_REF}...HEAD") \
               && counts=$(git diff -U0 "origin/${BASE_REF}...HEAD" | awk '

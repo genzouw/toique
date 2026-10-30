@@ -1,7 +1,7 @@
 # /// script
 # requires-python = ">=3.10"
 # dependencies = [
-#   "ddgs==9.16.0",
+#   "duckduckgo-search==7.2.1",
 #   "requests==2.34.2",
 # ]
 # ///
@@ -9,15 +9,17 @@
 import os
 import re
 import sys
-import warnings
 
 import requests
 
-# ddgs 由来の RuntimeWarning だけを抑制する。発生箇所が初期化中でも検索中でも効き、
-# stderr を差し替えないため本物のエラー出力は残る。警告全文は未確認のため message では絞らない
-warnings.filterwarnings("ignore", category=RuntimeWarning, module=r"ddgs(\..*)?")
-
-from ddgs import DDGS  # noqa: E402
+# DDGS 初期化時に発生する RuntimeWarning を抑制するため、一時的に sys.stderr を無効化する
+original_stderr = sys.stderr
+with open(os.devnull, 'w') as devnull:
+    sys.stderr = devnull
+    try:
+        from duckduckgo_search import DDGS
+    finally:
+        sys.stderr = original_stderr
 
 
 # 投稿済みコメントの識別用マーカー。同じ Issue への重複投稿を防ぐ（冪等化）。
@@ -116,7 +118,16 @@ def main():
     print(f"トピックを調査中: {issue_title}")
 
     try:
-        results = DDGS().text(issue_title, backend="duckduckgo", max_results=5)
+        # DDGS 初期化時の RuntimeWarning 抑制
+        original_stderr = sys.stderr
+        with open(os.devnull, 'w') as devnull:
+            sys.stderr = devnull
+            try:
+                ddgs = DDGS()
+            finally:
+                sys.stderr = original_stderr
+
+        results = ddgs.text(issue_title, backend="duckduckgo", max_results=5)
     except Exception as e:
         fail(f"Web 検索に失敗しました (レート制限や仕様変更の可能性があります): {e}")
 
