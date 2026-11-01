@@ -6,7 +6,12 @@ import account from './account';
 import security from './security';
 
 export type FaqCategorySlug =
-  'pricing' | 'line-setup' | 'forms' | 'data' | 'account' | 'security';
+  | 'pricing'
+  | 'line-setup'
+  | 'forms'
+  | 'data'
+  | 'account'
+  | 'security';
 
 export interface FaqCategory {
   slug: FaqCategorySlug;
