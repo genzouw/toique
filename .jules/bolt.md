@@ -1,3 +1,0 @@
-## 2024-05-15 - React.memo without useMemo
-**Learning:** `React.memo` on row components (like `MessageRow`) only prevents re-renders if the list itself is memoized or the parent component doesn't re-render with new array references. If the `items` array is mapped directly in JSX without `useMemo`, changes to other state (like `loading` or `error` in `Messages.tsx`) can cause O(N) element recreation despite `React.memo`.
-**Action:** When mapping over lists to render memoized children, always wrap the `items.map(...)` block in `useMemo` so that the React elements themselves are preserved across unrelated parent state changes, ensuring true O(1) updates.
