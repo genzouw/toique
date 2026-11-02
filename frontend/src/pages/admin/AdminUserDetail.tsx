@@ -6,6 +6,7 @@ import {
   api,
   type AdminUserDetail as AdminUserDetailType,
 } from '../../lib/api';
+import { ICON_SIZE } from '../../lib/icon-size';
 
 export default function AdminUserDetail() {
   const { id } = useParams<{ id: string }>();
@@ -39,9 +40,9 @@ export default function AdminUserDetail() {
       <div>
         <Link
           to="/admin/users"
-          className="inline-flex items-center gap-1 text-sm text-slate-600 hover:text-slate-900"
+          className="inline-flex items-center gap-1 text-sm text-slate-600 hover:text-slate-900 focus-ring rounded-sm transition-colors"
         >
-          <ArrowLeft size={14} aria-hidden="true" />
+          <ArrowLeft size={ICON_SIZE.sm} aria-hidden="true" />
           一覧へ戻る
         </Link>
       </div>

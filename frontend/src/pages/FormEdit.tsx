@@ -291,7 +291,7 @@ export default function FormEdit() {
     <div>
       <Link
         to="/forms"
-        className="inline-flex items-center gap-1 text-sm text-slate-600 hover:text-slate-900"
+        className="inline-flex items-center gap-1 text-sm text-slate-600 hover:text-slate-900 focus-ring rounded-sm transition-colors"
       >
         <ChevronLeft size={ICON_SIZE.sm} aria-hidden="true" />
         フォーム一覧に戻る
