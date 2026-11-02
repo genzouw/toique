@@ -23,4 +23,4 @@ permissions:
 jobs:
   trivy:
     if: github.event_name == 'push' || github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' || (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name != github.repository)
-    uses: genzouw/ci-workflows/.github/workflows/trivy.yml@25ce2b74e74716ecbb102b34a6179dc43d804811 # v1.5.41
+    uses: genzouw/ci-workflows/.github/workflows/trivy.yml@cc441eafc266a41df7c90dce5b434f2c8769cb66 # v1.5.43
