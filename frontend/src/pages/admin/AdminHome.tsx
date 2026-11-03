@@ -20,7 +20,7 @@ export default function AdminHome() {
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <Link
           to="/admin/contacts"
-          className="block bg-white border border-slate-200 rounded-lg p-5 hover:border-slate-400 hover:shadow-sm transition"
+          className="block bg-white border border-slate-200 rounded-lg p-5 hover:border-slate-400 hover:shadow-sm focus-ring transition"
         >
           <div className="flex items-center gap-2 text-slate-900 font-semibold">
             <Inbox size={ICON_SIZE.lg} aria-hidden="true" />
@@ -32,7 +32,7 @@ export default function AdminHome() {
         </Link>
         <Link
           to="/admin/users"
-          className="block bg-white border border-slate-200 rounded-lg p-5 hover:border-slate-400 hover:shadow-sm transition"
+          className="block bg-white border border-slate-200 rounded-lg p-5 hover:border-slate-400 hover:shadow-sm focus-ring transition"
         >
           <div className="flex items-center gap-2 text-slate-900 font-semibold">
             <Users size={ICON_SIZE.lg} aria-hidden="true" />

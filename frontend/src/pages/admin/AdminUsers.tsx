@@ -92,7 +92,7 @@ const AdminUserRow = memo(function AdminUserRow({
       <td className="px-4 py-2">
         <Link
           to={`/admin/users/${row.id}`}
-          className="text-slate-900 hover:underline"
+          className="text-slate-900 hover:underline focus-ring rounded-sm transition-colors"
         >
           {row.name}
         </Link>
