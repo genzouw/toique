@@ -84,11 +84,7 @@ export type Submission = {
 };
 
 export type ContactCategory =
-  | 'bug'
-  | 'feature'
-  | 'pricing'
-  | 'consultation'
-  | 'other';
+  'bug' | 'feature' | 'pricing' | 'consultation' | 'other';
 
 export type ContactStatus = 'new' | 'in_review' | 'done';
 
