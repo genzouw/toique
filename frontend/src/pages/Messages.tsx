@@ -1,4 +1,4 @@
-import { useEffect, useState, memo } from 'react';
+import { useEffect, useState, memo, useMemo } from 'react';
 import { MessageSquare, RefreshCw } from 'lucide-react';
 import { formatDate } from '../lib/format-date';
 import { api, type InboundMessageListItem } from '../lib/api';
@@ -27,6 +27,12 @@ export default function Messages() {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     refresh();
   }, []);
+
+  // ⚡ Bolt: items.map を useMemo でラップし、error などの他 state が
+  // 変わった際の不要な O(N) 再計算と React 要素生成を防ぎます。
+  const messageRows = useMemo(() => {
+    return items.map((m) => <MessageRow key={m.id} message={m} />);
+  }, [items]);
 
   return (
     <div>
@@ -65,11 +71,7 @@ export default function Messages() {
                 <th className="text-left px-4 py-2 font-medium">テキスト</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-200">
-              {items.map((m) => (
-                <MessageRow key={m.id} message={m} />
-              ))}
-            </tbody>
+            <tbody className="divide-y divide-slate-200">{messageRows}</tbody>
           </table>
         )}
       </div>
