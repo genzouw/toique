@@ -1,4 +1,4 @@
-import { useEffect, useState, memo, useMemo } from 'react';
+import { useEffect, useState, memo } from 'react';
 import { Link } from 'react-router';
 import { Plus, FileText } from 'lucide-react';
 import { api, type FormListItem } from '../lib/api';
@@ -71,12 +71,6 @@ export default function Forms() {
     })();
   }, []);
 
-  // ⚡ Bolt: items.map を useMemo でラップし、error などの他 state が
-  // 変わった際の不要な O(N) 再計算と React 要素生成を防ぎます。
-  const formRows = useMemo(() => {
-    return items.map((form) => <FormListItemRow key={form.id} form={form} />);
-  }, [items]);
-
   return (
     <div>
       <div className="flex items-center justify-between">
@@ -116,7 +110,11 @@ export default function Forms() {
             }
           />
         ) : (
-          <ul className="divide-y divide-slate-200">{formRows}</ul>
+          <ul className="divide-y divide-slate-200">
+            {items.map((form) => (
+              <FormListItemRow key={form.id} form={form} />
+            ))}
+          </ul>
         )}
       </div>
     </div>
