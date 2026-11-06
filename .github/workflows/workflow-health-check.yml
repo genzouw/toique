@@ -21,9 +21,9 @@ concurrency:
   cancel-in-progress: false
 
 permissions:
-  # 本 workflow は `gh api` + `$RUNNER_TEMP` のみ使い、checkout したリポジトリの
-  # ローカルファイルは一切参照しないため `contents` は不要 (最小権限の原則)。
+  # 本 workflow は `gh api` + `$RUNNER_TEMP` のみ使い、checkout はしない。
   actions: read # 各 workflow の直近 run を GitHub API で集計するため
+  contents: read # 既定ブランチに workflow ファイルが残っているかを contents API で確認するため
   issues: write # 検知結果を追跡 issue として作成・コメント追記するため
 
 jobs:
@@ -54,7 +54,16 @@ jobs:
 
           # アクティブな workflow 一覧 (disabled は除く) を取得
           workflows_json=$(gh api "repos/${GH_REPO}/actions/workflows?per_page=100")
-          mapfile -t workflow_ids < <(echo "$workflows_json" | jq -r '.workflows[] | select(.state=="active") | .id')
+          # ファイルを削除した workflow も、過去の run が残る限り API 上は state=active のまま返る。
+          # 撤去済みの workflow の古い失敗を検出し続けないよう、既定ブランチに
+          # ファイルが存在するものだけを対象にする。`dynamic/` で始まる GitHub 管理の
+          # workflow (Dependabot / CodeQL default setup) はファイルを持たないため対象に残す。
+          existing_paths_json=$(gh api "repos/${GH_REPO}/contents/.github/workflows" --jq '[.[].path]')
+          mapfile -t workflow_ids < <(echo "$workflows_json" | jq -r --argjson existing "$existing_paths_json" '
+            .workflows[]
+            | select(.state=="active")
+            | select((.path | startswith(".github/workflows/") | not) or (.path as $p | $existing | index($p)))
+            | .id')
 
           report_file="$RUNNER_TEMP/health-report.md"
           : > "$report_file"
@@ -157,5 +166,5 @@ jobs:
             gh issue create \
               --title "$TRACKING_ISSUE_TITLE" \
               --body-file "$body_file" \
-              --label "ci,bug"
+              --label "bug"
           fi
