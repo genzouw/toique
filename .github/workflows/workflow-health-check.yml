@@ -166,5 +166,5 @@ jobs:
             gh issue create \
               --title "$TRACKING_ISSUE_TITLE" \
               --body-file "$body_file" \
-              --label "github-actions,bug"
+              --label "bug"
           fi
