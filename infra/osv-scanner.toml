@@ -61,8 +61,8 @@ ecosystem = "npm"
 vulnerability.ignore = true
 reason = "infra の transitive dependency。開発ツールのみで利用し、プロダクション環境には影響しない。親パッケージの更新待ち。2026-12-17 に再評価すること。"
 
-# sprintf-js 1.0.3 (infra/package-lock.json 経由) — GHSA-hp3w-g68c-fv3c
+# deepmerge 4.3.1 (infra/package-lock.json 経由) — GHSA-gcqx-w48m-w2h4 (Prototype Poisoning)
 [[IgnoredVulns]]
-id = "GHSA-hp3w-g68c-fv3c"
+id = "GHSA-gcqx-w48m-w2h4"
 ignoreUntil = 2026-12-17
-reason = "infra の transitive dependency (js-yaml 3.x -> argparse 経由)。修正版が未公開で、開発ツールのみで利用しプロダクション環境には影響しない。親パッケージの更新待ち。"
+reason = "infra の devDependency (jest -> jest-config 経由)。4.3.1 が最新で修正版が未公開。テスト実行時の設定マージにのみ使われ、プロダクション環境には影響しない。親パッケージの更新待ち。"
