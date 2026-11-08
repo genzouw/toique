@@ -5,7 +5,7 @@ if (!process.env.STRIPE_SECRET_KEY) {
 }
 
 export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY ?? '', {
-  apiVersion: '2026-09-30.endive',
+  apiVersion: '2026-10-28.endive',
 });
 
 if (!process.env.STRIPE_PRO_PRICE_ID) {
