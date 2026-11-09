@@ -40,6 +40,9 @@ jobs:
           set -euo pipefail
           DATE=$(date -u +'%Y-%m-%d')
           TITLE="Latest Generative AI Trends (${DATE})"
+          # research ラベルが無いと gh issue create が "could not add label" で失敗する。
+          # 手動作成に頼らず、ここで冪等に用意する (既存なら説明と色を上書きするだけ)。
+          gh label create research --description 'AI リサーチ対象' --color 0E8A16 --force
           # 同日タイトルの Issue が既にあれば再利用し、重複作成しない。
           NUMBER=$(gh issue list --label research --state all --search "\"${TITLE}\" in:title" \
             --json number,title --jq "map(select(.title == \"${TITLE}\")) | first | .number // empty")
