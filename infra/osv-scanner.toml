@@ -3,6 +3,10 @@
 # 検出された脆弱性のうち、即時対応が難しい transitive dependency を期限付きで許容する。
 # 期限到来後は再評価し、依存パッケージのアップデート可否を確認すること。
 #
+# この設定は同じディレクトリの infra/package-lock.json にだけ適用される
+# (.github/workflows/osv-scanner.yml が --config を渡さないため)。
+# 他の lockfile で除外が必要になったら、その lockfile と同じディレクトリに osv-scanner.toml を置くこと。
+#
 # 参考: https://google.github.io/osv-scanner/configuration/
 
 # brace-expansion 2.0.1 (cdktf -> archiver 経由) — GHSA-f886-m6hf-6m8v, GHSA-v6h2-p8h4-qcjw (ReDoS)

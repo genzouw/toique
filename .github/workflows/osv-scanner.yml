@@ -21,6 +21,10 @@ concurrency:
 permissions:
   contents: read
 
+# 各スキャンに --config を渡さない。--config を指定すると、その設定が全 lockfile に適用される。
+# 省略すると、OSV-Scanner は lockfile と同じディレクトリの osv-scanner.toml だけを読む。
+# これにより infra/osv-scanner.toml の除外は infra/package-lock.json だけに効く。
+# 参考: https://google.github.io/osv-scanner/configuration/
 jobs:
   osv-scanner:
     name: Scan for vulnerabilities (OSV-Scanner)
@@ -48,7 +52,6 @@ jobs:
         with:
           scan-args: |-
             -r
-            --config=infra/osv-scanner.toml
             --format=table
             ./
 
@@ -57,7 +60,6 @@ jobs:
         with:
           scan-args: |-
             -r
-            --config=infra/osv-scanner.toml
             --format=sarif
             --output=results.sarif
             ./
@@ -105,7 +107,6 @@ jobs:
             --format=json
             --output=old-results.json
             -r
-            --config=infra/osv-scanner.toml
             ./
 
       - name: Checkout current branch
@@ -121,7 +122,6 @@ jobs:
             --format=json
             --output=new-results.json
             -r
-            --config=infra/osv-scanner.toml
             ./
 
       # osv-scanner は脆弱性を検出したときもスキャン自体が失敗したときも非 0 で終わる。
