@@ -15,14 +15,12 @@
   "minimumReleaseAgeBehaviour": "timestamp-optional",
   "pre-commit": {
     "description": [
-      "pre-commit manager は無効にする。",
-      ".pre-commit-config.yaml の rev 更新は .github/workflows/pre-commit-autoupdate.yml が",
-      "deny-list 運用で行っており、Renovate を有効にすると同じ rev に対して二重に更新がかかる。",
-      "とくに detect-secrets は .secrets.baseline / .husky/pre-commit / package.json にも",
-      "版が固定されており、rev だけを上げるとフォールバック経路が動かなくなるため、",
-      "当該ワークフローが意図的に対象外にしている。"
+      ".pre-commit-config.yaml の rev を Renovate で更新する (pre-commit manager は既定で無効のため明示的に有効にする)。",
+      "Renovate が SHA ピンを解釈するのは `rev: <40桁 SHA> # frozen: <タグ>` の書式だけなので、各 rev 行はこの書式で書く。",
+      "40 桁 SHA は detect-secrets に Hex High Entropy String として検知されるため、各 rev 行の末尾に",
+      "`# pragma: allowlist secret` を付け、rev を更新しても .secrets.baseline の再生成を要さないようにしている。"
     ],
-    "enabled": false
+    "enabled": true
   },
   "lockFileMaintenance": {
     "description": [
@@ -403,6 +401,65 @@
       "automerge": true,
       "platformAutomerge": true,
       "automergeStrategy": "squash"
+    },
+    {
+      "description": [
+        "detect-secrets は rev のほかに .secrets.baseline (version)・.husky/pre-commit・package.json (detect-secrets:update)・",
+        "docs/security/leak-prevention.md にも版が固定されている。rev だけを上げるとフォールバック経路が版の不一致で実行を拒否し、",
+        "エントロピースキャンが止まるため、Renovate の対象外にして手動で更新する。"
+      ],
+      "matchManagers": [
+        "pre-commit"
+      ],
+      "matchPackageNames": [
+        "Yelp/detect-secrets"
+      ],
+      "enabled": false
+    },
+    {
+      "description": [
+        "gitleaks のローカルフックの版は .pre-commit-config.yaml の rev と .husky/pre-commit の GITLEAKS_VERSION の 2 か所にある。",
+        "別々の PR に分かれて片方だけマージされると、pre-commit framework の有無で別の版が走るため、1 本の PR にまとめる。"
+      ],
+      "matchPackageNames": [
+        "gitleaks/gitleaks"
+      ],
+      "matchManagers": [
+        "pre-commit",
+        "custom.regex"
+      ],
+      "groupName": "gitleaks (local hooks)"
+    },
+    {
+      "description": [
+        "ローカルの検知フックの更新は自動マージしない。CI には .pre-commit-config.yaml でフックを実行するジョブが無く、",
+        "フックのビルド失敗や .gitleaks.toml との非互換は CI が緑でも検出されない。",
+        "マージ前に手元で pre-commit install-hooks と pre-commit run --all-files を実行して確かめる。",
+        "上の automerge のルールより後に置き、そちらを上書きする。"
+      ],
+      "matchManagers": [
+        "pre-commit",
+        "custom.regex"
+      ],
+      "automerge": false
+    }
+  ],
+  "customManagers": [
+    {
+      "customType": "regex",
+      "description": [
+        ".husky/pre-commit の GITLEAKS_VERSION (pre-commit framework が無い環境のフォールバック) を更新する。",
+        ".pre-commit-config.yaml の gitleaks の rev と同じ版にそろえる必要があるため、下の packageRules の groupName で 1 本の PR にまとめる。"
+      ],
+      "managerFilePatterns": [
+        "/^\\.husky/pre-commit$/"
+      ],
+      "matchStrings": [
+        "GITLEAKS_VERSION=\"(?<currentValue>\\d+\\.\\d+\\.\\d+)\""
+      ],
+      "depNameTemplate": "gitleaks/gitleaks",
+      "datasourceTemplate": "github-releases",
+      "extractVersionTemplate": "^v(?<version>.+)$"
     }
   ]
 }
