@@ -12,6 +12,8 @@
 - **禁止**: 上記キーを `secrets.*` から参照するワークフロー / 設定ファイルの追加、およびその登録手順のドキュメント化 (セットアップ手順書 / README / PR テンプレートへの追記を含む)。「PR 自体は Secret を登録していない」「設定方法を書いただけ」という理屈での回避も禁止です。
 - **禁止**: 「料金ページに Free tier があるから完全無料」という根拠づけ。無料枠の存在は完全無料の根拠になりません。
 - **禁止**: ローカル LLM (Ollama / llama.cpp 等) を CI の runner 上で動かす自動化の追加。API キー不要・完全無料であっても禁止です。開発者個人の端末で動かすことは対象外です。
+- **禁止**: 生成 AI の話題を Web 検索して Issue にコメントする AI トレンド調査のワークフロー (`scheduled-ai-trends.yml` / `ai-research.yml`) の再導入。本リポジトリで行う作業ではなく、2026-11 に撤去済みです ([#1044](https://github.com/genzouw/toique/issues/1044))。
+- **禁止**: Qodo Merge (旧 PR-Agent) の導入。恒久的な無料プランが無く、無料で使えるのは 14 日間のトライアルか、本リポジトリが条件 (star 200 以上) を満たさない審査制の [Qodo for Open Source](https://docs.qodo.ai/open-source-program) だけです。自己ホスト版の `The-PR-Agent/pr-agent` Action も LLM の API キーを必須とするため禁止です。
 - **許可**: 公開 OSS 向けに完全無料の GitHub Action / GitHub App、リポジトリ内で完結するスクリプト。
 - **許可**: 開発者個人のローカル環境で自分の負担で AI ツールを使うこと。禁止しているのは CI/CD への組み込みです。
 
