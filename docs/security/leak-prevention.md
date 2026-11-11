@@ -167,10 +167,10 @@ gh pr checks <PR番号>
 
 GitHub Actions の composite action はローカルの git hook から呼べないため、ローカル側は下記に版を持ちます。**2 箇所は必ず同じ版に揃えてください。** Renovate は両方を同じ PR（グループ `gitleaks (local hooks)`）で更新します。#1 は `.github/renovate.json` の `customManagers`、#2 は pre-commit manager が対象にしています。 `trufflehog` の版も `.pre-commit-config.yaml` の `rev` にあり、CI 側（`.github/workflows/trufflehog.yml` の `uses:` SHA ピン）とは別管理です。
 
-| #   | ファイル                  | 箇所                                                                                               | 用途                                                                                                                                      |
-| --- | ------------------------- | -------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
-| 1   | `.husky/pre-commit`       | `GITLEAKS_VERSION="<version>"`                                                                     | `pre-commit` framework が無い環境でのフォールバック。`${XDG_CACHE_HOME:-$HOME/.cache}/gitleaks/gitleaks-<version>` へ自動ダウンロードする |
-| 2   | `.pre-commit-config.yaml` | `repo: https://github.com/gitleaks/gitleaks` の `rev`（`# v<version>` コメント付きのコミット SHA） | `pre-commit` framework 経由での実行                                                                                                       |
+| #   | ファイル                  | 箇所                                                                                                                          | 用途                                                                                                                                      |
+| --- | ------------------------- | ----------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | `.husky/pre-commit`       | `GITLEAKS_VERSION="<version>"`                                                                                                | `pre-commit` framework が無い環境でのフォールバック。`${XDG_CACHE_HOME:-$HOME/.cache}/gitleaks/gitleaks-<version>` へ自動ダウンロードする |
+| 2   | `.pre-commit-config.yaml` | `repo: https://github.com/gitleaks/gitleaks` の `rev`（`# frozen: v<version> # pragma: allowlist secret` 付きのコミット SHA） | `pre-commit` framework 経由での実行                                                                                                       |
 
 補足:
 
