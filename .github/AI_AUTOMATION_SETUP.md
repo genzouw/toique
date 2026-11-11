@@ -51,7 +51,7 @@ GitHub Models は 2026-07-30 に playground・モデルカタログ・推論 API
 - `EXA_API_KEY` / `TAVILY_API_KEY` — 利用者が無くなったため、登録されている場合はリポジトリの Secrets から削除して構いません。
 - `PAT_FOR_MODELS` — 本リポジトリには**登録されていません**。「GitHub Models 用のトークンを削除するか残すか」という判断自体が対象不在で成立しません。
   - 確認範囲: Actions secrets / Dependabot secrets / Environment secrets の 3 面をそれぞれ API で確認済み（`gh api repos/genzouw/toique/actions/secrets`、`.../dependabot/secrets`、`.../environments`）。**User 所有リポジトリでも Environment secrets と Dependabot secrets は利用可能**なので、Actions secrets の結果だけでは未登録と断定できない点に注意してください。対象外となるのは Organization secrets の階層だけです（owner が User のため存在しません）。
-  - `PAT_FOR_AUTOMATION` を参照していた `pre-commit-autoupdate.yml` は撤去しました（`.pre-commit-config.yaml` の更新は Renovate に移管）。このトークンを使うワークフローは無いため、発行・登録は不要です。
+  - `PAT_FOR_AUTOMATION` を参照していた `pre-commit-autoupdate.yml` は撤去しました（`.pre-commit-config.yaml` の更新は Renovate に移管）。このワークフローは Actions の allow-list に `peter-evans/create-pull-request` が無いため、導入から撤去まですべての実行が `startup_failure` で終わり、トークン未登録の段階にも到達していませんでした。このトークンを使うワークフローは無いため、発行・登録は不要です。
 
 AI によるレビュー・トリアージの代替方針は第5節を参照してください。
 
