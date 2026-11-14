@@ -29,7 +29,7 @@
 ## AI・コーディング向け共通規約
 
 1. **言語とコメント**: ソースコード内のコメントや説明はすべて**日本語**で記述してください。
-2. **パッケージ管理**: npmやpnpmではなく、**Bun** (`bun install`, `bun run ...`) を使用してください。
+2. **パッケージ管理**: npmやpnpmではなく、**Bun** (`bun install`, `bun run ...`) を使用してください。例外は `infra/` のみで、`package-lock.json` で依存を固定しているため `npm ci` を使います（詳細は `AGENTS.md` §7）。
 3. **セキュリティとアクセス制御**:
    - `ADMIN_USERNAME` や `ADMIN_PASSWORD` など、ハードコードされた認証情報は避けてください。
    - バックエンドの API エンドポイントには、適切なミドルウェア（`requireOperator`, `requireTenant` など）で認可チェックを行ってください。
