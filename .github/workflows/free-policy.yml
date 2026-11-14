@@ -20,7 +20,7 @@ permissions:
 
 jobs:
   free-policy:
-    uses: genzouw/ci-workflows/.github/workflows/free-policy.yml@2b4424f48ed5bc8c69f68aaf1176c18de0122aac # v1.5.55
+    uses: genzouw/ci-workflows/.github/workflows/free-policy.yml@f4af31d26b2f64896f237cf760e9dfa214f13713 # v1.5.57
     with:
       # 課金を伴わないと確認できた Secret 名・変数名だけを許可する (根拠は導入 PR の本文を参照)。
       allowed_secrets: | # pragma: allowlist secret
