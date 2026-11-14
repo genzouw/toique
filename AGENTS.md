@@ -144,9 +144,9 @@ Issue では「なぜ既存の無料サービスでは目的を達成できな�
 
 ## 7. 本リポジトリ固有の注意事項
 
-- **パッケージマネージャ**: **Bun のみ**。`npm` / `yarn` / `pnpm` を CI や `package.json` の `scripts` に追加してはいけません (MUST NOT)。
-  - **依存のインストールで npm を使う例外は `infra/` のみ**: `infra/` は `package-lock.json` で依存を固定しており、`bun.lock` を持ちません。bun でインストールするとロックファイルによる固定と、`package.json` の入れ子の `overrides` が効かないため、CI では `npm ci` を使います (`.github/workflows/infra.yml` / `license-compliance.yml`)。`infra/` 以外の依存のインストールへ npm を広げてはいけません (MUST NOT)。
-  - **CI で単体の CLI ツールを一時的に実行する場合は対象外**: `npx <pkg>@<version>` / `npm install --global <pkg>@<version>` は、リポジトリの依存管理ではないため本項の対象外です (例: `repomix.yml` / `aislop.yml`)。ただしバージョンを固定することを条件とし、`@latest` やバージョン無指定は MUST NOT です。
+- **パッケージマネージャ**: **Bun のみ**。`npm` / `yarn` / `pnpm` を CI や `package.json` の `scripts` に追加してはいけません (MUST NOT)。例外は次の 2 つだけです。
+  - **`infra/` の依存管理**: `infra/` は `package-lock.json` で依存を固定しており、`bun.lock` を持ちません。bun ではロックファイルによる固定と `package.json` の入れ子の `overrides` が効かないため、`infra/` だけは npm で依存を入れ、その依存のコマンドを `npx` で呼びます (例: `npm ci` / `npx tsc`)。
+  - **CI での単体 CLI の一時実行**: リポジトリの依存に含まれないツールを `npx` / `npm install --global` で実行するときは、`<pkg>@<version>` の形でバージョンを固定します (MUST)。`@latest` やバージョン無指定は MUST NOT です。
 - **技術スタック**: バックエンド = Bun / Hono / Drizzle ORM / PostgreSQL 18、フロントエンド = React 19 / Vite / Tailwind CSS 4、認証 = better-auth、インフラ = Google Cloud (Cloud Run) / Cloudflare Pages / CDKTF。
 - **`.jules/` `.Jules/` はコミット禁止**: AI エージェントの作業用ディレクトリで、`.gitignore` と pre-commit の対象外設定で除外しています。PR に混入した場合は内容を修正するのではなく `git rm` で削除してください。
 - **GitHub Models の再導入は禁止**: 2026-07-30 に提供終了済みです。推論 API 自体が存在しないため、エンドポイントを差し替えても復旧しません。依存していたワークフロー 23 本は撤去済みです。
