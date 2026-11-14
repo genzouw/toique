@@ -17,6 +17,19 @@ const lineWebhookPayloadSchema = z.object({
   events: z.array(lineWebhookEventSchema),
 });
 
+async function processEvents(
+  channel: Channel,
+  events: LineWebhookPayload['events'],
+): Promise<void> {
+  for (const event of events) {
+    try {
+      await handleLineEvent(channel, event);
+    } catch (err) {
+      logger.error('[line-webhook] event handling failed', err);
+    }
+  }
+}
+
 const app = new Hono();
 
 app.post('/:channelId', lineSignature, async (c) => {
@@ -39,15 +52,11 @@ app.post('/:channelId', lineSignature, async (c) => {
   }
   const payload = result.data as LineWebhookPayload;
 
-  // 3秒ルール対策: 即座に200返却し、処理は非同期化
-  queueMicrotask(async () => {
-    for (const event of payload.events) {
-      try {
-        await handleLineEvent(channel, event);
-      } catch (err) {
-        logger.error('[line-webhook] event handling failed', err);
-      }
-    }
+  // 3秒ルール対策: 即座に200返却し、処理は非同期化。
+  // イベントごとの失敗は processEvents 内で捕捉してログに残すため、完了は待たない。
+  // 意図した投げっぱなしであることを void で明示する（no-misused-promises / no-floating-promises）。
+  queueMicrotask(() => {
+    void processEvents(channel, payload.events);
   });
 
   return c.json({ ok: true });
