@@ -1,0 +1,58 @@
+name: Infra (CDKTF)
+
+# infra/ の依存は Renovate・Dependabot の対象外で手動更新している。
+# 更新や main.ts の変更で型検査・synth が壊れていないかを PR 時点で確かめる。
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'infra/**'
+      - '.github/workflows/infra.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'infra/**'
+      - '.github/workflows/infra.yml'
+
+concurrency:
+  group: infra-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  infra:
+    name: Infra (typecheck / synth)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: infra
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+      CHECKPOINT_DISABLE: '1'
+      # synth 用のダミー値。GCP の認証には使わない (bin/cdktf は synth で認証を要求しない)
+      GCP_PROJECT_NUMBER: '123456789012'
+      TF_STATE_BUCKET: dummy-tf-state-bucket
+    steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@1d88384fd173af6ecb012dfd0264a306b711241a # v2.22.4
+        with:
+          egress-policy: audit
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      # infra は package-lock.json を採用した npm ワークスペースで bun.lock を持たない。
+      # bun install だと lockfile の固定と nested overrides が効かないため、
+      # license-compliance.yml と同じく infra だけ npm を使う。
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: '26'
+          cache: npm
+          cache-dependency-path: infra/package-lock.json
+      - name: Install dependencies
+        run: npm ci --no-audit --no-fund
+      - name: Typecheck
+        run: npx tsc --noEmit
+      - name: Synth
+        run: ./bin/cdktf synth
