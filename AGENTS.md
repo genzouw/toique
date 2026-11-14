@@ -145,6 +145,7 @@ Issue では「なぜ既存の無料サービスでは目的を達成できな�
 ## 7. 本リポジトリ固有の注意事項
 
 - **パッケージマネージャ**: **Bun のみ**。`npm` / `yarn` / `pnpm` を CI や `package.json` の `scripts` に追加してはいけません (MUST NOT)。
+  - **例外は `infra/` のみ**: `infra/` は `package-lock.json` で依存を固定しており、`bun.lock` を持ちません。bun でインストールするとロックファイルによる固定と、`package.json` の入れ子の `overrides` が効かないため、CI では `npm ci` を使います (`.github/workflows/infra.yml` / `license-compliance.yml`)。`infra/` 以外へ npm を広げてはいけません (MUST NOT)。
 - **技術スタック**: バックエンド = Bun / Hono / Drizzle ORM / PostgreSQL 18、フロントエンド = React 19 / Vite / Tailwind CSS 4、認証 = better-auth、インフラ = Google Cloud (Cloud Run) / Cloudflare Pages / CDKTF。
 - **`.jules/` `.Jules/` はコミット禁止**: AI エージェントの作業用ディレクトリで、`.gitignore` と pre-commit の対象外設定で除外しています。PR に混入した場合は内容を修正するのではなく `git rm` で削除してください。
 - **GitHub Models の再導入は禁止**: 2026-07-30 に提供終了済みです。推論 API 自体が存在しないため、エンドポイントを差し替えても復旧しません。依存していたワークフロー 23 本は撤去済みです。
