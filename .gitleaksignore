@@ -8,8 +8,6 @@
 2aea92764c1b98a7e1eaa3abc127df6666dd1288:frontend/src/pages/FaqHub.tsx:custom-cloudflare-pages-url:17
 2fa16aad209cf88b00d2fff0e06787511875563a:.github/workflows/deploy.yml:custom-cloudflare-pages-url:80
 2fa16aad209cf88b00d2fff0e06787511875563a:.github/workflows/deploy.yml:custom-cloudflare-pages-url:82
-577d3ff65a4b70386a11303b71647ef8f9d7a6e3:frontend/public/_redirects:custom-cloudflare-pages-url:3
-577d3ff65a4b70386a11303b71647ef8f9d7a6e3:frontend/src/main.tsx:custom-cloudflare-pages-url:10
 5784133425c40513f6655fc8e7271444393add8b:frontend/index.html:custom-cloudflare-pages-url:15
 5784133425c40513f6655fc8e7271444393add8b:frontend/index.html:custom-cloudflare-pages-url:27
 64996838cfa692079ee57b00ed35642bd9aaf5c8:frontend/public/robots.txt:custom-cloudflare-pages-url:10
