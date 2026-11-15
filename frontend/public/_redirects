@@ -1,11 +1,8 @@
-# Cloudflare Pages のプロジェクト既定ドメイン (*.pages.dev) と
-# カスタムドメインの両方で同じコンテンツが配信されると、検索エンジンが
-# 重複コンテンツとしてペナルティを与える可能性があります。
-# canonicalize する場合は、以下の形式で 2 行追加してください
-# (フォーク先のプロジェクト名 / ドメインに置き換えること):
-#
-#   http://<your-project>.pages.dev/*  https://<your-domain>/:splat  301!
-#   https://<your-project>.pages.dev/*  https://<your-domain>/:splat  301!
+# Cloudflare Pages の _redirects は送信元にホスト名を書けない (ドメイン単位のリダイレクト非対応)。
+# https://developers.cloudflare.com/pages/configuration/redirects/
+# 既定ドメイン (toique.pages.dev) から正規ドメインへの移動は frontend/src/lib/canonical-host.ts で行う。
+# サーバー側で 301 を返したい場合は、Cloudflare ダッシュボードの Bulk Redirects を使う。
+# https://developers.cloudflare.com/pages/how-to/redirect-to-custom-domain/
 
 # SPA フォールバック (React Router 用)。必ず末尾に置く。
 /*  /index.html  200
