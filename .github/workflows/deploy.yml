@@ -30,6 +30,9 @@ env:
   CLOUD_RUN_JOB_BACKUP: ${{ vars.CLOUD_RUN_JOB_BACKUP || 'db-backup' }}
   CF_PAGES_PROJECT: ${{ vars.CF_PAGES_PROJECT || 'toique' }}
   API_DOMAIN: ${{ vars.API_DOMAIN || 'api.toique.genzouw.com' }}
+  # 公開サイトのオリジン。frontend のビルドで canonical / OGP / sitemap.xml / robots.txt に埋め込む。
+  # 未設定だと vite.config.ts のフォールバック (https://example.com) が本番に出てしまう。
+  SITE_ORIGIN: ${{ vars.SITE_ORIGIN || 'https://toique.genzouw.com' }}
 
 jobs:
   deploy-backend:
@@ -329,6 +332,7 @@ jobs:
           bun run build
         env:
           VITE_API_URL: https://${{ env.API_DOMAIN }}
+          VITE_SITE_ORIGIN: ${{ env.SITE_ORIGIN }}
           VITE_GA_TRACKING_ID: ${{ vars.VITE_GA_TRACKING_ID }}
       - name: Deploy to Cloudflare Pages
         uses: cloudflare/wrangler-action@953926a2e2182532811c01a25e53647d93bf07c0 # v4.1.3

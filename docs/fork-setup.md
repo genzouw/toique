@@ -28,13 +28,14 @@
 
 ### 任意 (フォールバック値あり)
 
-| 名前                   | デフォルト                  |
-| ---------------------- | --------------------------- |
-| `CLOUD_RUN_SERVICE`    | `toique-backend`            |
-| `ARTIFACT_REPO`        | `toique`                    |
-| `CLOUD_RUN_JOB_BACKUP` | `db-backup`                 |
-| `CF_PAGES_PROJECT`     | `toique`                    |
-| `VITE_GA_TRACKING_ID`  | (空。GA タグを埋め込まない) |
+| 名前                   | デフォルト                   |
+| ---------------------- | ---------------------------- |
+| `CLOUD_RUN_SERVICE`    | `toique-backend`             |
+| `ARTIFACT_REPO`        | `toique`                     |
+| `CLOUD_RUN_JOB_BACKUP` | `db-backup`                  |
+| `CF_PAGES_PROJECT`     | `toique`                     |
+| `VITE_GA_TRACKING_ID`  | (空。GA タグを埋め込まない)  |
+| `SITE_ORIGIN`          | `https://toique.genzouw.com` |
 
 ### restore-test 用 (任意・上書き可)
 
