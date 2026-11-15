@@ -165,7 +165,12 @@ jobs:
             value="${value//\\/\\\\}"
             value="${value//,/\\,}"
             if [ "${3:-}" = secret ] && [ -n "$value" ]; then
-              echo "::add-mask::${value}" >&2
+              # add-mask のデータはコマンド形式のエスケープ (% / CR / LF) が復号されるため、
+              # マスク専用の変数に変換し、mapping 用の値は変えない。
+              local mask="${value//'%'/%25}"
+              mask="${mask//$'\r'/%0D}"
+              mask="${mask//$'\n'/%0A}"
+              echo "::add-mask::${mask}" >&2
             fi
             printf '%s=%s\n' "$1" "$value"
           }
