@@ -175,7 +175,9 @@ tags = ["cloudflare", "pages", "url"]
 [rules.allowlist]
 paths = [
     '''docs/manual-deploy\.md''',
-    '''frontend/src/lib/canonical-host\.ts''',
-    '''frontend/src/lib/__tests__/canonical-host\.test\.ts''',
     '''infra/README\.md'''
+]
+# 公開サイトの既定ドメインはシークレットではない。ファイル単位ではなく、このホスト名（とそのプレビュー用サブドメイン）だけを除外する
+regexes = [
+    '''(?i)^(?:https?://)?(?:[a-z0-9-]+\.)*toique\.pages\.dev$'''
 ]
