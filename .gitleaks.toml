@@ -175,5 +175,7 @@ tags = ["cloudflare", "pages", "url"]
 [rules.allowlist]
 paths = [
     '''docs/manual-deploy\.md''',
+    '''frontend/src/lib/canonical-host\.ts''',
+    '''frontend/src/lib/__tests__/canonical-host\.test\.ts''',
     '''infra/README\.md'''
 ]

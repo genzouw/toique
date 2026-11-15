@@ -7,7 +7,7 @@ import { resolveCanonicalUrl } from './lib/canonical-host';
 
 const canonicalUrl = resolveCanonicalUrl(window.location);
 if (canonicalUrl) {
-  // 履歴に toique.pages.dev を残さないよう replace で移る
+  // 履歴に既定ドメインを残さないよう replace で移る
   window.location.replace(canonicalUrl);
 } else {
   initGA();
