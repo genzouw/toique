@@ -142,6 +142,52 @@ jobs:
             echo 'MAPPING_EOF'
           } >> "$GITHUB_OUTPUT"
 
+      # deploy-cloudrun の env_vars は改行だけでなくカンマも区切り文字として解釈し、
+      # 引用符も解釈しない (actions-utils 1.0.1 の parseKVString)。CORS_ORIGIN や
+      # OPERATOR_EMAILS のようなカンマ区切りの値をそのまま渡すと 2 件目以降が捨てられるため、
+      # 値のカンマを `\,` にエスケープして対応表を組み立てる。
+      - id: cloud-run-env-vars
+        name: Build Cloud Run env vars mapping
+        env:
+          CORS_ORIGIN: ${{ vars.CORS_ORIGIN }}
+          STRIPE_PRO_PRICE_ID: ${{ vars.STRIPE_PRO_PRICE_ID }}
+          MAIL_FROM: ${{ vars.MAIL_FROM }}
+          CONTACT_FROM: ${{ vars.CONTACT_FROM }}
+          OPERATOR_EMAILS: ${{ secrets.OPERATOR_EMAILS }}
+          ADMIN_USERNAME: ${{ secrets.ADMIN_USERNAME }}
+          DOGFOODING_EMAILS: ${{ secrets.DOGFOODING_EMAILS }}
+        run: |
+          # 値のバックスラッシュとカンマをエスケープして KEY=VALUE を 1 行出力する。
+          # 第 3 引数に secret を渡すと、エスケープ後の値もログでマスクする
+          # (元の値とは文字列が変わるため、Actions の自動マスクが効かない)。
+          kv() {
+            local value="$2"
+            value="${value//\\/\\\\}"
+            value="${value//,/\\,}"
+            if [ "${3:-}" = secret ] && [ -n "$value" ]; then
+              # add-mask のデータはコマンド形式のエスケープ (% / CR / LF) が復号されるため、
+              # マスク専用の変数に変換し、mapping 用の値は変えない。
+              local mask="${value//'%'/%25}"
+              mask="${mask//$'\r'/%0D}"
+              mask="${mask//$'\n'/%0A}"
+              echo "::add-mask::${mask}" >&2
+            fi
+            printf '%s=%s\n' "$1" "$value"
+          }
+          {
+            echo 'mapping<<MAPPING_EOF'
+            kv NODE_ENV production
+            kv CORS_ORIGIN "$CORS_ORIGIN"
+            kv STRIPE_PRO_PRICE_ID "$STRIPE_PRO_PRICE_ID"
+            kv MAIL_DRIVER resend
+            kv MAIL_FROM "$MAIL_FROM"
+            kv CONTACT_FROM "$CONTACT_FROM"
+            kv OPERATOR_EMAILS "$OPERATOR_EMAILS" secret
+            kv ADMIN_USERNAME "$ADMIN_USERNAME" secret
+            kv DOGFOODING_EMAILS "$DOGFOODING_EMAILS" secret
+            echo 'MAPPING_EOF'
+          } >> "$GITHUB_OUTPUT"
+
       - id: deploy
         uses: google-github-actions/deploy-cloudrun@2028e2d7d30a78c6910e0632e48dd561b064884d # v3.0.1
         with:
@@ -156,16 +202,7 @@ jobs:
             --memory=512Mi
             --allow-unauthenticated
             --port=8080
-          env_vars: |
-            NODE_ENV=production
-            CORS_ORIGIN=${{ vars.CORS_ORIGIN }}
-            STRIPE_PRO_PRICE_ID=${{ vars.STRIPE_PRO_PRICE_ID }}
-            MAIL_DRIVER=resend
-            MAIL_FROM=${{ vars.MAIL_FROM }}
-            CONTACT_FROM=${{ vars.CONTACT_FROM }}
-            OPERATOR_EMAILS=${{ secrets.OPERATOR_EMAILS }}
-            ADMIN_USERNAME=${{ secrets.ADMIN_USERNAME }}
-            DOGFOODING_EMAILS=${{ secrets.DOGFOODING_EMAILS }}
+          env_vars: ${{ steps.cloud-run-env-vars.outputs.mapping }}
           secrets: ${{ steps.cloud-run-secrets.outputs.mapping }}
 
       - name: Set BETTER_AUTH_URL to public custom domain
