@@ -330,7 +330,8 @@ jobs:
         run: |
           missing=0
           for v in VITE_COMPANY_NAME VITE_REPRESENTATIVE_NAME VITE_CONTACT_EMAIL; do
-            if [ -z "${!v}" ]; then
+            value="${!v}"
+            if [ -z "${value//[[:space:]]/}" ]; then
               echo "::error::Repository variable '$v' is not set. Define it in Settings → Secrets and variables → Actions → Variables before running this workflow."
               missing=1
             fi
