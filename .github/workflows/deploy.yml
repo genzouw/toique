@@ -377,8 +377,6 @@ jobs:
     if: github.event.workflow_run.conclusion == 'success'
     permissions:
       contents: read
-    env:
-      CORS_ORIGIN: ${{ vars.CORS_ORIGIN }}
     steps:
       - name: Harden Runner
         uses: step-security/harden-runner@1d88384fd173af6ecb012dfd0264a306b711241a # v2.22.4
@@ -400,15 +398,40 @@ jobs:
 
       # backend/src/lib/frontend-origin.ts と同じく、CORS_ORIGIN をカンマで分け、
       # 前後の空白と末尾のスラッシュを除いたものを許可オリジンとして扱う。
-      - name: CORS preflight for each allowed origin
+      # CORS と CSP の検査対象がずれないよう、正規化はこのステップだけで行い、1 行 1 オリジンで渡す。
+      - name: Parse allowed origins
+        id: origins
+        env:
+          CORS_ORIGIN: ${{ vars.CORS_ORIGIN }}
         run: |
-          failed=0
           # -d '' で改行を含む値も最後まで読む (read は入力の終端で 1 を返すため || true)。
           IFS=',' read -r -d '' -a origins <<< "$CORS_ORIGIN" || true
+          list=''
           for origin in "${origins[@]}"; do
             origin="${origin#"${origin%%[![:space:]]*}"}"
             origin="${origin%"${origin##*[![:space:]]}"}"
             origin="${origin%/}"
+            if [ -n "$origin" ]; then
+              list+="${origin}"$'\n'
+            fi
+          done
+          # 空のままだと後続の検査が 1 件も行われずに成功するため、ここで止める。
+          if [ -z "$list" ]; then
+            echo '::error::CORS_ORIGIN has no origin to check'
+            exit 1
+          fi
+          {
+            echo 'list<<ORIGINS_EOF'
+            printf '%s' "$list"
+            echo 'ORIGINS_EOF'
+          } >> "$GITHUB_OUTPUT"
+
+      - name: CORS preflight for each allowed origin
+        env:
+          ORIGINS: ${{ steps.origins.outputs.list }}
+        run: |
+          failed=0
+          while IFS= read -r origin; do
             [ -n "$origin" ] || continue
             headers="$(curl -fsS --max-time 30 --retry 3 --retry-all-errors -o /dev/null -D - \
               -X OPTIONS "https://${API_DOMAIN}/api/auth/sign-in/email" \
@@ -420,21 +443,18 @@ jobs:
             else
               echo "OK: ${origin}"
             fi
-          done
+          done <<< "$ORIGINS"
           exit "$failed"
 
       # 各フロントエンドのオリジンの CSP の connect-src に API のオリジンが含まれることを確かめる。
       # connect-src から漏れると、本番でログインを含む API 呼び出しがすべてブロックされる (#233)。
       - name: Frontend CSP allows the API origin
+        env:
+          ORIGINS: ${{ steps.origins.outputs.list }}
         run: |
           failed=0
           api_origin="https://${API_DOMAIN}"
-          # -d '' で改行を含む値も最後まで読む (read は入力の終端で 1 を返すため || true)。
-          IFS=',' read -r -d '' -a origins <<< "$CORS_ORIGIN" || true
-          for origin in "${origins[@]}"; do
-            origin="${origin#"${origin%%[![:space:]]*}"}"
-            origin="${origin%"${origin##*[![:space:]]}"}"
-            origin="${origin%/}"
+          while IFS= read -r origin; do
             [ -n "$origin" ] || continue
             # 取得の失敗と CSP ヘッダの欠落を分けて扱う。curl が途中で失敗しても、
             # 出力済みのヘッダで判定を進めないようにするため。
@@ -458,5 +478,5 @@ jobs:
               echo "::error::connect-src of ${origin} does not include ${api_origin}"
               failed=1
             fi
-          done
+          done <<< "$ORIGINS"
           exit "$failed"
