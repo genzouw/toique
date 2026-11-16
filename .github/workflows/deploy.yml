@@ -434,8 +434,15 @@ jobs:
             origin="${origin%"${origin##*[![:space:]]}"}"
             origin="${origin%/}"
             [ -n "$origin" ] || continue
-            csp="$(curl -fsS --max-time 30 --retry 5 --retry-delay 10 --retry-all-errors \
-              -o /dev/null -D - "${origin}/" | tr -d '\r' | grep -i '^content-security-policy:' || true)"
+            # 取得の失敗と CSP ヘッダの欠落を分けて扱う。curl が途中で失敗しても、
+            # 出力済みのヘッダで判定を進めないようにするため。
+            if ! headers="$(curl -fsS --max-time 30 --retry 5 --retry-delay 10 --retry-all-errors \
+              -o /dev/null -D - "${origin}/")"; then
+              echo "::error::Failed to fetch ${origin}/"
+              failed=1
+              continue
+            fi
+            csp="$(printf '%s\n' "$headers" | tr -d '\r' | grep -i '^content-security-policy:' || true)"
             if [ -z "$csp" ]; then
               echo "::error::${origin}/ does not return a Content-Security-Policy header"
               failed=1
