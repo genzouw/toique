@@ -6,7 +6,7 @@ name: Workflow Health Check
 # 仕組み:
 # 1. 毎朝 cron で、リポジトリ内全 workflow の直近 N 件の run を集計
 # 2. 直近に `startup_failure` が含まれる workflow、または連続失敗している workflow を検出
-#    (最新の完了 run が成功している workflow は回復済みとみなし、検出しない)
+#    (連続失敗は、既定ブランチの最新の完了 run が成功していれば回復済みとみなし、検出しない)
 # 3. 検出時は固定タイトルの issue を作成 (既存ならコメント追記) して通知
 #
 # 検査自体は read-only で、誤検知してもリポジトリ状態に影響を与えない。
@@ -66,6 +66,9 @@ jobs:
             | select((.path | startswith(".github/workflows/") | not) or (.path as $p | $existing | index($p)))
             | .id')
 
+          # 回復の判定に使う既定ブランチ
+          default_branch=$(gh api "repos/${GH_REPO}" --jq '.default_branch')
+
           report_file="$RUNNER_TEMP/health-report.md"
           : > "$report_file"
 
@@ -78,7 +81,7 @@ jobs:
             wf_html=$(echo "$wf" | jq -r '.html_url')
 
             # 直近 N 件の run を取得
-            runs=$(gh api "repos/${GH_REPO}/actions/workflows/${wf_id}/runs?per_page=${RECENT_RUN_LIMIT}" --jq '[.workflow_runs[] | {conclusion, status, run_number, html_url, created_at}]')
+            runs=$(gh api "repos/${GH_REPO}/actions/workflows/${wf_id}/runs?per_page=${RECENT_RUN_LIMIT}" --jq '[.workflow_runs[] | {conclusion, status, run_number, html_url, created_at, head_branch, event}]')
             total=$(echo "$runs" | jq 'length')
 
             if [ "$total" -eq 0 ]; then
@@ -91,21 +94,24 @@ jobs:
             # 直近 N 件のうち failure / startup_failure / timed_out の件数
             failure_count=$(echo "$runs" | jq '[.[] | select(.conclusion=="failure" or .conclusion=="startup_failure" or .conclusion=="timed_out")] | length')
 
-            # 最新の完了 run が成功していれば回復済みとして扱い、検出しない。
+            # 既定ブランチの最新の完了 run が成功していれば、連続失敗は回復済みとして扱う。
             # 件数だけで判定すると、月 1 回しか動かない workflow (Restore Test 等) では
             # 修正済みの古い失敗が直近 N 件に何か月も残り、誤検知が続くため (#1064)。
-            latest_conclusion=$(echo "$runs" | jq -r '[.[] | select(.status=="completed")] | .[0].conclusion // ""')
-            if [ "$latest_conclusion" = "success" ]; then
-              continue
-            fi
+            # PR ブランチや pull_request の run は対象外にする。PR の差分スキャンなどが
+            # 成功しただけで、既定ブランチで続いている失敗を回復済みと誤判定しないため。
+            latest_conclusion=$(echo "$runs" | jq -r --arg b "$default_branch" '
+              [.[] | select(.status=="completed" and .head_branch==$b and .event!="pull_request")]
+              | .[0].conclusion // ""')
 
             problem=0
             reasons=()
+            # startup_failure は回復判定に関係なく検出する。特定のイベントだけが
+            # 起動段階で失敗する事態 (PR #336) は、他のイベントの run が成功していても続くため。
             if [ "$startup_failures" -gt 0 ]; then
               problem=1
               reasons+=("startup_failure x${startup_failures} in last ${RECENT_RUN_LIMIT}")
             fi
-            if [ "$failure_count" -ge "$CHRONIC_FAILURE_THRESHOLD" ]; then
+            if [ "$latest_conclusion" != "success" ] && [ "$failure_count" -ge "$CHRONIC_FAILURE_THRESHOLD" ]; then
               problem=1
               reasons+=("chronic failures: ${failure_count}/${RECENT_RUN_LIMIT}")
             fi
