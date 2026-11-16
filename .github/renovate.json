@@ -457,6 +457,21 @@
         "@clidey/deptrust"
       ],
       "automerge": false
+    },
+    {
+      "description": [
+        "squawk-cli の更新は自動マージしない。migrations-lint は必須チェックではないため、",
+        "新しい版で追加されたルールが既存のマイグレーションに警告を出して CI が失敗しても、そのまま自動マージされてしまう。",
+        "CI の migrations-lint が成功したことを確かめてから手動でマージする。失敗したときの対処は docs/migrations.md の 1d 節にある。",
+        "上のローカルの検知フックのルールにも custom.regex で一致するが、そちらの対象を絞っても外れないよう専用に置く。"
+      ],
+      "matchManagers": [
+        "custom.regex"
+      ],
+      "matchPackageNames": [
+        "squawk-cli"
+      ],
+      "automerge": false
     }
   ],
   "customManagers": [
@@ -490,6 +505,23 @@
         "DEPTRUST_VERSION: '(?<currentValue>\\d+\\.\\d+\\.\\d+)'"
       ],
       "depNameTemplate": "@clidey/deptrust",
+      "datasourceTemplate": "npm"
+    },
+    {
+      "customType": "regex",
+      "description": [
+        ".github/workflows/ci.yml の SQUAWK_VERSION (migrations-lint ジョブで bunx 実行する squawk-cli の版) を更新する。",
+        "docs/migrations.md の手元用コマンドにも同じ版を書いているため、同じ PR で一緒に更新する。"
+      ],
+      "managerFilePatterns": [
+        "/^\\.github/workflows/ci\\.yml$/",
+        "/^docs/migrations\\.md$/"
+      ],
+      "matchStrings": [
+        "SQUAWK_VERSION: '(?<currentValue>\\d+\\.\\d+\\.\\d+)'",
+        "squawk-cli@(?<currentValue>\\d+\\.\\d+\\.\\d+)"
+      ],
+      "depNameTemplate": "squawk-cli",
       "datasourceTemplate": "npm"
     }
   ]
