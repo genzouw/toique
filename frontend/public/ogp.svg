@@ -1,4 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!--
+  OGP 画像の原本。og:image / twitter:image は SVG を表示できない SNS が多いため、
+  配信するのは同じディレクトリの ogp.png。この SVG を変更したら PNG も作り直す。
+    rsvg-convert -w 1200 -h 630 ogp.svg -o ogp.png
+  ドメイン名は SNS のカードが別に表示するので、画像には入れない (フォーク先で書き換え不要)。
+-->
 <svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
   <defs>
     <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -12,6 +18,5 @@
     <text x="80" y="310" font-size="44" font-weight="700" fill="#e2e8f0">LINEからの問い合わせを</text>
     <text x="80" y="370" font-size="44" font-weight="700" fill="#e2e8f0">対話フォームで自動収集</text>
     <text x="80" y="470" font-size="26" fill="#94a3b8">LINE公式アカウント連携・ノーコード・CSV出力対応</text>
-    <text x="80" y="560" font-size="22" fill="#64748b">example.com</text>
   </g>
 </svg>
