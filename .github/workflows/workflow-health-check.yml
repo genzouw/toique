@@ -6,6 +6,7 @@ name: Workflow Health Check
 # 仕組み:
 # 1. 毎朝 cron で、リポジトリ内全 workflow の直近 N 件の run を集計
 # 2. 直近に `startup_failure` が含まれる workflow、または連続失敗している workflow を検出
+#    (最新の完了 run が成功している workflow は回復済みとみなし、検出しない)
 # 3. 検出時は固定タイトルの issue を作成 (既存ならコメント追記) して通知
 #
 # 検査自体は read-only で、誤検知してもリポジトリ状態に影響を与えない。
@@ -89,6 +90,14 @@ jobs:
 
             # 直近 N 件のうち failure / startup_failure / timed_out の件数
             failure_count=$(echo "$runs" | jq '[.[] | select(.conclusion=="failure" or .conclusion=="startup_failure" or .conclusion=="timed_out")] | length')
+
+            # 最新の完了 run が成功していれば回復済みとして扱い、検出しない。
+            # 件数だけで判定すると、月 1 回しか動かない workflow (Restore Test 等) では
+            # 修正済みの古い失敗が直近 N 件に何か月も残り、誤検知が続くため (#1064)。
+            latest_conclusion=$(echo "$runs" | jq -r '[.[] | select(.status=="completed")] | .[0].conclusion // ""')
+            if [ "$latest_conclusion" = "success" ]; then
+              continue
+            fi
 
             problem=0
             reasons=()
