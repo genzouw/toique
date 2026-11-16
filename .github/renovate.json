@@ -442,6 +442,21 @@
         "custom.regex"
       ],
       "automerge": false
+    },
+    {
+      "description": [
+        "deptrust の更新は自動マージしない。DepTrust Check は必須チェックではないため、",
+        "npm パッケージは公開済みでも同じ版のリリース資産が未公開で install が 404 になる更新が、そのまま自動マージされてしまう。",
+        "CI の DepTrust Check が成功したことを確かめてから手動でマージする。",
+        "上のローカルの検知フックのルールにも custom.regex で一致するが、そちらの対象を絞っても外れないよう専用に置く。"
+      ],
+      "matchManagers": [
+        "custom.regex"
+      ],
+      "matchPackageNames": [
+        "@clidey/deptrust"
+      ],
+      "automerge": false
     }
   ],
   "customManagers": [
