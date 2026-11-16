@@ -54,6 +54,13 @@ jobs:
               - 'db/migrations/**'
               - 'scripts/check-migrations.sh'
               - 'scripts/check-migration-journal.sh'
+              - 'scripts/check-schema-drift.sh'
+              # schema.ts を変えてマイグレーションを生成し忘れた PR を検出する (Issue #1061)。
+              # package.json / bun.lock は drizzle-kit の更新でスナップショット形式が変わる場合に備える。
+              - 'backend/src/schema.ts'
+              - 'backend/drizzle.config.ts'
+              - 'backend/package.json'
+              - 'backend/bun.lock'
               - '.squawk.toml'
               - '.github/workflows/ci.yml'
 
@@ -76,9 +83,15 @@ jobs:
         run: bash scripts/check-migrations.sh
       - name: Lint migration journal (_journal.json consistency)
         run: bash scripts/check-migration-journal.sh
+      # bun-version は bun-version-check.yml が全ワークフローで一致を検査する
       - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
         with:
           bun-version: 1.4.4
+      - name: Install backend dependencies
+        working-directory: backend
+        run: bun install --frozen-lockfile
+      - name: Lint schema drift (schema.ts vs db/migrations)
+        run: bash scripts/check-schema-drift.sh
       - name: Lint migration SQL (Squawk lock/compatibility rules)
         env:
           # Renovate の customManagers が更新する
