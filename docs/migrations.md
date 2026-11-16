@@ -40,6 +40,17 @@ CI の `scripts/check-migration-journal.sh` が次の 3 点を検査する（Iss
 
 並行 PR で `NNNN` が重複した場合は、後からマージする側の `.sql` とスナップショットを削除し、rebase 後に `bun --cwd backend run db:generate` で採番し直す。
 
+### 1c. `schema.ts` を変えたらマイグレーションを生成してコミットする
+
+`backend/src/schema.ts` を変えても `db:generate` を実行し忘れると、CI もデプロイも成功したままスキーマ変更が本番 DB に届かない。
+CI の `scripts/check-schema-drift.sh` が `drizzle-kit generate` を実行し、次のどちらかに該当すれば失敗させる（Issue #1061）。
+
+- 新しいマイグレーションが生成された（`db/migrations` に差分が出た）
+- 出力に `No schema changes, nothing to migrate` が含まれない
+
+失敗したら `bun --cwd backend run db:generate` を実行し、生成された `.sql`・スナップショット・`_journal.json` をコミットする。
+列の改名・削除では drizzle-kit が対話で確認を求める。非 TTY の CI では `Interactive prompts require a TTY terminal` を出して何も生成しないので、ローカルのターミナルで実行して対話に答える。
+
 ### 2. 大規模テーブルへのインデックスは **本番に事前手動適用** する
 
 行数が多いテーブル（例: `inbound_messages` が 100 万行を超えるなど）へインデックスを追加する場合は、以下のフローを取る。
