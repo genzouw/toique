@@ -44,9 +44,14 @@ jobs:
       - name: Run DepTrust to check GitHub Actions dependencies
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # npm パッケージ @clidey/deptrust は GitHub Releases から deptrust 本体を取得するインストーラで、
+          # `install` に --version を渡さないと本体は最新版に浮動する。npm パッケージと本体のリリースタグは
+          # 同じ版番号で公開されるため、この 1 か所の値を両方に渡して固定する (Renovate の customManagers が更新する)。
+          # --version を渡すと、インストーラが認証なしで呼ぶ releases/latest の API (403 の原因) も呼ばれなくなる。
+          DEPTRUST_VERSION: '0.16.0'
         run: |
           set -euo pipefail
-          npx --yes @clidey/deptrust@latest install --yes
+          npx --yes "@clidey/deptrust@${DEPTRUST_VERSION}" install --yes --version "v${DEPTRUST_VERSION}"
           export PATH="$HOME/.local/bin:$PATH"
           # 同一リポジトリ・同一SHAでもアクションのサブパス（/init, /analyze等）が異なると
           # sort -u で重複排除されず、同じ repo@sha を複数回チェックしてしまう
