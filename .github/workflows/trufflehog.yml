@@ -38,7 +38,7 @@ jobs:
         uses: ./.github/actions/resolve-scan-base # zizmor: ignore[self-repository]
 
       - name: TruffleHog OSS
-        uses: trufflesecurity/trufflehog@ea68ca03c865c5f324e86e849ced20ed3cf9dbbb # v3.99.8
+        uses: trufflesecurity/trufflehog@3bd2b5887eb0efb8fa18bfd1d296032924e4ffdc # v3.99.9
         with:
           # base が空文字の場合は「base 指定なし = head までの履歴全体をスキャン」となり、
           # secret-scan.yml の定期実行と同じ経路に落ちる。これは部分検査への劣化ではなく、
