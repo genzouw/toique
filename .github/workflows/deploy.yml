@@ -387,10 +387,16 @@ jobs:
 
       # /health は SELECT now() を実行するため、DB 接続の失敗も検出できる。
       # --min-instances=0 のコールドスタートを --retry で吸収する。
+      # curl -f は 3xx を失敗にしないため、ステータスが 200 と一致することを確かめる。
       - name: Backend health check
         run: |
-          curl -fsS --max-time 30 --retry 5 --retry-delay 10 --retry-all-errors \
-            "https://${API_DOMAIN}/health"
+          status="$(curl -fsS --max-time 30 --retry 5 --retry-delay 10 --retry-all-errors \
+            -o /dev/null -w '%{http_code}' "https://${API_DOMAIN}/health")"
+          if [ "$status" != 200 ]; then
+            echo "::error::GET https://${API_DOMAIN}/health returned ${status}"
+            exit 1
+          fi
+          echo "OK: /health returned ${status}"
 
       # backend/src/lib/frontend-origin.ts と同じく、CORS_ORIGIN をカンマで分け、
       # 前後の空白と末尾のスラッシュを除いたものを許可オリジンとして扱う。
