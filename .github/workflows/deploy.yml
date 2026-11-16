@@ -403,7 +403,8 @@ jobs:
       - name: CORS preflight for each allowed origin
         run: |
           failed=0
-          IFS=',' read -r -a origins <<< "$CORS_ORIGIN"
+          # -d '' で改行を含む値も最後まで読む (read は入力の終端で 1 を返すため || true)。
+          IFS=',' read -r -d '' -a origins <<< "$CORS_ORIGIN" || true
           for origin in "${origins[@]}"; do
             origin="${origin#"${origin%%[![:space:]]*}"}"
             origin="${origin%"${origin##*[![:space:]]}"}"
@@ -428,7 +429,8 @@ jobs:
         run: |
           failed=0
           api_origin="https://${API_DOMAIN}"
-          IFS=',' read -r -a origins <<< "$CORS_ORIGIN"
+          # -d '' で改行を含む値も最後まで読む (read は入力の終端で 1 を返すため || true)。
+          IFS=',' read -r -d '' -a origins <<< "$CORS_ORIGIN" || true
           for origin in "${origins[@]}"; do
             origin="${origin#"${origin%%[![:space:]]*}"}"
             origin="${origin%"${origin##*[![:space:]]}"}"
