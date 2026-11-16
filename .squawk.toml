@@ -2,7 +2,7 @@
 # https://squawkhq.com/docs/cli
 # CI の migrations-lint ジョブ (.github/workflows/ci.yml) から実行する。運用は docs/migrations.md を参照。
 pg_version = "18.0" # compose.yml の postgres:18-alpine に合わせる
-# drizzle-kit migrate は 1 ファイルを 1 トランザクションで実行する (docs/migrations.md)
+# drizzle-kit migrate は未適用のマイグレーションをまとめて 1 トランザクションで実行する (docs/migrations.md)
 assume_in_transaction = true
 excluded_rules = [
   # トランザクション内では CONCURRENTLY を使えない。大規模テーブルは事前手動適用で対処する運用 (docs/migrations.md)
