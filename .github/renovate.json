@@ -460,6 +460,22 @@
       "depNameTemplate": "gitleaks/gitleaks",
       "datasourceTemplate": "github-releases",
       "extractVersionTemplate": "^v(?<version>.+)$"
+    },
+    {
+      "customType": "regex",
+      "description": [
+        ".github/workflows/deptrust.yml の DEPTRUST_VERSION を更新する。",
+        "この値は npm パッケージ @clidey/deptrust の版と、インストーラに --version で渡す deptrust 本体のリリースタグの両方に使う。",
+        "npm パッケージと GitHub Releases のタグは同じ版番号で同時に公開されるため、npm を datasource にする。"
+      ],
+      "managerFilePatterns": [
+        "/^\\.github/workflows/deptrust\\.yml$/"
+      ],
+      "matchStrings": [
+        "DEPTRUST_VERSION: '(?<currentValue>\\d+\\.\\d+\\.\\d+)'"
+      ],
+      "depNameTemplate": "@clidey/deptrust",
+      "datasourceTemplate": "npm"
     }
   ]
 }
