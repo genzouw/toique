@@ -99,8 +99,10 @@ jobs:
             # 修正済みの古い失敗が直近 N 件に何か月も残り、誤検知が続くため (#1064)。
             # PR ブランチや pull_request の run は対象外にする。PR の差分スキャンなどが
             # 成功しただけで、既定ブランチで続いている失敗を回復済みと誤判定しないため。
+            # cancelled / skipped は成否を示さないので、その前の run で判定する。
             latest_conclusion=$(echo "$runs" | jq -r --arg b "$default_branch" '
-              [.[] | select(.status=="completed" and .head_branch==$b and .event!="pull_request")]
+              [.[] | select(.status=="completed" and .head_branch==$b and .event!="pull_request")
+                   | select(.conclusion | IN("cancelled", "skipped") | not)]
               | .[0].conclusion // ""')
 
             problem=0
