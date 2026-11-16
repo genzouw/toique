@@ -55,7 +55,7 @@ CI の `scripts/check-schema-drift.sh` が `drizzle-kit generate` を実行し�
 
 CI の `migrations-lint` ジョブは、PostgreSQL マイグレーション専用のリンター [Squawk](https://squawkhq.com/docs/) でも SQL を検査する（Issue #1054）。設定はリポジトリルートの `.squawk.toml` にある。本番適用済みの `0000`〜`0008` は 3 章の方針に従って対象外にしている。
 
-手元では次のコマンドで同じ検査を実行できる。版数は `.github/workflows/ci.yml` の `SQUAWK_VERSION` に合わせる。
+手元では次のコマンドで同じ検査を実行できる。版数は `.github/workflows/ci.yml` の `SQUAWK_VERSION` と同じで、Renovate が両方を 1 本の PR で更新する。
 
 ```bash
 bunx squawk-cli@2.70.0 --no-error-on-unmatched-pattern db/migrations/*.sql </dev/null

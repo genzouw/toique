@@ -495,13 +495,16 @@
     {
       "customType": "regex",
       "description": [
-        ".github/workflows/ci.yml の SQUAWK_VERSION (migrations-lint ジョブで bunx 実行する squawk-cli の版) を更新する。"
+        ".github/workflows/ci.yml の SQUAWK_VERSION (migrations-lint ジョブで bunx 実行する squawk-cli の版) を更新する。",
+        "docs/migrations.md の手元用コマンドにも同じ版を書いているため、同じ PR で一緒に更新する。"
       ],
       "managerFilePatterns": [
-        "/^\\.github/workflows/ci\\.yml$/"
+        "/^\\.github/workflows/ci\\.yml$/",
+        "/^docs/migrations\\.md$/"
       ],
       "matchStrings": [
-        "SQUAWK_VERSION: '(?<currentValue>\\d+\\.\\d+\\.\\d+)'"
+        "SQUAWK_VERSION: '(?<currentValue>\\d+\\.\\d+\\.\\d+)'",
+        "squawk-cli@(?<currentValue>\\d+\\.\\d+\\.\\d+)"
       ],
       "depNameTemplate": "squawk-cli",
       "datasourceTemplate": "npm"
