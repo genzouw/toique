@@ -491,6 +491,20 @@
       ],
       "depNameTemplate": "@clidey/deptrust",
       "datasourceTemplate": "npm"
+    },
+    {
+      "customType": "regex",
+      "description": [
+        ".github/workflows/ci.yml の SQUAWK_VERSION (migrations-lint ジョブで bunx 実行する squawk-cli の版) を更新する。"
+      ],
+      "managerFilePatterns": [
+        "/^\\.github/workflows/ci\\.yml$/"
+      ],
+      "matchStrings": [
+        "SQUAWK_VERSION: '(?<currentValue>\\d+\\.\\d+\\.\\d+)'"
+      ],
+      "depNameTemplate": "squawk-cli",
+      "datasourceTemplate": "npm"
     }
   ]
 }

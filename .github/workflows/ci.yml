@@ -54,6 +54,7 @@ jobs:
               - 'db/migrations/**'
               - 'scripts/check-migrations.sh'
               - 'scripts/check-migration-journal.sh'
+              - '.squawk.toml'
               - '.github/workflows/ci.yml'
 
   migrations-lint:
@@ -75,6 +76,17 @@ jobs:
         run: bash scripts/check-migrations.sh
       - name: Lint migration journal (_journal.json consistency)
         run: bash scripts/check-migration-journal.sh
+      - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
+        with:
+          bun-version: 1.4.4
+      - name: Lint migration SQL (Squawk lock/compatibility rules)
+        env:
+          # Renovate の customManagers が更新する
+          SQUAWK_VERSION: '2.70.0'
+        # 設定は .squawk.toml。適用済みの 0000〜0008 は除外しているため、対象が 0 件でも失敗しないよう
+        # --no-error-on-unmatched-pattern を付ける。対象が 0 件のとき Squawk は標準入力を読むので、
+        # 標準入力を /dev/null にして何も検査しないことを明示する。
+        run: bunx "squawk-cli@${SQUAWK_VERSION}" --no-error-on-unmatched-pattern db/migrations/*.sql </dev/null
 
   scripts-test:
     name: Scripts (regression tests)

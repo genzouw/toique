@@ -1,0 +1,21 @@
+# Squawk (PostgreSQL マイグレーションリンター) の設定
+# https://squawkhq.com/docs/cli
+# CI の migrations-lint ジョブ (.github/workflows/ci.yml) から実行する。運用は docs/migrations.md を参照。
+pg_version = "18.0" # compose.yml の postgres:18-alpine に合わせる
+# drizzle-kit migrate は 1 ファイルを 1 トランザクションで実行する (docs/migrations.md)
+assume_in_transaction = true
+excluded_rules = [
+  # トランザクション内では CONCURRENTLY を使えない。大規模テーブルは事前手動適用で対処する運用 (docs/migrations.md)
+  "require-concurrent-index-creation",
+  "require-concurrent-index-deletion",
+  # Drizzle の生成 SQL にタイムアウト設定が無く、全ファイルで警告になるため
+  "require-lock-timeout",
+  "require-statement-timeout",
+  # version integer のような小さな値の列にも出る、型設計の好みに関するルールのため
+  "prefer-bigint-over-int",
+]
+# 本番適用済みの履歴は遡及修正しない (docs/migrations.md 3 章)。
+# パスはリポジトリルートから書く (ファイル名だけでは除外されない)。
+excluded_paths = [
+  "db/migrations/000[0-8]_*.sql",
+]

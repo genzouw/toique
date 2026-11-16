@@ -40,6 +40,33 @@ CI の `scripts/check-migration-journal.sh` が次の 3 点を検査する（Iss
 
 並行 PR で `NNNN` が重複した場合は、後からマージする側の `.sql` とスナップショットを削除し、rebase 後に `bun --cwd backend run db:generate` で採番し直す。
 
+### 1c. 書き込みを止める DDL・適用に失敗する DDL を Squawk で検出する
+
+CI の `migrations-lint` ジョブは、PostgreSQL マイグレーション専用のリンター [Squawk](https://squawkhq.com/docs/) でも SQL を検査する（Issue #1054）。設定はリポジトリルートの `.squawk.toml` にある。本番適用済みの `0000`〜`0008` は 3 章の方針に従って対象外にしている。
+
+手元では次のコマンドで同じ検査を実行できる。版数は `.github/workflows/ci.yml` の `SQUAWK_VERSION` に合わせる。
+
+```bash
+bunx squawk-cli@2.70.0 --no-error-on-unmatched-pattern db/migrations/*.sql </dev/null
+```
+
+警告が出たら、次のように SQL を書き換える。
+
+| ルール                                                           | 原因                                                                                         | 書き換え方                                                                                                                        |
+| :--------------------------------------------------------------- | :------------------------------------------------------------------------------------------- | :-------------------------------------------------------------------------------------------------------------------------------- |
+| `adding-required-field`                                          | 既存テーブルへ DEFAULT なしで `NOT NULL` 列を追加している。行が 1 件でもあれば適用に失敗する | DEFAULT 付きで追加し、必要なら別のマイグレーションで DEFAULT を外す。または NULL 許容で追加し、値を埋めてから `SET NOT NULL` する |
+| `constraint-missing-not-valid` / `adding-foreign-key-constraint` | 既存テーブルへの外部キー追加が、両テーブルをロックしたまま全行を走査する                     | `NOT VALID` を付けて追加し、別のマイグレーションで `VALIDATE CONSTRAINT` する                                                     |
+| `renaming-column` / `renaming-table`                             | デプロイ中に動いている旧バージョンのコードが列やテーブルを見失う                             | 新しい列を追加してコードを両対応にし、値をコピーしてから旧列を削除する。複数回のデプロイに分ける                                  |
+| `ban-concurrent-index-creation-in-transaction`                   | `drizzle-kit migrate` はトランザクション内で実行するため `CONCURRENTLY` が失敗する           | `CONCURRENTLY` を外して `IF NOT EXISTS` を付ける。大規模テーブルは 2 章の事前手動適用を使う                                       |
+
+空のテーブルへの変更などで警告を受け入れるときは、無効化コメントを書き、その上の行に受け入れる理由を残す。無効化コメントと対象の文の間に別のコメント行を挟むと無効化が効かない（2.70.0 で確認）。
+
+```sql
+-- 理由: このテーブルは 0010 で作成した直後で、本番に行が無い
+-- squawk-ignore adding-required-field
+ALTER TABLE "example" ADD COLUMN "tenant_id" uuid NOT NULL;
+```
+
 ### 2. 大規模テーブルへのインデックスは **本番に事前手動適用** する
 
 行数が多いテーブル（例: `inbound_messages` が 100 万行を超えるなど）へインデックスを追加する場合は、以下のフローを取る。
