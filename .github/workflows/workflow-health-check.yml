@@ -81,7 +81,7 @@ jobs:
             wf_html=$(echo "$wf" | jq -r '.html_url')
 
             # 直近 N 件の run を取得
-            runs=$(gh api "repos/${GH_REPO}/actions/workflows/${wf_id}/runs?per_page=${RECENT_RUN_LIMIT}" --jq '[.workflow_runs[] | {conclusion, status, run_number, html_url, created_at, head_branch, event}]')
+            runs=$(gh api "repos/${GH_REPO}/actions/workflows/${wf_id}/runs?per_page=${RECENT_RUN_LIMIT}" --jq '[.workflow_runs[] | {conclusion, status, run_number, html_url, created_at}]')
             total=$(echo "$runs" | jq 'length')
 
             if [ "$total" -eq 0 ]; then
@@ -100,9 +100,11 @@ jobs:
             # PR ブランチや pull_request の run は対象外にする。PR の差分スキャンなどが
             # 成功しただけで、既定ブランチで続いている失敗を回復済みと誤判定しないため。
             # cancelled / skipped は成否を示さないので、その前の run で判定する。
-            latest_conclusion=$(echo "$runs" | jq -r --arg b "$default_branch" '
-              [.[] | select(.status=="completed" and .head_branch==$b and .event!="pull_request")
-                   | select(.conclusion | IN("cancelled", "skipped") | not)]
+            # 上の直近 N 件から絞ると、PR の run が多い workflow では既定ブランチの run が
+            # N 件の外に押し出されて判定できないため、API 側で既定ブランチに絞って別に取得する。
+            latest_conclusion=$(gh api "repos/${GH_REPO}/actions/workflows/${wf_id}/runs?branch=${default_branch}&status=completed&per_page=${RECENT_RUN_LIMIT}" --jq '
+              [.workflow_runs[] | select(.event!="pull_request")
+                                | select(.conclusion | IN("cancelled", "skipped") | not)]
               | .[0].conclusion // ""')
 
             problem=0
