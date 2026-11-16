@@ -15,14 +15,17 @@
 | `GCP_SERVICE_ACCOUNT` | デプロイ用 SA の email                               | `github-deployer@my-project-prod.iam.gserviceaccount.com` |
 | `GCP_REGION`          | Cloud Run / Artifact Registry のリージョン (任意)    | `asia-northeast1` (デフォルト)                            |
 
-### アプリケーション値 (deploy-backend ジョブで必須)
+### アプリケーション値 (必須)
 
-| 名前                  | 用途                                            | 例                                             |
-| --------------------- | ----------------------------------------------- | ---------------------------------------------- |
-| `CORS_ORIGIN`         | バックエンド CORS 許可オリジン (カンマ区切り可) | `https://example.com,https://my-app.pages.dev` |
-| `STRIPE_PRO_PRICE_ID` | Stripe Pro プラン価格 ID                        | `price_xxxxxxxxxxxx`                           |
-| `MAIL_FROM`           | 認証メールの送信元                              | `App <noreply@example.com>`                    |
-| `CONTACT_FROM`        | お問い合わせメールの送信元                      | `App <noreply@example.com>`                    |
+| 名前                       | 用途                                                                      | 例                                             |
+| -------------------------- | ------------------------------------------------------------------------- | ---------------------------------------------- |
+| `CORS_ORIGIN`              | バックエンド CORS 許可オリジン (カンマ区切り可)                           | `https://example.com,https://my-app.pages.dev` |
+| `STRIPE_PRO_PRICE_ID`      | Stripe Pro プラン価格 ID                                                  | `price_xxxxxxxxxxxx`                           |
+| `MAIL_FROM`                | 認証メールの送信元                                                        | `App <noreply@example.com>`                    |
+| `CONTACT_FROM`             | お問い合わせメールの送信元                                                | `App <noreply@example.com>`                    |
+| `VITE_COMPANY_NAME`        | 特商法表記の事業者名。未設定だと `deploy-frontend` が失敗する             | `株式会社サンプル`                             |
+| `VITE_REPRESENTATIVE_NAME` | 特商法表記の代表者名。未設定だと `deploy-frontend` が失敗する             | `山田 太郎`                                    |
+| `VITE_CONTACT_EMAIL`       | 特商法表記の連絡先メールアドレス。未設定だと `deploy-frontend` が失敗する | `contact@example.jp`                           |
 
 `OPERATOR_EMAILS` と `ADMIN_USERNAME` は Secrets 側で管理する (個人情報・管理 UI 識別子のため。下記の Section 2 参照)。
 
@@ -200,16 +203,16 @@ done
 
 ## 6. フロントエンド env (build 時に必要)
 
-`frontend/.env.example` を参照し、`.env.local` (gitignore 対象) に値を埋めて開発する。CI/CD では GitHub Actions Variables 経由で渡される。
+`frontend/.env.example` を参照し、`.env.local` (gitignore 対象) に値を埋めて開発する。CI/CD では `deploy.yml` が下表の GitHub Actions Variables をビルドに渡す。
 
-| Vite env                   | 用途                                                             |
-| -------------------------- | ---------------------------------------------------------------- |
-| `VITE_SITE_ORIGIN`         | canonical / OGP / sitemap に使うサイトオリジン                   |
-| `VITE_COMPANY_NAME`        | 特商法表記の販売事業者名                                         |
-| `VITE_REPRESENTATIVE_NAME` | 特商法表記の運営統括責任者                                       |
-| `VITE_CONTACT_EMAIL`       | 特商法表記のメールアドレス                                       |
-| `VITE_API_URL`             | バックエンドの URL (CI では `deploy-backend` の出力から自動設定) |
-| `VITE_GA_TRACKING_ID`      | Google Analytics トラッキング ID (空なら埋め込まない)            |
+| Vite env                   | GitHub Actions Variables                                | 用途                                                  |
+| -------------------------- | ------------------------------------------------------- | ----------------------------------------------------- |
+| `VITE_SITE_ORIGIN`         | `SITE_ORIGIN` (未設定なら `https://toique.genzouw.com`) | canonical / OGP / sitemap に使うサイトオリジン        |
+| `VITE_COMPANY_NAME`        | `VITE_COMPANY_NAME`                                     | 特商法表記の販売事業者名                              |
+| `VITE_REPRESENTATIVE_NAME` | `VITE_REPRESENTATIVE_NAME`                              | 特商法表記の運営統括責任者                            |
+| `VITE_CONTACT_EMAIL`       | `VITE_CONTACT_EMAIL`                                    | 特商法表記のメールアドレス                            |
+| `VITE_API_URL`             | `API_DOMAIN` から組み立てる                             | バックエンドの URL (`https://${API_DOMAIN}`)          |
+| `VITE_GA_TRACKING_ID`      | `VITE_GA_TRACKING_ID`                                   | Google Analytics トラッキング ID (空なら埋め込まない) |
 
 ## 7. 手動編集が必要なアセット
 
