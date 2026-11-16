@@ -334,6 +334,10 @@ jobs:
           VITE_API_URL: https://${{ env.API_DOMAIN }}
           VITE_SITE_ORIGIN: ${{ env.SITE_ORIGIN }}
           VITE_GA_TRACKING_ID: ${{ vars.VITE_GA_TRACKING_ID }}
+          # 特商法表記 (src/pages/Tokushoho.tsx) の事業者情報。未設定だと英語の placeholder が本番に出る。
+          VITE_COMPANY_NAME: ${{ vars.VITE_COMPANY_NAME }}
+          VITE_REPRESENTATIVE_NAME: ${{ vars.VITE_REPRESENTATIVE_NAME }}
+          VITE_CONTACT_EMAIL: ${{ vars.VITE_CONTACT_EMAIL }}
       - name: Deploy to Cloudflare Pages
         uses: cloudflare/wrangler-action@953926a2e2182532811c01a25e53647d93bf07c0 # v4.1.3
         with:

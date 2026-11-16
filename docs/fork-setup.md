@@ -28,14 +28,17 @@
 
 ### 任意 (フォールバック値あり)
 
-| 名前                   | デフォルト                   |
-| ---------------------- | ---------------------------- |
-| `CLOUD_RUN_SERVICE`    | `toique-backend`             |
-| `ARTIFACT_REPO`        | `toique`                     |
-| `CLOUD_RUN_JOB_BACKUP` | `db-backup`                  |
-| `CF_PAGES_PROJECT`     | `toique`                     |
-| `VITE_GA_TRACKING_ID`  | (空。GA タグを埋め込まない)  |
-| `SITE_ORIGIN`          | `https://toique.genzouw.com` |
+| 名前                       | デフォルト                                     |
+| -------------------------- | ---------------------------------------------- |
+| `CLOUD_RUN_SERVICE`        | `toique-backend`                               |
+| `ARTIFACT_REPO`            | `toique`                                       |
+| `CLOUD_RUN_JOB_BACKUP`     | `db-backup`                                    |
+| `CF_PAGES_PROJECT`         | `toique`                                       |
+| `VITE_GA_TRACKING_ID`      | (空。GA タグを埋め込まない)                    |
+| `SITE_ORIGIN`              | `https://toique.genzouw.com`                   |
+| `VITE_COMPANY_NAME`        | (英語の placeholder。本番公開前に必ず設定する) |
+| `VITE_REPRESENTATIVE_NAME` | (英語の placeholder。本番公開前に必ず設定する) |
+| `VITE_CONTACT_EMAIL`       | (英語の placeholder。本番公開前に必ず設定する) |
 
 ### restore-test 用 (任意・上書き可)
 
@@ -200,16 +203,16 @@ done
 
 ## 6. フロントエンド env (build 時に必要)
 
-`frontend/.env.example` を参照し、`.env.local` (gitignore 対象) に値を埋めて開発する。CI/CD では GitHub Actions Variables 経由で渡される。
+`frontend/.env.example` を参照し、`.env.local` (gitignore 対象) に値を埋めて開発する。CI/CD では `deploy.yml` が下表の GitHub Actions Variables をビルドに渡す。
 
-| Vite env                   | 用途                                                             |
-| -------------------------- | ---------------------------------------------------------------- |
-| `VITE_SITE_ORIGIN`         | canonical / OGP / sitemap に使うサイトオリジン                   |
-| `VITE_COMPANY_NAME`        | 特商法表記の販売事業者名                                         |
-| `VITE_REPRESENTATIVE_NAME` | 特商法表記の運営統括責任者                                       |
-| `VITE_CONTACT_EMAIL`       | 特商法表記のメールアドレス                                       |
-| `VITE_API_URL`             | バックエンドの URL (CI では `deploy-backend` の出力から自動設定) |
-| `VITE_GA_TRACKING_ID`      | Google Analytics トラッキング ID (空なら埋め込まない)            |
+| Vite env                   | GitHub Actions Variables                                | 用途                                                  |
+| -------------------------- | ------------------------------------------------------- | ----------------------------------------------------- |
+| `VITE_SITE_ORIGIN`         | `SITE_ORIGIN` (未設定なら `https://toique.genzouw.com`) | canonical / OGP / sitemap に使うサイトオリジン        |
+| `VITE_COMPANY_NAME`        | `VITE_COMPANY_NAME`                                     | 特商法表記の販売事業者名                              |
+| `VITE_REPRESENTATIVE_NAME` | `VITE_REPRESENTATIVE_NAME`                              | 特商法表記の運営統括責任者                            |
+| `VITE_CONTACT_EMAIL`       | `VITE_CONTACT_EMAIL`                                    | 特商法表記のメールアドレス                            |
+| `VITE_API_URL`             | `API_DOMAIN` から組み立てる                             | バックエンドの URL (`https://${API_DOMAIN}`)          |
+| `VITE_GA_TRACKING_ID`      | `VITE_GA_TRACKING_ID`                                   | Google Analytics トラッキング ID (空なら埋め込まない) |
 
 ## 7. 手動編集が必要なアセット
 
