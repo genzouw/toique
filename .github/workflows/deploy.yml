@@ -366,3 +366,117 @@ jobs:
           # v26.3.0 であり要件を満たすため v4 へ引き上げ済み (#726)。
           wranglerVersion: '4'
           command: pages deploy frontend/dist --project-name ${{ env.CF_PAGES_PROJECT }} --commit-dirty=true --commit-hash=${{ github.sha }} --commit-message="Deploy ${{ github.sha }}"
+
+  # デプロイが成功扱いでも本番が壊れている状態 (#1076 の CORS 設定漏れ、#233 の CSP 設定漏れ) を
+  # デプロイ直後に検出する。検出までが役割で、失敗しても本番は元に戻らない。
+  # 戻すときは `gcloud run services update-traffic` で直前のリビジョンへ手で切り替える。
+  smoke-test:
+    name: Smoke test (production)
+    needs: [deploy-backend, deploy-frontend]
+    runs-on: ubuntu-latest
+    if: github.event.workflow_run.conclusion == 'success'
+    permissions:
+      contents: read
+    steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@1d88384fd173af6ecb012dfd0264a306b711241a # v2.22.4
+        with:
+          egress-policy: audit
+
+      # /health は SELECT now() を実行するため、DB 接続の失敗も検出できる。
+      # --min-instances=0 のコールドスタートを --retry で吸収する。
+      # curl -f は 3xx を失敗にしないため、ステータスが 200 と一致することを確かめる。
+      - name: Backend health check
+        run: |
+          status="$(curl -fsS --max-time 30 --retry 5 --retry-delay 10 --retry-all-errors \
+            -o /dev/null -w '%{http_code}' "https://${API_DOMAIN}/health")"
+          if [ "$status" != 200 ]; then
+            echo "::error::GET https://${API_DOMAIN}/health returned ${status}"
+            exit 1
+          fi
+          echo "OK: /health returned ${status}"
+
+      # backend/src/lib/frontend-origin.ts と同じく、CORS_ORIGIN をカンマで分け、
+      # 前後の空白と末尾のスラッシュを除いたものを許可オリジンとして扱う。
+      # CORS と CSP の検査対象がずれないよう、正規化はこのステップだけで行い、1 行 1 オリジンで渡す。
+      - name: Parse allowed origins
+        id: origins
+        env:
+          CORS_ORIGIN: ${{ vars.CORS_ORIGIN }}
+        run: |
+          # -d '' で改行を含む値も最後まで読む (read は入力の終端で 1 を返すため || true)。
+          IFS=',' read -r -d '' -a origins <<< "$CORS_ORIGIN" || true
+          list=''
+          for origin in "${origins[@]}"; do
+            origin="${origin#"${origin%%[![:space:]]*}"}"
+            origin="${origin%"${origin##*[![:space:]]}"}"
+            origin="${origin%/}"
+            if [ -n "$origin" ]; then
+              list+="${origin}"$'\n'
+            fi
+          done
+          # 空のままだと後続の検査が 1 件も行われずに成功するため、ここで止める。
+          if [ -z "$list" ]; then
+            echo '::error::CORS_ORIGIN has no origin to check'
+            exit 1
+          fi
+          {
+            echo 'list<<ORIGINS_EOF'
+            printf '%s' "$list"
+            echo 'ORIGINS_EOF'
+          } >> "$GITHUB_OUTPUT"
+
+      - name: CORS preflight for each allowed origin
+        env:
+          ORIGINS: ${{ steps.origins.outputs.list }}
+        run: |
+          failed=0
+          while IFS= read -r origin; do
+            [ -n "$origin" ] || continue
+            headers="$(curl -fsS --max-time 30 --retry 3 --retry-all-errors -o /dev/null -D - \
+              -X OPTIONS "https://${API_DOMAIN}/api/auth/sign-in/email" \
+              -H "Origin: ${origin}" -H 'Access-Control-Request-Method: POST' | tr -d '\r')"
+            if ! grep -qixF "access-control-allow-origin: ${origin}" <<< "$headers" \
+              || ! grep -qixF 'access-control-allow-credentials: true' <<< "$headers"; then
+              echo "::error::CORS preflight from ${origin} is not allowed"
+              failed=1
+            else
+              echo "OK: ${origin}"
+            fi
+          done <<< "$ORIGINS"
+          exit "$failed"
+
+      # 各フロントエンドのオリジンの CSP の connect-src に API のオリジンが含まれることを確かめる。
+      # connect-src から漏れると、本番でログインを含む API 呼び出しがすべてブロックされる (#233)。
+      - name: Frontend CSP allows the API origin
+        env:
+          ORIGINS: ${{ steps.origins.outputs.list }}
+        run: |
+          failed=0
+          api_origin="https://${API_DOMAIN}"
+          while IFS= read -r origin; do
+            [ -n "$origin" ] || continue
+            # 取得の失敗と CSP ヘッダの欠落を分けて扱う。curl が途中で失敗しても、
+            # 出力済みのヘッダで判定を進めないようにするため。
+            if ! headers="$(curl -fsS --max-time 30 --retry 5 --retry-delay 10 --retry-all-errors \
+              -o /dev/null -D - "${origin}/")"; then
+              echo "::error::Failed to fetch ${origin}/"
+              failed=1
+              continue
+            fi
+            csp="$(printf '%s\n' "$headers" | tr -d '\r' | grep -i '^content-security-policy:' || true)"
+            if [ -z "$csp" ]; then
+              echo "::error::${origin}/ does not return a Content-Security-Policy header"
+              failed=1
+              continue
+            fi
+            # connect-src ディレクティブをトークンに分け、API のオリジンと完全一致するものを探す。
+            connect_src="$(printf '%s\n' "${csp#*:}" | tr ';' '\n' | grep -i '^[[:space:]]*connect-src[[:space:]]' || true)"
+            if printf '%s\n' "$connect_src" | tr -s '[:space:]' '\n' | grep -qxF "$api_origin"; then
+              echo "OK: ${origin}"
+            else
+              echo "::error::connect-src of ${origin} does not include ${api_origin}"
+              failed=1
+            fi
+          done <<< "$ORIGINS"
+          exit "$failed"

@@ -27,6 +27,10 @@
 | `VITE_REPRESENTATIVE_NAME` | 特商法表記の代表者名。未設定だと `deploy-frontend` が失敗する             | `山田 太郎`                                    |
 | `VITE_CONTACT_EMAIL`       | 特商法表記の連絡先メールアドレス。未設定だと `deploy-frontend` が失敗する | `contact@example.jp`                           |
 
+`CORS_ORIGIN` の各要素は、Cloudflare Pages で配信するフロントエンドのオリジンに限る。
+デプロイ後の smoke-test が、各要素の `/` を取得して CSP の `connect-src` を検査するためである。
+フロントエンド以外のオリジン（CSP を返さない検証用ドメインなど）を加えると、Deploy の smoke-test が失敗する。
+
 `OPERATOR_EMAILS` と `ADMIN_USERNAME` は Secrets 側で管理する (個人情報・管理 UI 識別子のため。下記の Section 2 参照)。
 
 ### 任意 (フォールバック値あり)
@@ -219,6 +223,7 @@ done
 以下のアセットは build 時に動的置換されないため、フォーク時に手動で編集する必要がある:
 
 - `frontend/public/ogp.svg` / `ogp.png`: OGP 画像。配信するのは `ogp.png` で、`ogp.svg` はその原本。サービス名やキャッチコピーを変えるときは SVG を編集し、`rsvg-convert -w 1200 -h 630 ogp.svg -o ogp.png` で PNG を作り直す。画像にドメイン名は入れていないため、ドメインの書き換えは不要。
+- `frontend/public/_headers`: CSP の `connect-src` に API のオリジン `https://api.toique.genzouw.com` を直書きしている。`API_DOMAIN` を変えたら、この値も `https://<API_DOMAIN>` に書き換える。書き換えないと、本番の API 呼び出しが CSP でブロックされ、デプロイ後の smoke-test も失敗する。
 
 ## 8. CDKTF (infra) 実行
 
@@ -242,5 +247,6 @@ bunx cdktf deploy
 3. `.github/workflows/deploy.yml` が `workflow_run` で起動
 4. 各 deploy ジョブの先頭で preflight validation 実行 (Variables 未設定で fail fast)
 5. backend → backup → frontend の順でデプロイ
+6. smoke-test ジョブが本番の `/health`・CORS preflight・CSP の `connect-src` を検査（失敗しても本番は元に戻らない）
 
 CI 経由が使えない場合は `docs/manual-deploy.md` のローカル手動デプロイ手順を参照。
