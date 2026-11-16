@@ -15,30 +15,30 @@
 | `GCP_SERVICE_ACCOUNT` | デプロイ用 SA の email                               | `github-deployer@my-project-prod.iam.gserviceaccount.com` |
 | `GCP_REGION`          | Cloud Run / Artifact Registry のリージョン (任意)    | `asia-northeast1` (デフォルト)                            |
 
-### アプリケーション値 (deploy-backend ジョブで必須)
+### アプリケーション値 (必須)
 
-| 名前                  | 用途                                            | 例                                             |
-| --------------------- | ----------------------------------------------- | ---------------------------------------------- |
-| `CORS_ORIGIN`         | バックエンド CORS 許可オリジン (カンマ区切り可) | `https://example.com,https://my-app.pages.dev` |
-| `STRIPE_PRO_PRICE_ID` | Stripe Pro プラン価格 ID                        | `price_xxxxxxxxxxxx`                           |
-| `MAIL_FROM`           | 認証メールの送信元                              | `App <noreply@example.com>`                    |
-| `CONTACT_FROM`        | お問い合わせメールの送信元                      | `App <noreply@example.com>`                    |
+| 名前                       | 用途                                                                      | 例                                             |
+| -------------------------- | ------------------------------------------------------------------------- | ---------------------------------------------- |
+| `CORS_ORIGIN`              | バックエンド CORS 許可オリジン (カンマ区切り可)                           | `https://example.com,https://my-app.pages.dev` |
+| `STRIPE_PRO_PRICE_ID`      | Stripe Pro プラン価格 ID                                                  | `price_xxxxxxxxxxxx`                           |
+| `MAIL_FROM`                | 認証メールの送信元                                                        | `App <noreply@example.com>`                    |
+| `CONTACT_FROM`             | お問い合わせメールの送信元                                                | `App <noreply@example.com>`                    |
+| `VITE_COMPANY_NAME`        | 特商法表記の事業者名。未設定だと `deploy-frontend` が失敗する             | `株式会社サンプル`                             |
+| `VITE_REPRESENTATIVE_NAME` | 特商法表記の代表者名。未設定だと `deploy-frontend` が失敗する             | `山田 太郎`                                    |
+| `VITE_CONTACT_EMAIL`       | 特商法表記の連絡先メールアドレス。未設定だと `deploy-frontend` が失敗する | `contact@example.jp`                           |
 
 `OPERATOR_EMAILS` と `ADMIN_USERNAME` は Secrets 側で管理する (個人情報・管理 UI 識別子のため。下記の Section 2 参照)。
 
 ### 任意 (フォールバック値あり)
 
-| 名前                       | デフォルト                                     |
-| -------------------------- | ---------------------------------------------- |
-| `CLOUD_RUN_SERVICE`        | `toique-backend`                               |
-| `ARTIFACT_REPO`            | `toique`                                       |
-| `CLOUD_RUN_JOB_BACKUP`     | `db-backup`                                    |
-| `CF_PAGES_PROJECT`         | `toique`                                       |
-| `VITE_GA_TRACKING_ID`      | (空。GA タグを埋め込まない)                    |
-| `SITE_ORIGIN`              | `https://toique.genzouw.com`                   |
-| `VITE_COMPANY_NAME`        | (英語の placeholder。本番公開前に必ず設定する) |
-| `VITE_REPRESENTATIVE_NAME` | (英語の placeholder。本番公開前に必ず設定する) |
-| `VITE_CONTACT_EMAIL`       | (英語の placeholder。本番公開前に必ず設定する) |
+| 名前                   | デフォルト                   |
+| ---------------------- | ---------------------------- |
+| `CLOUD_RUN_SERVICE`    | `toique-backend`             |
+| `ARTIFACT_REPO`        | `toique`                     |
+| `CLOUD_RUN_JOB_BACKUP` | `db-backup`                  |
+| `CF_PAGES_PROJECT`     | `toique`                     |
+| `VITE_GA_TRACKING_ID`  | (空。GA タグを埋め込まない)  |
+| `SITE_ORIGIN`          | `https://toique.genzouw.com` |
 
 ### restore-test 用 (任意・上書き可)
 
