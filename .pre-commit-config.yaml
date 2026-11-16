@@ -17,6 +17,6 @@ repos:
         args: ['--baseline', '.secrets.baseline', '--no-verify']
         exclude: '(^|/)\.secrets\.baseline$'
   - repo: https://github.com/trufflesecurity/trufflehog
-    rev: ea68ca03c865c5f324e86e849ced20ed3cf9dbbb # frozen: v3.99.8 # pragma: allowlist secret
+    rev: 3bd2b5887eb0efb8fa18bfd1d296032924e4ffdc # frozen: v3.99.9 # pragma: allowlist secret
     hooks:
       - id: trufflehog

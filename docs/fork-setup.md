@@ -218,7 +218,7 @@ done
 
 以下のアセットは build 時に動的置換されないため、フォーク時に手動で編集する必要がある:
 
-- `frontend/public/ogp.svg`: 内部の `<text>` ノードに `example.com` がハードコードされている。OGP 画像内のサイトドメイン表示はビルド時に変換されないため、必要なら自社ドメインに書き換える。
+- `frontend/public/ogp.svg` / `ogp.png`: OGP 画像。配信するのは `ogp.png` で、`ogp.svg` はその原本。サービス名やキャッチコピーを変えるときは SVG を編集し、`rsvg-convert -w 1200 -h 630 ogp.svg -o ogp.png` で PNG を作り直す。画像にドメイン名は入れていないため、ドメインの書き換えは不要。
 
 ## 8. CDKTF (infra) 実行
 
