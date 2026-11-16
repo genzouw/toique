@@ -320,6 +320,24 @@ jobs:
           if [ "$missing" -ne 0 ]; then
             exit 1
           fi
+      # 特商法表記の事業者情報が未設定のままビルドすると、placeholder がそのまま本番に公開される。
+      # ビルドは成功してしまうため、ビルド前に fail fast する。
+      - name: Validate required Tokushoho variables
+        env:
+          VITE_COMPANY_NAME: ${{ vars.VITE_COMPANY_NAME }}
+          VITE_REPRESENTATIVE_NAME: ${{ vars.VITE_REPRESENTATIVE_NAME }}
+          VITE_CONTACT_EMAIL: ${{ vars.VITE_CONTACT_EMAIL }}
+        run: |
+          missing=0
+          for v in VITE_COMPANY_NAME VITE_REPRESENTATIVE_NAME VITE_CONTACT_EMAIL; do
+            if [ -z "${!v}" ]; then
+              echo "::error::Repository variable '$v' is not set. Define it in Settings → Secrets and variables → Actions → Variables before running this workflow."
+              missing=1
+            fi
+          done
+          if [ "$missing" -ne 0 ]; then
+            exit 1
+          fi
       # zizmor cache-poisoning は setup-bun のデフォルトキャッシュを検知するが、本ワークフローは
       # workflow_run + branches: [main] でメインブランチ限定起動のため PR 由来のキャッシュ毒は発生しない。
       - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0  # zizmor: ignore[cache-poisoning]
