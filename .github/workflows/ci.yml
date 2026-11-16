@@ -96,7 +96,7 @@ jobs:
         env:
           # Renovate の customManagers が更新する
           SQUAWK_VERSION: '2.70.0'
-        # 設定は .squawk.toml。適用済みの 0000〜0008 は除外しているため、対象が 0 件でも失敗しないよう
+        # 設定は .squawk.toml。本番適用済みの履歴は excluded_paths で除外しているため、対象が 0 件でも失敗しないよう
         # --no-error-on-unmatched-pattern を付ける。対象が 0 件のとき Squawk は標準入力を読むので、
         # 標準入力を /dev/null にして何も検査しないことを明示する。
         run: bunx "squawk-cli@${SQUAWK_VERSION}" --no-error-on-unmatched-pattern db/migrations/*.sql </dev/null

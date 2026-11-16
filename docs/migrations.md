@@ -70,6 +70,8 @@ bunx squawk-cli@2.70.0 --no-error-on-unmatched-pattern db/migrations/*.sql </dev
 | `renaming-column` / `renaming-table`                             | デプロイ中に動いている旧バージョンのコードが列やテーブルを見失う                             | 新しい列を追加してコードを両対応にし、値をコピーしてから旧列を削除する。複数回のデプロイに分ける                                                                      |
 | `ban-concurrent-index-creation-in-transaction`                   | `drizzle-kit migrate` はトランザクション内で実行するため `CONCURRENTLY` が失敗する           | `CONCURRENTLY` を外して `IF NOT EXISTS` を付ける。大規模テーブルは 2 章の事前手動適用を使う                                                                           |
 
+Squawk の版を上げると、新しいルールが本番適用済みのマイグレーションに警告を出し、CI が失敗することがある。適用済みの履歴は 3 章の方針で書き換えないので、`.squawk.toml` の `excluded_paths` を本番適用済みの最新番号まで広げ、この節の冒頭にある除外範囲の記述も合わせて直す。Renovate はこの更新を自動マージしない。
+
 空のテーブルへの変更などで警告を受け入れるときは、無効化コメントを書き、その上の行に受け入れる理由を残す。無効化コメントと対象の文の間に別のコメント行を挟むと無効化が効かない（2.70.0 で確認）。
 
 ```sql
