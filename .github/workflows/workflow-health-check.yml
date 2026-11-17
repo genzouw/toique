@@ -9,6 +9,7 @@ name: Workflow Health Check
 #    (連続失敗は、既定ブランチの最新の完了 run が成功していれば回復済みとみなし、検出しない)
 # 3. 検出時は固定タイトルの issue を作成 (既存ならコメント追記) して通知
 #
+# 判定ロジックは scripts/evaluate-workflow-health.mjs にあり、ci.yml で回帰テストを実行する。
 # 検査自体は read-only で、誤検知してもリポジトリ状態に影響を与えない。
 
 on:
@@ -22,9 +23,9 @@ concurrency:
   cancel-in-progress: false
 
 permissions:
-  # 本 workflow は `gh api` + `$RUNNER_TEMP` のみ使い、checkout はしない。
+  # 本 workflow は `gh api` + `$RUNNER_TEMP` を使い、判定ロジックのために scripts/ だけを checkout する。
   actions: read # 各 workflow の直近 run を GitHub API で集計するため
-  contents: read # 既定ブランチに workflow ファイルが残っているかを contents API で確認するため
+  contents: read # 既定ブランチに workflow ファイルが残っているかの確認と、scripts/ の checkout のため
   issues: write # 検知結果を追跡 issue として作成・コメント追記するため
 
 jobs:
@@ -46,8 +47,11 @@ jobs:
         uses: step-security/harden-runner@1d88384fd173af6ecb012dfd0264a306b711241a # v2.22.4
         with:
           egress-policy: audit
-      # 本 workflow はリポジトリのローカルファイルを参照しないため
-      # actions/checkout は省略 (zizmor excessive-permissions 解消)。
+      # 判定ロジック (scripts/evaluate-workflow-health.mjs) だけを取得する。
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          sparse-checkout: scripts
       - name: Scan recent workflow runs
         id: scan
         run: |
@@ -88,37 +92,22 @@ jobs:
               continue
             fi
 
-            # startup_failure を含むか
-            startup_failures=$(echo "$runs" | jq '[.[] | select(.conclusion=="startup_failure")] | length')
+            # 既定ブランチの完了 run を API 側で絞って別に取得する。上の直近 N 件から絞ると、
+            # PR の run が多い workflow では既定ブランチの run が N 件の外に押し出されて
+            # 回復を判定できないため。判定ルール (startup_failure / chronic failure /
+            # 回復済みの除外 #1064) は scripts/evaluate-workflow-health.mjs に切り出してあり、
+            # ci.yml の回帰テストで検証している。
+            default_runs=$(gh api "repos/${GH_REPO}/actions/workflows/${wf_id}/runs?branch=${default_branch}&status=completed&per_page=${RECENT_RUN_LIMIT}" --jq '[.workflow_runs[] | {conclusion, event}]')
 
-            # 直近 N 件のうち failure / startup_failure / timed_out の件数
-            failure_count=$(echo "$runs" | jq '[.[] | select(.conclusion=="failure" or .conclusion=="startup_failure" or .conclusion=="timed_out")] | length')
-
-            # 既定ブランチの最新の完了 run が成功していれば、連続失敗は回復済みとして扱う。
-            # 件数だけで判定すると、月 1 回しか動かない workflow (Restore Test 等) では
-            # 修正済みの古い失敗が直近 N 件に何か月も残り、誤検知が続くため (#1064)。
-            # PR ブランチや pull_request の run は対象外にする。PR の差分スキャンなどが
-            # 成功しただけで、既定ブランチで続いている失敗を回復済みと誤判定しないため。
-            # cancelled / skipped は成否を示さないので、その前の run で判定する。
-            # 上の直近 N 件から絞ると、PR の run が多い workflow では既定ブランチの run が
-            # N 件の外に押し出されて判定できないため、API 側で既定ブランチに絞って別に取得する。
-            latest_conclusion=$(gh api "repos/${GH_REPO}/actions/workflows/${wf_id}/runs?branch=${default_branch}&status=completed&per_page=${RECENT_RUN_LIMIT}" --jq '
-              [.workflow_runs[] | select(.event!="pull_request")
-                                | select(.conclusion | IN("cancelled", "skipped") | not)]
-              | .[0].conclusion // ""')
-
-            problem=0
-            reasons=()
-            # startup_failure は回復判定に関係なく検出する。特定のイベントだけが
-            # 起動段階で失敗する事態 (PR #336) は、他のイベントの run が成功していても続くため。
-            if [ "$startup_failures" -gt 0 ]; then
-              problem=1
-              reasons+=("startup_failure x${startup_failures} in last ${RECENT_RUN_LIMIT}")
-            fi
-            if [ "$latest_conclusion" != "success" ] && [ "$failure_count" -ge "$CHRONIC_FAILURE_THRESHOLD" ]; then
-              problem=1
-              reasons+=("chronic failures: ${failure_count}/${RECENT_RUN_LIMIT}")
-            fi
+            verdict=$(jq -n \
+              --argjson recent "$runs" \
+              --argjson defaultRuns "$default_runs" \
+              --argjson limit "$RECENT_RUN_LIMIT" \
+              --argjson threshold "$CHRONIC_FAILURE_THRESHOLD" \
+              '{recentRuns: $recent, defaultBranchRuns: $defaultRuns, recentRunLimit: $limit, chronicFailureThreshold: $threshold}' \
+              | node scripts/evaluate-workflow-health.mjs)
+            problem=$(echo "$verdict" | jq '.problem | if . then 1 else 0 end')
+            mapfile -t reasons < <(echo "$verdict" | jq -r '.reasons[]')
 
             if [ "$problem" -eq 1 ]; then
               any_problem=1
