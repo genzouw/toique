@@ -4,6 +4,8 @@ export default defineConfig({
   test: {
     environment: 'node',
     include: ['src/**/*.test.ts'],
+    // CI 環境変数が Docker 内に渡らず .only が許可されるため、常に禁止する（Issue #1086）。
+    allowOnly: false,
     // oven/bun:1.4.0-alpine 上で istanbul 計装後に `import { z } from 'zod'` が
     // undefined になる Bun × Zod 4 の ESM 解決バグへの回避策。zod を vite 側で
     // インラインバンドルさせて Bun のネイティブ ESM 解決を経由させない。
