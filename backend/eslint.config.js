@@ -1,5 +1,6 @@
 import js from '@eslint/js';
 import drizzle from 'eslint-plugin-drizzle';
+import vitest from '@vitest/eslint-plugin';
 import tseslint from 'typescript-eslint';
 
 export default tseslint.config(
@@ -40,5 +41,10 @@ export default tseslint.config(
         { drizzleObjectName: ['db', 'tx'] },
       ],
     },
+  },
+  {
+    // .only の混入・await の無い expect・アサーション無しのテストを検出する（Issue #1086）。
+    files: ['src/**/*.test.ts'],
+    ...vitest.configs.recommended,
   },
 );

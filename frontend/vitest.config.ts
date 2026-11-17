@@ -13,6 +13,8 @@ export default mergeConfig(
   defineConfig({
     test: {
       globals: false,
+      // CI 環境変数が Docker 内に渡らず .only が許可されるため、常に禁止する（Issue #1086）。
+      allowOnly: false,
       environment: 'jsdom',
       setupFiles: ['./src/test/setup.ts'],
       coverage: {

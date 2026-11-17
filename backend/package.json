@@ -33,6 +33,7 @@
     "@types/node": "^26.6.2",
     "@types/nodemailer": "^8.0.2",
     "@vitest/coverage-istanbul": "^5.0.1",
+    "@vitest/eslint-plugin": "^1.6.28",
     "drizzle-kit": "^0.31.10",
     "esbuild": "0.28.2",
     "eslint": "^10.11.0",

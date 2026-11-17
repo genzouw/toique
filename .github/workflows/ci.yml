@@ -129,6 +129,8 @@ jobs:
         run: bun test scripts/detect-secrets-diff.test.mjs
       - name: Run backup/restore-test.sh regression test
         run: bun test scripts/restore-test.test.mjs
+      - name: Run evaluate-workflow-health.mjs regression test
+        run: bun test scripts/evaluate-workflow-health.test.mjs
 
   frontend:
     name: Frontend (lint / typecheck / format / test / build)
