@@ -52,26 +52,30 @@ function buildMembersCountQuery(tenantId: string) {
     .where(eq(tenantMembers.tenantId, tenantId));
 }
 
+// count(*) は GROUP BY が無ければ必ず 1 行を返す。行が無いのは異常なので、
+// 0 件として上限判定を素通りさせず、例外にする。
+function firstCount(rows: { count: number }[]): number {
+  const [r] = rows;
+  if (!r) throw new Error('count query returned no row');
+  return r.count;
+}
+
 async function countResource(
   tenantId: string,
   resource: ResourceKey,
 ): Promise<number> {
   switch (resource) {
     case 'lineChannels': {
-      const [r] = await buildLineChannelsCountQuery(tenantId);
-      return r.count;
+      return firstCount(await buildLineChannelsCountQuery(tenantId));
     }
     case 'forms': {
-      const [r] = await buildFormsCountQuery(tenantId);
-      return r.count;
+      return firstCount(await buildFormsCountQuery(tenantId));
     }
     case 'submissionsPerMonth': {
-      const [r] = await buildSubmissionsCountQuery(tenantId);
-      return r.count;
+      return firstCount(await buildSubmissionsCountQuery(tenantId));
     }
     case 'members': {
-      const [r] = await buildMembersCountQuery(tenantId);
-      return r.count;
+      return firstCount(await buildMembersCountQuery(tenantId));
     }
   }
 }

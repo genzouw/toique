@@ -282,8 +282,7 @@ export async function findActiveSession(lineUserRowId: string): Promise<{
       ),
     )
     .limit(1);
-  if (rows.length === 0) return null;
-  return rows[0];
+  return rows[0] ?? null;
 }
 
 /**

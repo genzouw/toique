@@ -133,12 +133,12 @@ async function seed() {
     .insert(tenants)
     .values({ name: 'Sub Test T1' })
     .returning({ id: tenants.id });
-  tenantId = t1.id;
+  tenantId = t1!.id;
   const [t2] = await db
     .insert(tenants)
     .values({ name: 'Sub Test T2' })
     .returning({ id: tenants.id });
-  otherTenantId = t2.id;
+  otherTenantId = t2!.id;
 
   const [ch] = await db
     .insert(lineChannels)
@@ -150,7 +150,7 @@ async function seed() {
       displayName: 'Sub Test',
     })
     .returning({ id: lineChannels.id });
-  channelRowId = ch.id;
+  channelRowId = ch!.id;
 
   const [u] = await db
     .insert(lineUsers)
@@ -159,7 +159,7 @@ async function seed() {
       lineUserId: 'U-sub-test',
     })
     .returning({ id: lineUsers.id });
-  lineUserRowId = u.id;
+  lineUserRowId = u!.id;
 
   const [f] = await db
     .insert(forms)
@@ -171,7 +171,7 @@ async function seed() {
       schema: sampleSchema as unknown as Record<string, unknown>,
     })
     .returning({ id: forms.id });
-  formId = f.id;
+  formId = f!.id;
 }
 
 async function cleanup() {
@@ -215,8 +215,8 @@ describe('submissions route', () => {
       answers: Record<string, string>;
     }>;
     expect(body).toHaveLength(2);
-    expect(body[0].answers.brand).toBe('Hermes'); // newer first
-    expect(body[1].answers.brand).toBe('Rolex');
+    expect(body[0]!.answers.brand).toBe('Hermes'); // newer first
+    expect(body[1]!.answers.brand).toBe('Rolex');
   });
 
   it('GET /export returns 400 when formId is missing', async () => {
@@ -288,7 +288,7 @@ describe('submissions route', () => {
     expect(lines[1]).toContain('plain');
 
     // 2 行目 — 欠落 note は空文字列、orphan も空
-    expect(lines[2].endsWith(',,')).toBe(true);
+    expect(lines[2]!.endsWith(',,')).toBe(true);
   });
 
   it('GET /export preserves numeric values without formula-injection escape', async () => {

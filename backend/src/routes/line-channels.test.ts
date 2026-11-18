@@ -35,7 +35,7 @@ describe('line-channels routes', () => {
       .insert(tenants)
       .values({ name: 'Test Tenant' })
       .returning({ id: tenants.id });
-    tenantId = t.id;
+    tenantId = t!.id;
   });
 
   afterEach(async () => {
@@ -79,8 +79,8 @@ describe('line-channels routes', () => {
     expect(res.status).toBe(200);
     const body = (await res.json()) as Array<Record<string, unknown>>;
     expect(body.length).toBe(1);
-    expect(body[0].channelId).toBe(TEST_CHANNEL_ID);
-    expect(body[0].tenantId).toBe(tenantId);
+    expect(body[0]!.channelId).toBe(TEST_CHANNEL_ID);
+    expect(body[0]!.tenantId).toBe(tenantId);
     expect(body[0]).not.toHaveProperty('channelSecret');
     expect(body[0]).not.toHaveProperty('channelAccessToken');
   });

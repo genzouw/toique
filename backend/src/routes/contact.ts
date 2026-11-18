@@ -106,6 +106,7 @@ app.post('/', async (c) => {
       ipAddress: ip === 'unknown' ? null : ip,
     })
     .returning();
+  if (!inserted) throw new Error('Contact insert returned no row');
 
   // テナント名解決 (通知メール用)
   let tenantName: string | null = null;

@@ -22,7 +22,7 @@ describe('replyMessage', () => {
 
     const fetchMock = global.fetch as unknown as ReturnType<typeof vi.fn>;
     expect(fetchMock).toHaveBeenCalledTimes(1);
-    const [url, init] = fetchMock.mock.calls[0];
+    const [url, init] = fetchMock.mock.calls[0]!;
     expect(url).toBe('https://api.line.me/v2/bot/message/reply');
     expect(init.method).toBe('POST');
     expect(init.headers['Authorization']).toBe('Bearer test-token');
@@ -69,7 +69,7 @@ describe('pushMessage', () => {
 
     const fetchMock = global.fetch as unknown as ReturnType<typeof vi.fn>;
     expect(fetchMock).toHaveBeenCalledTimes(1);
-    const [url, init] = fetchMock.mock.calls[0];
+    const [url, init] = fetchMock.mock.calls[0]!;
     expect(url).toBe('https://api.line.me/v2/bot/message/push');
     expect(init.method).toBe('POST');
     expect(init.headers['Authorization']).toBe('Bearer push-token');

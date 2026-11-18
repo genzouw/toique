@@ -114,7 +114,7 @@ export const requireOperator: MiddlewareHandler = async (c, next) => {
     return c.text('Unauthorized', 401);
   }
 
-  const base64Credentials = authHeader.split(' ')[1];
+  const base64Credentials = authHeader.split(' ')[1] ?? '';
   let decoded: string;
   try {
     decoded = Buffer.from(base64Credentials, 'base64').toString('utf-8');

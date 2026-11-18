@@ -35,7 +35,7 @@ async function upsertLineUser(
       set: { lineUserId: sql`excluded.line_user_id` },
     })
     .returning();
-  return user;
+  return user ?? null;
 }
 
 export async function handleLineEvent(

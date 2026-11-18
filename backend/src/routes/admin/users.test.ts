@@ -34,7 +34,7 @@ describe('admin users route', () => {
       .insert(tenants)
       .values({ name: 'Admin Users Test Tenant', plan: 'free' })
       .returning({ id: tenants.id });
-    createdTenantIds.push(t.id);
+    createdTenantIds.push(t!.id);
 
     const [u1] = await db
       .insert(users)
@@ -54,11 +54,11 @@ describe('admin users route', () => {
         createdAt: new Date('2026-04-01T00:00:00Z'),
       })
       .returning({ id: users.id });
-    createdUserIds.push(u1.id, u2.id);
+    createdUserIds.push(u1!.id, u2!.id);
 
     await db.insert(tenantMembers).values({
-      tenantId: t.id,
-      userId: u1.id,
+      tenantId: t!.id,
+      userId: u1!.id,
       role: 'admin',
     });
 
@@ -79,20 +79,20 @@ describe('admin users route', () => {
     const rowsOfTest = body.filter((r) => createdUserIds.includes(r.id));
     expect(rowsOfTest).toHaveLength(2);
     // desc: Newer が先
-    const newerIndex = rowsOfTest.findIndex((r) => r.id === u2.id);
-    const olderIndex = rowsOfTest.findIndex((r) => r.id === u1.id);
+    const newerIndex = rowsOfTest.findIndex((r) => r.id === u2!.id);
+    const olderIndex = rowsOfTest.findIndex((r) => r.id === u1!.id);
     expect(newerIndex).toBeLessThan(olderIndex);
 
     const newer = rowsOfTest[newerIndex];
-    expect(newer.tenantId).toBeNull();
-    expect(newer.tenantName).toBeNull();
-    expect(newer.tenantRole).toBeNull();
+    expect(newer!.tenantId).toBeNull();
+    expect(newer!.tenantName).toBeNull();
+    expect(newer!.tenantRole).toBeNull();
 
     const older = rowsOfTest[olderIndex];
-    expect(older.tenantId).toBe(t.id);
-    expect(older.tenantName).toBe('Admin Users Test Tenant');
-    expect(older.tenantPlan).toBe('free');
-    expect(older.tenantRole).toBe('admin');
+    expect(older!.tenantId).toBe(t!.id);
+    expect(older!.tenantName).toBe('Admin Users Test Tenant');
+    expect(older!.tenantPlan).toBe('free');
+    expect(older!.tenantRole).toBe('admin');
   });
 
   it('GET /api/v1/admin/users/:id returns detail with tenant info', async () => {
@@ -100,7 +100,7 @@ describe('admin users route', () => {
       .insert(tenants)
       .values({ name: 'Detail Test Tenant', plan: 'pro' })
       .returning({ id: tenants.id });
-    createdTenantIds.push(t.id);
+    createdTenantIds.push(t!.id);
 
     const [u] = await db
       .insert(users)
@@ -110,16 +110,16 @@ describe('admin users route', () => {
         emailVerified: true,
       })
       .returning({ id: users.id });
-    createdUserIds.push(u.id);
+    createdUserIds.push(u!.id);
 
     await db.insert(tenantMembers).values({
-      tenantId: t.id,
-      userId: u.id,
+      tenantId: t!.id,
+      userId: u!.id,
       role: 'operator',
     });
 
     const app = buildApp();
-    const res = await app.request(`/api/v1/admin/users/${u.id}`);
+    const res = await app.request(`/api/v1/admin/users/${u!.id}`);
     expect(res.status).toBe(200);
     const body = (await res.json()) as {
       id: string;
@@ -130,9 +130,9 @@ describe('admin users route', () => {
       tenantPlan: string | null;
       tenantRole: string | null;
     };
-    expect(body.id).toBe(u.id);
+    expect(body.id).toBe(u!.id);
     expect(body.name).toBe('Detail User');
-    expect(body.tenantId).toBe(t.id);
+    expect(body.tenantId).toBe(t!.id);
     expect(body.tenantName).toBe('Detail Test Tenant');
     expect(body.tenantPlan).toBe('pro');
     expect(body.tenantRole).toBe('operator');
@@ -154,12 +154,12 @@ describe('admin users route', () => {
         email: `lone-${Date.now()}@test.local`,
       })
       .returning({ id: users.id });
-    createdUserIds.push(u.id);
+    createdUserIds.push(u!.id);
 
     const app = buildApp();
     const res = await app.request('/api/v1/admin/users');
     expect(res.status).toBe(200);
     const body = (await res.json()) as Array<{ id: string }>;
-    expect(body.some((r) => r.id === u.id)).toBe(true);
+    expect(body.some((r) => r.id === u!.id)).toBe(true);
   });
 });
