@@ -150,7 +150,7 @@ export default function FormEdit() {
             f.schema ?? (DEFAULT_SCHEMA as Record<string, unknown>);
           setSchemaObj(schema);
           setSchemaJson(JSON.stringify(schema, null, 2));
-        } else if (chs.length > 0) {
+        } else if (chs[0]) {
           setLineChannelId(chs[0].id);
         }
       } catch (e) {
@@ -220,8 +220,9 @@ export default function FormEdit() {
         return;
     }
     if (nextIndex === currentIndex) return;
-    e.preventDefault();
     const nextTab = TAB_ORDER[nextIndex];
+    if (!nextTab) return;
+    e.preventDefault();
     switchTab(nextTab);
     tabRefs.current[nextTab]?.focus();
   }

@@ -12,7 +12,7 @@ if (
 ) {
   const store: Record<string, string> = {};
   const storage: Storage = {
-    getItem: (k) => (k in store ? store[k] : null),
+    getItem: (k) => (k in store ? (store[k] ?? null) : null),
     setItem: (k, v) => {
       store[k] = v;
     },

@@ -73,7 +73,7 @@ describe('Channels Page', () => {
       const deleteButtons = screen.getAllByRole('button', {
         name: 'Test Channel 1 を削除',
       });
-      fireEvent.click(deleteButtons[0]);
+      fireEvent.click(deleteButtons[0]!);
 
       expect(window.confirm).toHaveBeenCalledWith('削除してよろしいですか？');
 
@@ -96,7 +96,7 @@ describe('Channels Page', () => {
       const deleteButtons = screen.getAllByRole('button', {
         name: 'Test Channel 1 を削除',
       });
-      fireEvent.click(deleteButtons[0]);
+      fireEvent.click(deleteButtons[0]!);
 
       expect(window.confirm).toHaveBeenCalledWith('削除してよろしいですか？');
 
@@ -118,7 +118,7 @@ describe('Channels Page', () => {
       const deleteButtons = screen.getAllByRole('button', {
         name: 'Test Channel 1 を削除',
       });
-      fireEvent.click(deleteButtons[0]);
+      fireEvent.click(deleteButtons[0]!);
 
       await waitFor(() => {
         expect(screen.getByText(errorMessage)).toBeInTheDocument();
