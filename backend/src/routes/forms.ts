@@ -98,6 +98,7 @@ app.post('/', async (c) => {
       schema: body.schema as Record<string, unknown>,
     })
     .returning();
+  if (!created) throw new Error('Form insert returned no row');
 
   return c.json(created, 201);
 });
