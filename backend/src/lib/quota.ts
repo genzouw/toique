@@ -53,7 +53,8 @@ function buildMembersCountQuery(tenantId: string) {
 }
 
 // count(*) は GROUP BY が無ければ必ず 1 行を返す。行が無いのは異常なので、
-// 0 件として上限判定を素通りさせず、例外にする。
+// 0 件として扱わずに例外にし、扱いを呼び出し元に委ねる（作成 API は 500、
+// engine.ts の回答数の判定は fail-open で受付を続ける）。
 function firstCount(rows: { count: number }[]): number {
   const [r] = rows;
   if (!r) throw new Error('count query returned no row');
