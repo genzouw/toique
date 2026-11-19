@@ -41,8 +41,8 @@ describe('messages route', () => {
       .insert(tenants)
       .values({ name: 'Msg Test T2' })
       .returning({ id: tenants.id });
-    tenantId = t1.id;
-    otherTenantId = t2.id;
+    tenantId = t1!.id;
+    otherTenantId = t2!.id;
 
     const [c1] = await db
       .insert(lineChannels)
@@ -54,7 +54,7 @@ describe('messages route', () => {
         displayName: 'Msg Test',
       })
       .returning({ id: lineChannels.id });
-    channelRowId = c1.id;
+    channelRowId = c1!.id;
 
     const [c2] = await db
       .insert(lineChannels)
@@ -66,7 +66,7 @@ describe('messages route', () => {
         displayName: 'Msg Test Other',
       })
       .returning({ id: lineChannels.id });
-    otherChannelRowId = c2.id;
+    otherChannelRowId = c2!.id;
   });
 
   afterEach(async () => {
@@ -136,7 +136,7 @@ describe('messages route', () => {
     const body = (await res.json()) as Array<{ text: string }>;
     expect(body).toHaveLength(2);
     expect(body.some((m) => m.text === 'other-tenant-message')).toBe(false);
-    expect(body[0].text).toBe('second'); // desc: 新しい順
-    expect(body[1].text).toBe('first');
+    expect(body[0]!.text).toBe('second'); // desc: 新しい順
+    expect(body[1]!.text).toBe('first');
   });
 });

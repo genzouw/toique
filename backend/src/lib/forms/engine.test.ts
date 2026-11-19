@@ -54,7 +54,7 @@ async function seed() {
     .insert(tenants)
     .values({ name: 'Engine Test' })
     .returning({ id: tenants.id });
-  tenantId = t.id;
+  tenantId = t!.id;
 
   const [ch] = await db
     .insert(lineChannels)
@@ -66,7 +66,7 @@ async function seed() {
       displayName: 'Engine Test',
     })
     .returning({ id: lineChannels.id });
-  channelRowId = ch.id;
+  channelRowId = ch!.id;
 
   const [u] = await db
     .insert(lineUsers)
@@ -75,7 +75,7 @@ async function seed() {
       lineUserId: 'U-engine-test',
     })
     .returning({ id: lineUsers.id });
-  lineUserRowId = u.id;
+  lineUserRowId = u!.id;
 
   const [f] = await db
     .insert(forms)
@@ -88,7 +88,7 @@ async function seed() {
       schema: sampleSchema as unknown as Record<string, unknown>,
     })
     .returning({ id: forms.id });
-  formId = f.id;
+  formId = f!.id;
 
   const [f2] = await db
     .insert(forms)
@@ -101,7 +101,7 @@ async function seed() {
       schema: sampleSchema as unknown as Record<string, unknown>,
     })
     .returning({ id: forms.id });
-  formId2 = f2.id;
+  formId2 = f2!.id;
 }
 
 async function cleanup() {
@@ -157,7 +157,7 @@ describe('forms engine', () => {
       .returning({ id: forms.id });
 
     const form = await findFormByTrigger(channelRowId, '査定をお願いします');
-    expect(form?.id).toBe(newer.id);
+    expect(form?.id).toBe(newer!.id);
   });
 
   it('startSession creates a session and returns the first step as Quick Reply', async () => {
@@ -166,13 +166,13 @@ describe('forms engine', () => {
       .from(lineUsers)
       .where(eq(lineUsers.id, lineUserRowId));
     const [form] = await db.select().from(forms).where(eq(forms.id, formId));
-    const outcome = await startSession(lineUser, form);
+    const outcome = await startSession(lineUser!, form!);
 
     expect(outcome.completed).toBe(false);
     expect(outcome.replyMessages).toHaveLength(1);
     const msg = outcome.replyMessages[0];
-    expect(msg.text).toBe('カテゴリを選んでください');
-    expect(msg.quickReply?.items).toHaveLength(2);
+    expect(msg!.text).toBe('カテゴリを選んでください');
+    expect(msg!.quickReply?.items).toHaveLength(2);
 
     const active = await findActiveSession(lineUserRowId);
     expect(active?.session.currentStep).toBe('category');
@@ -185,26 +185,26 @@ describe('forms engine', () => {
       .from(lineUsers)
       .where(eq(lineUsers.id, lineUserRowId));
     const [form] = await db.select().from(forms).where(eq(forms.id, formId));
-    await startSession(lineUser, form);
+    await startSession(lineUser!, form!);
 
     // 1. choice 回答 (postback)
     let active = await findActiveSession(lineUserRowId);
     expect(active).not.toBeNull();
-    const r1 = await advanceSession(lineUser, form, active!.session, {
+    const r1 = await advanceSession(lineUser!, form!, active!.session, {
       kind: 'postback',
       postbackData: encodePostbackData('category', 'watch'),
     });
     expect(r1.completed).toBe(false);
-    expect(r1.replyMessages[0].text).toBe('ブランド名を教えてください');
+    expect(r1.replyMessages[0]!.text).toBe('ブランド名を教えてください');
 
     // 2. text 回答
     active = await findActiveSession(lineUserRowId);
-    const r2 = await advanceSession(lineUser, form, active!.session, {
+    const r2 = await advanceSession(lineUser!, form!, active!.session, {
       kind: 'text',
       text: 'ロレックス',
     });
     expect(r2.completed).toBe(true);
-    expect(r2.replyMessages[0].text).toBe('ありがとうございました');
+    expect(r2.replyMessages[0]!.text).toBe('ありがとうございました');
 
     // submission が作られている
     const subs = await db
@@ -212,7 +212,7 @@ describe('forms engine', () => {
       .from(submissions)
       .where(eq(submissions.formId, formId));
     expect(subs).toHaveLength(1);
-    expect(subs[0].answers).toEqual({
+    expect(subs[0]!.answers).toEqual({
       category: 'watch',
       brand: 'ロレックス',
     });
@@ -222,7 +222,7 @@ describe('forms engine', () => {
       .select()
       .from(lineSessions)
       .where(eq(lineSessions.lineUserId, lineUserRowId));
-    expect(session.status).toBe('completed');
+    expect(session!.status).toBe('completed');
   });
 
   it('advanceSession accepts typed text that matches a choice label', async () => {
@@ -231,15 +231,15 @@ describe('forms engine', () => {
       .from(lineUsers)
       .where(eq(lineUsers.id, lineUserRowId));
     const [form] = await db.select().from(forms).where(eq(forms.id, formId));
-    await startSession(lineUser, form);
+    await startSession(lineUser!, form!);
     const active = await findActiveSession(lineUserRowId);
 
-    const r = await advanceSession(lineUser, form, active!.session, {
+    const r = await advanceSession(lineUser!, form!, active!.session, {
       kind: 'text',
       text: '時計', // 選択肢のlabelに一致
     });
     expect(r.completed).toBe(false);
-    expect(r.replyMessages[0].text).toBe('ブランド名を教えてください');
+    expect(r.replyMessages[0]!.text).toBe('ブランド名を教えてください');
 
     const updated = await findActiveSession(lineUserRowId);
     expect(updated?.session.answers).toEqual({ category: 'watch' });
@@ -251,14 +251,14 @@ describe('forms engine', () => {
       .from(lineUsers)
       .where(eq(lineUsers.id, lineUserRowId));
     const [form] = await db.select().from(forms).where(eq(forms.id, formId));
-    await startSession(lineUser, form);
+    await startSession(lineUser!, form!);
     const active = await findActiveSession(lineUserRowId);
 
-    const r = await advanceSession(lineUser, form, active!.session, {
+    const r = await advanceSession(lineUser!, form!, active!.session, {
       kind: 'text',
       text: '自由文', // 選択肢に一致しない
     });
     expect(r.completed).toBe(false);
-    expect(r.replyMessages[0].text).toBe('カテゴリを選んでください');
+    expect(r.replyMessages[0]!.text).toBe('カテゴリを選んでください');
   });
 });

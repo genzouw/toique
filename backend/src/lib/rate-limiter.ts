@@ -86,7 +86,7 @@ type LimiterState = {
 /** ソート済み配列の先頭から期限切れエントリ数をカウント */
 function countExpired(history: number[], windowStart: number): number {
   let count = 0;
-  while (count < history.length && history[count] <= windowStart) {
+  while (count < history.length && history[count]! <= windowStart) {
     count++;
   }
   return count;

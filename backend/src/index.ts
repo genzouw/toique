@@ -46,8 +46,9 @@ app.use(
 );
 
 app.get('/health', async (c) => {
-  const [{ now }] = await sql`SELECT now()`;
-  return c.json({ status: 'ok', time: now });
+  const [row] = await sql`SELECT now()`;
+  if (!row) throw new Error('SELECT now() returned no row');
+  return c.json({ status: 'ok', time: row.now });
 });
 
 // Better Auth endpoints

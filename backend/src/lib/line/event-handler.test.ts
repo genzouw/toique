@@ -36,7 +36,7 @@ describe('handleLineEvent', () => {
       .insert(tenants)
       .values({ name: 'Evt Test' })
       .returning({ id: tenants.id });
-    tenantId = t.id;
+    tenantId = t!.id;
 
     currentChannelId = `test-evt-channel-${randomUUID()}`;
 
@@ -77,9 +77,9 @@ describe('handleLineEvent', () => {
       .from(inboundMessages)
       .where(eq(inboundMessages.lineChannelId, channel.id));
     expect(saved).toHaveLength(1);
-    expect(saved[0].eventType).toBe('message');
-    expect(saved[0].messageType).toBe('text');
-    expect(saved[0].text).toBe('hello world');
+    expect(saved[0]!.eventType).toBe('message');
+    expect(saved[0]!.messageType).toBe('text');
+    expect(saved[0]!.text).toBe('hello world');
 
     // エコー応答は廃止済み — フォーム未マッチ時は自動返信しない
     const fetchMock = global.fetch as unknown as ReturnType<typeof vi.fn>;
@@ -103,7 +103,7 @@ describe('handleLineEvent', () => {
       .from(lineUsers)
       .where(eq(lineUsers.lineChannelId, channel.id));
     expect(users).toHaveLength(1);
-    expect(users[0].lineUserId).toBe(TEST_USER_ID);
+    expect(users[0]!.lineUserId).toBe(TEST_USER_ID);
   });
 
   it('abandons active session on cancellation keywords (Fluid Context Switching)', async () => {
@@ -136,8 +136,8 @@ describe('handleLineEvent', () => {
 
     // Start an active session
     await db.insert(lineSessions).values({
-      lineUserId: lineUser.id,
-      formId: form.id,
+      lineUserId: lineUser!.id,
+      formId: form!.id,
       currentStep: 's1',
       status: 'in_progress',
       answers: {},
@@ -157,13 +157,13 @@ describe('handleLineEvent', () => {
     const session = await db
       .select()
       .from(lineSessions)
-      .where(eq(lineSessions.lineUserId, lineUser.id));
-    expect(session[0].status).toBe('abandoned');
+      .where(eq(lineSessions.lineUserId, lineUser!.id));
+    expect(session[0]!.status).toBe('abandoned');
 
     const fetchMock = global.fetch as unknown as ReturnType<typeof vi.fn>;
     expect(fetchMock).toHaveBeenCalledTimes(1);
     const callArgs = fetchMock.mock.calls[0];
-    const reqBody = JSON.parse(callArgs[1].body);
+    const reqBody = JSON.parse(callArgs![1].body);
     expect(reqBody.replyToken).toBe('rt-cancel');
     expect(reqBody.messages[0].text).toBe('現在の入力をキャンセルしました。');
   });
@@ -218,8 +218,8 @@ describe('handleLineEvent', () => {
 
     // Start an active session for Form A
     await db.insert(lineSessions).values({
-      lineUserId: lineUser.id,
-      formId: formA.id,
+      lineUserId: lineUser!.id,
+      formId: formA!.id,
       currentStep: 'a1',
       status: 'in_progress',
       answers: {},
@@ -242,8 +242,8 @@ describe('handleLineEvent', () => {
       .from(lineSessions)
       .where(
         and(
-          eq(lineSessions.lineUserId, lineUser.id),
-          eq(lineSessions.formId, formA.id),
+          eq(lineSessions.lineUserId, lineUser!.id),
+          eq(lineSessions.formId, formA!.id),
         ),
       );
 
@@ -253,8 +253,8 @@ describe('handleLineEvent', () => {
       .from(lineSessions)
       .where(
         and(
-          eq(lineSessions.lineUserId, lineUser.id),
-          eq(lineSessions.formId, formB.id),
+          eq(lineSessions.lineUserId, lineUser!.id),
+          eq(lineSessions.formId, formB!.id),
         ),
       );
 
@@ -266,7 +266,7 @@ describe('handleLineEvent', () => {
     const fetchMock = global.fetch as unknown as ReturnType<typeof vi.fn>;
     expect(fetchMock).toHaveBeenCalledTimes(1);
     const callArgs = fetchMock.mock.calls[0];
-    const reqBody = JSON.parse(callArgs[1].body);
+    const reqBody = JSON.parse(callArgs![1].body);
     expect(reqBody.replyToken).toBe('rt-switch');
     expect(reqBody.messages[0].text).toBe('Prompt B');
   });

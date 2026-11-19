@@ -15,4 +15,4 @@ const parsed = (process.env.CORS_ORIGIN || DEFAULT_FRONTEND_URL)
 export const allowedOrigins: readonly string[] =
   parsed.length > 0 ? parsed : [DEFAULT_FRONTEND_URL];
 
-export const frontendUrl: string = allowedOrigins[0];
+export const frontendUrl: string = allowedOrigins[0] ?? DEFAULT_FRONTEND_URL;

@@ -79,7 +79,7 @@ describe('getTenantUsage with unlimited option', () => {
 
   it('passes the start of month as an ISO string, not a Date, to the raw SQL', async () => {
     await getTenantUsage('tenant-id', 'free');
-    const query = vi.mocked(db.execute).mock.calls[0][0] as unknown as {
+    const query = vi.mocked(db.execute).mock.calls[0]![0] as unknown as {
       queryChunks: unknown[];
     };
     expect(query.queryChunks.some((c) => c instanceof Date)).toBe(false);

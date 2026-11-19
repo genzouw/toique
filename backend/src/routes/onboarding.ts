@@ -63,6 +63,7 @@ app.post('/', async (c) => {
     .insert(tenants)
     .values({ name: body.tenantName.trim() })
     .returning();
+  if (!tenant) throw new Error('Tenant insert returned no row');
 
   await db.insert(tenantMembers).values({
     tenantId: tenant.id,

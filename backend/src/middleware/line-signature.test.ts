@@ -16,7 +16,7 @@ describe('lineSignature middleware', () => {
       .insert(tenants)
       .values({ name: 'Sig Test' })
       .returning({ id: tenants.id });
-    tenantId = t.id;
+    tenantId = t!.id;
 
     await db.insert(lineChannels).values({
       tenantId,

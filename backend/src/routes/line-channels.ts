@@ -61,6 +61,7 @@ app.post('/', async (c) => {
       displayName: body.displayName,
     })
     .returning(safeChannelColumns);
+  if (!created) throw new Error('LINE channel insert returned no row');
 
   return c.json(created, 201);
 });
