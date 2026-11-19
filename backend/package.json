@@ -9,6 +9,7 @@
     "test": "vitest run",
     "test:coverage": "vitest --run --coverage",
     "test:watch": "vitest",
+    "test:mutation": "stryker run",
     "lint": "eslint .",
     "format:check": "prettier --check 'src/**/*.ts'",
     "format": "prettier --write 'src/**/*.ts'",
@@ -30,6 +31,8 @@
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
+    "@stryker-mutator/core": "10.1.1",
+    "@stryker-mutator/vitest-runner": "10.1.1",
     "@types/node": "^26.6.2",
     "@types/nodemailer": "^8.0.2",
     "@vitest/coverage-istanbul": "^5.0.1",
@@ -51,6 +54,7 @@
     "brace-expansion": "^5.0.9",
     "postcss": "^8.5.18",
     "nanoid": "^6.0.0",
-    "minimatch": "^11.0.1"
+    "minimatch": "^11.0.1",
+    "qs": "^6.16.1"
   }
 }
