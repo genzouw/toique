@@ -18,11 +18,11 @@
   "devDependencies": {
     "@commitlint/cli": "^21.2.3",
     "@commitlint/config-conventional": "^21.2.3",
-    "@secretlint/secretlint-formatter-sarif": "^13.0.5",
+    "@secretlint/secretlint-formatter-sarif": "^14.0.0",
     "@secretlint/secretlint-rule-preset-recommend": "^13.0.5",
     "husky": "^9.1.0",
     "lint-staged": "^17.5.1",
-    "secretlint": "^13.0.5"
+    "secretlint": "^14.0.0"
   },
   "lint-staged": {
     "**/*.{pem,key,p12,p8,keystore,jks,sqlite,db,log,http,rest,patch,diff,local}": [
