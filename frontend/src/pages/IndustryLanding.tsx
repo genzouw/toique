@@ -82,7 +82,7 @@ function IndustryLandingView({ content }: { content: IndustryContent }) {
       <section className="py-20 px-6">
         <div className="max-w-3xl mx-auto text-center">
           <div className="flex justify-center">
-            <div className="w-14 h-14 bg-slate-50 text-slate-700 rounded-lg flex items-center justify-center">
+            <div className="size-14 bg-slate-50 text-slate-700 rounded-lg flex items-center justify-center">
               <HeroIcon size={ICON_SIZE.hero} />
             </div>
           </div>
@@ -142,7 +142,7 @@ function IndustryLandingView({ content }: { content: IndustryContent }) {
           <ol className="mt-10 space-y-4">
             {content.solutionSteps.map((step, idx) => (
               <li key={step} className="flex gap-4 items-start">
-                <span className="flex-shrink-0 w-8 h-8 bg-slate-900 text-white rounded-full flex items-center justify-center text-sm font-bold">
+                <span className="flex-shrink-0 size-8 bg-slate-900 text-white rounded-full flex items-center justify-center text-sm font-bold">
                   {idx + 1}
                 </span>
                 <p className="text-sm text-slate-700 leading-relaxed pt-1">

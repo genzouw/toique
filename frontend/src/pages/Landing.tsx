@@ -228,7 +228,7 @@ export default function Landing() {
                 key={u.title}
                 className="bg-white border border-slate-200 rounded-lg p-6 flex flex-col sm:flex-row gap-4"
               >
-                <div className="flex-shrink-0 w-12 h-12 bg-slate-50 text-slate-700 rounded-lg flex items-center justify-center">
+                <div className="flex-shrink-0 size-12 bg-slate-50 text-slate-700 rounded-lg flex items-center justify-center">
                   <u.icon size={ICON_SIZE.xxl} />
                 </div>
                 <div className="flex-1">
@@ -311,7 +311,7 @@ export default function Landing() {
               },
             ].map((item) => (
               <li key={item.step} className="flex gap-4">
-                <span className="flex-shrink-0 w-8 h-8 bg-slate-900 text-white rounded-full flex items-center justify-center text-sm font-bold">
+                <span className="flex-shrink-0 size-8 bg-slate-900 text-white rounded-full flex items-center justify-center text-sm font-bold">
                   {item.step}
                 </span>
                 <div>
