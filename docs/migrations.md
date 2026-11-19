@@ -58,7 +58,7 @@ CI の `migrations-lint` ジョブは、PostgreSQL マイグレーション専�
 手元では次のコマンドで同じ検査を実行できる。版数は `.github/workflows/ci.yml` の `SQUAWK_VERSION` と同じで、Renovate が両方を 1 本の PR で更新する。
 
 ```bash
-bunx squawk-cli@2.72.0 --no-error-on-unmatched-pattern db/migrations/*.sql </dev/null
+bunx squawk-cli@2.73.0 --no-error-on-unmatched-pattern db/migrations/*.sql </dev/null
 ```
 
 警告が出たら、次のように SQL を書き換える。
