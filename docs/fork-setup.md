@@ -17,15 +17,15 @@
 
 ### アプリケーション値 (必須)
 
-| 名前                       | 用途                                                                      | 例                                             |
-| -------------------------- | ------------------------------------------------------------------------- | ---------------------------------------------- |
-| `CORS_ORIGIN`              | バックエンド CORS 許可オリジン (カンマ区切り可)                           | `https://example.com,https://my-app.pages.dev` |
-| `STRIPE_PRO_PRICE_ID`      | Stripe Pro プラン価格 ID                                                  | `price_xxxxxxxxxxxx`                           |
-| `MAIL_FROM`                | 認証メールの送信元                                                        | `App <noreply@example.com>`                    |
-| `CONTACT_FROM`             | お問い合わせメールの送信元                                                | `App <noreply@example.com>`                    |
-| `VITE_COMPANY_NAME`        | 特商法表記の事業者名。未設定だと `deploy-frontend` が失敗する             | `株式会社サンプル`                             |
-| `VITE_REPRESENTATIVE_NAME` | 特商法表記の代表者名。未設定だと `deploy-frontend` が失敗する             | `山田 太郎`                                    |
-| `VITE_CONTACT_EMAIL`       | 特商法表記の連絡先メールアドレス。未設定だと `deploy-frontend` が失敗する | `contact@example.jp`                           |
+| 名前                       | 用途                                                                                  | 例                                             |
+| -------------------------- | ------------------------------------------------------------------------------------- | ---------------------------------------------- |
+| `CORS_ORIGIN`              | バックエンド CORS 許可オリジン (カンマ区切り可)                                       | `https://example.com,https://my-app.pages.dev` |
+| `STRIPE_PRO_PRICE_ID`      | Stripe Pro プラン価格 ID                                                              | `price_xxxxxxxxxxxx`                           |
+| `MAIL_FROM`                | 認証メールの送信元                                                                    | `App <noreply@example.com>`                    |
+| `CONTACT_FROM`             | お問い合わせメールの送信元                                                            | `App <noreply@example.com>`                    |
+| `VITE_COMPANY_NAME`        | 特商法表記の事業者名。未設定だと Deploy が Backend のデプロイ前に失敗する             | `株式会社サンプル`                             |
+| `VITE_REPRESENTATIVE_NAME` | 特商法表記の代表者名。未設定だと Deploy が Backend のデプロイ前に失敗する             | `山田 太郎`                                    |
+| `VITE_CONTACT_EMAIL`       | 特商法表記の連絡先メールアドレス。未設定だと Deploy が Backend のデプロイ前に失敗する | `contact@example.jp`                           |
 
 `CORS_ORIGIN` の各要素は、Cloudflare Pages で配信するフロントエンドのオリジンに限る。
 デプロイ後の smoke-test が、各要素の `/` を取得して CSP の `connect-src` を検査するためである。
