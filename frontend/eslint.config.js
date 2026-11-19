@@ -40,10 +40,11 @@ export default tseslint.config(
             'VITE_API_URL を直接参照せず、src/lib/api-base-url.ts の API_BASE_URL を利用してください。',
         },
         // アイコンサイズの数値の直書きを止める（Issue #107、PR #134 の再発防止）。
-        // size={16} と size="16" の両方を対象にし、size="sm" のような名前の指定は許す。
+        // size={16}・size={'16'}・size="16" を対象にし、size="sm" のような名前の指定は許す。
+        // 波括弧内は raw で照合し、引用符で始まる文字列リテラルも拾う。
         {
           selector:
-            "JSXAttribute[name.name='size'] > JSXExpressionContainer > Literal[raw=/^[0-9.]/]",
+            "JSXAttribute[name.name='size'] > JSXExpressionContainer > Literal[raw=/^['\"]?[0-9.]/]",
           message:
             'size に数値を直接書かず、src/lib/icon-size.ts の ICON_SIZE を利用してください。',
         },
