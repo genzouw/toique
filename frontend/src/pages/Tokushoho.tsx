@@ -8,6 +8,10 @@ import SEOMetadata from '../components/SEOMetadata';
  *
  * 住所・電話番号は特定商取引法施行規則の改正（令和5年）により、
  * 消費者からの請求があった場合に遅滞なく開示する方式を採用。
+ *
+ * VITE_* が未設定のときのフォールバック値（'Your Company Name' など）は、
+ * .github/workflows/deploy.yml の Smoke test が本番の JS に残っていないかを検査している。
+ * フォールバック値を変えるときは、そちらの検査対象も揃えること。
  */
 export default function Tokushoho() {
   return (

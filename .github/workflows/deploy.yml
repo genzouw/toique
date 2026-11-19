@@ -84,6 +84,28 @@ jobs:
             exit 1
           fi
 
+      # 特商法表記の事業者情報が未設定のままビルドすると、placeholder がそのまま本番に公開される。
+      # ビルドは成功してしまうため、ビルド前に fail fast する。
+      # 値を使うのは deploy-frontend のビルドだが、そこで止めると Backend だけが新しい版になり、
+      # Frontend が古い版のまま止まる (#1097)。そのため Backend のデプロイより前のここで検査する。
+      - name: Validate required Tokushoho variables
+        env:
+          VITE_COMPANY_NAME: ${{ vars.VITE_COMPANY_NAME }}
+          VITE_REPRESENTATIVE_NAME: ${{ vars.VITE_REPRESENTATIVE_NAME }}
+          VITE_CONTACT_EMAIL: ${{ vars.VITE_CONTACT_EMAIL }}
+        run: |
+          missing=0
+          for v in VITE_COMPANY_NAME VITE_REPRESENTATIVE_NAME VITE_CONTACT_EMAIL; do
+            value="${!v}"
+            if [ -z "${value//[[:space:]]/}" ]; then
+              echo "::error::Repository variable '$v' is not set. Define it in Settings → Secrets and variables → Actions → Variables before running this workflow."
+              missing=1
+            fi
+          done
+          if [ "$missing" -ne 0 ]; then
+            exit 1
+          fi
+
       - uses: google-github-actions/auth@7c6bc770dae815cd3e89ee6cdf493a5fab2cc093 # v3.0.0
         with:
           workload_identity_provider: projects/${{ vars.GCP_PROJECT_NUMBER }}/locations/global/workloadIdentityPools/github-pool/providers/github-provider
@@ -320,25 +342,8 @@ jobs:
           if [ "$missing" -ne 0 ]; then
             exit 1
           fi
-      # 特商法表記の事業者情報が未設定のままビルドすると、placeholder がそのまま本番に公開される。
-      # ビルドは成功してしまうため、ビルド前に fail fast する。
-      - name: Validate required Tokushoho variables
-        env:
-          VITE_COMPANY_NAME: ${{ vars.VITE_COMPANY_NAME }}
-          VITE_REPRESENTATIVE_NAME: ${{ vars.VITE_REPRESENTATIVE_NAME }}
-          VITE_CONTACT_EMAIL: ${{ vars.VITE_CONTACT_EMAIL }}
-        run: |
-          missing=0
-          for v in VITE_COMPANY_NAME VITE_REPRESENTATIVE_NAME VITE_CONTACT_EMAIL; do
-            value="${!v}"
-            if [ -z "${value//[[:space:]]/}" ]; then
-              echo "::error::Repository variable '$v' is not set. Define it in Settings → Secrets and variables → Actions → Variables before running this workflow."
-              missing=1
-            fi
-          done
-          if [ "$missing" -ne 0 ]; then
-            exit 1
-          fi
+      # 特商法表記の変数 (VITE_COMPANY_NAME など) の検査は、deploy-backend の
+      # 「Validate required Tokushoho variables」で Backend のデプロイ前に行う (#1097)。
       # zizmor cache-poisoning は setup-bun のデフォルトキャッシュを検知するが、本ワークフローは
       # workflow_run + branches: [main] でメインブランチ限定起動のため PR 由来のキャッシュ毒は発生しない。
       - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0  # zizmor: ignore[cache-poisoning]
@@ -479,4 +484,37 @@ jobs:
               failed=1
             fi
           done <<< "$ORIGINS"
+          exit "$failed"
+
+      # 特商法表記 (frontend/src/pages/Tokushoho.tsx) のプレースホルダが本番の JS に残っていないことを確かめる。
+      # 変数を設定してビルドするとプレースホルダは畳み込まれて消え、未設定のときだけエントリーの JS に残る。
+      # Frontend のデプロイが止まり古い版が公開され続けている状態 (#1097) も、ここで検出できる。
+      # 検査する文字列は Tokushoho.tsx のフォールバック値と揃える。
+      - name: Frontend bundle has no Tokushoho placeholders
+        run: |
+          if ! html="$(curl -fsS --max-time 30 --retry 5 --retry-delay 10 --retry-all-errors "${SITE_ORIGIN}/")"; then
+            echo "::error::Failed to fetch ${SITE_ORIGIN}/"
+            exit 1
+          fi
+          scripts="$(printf '%s\n' "$html" | grep -oE '<script[^>]* src="/[^"]+\.js"' | sed -E 's/.* src="([^"]+)"/\1/' || true)"
+          # スクリプトが 1 件も見つからないと、検査をせずに成功してしまうため止める。
+          if [ -z "$scripts" ]; then
+            echo "::error::No script found in ${SITE_ORIGIN}/"
+            exit 1
+          fi
+          failed=0
+          while IFS= read -r path; do
+            if ! js="$(curl -fsS --max-time 30 --retry 3 --retry-all-errors "${SITE_ORIGIN}${path}")"; then
+              echo "::error::Failed to fetch ${SITE_ORIGIN}${path}"
+              failed=1
+              continue
+            fi
+            for placeholder in 'Your Company Name' 'Representative Name' 'contact@example.com'; do
+              if grep -qF "$placeholder" <<< "$js"; then
+                echo "::error::${SITE_ORIGIN}${path} contains the placeholder '${placeholder}'"
+                failed=1
+              fi
+            done
+            echo "Checked: ${path}"
+          done <<< "$scripts"
           exit "$failed"
