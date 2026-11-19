@@ -39,6 +39,19 @@ export default tseslint.config(
           message:
             'VITE_API_URL を直接参照せず、src/lib/api-base-url.ts の API_BASE_URL を利用してください。',
         },
+        // アイコンサイズの数値の直書きを止める（Issue #107、PR #134 の再発防止）。
+        // size={16} と size="16" の両方を対象にし、size="sm" のような名前の指定は許す。
+        {
+          selector:
+            "JSXAttribute[name.name='size'] > JSXExpressionContainer > Literal[raw=/^[0-9]/]",
+          message:
+            'size に数値を直接書かず、src/lib/icon-size.ts の ICON_SIZE を利用してください。',
+        },
+        {
+          selector: "JSXAttribute[name.name='size'] > Literal[value=/^[0-9]/]",
+          message:
+            'size に数値を直接書かず、src/lib/icon-size.ts の ICON_SIZE を利用してください。',
+        },
       ],
     },
   },
