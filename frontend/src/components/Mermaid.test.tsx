@@ -49,7 +49,7 @@ describe('Mermaid', () => {
       expect(bindFunctionsSpy).toHaveBeenCalledTimes(1);
     });
 
-    const arg = bindFunctionsSpy.mock.calls[0][0];
+    const arg = bindFunctionsSpy.mock.calls[0]![0];
     expect(arg).toBeInstanceOf(Element);
     expect(arg.querySelector('svg')).not.toBeNull();
   });

@@ -60,29 +60,41 @@ export default function FormSchemaBuilder({
   }
 
   function removeStep(idx: number) {
-    if (steps[idx].type === 'end') return;
+    if (steps[idx]?.type === 'end') return;
     update(steps.filter((_, i) => i !== idx));
   }
 
   function moveStep(idx: number, dir: -1 | 1) {
     const target = idx + dir;
-    if (target < 0 || target >= steps.length) return;
-    if (steps[idx].type === 'end' || steps[target].type === 'end') return;
+    const current = steps[idx];
+    const other = steps[target];
+    if (!current || !other) return;
+    if (current.type === 'end' || other.type === 'end') return;
     const newSteps = [...steps];
-    [newSteps[idx], newSteps[target]] = [newSteps[target], newSteps[idx]];
+    newSteps[idx] = other;
+    newSteps[target] = current;
     update(newSteps);
   }
 
+  /** idx 番目のステップを fn の戻り値に差し替える。該当するステップが無ければ何もしない */
+  function replaceStep(idx: number, fn: (step: StepDef) => StepDef) {
+    const current = steps[idx];
+    if (!current) return;
+    update(steps.map((s, i) => (i === idx ? fn(current) : s)));
+  }
+
   function updateStep(idx: number, patch: Partial<StepDef>) {
-    const newSteps = steps.map((s, i) => (i === idx ? { ...s, ...patch } : s));
-    // type変更時にidとfieldを同期
-    if (patch.type === 'choice' && !steps[idx].choices.length) {
-      newSteps[idx].choices = [{ label: '', value: '' }];
-    }
-    if (patch.id !== undefined) {
-      newSteps[idx].field = patch.id;
-    }
-    update(newSteps);
+    replaceStep(idx, (current) => {
+      const next = { ...current, ...patch };
+      // type変更時にidとfieldを同期
+      if (patch.type === 'choice' && !current.choices.length) {
+        next.choices = [{ label: '', value: '' }];
+      }
+      if (patch.id !== undefined) {
+        next.field = patch.id;
+      }
+      return next;
+    });
   }
 
   function updateChoice(
@@ -90,33 +102,31 @@ export default function FormSchemaBuilder({
     choiceIdx: number,
     patch: Partial<Choice>,
   ) {
-    const newSteps = [...steps];
-    const step = { ...newSteps[stepIdx] };
-    step.choices = step.choices.map((c, i) =>
-      i === choiceIdx ? { ...c, ...patch } : c,
-    );
-    // labelとvalueを同期
-    if (patch.label !== undefined && !step.choices[choiceIdx].value) {
-      step.choices[choiceIdx].value = patch.label;
-    }
-    newSteps[stepIdx] = step;
-    update(newSteps);
+    replaceStep(stepIdx, (step) => {
+      const choices = step.choices.map((c, i) =>
+        i === choiceIdx ? { ...c, ...patch } : c,
+      );
+      // labelとvalueを同期
+      const target = choices[choiceIdx];
+      if (patch.label !== undefined && target && !target.value) {
+        target.value = patch.label;
+      }
+      return { ...step, choices };
+    });
   }
 
   function addChoice(stepIdx: number) {
-    const newSteps = [...steps];
-    const step = { ...newSteps[stepIdx] };
-    step.choices = [...step.choices, { label: '', value: '' }];
-    newSteps[stepIdx] = step;
-    update(newSteps);
+    replaceStep(stepIdx, (step) => ({
+      ...step,
+      choices: [...step.choices, { label: '', value: '' }],
+    }));
   }
 
   function removeChoice(stepIdx: number, choiceIdx: number) {
-    const newSteps = [...steps];
-    const step = { ...newSteps[stepIdx] };
-    step.choices = step.choices.filter((_, i) => i !== choiceIdx);
-    newSteps[stepIdx] = step;
-    update(newSteps);
+    replaceStep(stepIdx, (step) => ({
+      ...step,
+      choices: step.choices.filter((_, i) => i !== choiceIdx),
+    }));
   }
 
   return (
@@ -335,8 +345,8 @@ function parseSchema(schema: FormSchema): StepDef[] {
       const choices: Array<Record<string, string>> =
         (s.choices as Array<Record<string, string>>) || [];
       def.choices = choices.map((c: Record<string, string>) => ({
-        label: c.label,
-        value: c.value,
+        label: c.label ?? '',
+        value: c.value ?? '',
       }));
       // choice の next は全て同じ先を想定 (ビジュアルモードでは直列)
       current = choices[0]?.next ?? null;
@@ -366,9 +376,8 @@ function parseSchema(schema: FormSchema): StepDef[] {
 function buildSchema(steps: StepDef[]): FormSchema {
   const result: Record<string, unknown> = {};
 
-  for (let i = 0; i < steps.length; i++) {
-    const s = steps[i];
-    const nextId = i + 1 < steps.length ? steps[i + 1].id : undefined;
+  for (const [i, s] of steps.entries()) {
+    const nextId = steps[i + 1]?.id;
 
     if (s.type === 'end') {
       result[s.id] = { type: 'end', thanks: s.thanks };

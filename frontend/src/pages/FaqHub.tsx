@@ -161,7 +161,7 @@ function CategoryGrid() {
                 ほか {faqs.length - preview.length} 件
               </p>
             )}
-            {faqs.length > 0 && (
+            {faqs[0] && (
               <Link
                 to={`/faq/${faqs[0].slug}`}
                 className="mt-4 inline-flex items-center gap-1 text-sm font-medium text-slate-900 hover:text-slate-700"

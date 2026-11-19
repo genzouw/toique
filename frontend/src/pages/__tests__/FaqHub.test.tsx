@@ -27,7 +27,7 @@ describe('FaqHub search', () => {
     const faq = getFaq('data-where-to-check')!;
     // 質問文の末尾と回答冒頭を連結したクエリ。各文字列を個別に見れば一致しないが、
     // 事前計算した検索対象を単純に結合して検索していた場合は誤って一致してしまう。
-    const crossBoundaryQuery = `${faq.question.slice(-2)} ${faq.answerParagraphs[0].slice(0, 2)}`;
+    const crossBoundaryQuery = `${faq.question.slice(-2)} ${faq.answerParagraphs[0]!.slice(0, 2)}`;
 
     render(
       <MemoryRouter>
