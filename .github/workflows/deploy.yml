@@ -503,14 +503,16 @@ jobs:
             exit 1
           fi
           failed=0
+          # エントリーの JS は数百 KB あるため、変数や here-string に載せず一時ファイル経由で grep に渡す。
+          js_file="$(mktemp)"
           while IFS= read -r path; do
-            if ! js="$(curl -fsS --max-time 30 --retry 3 --retry-all-errors "${SITE_ORIGIN}${path}")"; then
+            if ! curl -fsS --max-time 30 --retry 3 --retry-all-errors -o "$js_file" "${SITE_ORIGIN}${path}"; then
               echo "::error::Failed to fetch ${SITE_ORIGIN}${path}"
               failed=1
               continue
             fi
             for placeholder in 'Your Company Name' 'Representative Name' 'contact@example.com'; do
-              if grep -qF "$placeholder" <<< "$js"; then
+              if grep -qF -- "$placeholder" "$js_file"; then
                 echo "::error::${SITE_ORIGIN}${path} contains the placeholder '${placeholder}'"
                 failed=1
               fi
