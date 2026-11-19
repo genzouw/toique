@@ -282,8 +282,12 @@ class MyStack extends TerraformStack {
       'roles/secretmanager.secretAccessor', // Secret Manager から secret 取得
     ] as const;
     deployerRoles.forEach((role) => {
-      // role 名にスラッシュが含まれるのでリソース ID には末尾部分のみ使う
-      const safeId = role.split('/')[1].replace(/\./g, '-');
+      // role 名にスラッシュが含まれるのでリソース ID には末尾部分のみ使う。
+      // この ID は Terraform の論理 ID になり、変わるとリソースが作り直されるため、
+      // 想定外の形式は別の ID を作らずに synth を止める
+      const roleName = role.split('/')[1];
+      if (!roleName) throw new Error(`unexpected role format: ${role}`);
+      const safeId = roleName.replace(/\./g, '-');
       new ProjectIamMember(this, `github-deployer-${safeId}`, {
         project: projectId,
         role,
