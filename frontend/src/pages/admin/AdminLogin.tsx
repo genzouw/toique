@@ -43,7 +43,7 @@ export default function AdminLogin() {
       <div className="max-w-md w-full space-y-8 bg-white p-8 rounded-xl shadow-sm border border-slate-200">
         <div className="text-center">
           <div
-            className="mx-auto w-12 h-12 bg-slate-900 rounded-full flex items-center justify-center"
+            className="mx-auto size-12 bg-slate-900 rounded-full flex items-center justify-center"
             aria-hidden="true"
           >
             <Shield

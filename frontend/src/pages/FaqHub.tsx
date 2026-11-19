@@ -47,7 +47,7 @@ export default function FaqHub() {
       {/* Title */}
       <section className="py-16 px-6">
         <div className="max-w-3xl mx-auto text-center">
-          <div className="inline-flex items-center justify-center w-12 h-12 bg-slate-100 text-slate-700 rounded-lg mb-4">
+          <div className="inline-flex items-center justify-center size-12 bg-slate-100 text-slate-700 rounded-lg mb-4">
             <HelpCircle size={ICON_SIZE.xxl} />
           </div>
           <h1 className="text-3xl sm:text-4xl font-bold text-slate-900">
