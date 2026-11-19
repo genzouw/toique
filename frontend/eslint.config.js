@@ -43,12 +43,12 @@ export default tseslint.config(
         // size={16} と size="16" の両方を対象にし、size="sm" のような名前の指定は許す。
         {
           selector:
-            "JSXAttribute[name.name='size'] > JSXExpressionContainer > Literal[raw=/^[0-9]/]",
+            "JSXAttribute[name.name='size'] > JSXExpressionContainer > Literal[raw=/^[0-9.]/]",
           message:
             'size に数値を直接書かず、src/lib/icon-size.ts の ICON_SIZE を利用してください。',
         },
         {
-          selector: "JSXAttribute[name.name='size'] > Literal[value=/^[0-9]/]",
+          selector: "JSXAttribute[name.name='size'] > Literal[value=/^[0-9.]/]",
           message:
             'size に数値を直接書かず、src/lib/icon-size.ts の ICON_SIZE を利用してください。',
         },
