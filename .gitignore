@@ -120,3 +120,7 @@ commit_msg*.md
 # Python のバイトコードキャッシュ
 __pycache__/
 *.pyc
+
+# Stryker (mutation testing)
+backend/reports/
+backend/.stryker-tmp/
