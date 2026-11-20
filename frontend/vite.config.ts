@@ -74,6 +74,11 @@ const plugins: Plugin[] = [
   }) as unknown as Plugin,
 ];
 
+// vite-plugin-sitemap 0.11 は vitest 終了時の closeBundle でも dist/ へ書き込み、
+// dist/ が無い環境で ENOENT になる。sitemap・robots.txt はビルド時だけ生成する。
+const sitemapPlugin = plugins.pop() as Plugin;
+plugins.push({ ...sitemapPlugin, apply: 'build' });
+
 export default defineConfig({
   plugins,
   server: {
