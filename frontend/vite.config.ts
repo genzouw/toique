@@ -24,18 +24,11 @@ const mode = cliModeEq ?? cliMode ?? process.env.NODE_ENV ?? 'development';
 const env = loadEnv(mode, process.cwd(), 'VITE_');
 const siteOrigin = env.VITE_SITE_ORIGIN ?? SITE_ORIGIN_FALLBACK;
 
-const plugins: Plugin[] = [
-  ...([react()].flat() as Plugin[]),
-  ...([tailwindcss()].flat() as Plugin[]),
-  // index.html の __SITE_ORIGIN__ プレースホルダを解決済み値で置換する。
-  // Vite 標準の %VITE_*% 展開は .env が存在しないと警告を出すため、独自記号で回避する。
-  {
-    name: 'inject-site-origin',
-    transformIndexHtml(html) {
-      return html.replaceAll('__SITE_ORIGIN__', siteOrigin);
-    },
-  },
-  Sitemap({
+// vite-plugin-sitemap 0.11 は vitest 終了時の closeBundle でも dist/ へ書き込み、
+// dist/ が無い環境で ENOENT になる。sitemap・robots.txt はビルド時だけ生成する。
+// 配列の位置に依存しないよう、専用の変数で apply を付ける。
+const sitemapPlugin: Plugin = {
+  ...Sitemap({
     hostname: siteOrigin,
     dynamicRoutes: [
       '/help',
@@ -71,7 +64,22 @@ const plugins: Plugin[] = [
         ],
       },
     ],
-  }) as unknown as Plugin,
+  }),
+  apply: 'build',
+};
+
+const plugins: Plugin[] = [
+  ...([react()].flat() as Plugin[]),
+  ...([tailwindcss()].flat() as Plugin[]),
+  // index.html の __SITE_ORIGIN__ プレースホルダを解決済み値で置換する。
+  // Vite 標準の %VITE_*% 展開は .env が存在しないと警告を出すため、独自記号で回避する。
+  {
+    name: 'inject-site-origin',
+    transformIndexHtml(html) {
+      return html.replaceAll('__SITE_ORIGIN__', siteOrigin);
+    },
+  },
+  sitemapPlugin,
 ];
 
 export default defineConfig({
