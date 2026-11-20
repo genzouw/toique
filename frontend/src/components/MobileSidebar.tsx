@@ -54,9 +54,12 @@ export function SidebarOverlay({
 }) {
   if (!isOpen) return null;
   return (
+    // 背景オーバーレイは閉じる操作の補助にすぎない。同じ操作は SidebarPanel の閉じるボタンでできるため、
+    // キーボード操作と支援技術への公開は不要として aria-hidden を付ける（jsx-a11y はこれで対象外にする）。
     <div
       className="fixed inset-0 bg-black/50 z-40 md:hidden"
       onClick={onClose}
+      aria-hidden="true"
     />
   );
 }
