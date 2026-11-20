@@ -28,7 +28,7 @@ const siteOrigin = env.VITE_SITE_ORIGIN ?? SITE_ORIGIN_FALLBACK;
 // dist/ が無い環境で ENOENT になる。sitemap・robots.txt はビルド時だけ生成する。
 // 配列の位置に依存しないよう、専用の変数で apply を付ける。
 const sitemapPlugin: Plugin = {
-  ...(Sitemap({
+  ...Sitemap({
     hostname: siteOrigin,
     dynamicRoutes: [
       '/help',
@@ -64,7 +64,7 @@ const sitemapPlugin: Plugin = {
         ],
       },
     ],
-  }) as unknown as Plugin),
+  }),
   apply: 'build',
 };
 
