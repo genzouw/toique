@@ -4,6 +4,7 @@ import reactHooks from 'eslint-plugin-react-hooks';
 import reactRefresh from 'eslint-plugin-react-refresh';
 import playwright from 'eslint-plugin-playwright';
 import vitest from '@vitest/eslint-plugin';
+import jsxA11y from 'eslint-plugin-jsx-a11y';
 
 export default tseslint.config(
   {
@@ -55,6 +56,12 @@ export default tseslint.config(
         },
       ],
     },
+  },
+  {
+    // 公開経路以外も含め、JSX から判断できるアクセシビリティ違反を検出する（Issue #1103）。
+    // 独立したオブジェクトにする。tseslint の設定へ展開すると languageOptions が上書きされる。
+    files: ['src/**/*.tsx'],
+    ...jsxA11y.flatConfigs.recommended,
   },
   {
     files: ['src/lib/api-base-url.ts'],
