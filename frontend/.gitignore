@@ -8,3 +8,6 @@ test-results/
 
 # wrangler pages dev のキャッシュ
 .wrangler/
+
+# Lighthouse CI の出力
+.lighthouseci/
