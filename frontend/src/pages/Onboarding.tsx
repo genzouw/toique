@@ -17,7 +17,7 @@ export default function Onboarding() {
     setError(null);
     try {
       await api.createTenant(tenantName);
-      navigate('/dashboard', { replace: true });
+      void navigate('/dashboard', { replace: true });
     } catch (e) {
       setError((e as Error).message);
       setSubmitting(false);

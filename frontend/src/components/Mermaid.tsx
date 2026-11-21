@@ -128,7 +128,7 @@ export default function Mermaid({ chart, interactive = false }: MermaidProps) {
         }
       }
     };
-    renderChart();
+    void renderChart();
     return () => {
       ignore = true;
     };

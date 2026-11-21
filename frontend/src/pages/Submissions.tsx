@@ -43,7 +43,7 @@ export default function Submissions() {
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
-    refresh();
+    void refresh();
   }, [refresh]);
 
   // ⚡ Bolt: formsById の構築と行要素の生成を useMemo でラップし、

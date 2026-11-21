@@ -38,7 +38,7 @@ export default function Dashboard() {
   }, [usageData]);
 
   useEffect(() => {
-    (async () => {
+    void (async () => {
       try {
         const [m, u] = await Promise.all([api.countMessages(), api.getUsage()]);
         setChannels(u.usage.lineChannels.current);

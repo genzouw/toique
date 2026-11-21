@@ -27,7 +27,7 @@ export default function Login() {
       setSubmitting(false);
       return;
     }
-    navigate('/dashboard', { replace: true });
+    void navigate('/dashboard', { replace: true });
   }
 
   return (

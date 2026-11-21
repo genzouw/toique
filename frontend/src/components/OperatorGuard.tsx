@@ -25,7 +25,7 @@ export default function OperatorGuard({
       return;
     }
 
-    (async () => {
+    void (async () => {
       try {
         await api.getAdminMe();
         setState('operator');

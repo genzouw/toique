@@ -60,7 +60,7 @@ export default function Forms() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    (async () => {
+    void (async () => {
       try {
         setItems(await api.listForms());
       } catch (e) {

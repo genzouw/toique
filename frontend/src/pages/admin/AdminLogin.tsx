@@ -29,7 +29,7 @@ export default function AdminLogin() {
 
       // Verify credentials
       await api.getAdminMe();
-      navigate('/admin', { replace: true });
+      void navigate('/admin', { replace: true });
     } catch {
       localStorage.removeItem('adminAuth');
       setError('IDまたはパスワードが正しくありません。');

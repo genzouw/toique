@@ -30,7 +30,7 @@ export default function AuthGuard({
       setLoading(false);
       return;
     }
-    (async () => {
+    void (async () => {
       try {
         const s = await api.getOnboardingStatus();
         setStatus(s);

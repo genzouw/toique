@@ -64,7 +64,7 @@ export default function Layout() {
 
   async function handleSignOut() {
     await signOut();
-    navigate('/login', { replace: true });
+    void navigate('/login', { replace: true });
   }
 
   const showBanner = bannerLevel !== 'none' && !dismissed;
