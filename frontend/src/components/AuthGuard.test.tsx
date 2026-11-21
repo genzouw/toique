@@ -1,9 +1,10 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import { MemoryRouter } from 'react-router';
 import { vi, describe, it, expect, beforeEach } from 'vitest';
 import AuthGuard from './AuthGuard';
 import { useSession } from '../lib/auth-client';
-import { mockPendingSession } from '../test/auth-mocks';
+import { api } from '../lib/api';
+import { mockAuthedSession, mockPendingSession } from '../test/auth-mocks';
 
 vi.mock('../lib/auth-client', () => ({
   useSession: vi.fn(),
@@ -37,6 +38,26 @@ describe('AuthGuard', () => {
     );
 
     expect(screen.getByText('読み込み中…')).toBeInTheDocument();
+    expect(screen.queryByTestId('children')).not.toBeInTheDocument();
+  });
+
+  it('shows an error instead of redirecting to /onboarding when fetching onboarding status fails', async () => {
+    vi.mocked(useSession).mockReturnValue(mockAuthedSession());
+    vi.mocked(api.getOnboardingStatus).mockRejectedValue(new Error('network'));
+
+    render(
+      <MemoryRouter initialEntries={['/']}>
+        <AuthGuard>
+          <ChildrenContent />
+        </AuthGuard>
+      </MemoryRouter>,
+    );
+
+    await waitFor(() =>
+      expect(screen.getByRole('alert')).toHaveTextContent(
+        '登録状況の取得に失敗しました',
+      ),
+    );
     expect(screen.queryByTestId('children')).not.toBeInTheDocument();
   });
 });

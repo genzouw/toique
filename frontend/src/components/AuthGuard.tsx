@@ -17,6 +17,7 @@ export default function AuthGuard({
 }: Props) {
   const { data: session, isPending } = useSession();
   const [status, setStatus] = useState<OnboardingStatus | null>(null);
+  const [fetchFailed, setFetchFailed] = useState(false);
   const [loading, setLoading] = useState(
     requireTenant || redirectIfTenantExists,
   );
@@ -34,6 +35,10 @@ export default function AuthGuard({
       try {
         const s = await api.getOnboardingStatus();
         setStatus(s);
+        setFetchFailed(false);
+      } catch {
+        // 取得失敗を未登録扱いにして /onboarding へ飛ばさない
+        setFetchFailed(true);
       } finally {
         setLoading(false);
       }
@@ -50,6 +55,17 @@ export default function AuthGuard({
 
   if (!session?.user) {
     return <Navigate to="/login" replace state={{ from: location }} />;
+  }
+
+  if (fetchFailed) {
+    return (
+      <div
+        role="alert"
+        className="h-full flex items-center justify-center text-red-600 text-sm"
+      >
+        登録状況の取得に失敗しました。時間をおいて再読み込みしてください。
+      </div>
+    );
   }
 
   if (redirectIfTenantExists && status?.tenant) {
