@@ -133,7 +133,7 @@ export default function FormEdit() {
   const triggerInputId = useId();
 
   useEffect(() => {
-    (async () => {
+    void (async () => {
       try {
         const [chs, f] = await Promise.all([
           api.listChannels(),
@@ -256,7 +256,7 @@ export default function FormEdit() {
           triggerKeyword: triggerKeyword.trim() || null,
           schema,
         });
-        navigate(`/forms/${created.id}`, { replace: true });
+        void navigate(`/forms/${created.id}`, { replace: true });
       } else {
         await api.updateForm(id!, {
           name,
@@ -278,7 +278,7 @@ export default function FormEdit() {
     if (!confirm('削除してよろしいですか？')) return;
     try {
       await api.deleteForm(id);
-      navigate('/forms', { replace: true });
+      void navigate('/forms', { replace: true });
     } catch (e) {
       setError((e as Error).message);
     }

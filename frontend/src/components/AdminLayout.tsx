@@ -20,7 +20,7 @@ export default function AdminLayout() {
 
   function handleSignOut() {
     localStorage.removeItem('adminAuth');
-    navigate('/admin/login', { replace: true });
+    void navigate('/admin/login', { replace: true });
   }
 
   return (

@@ -25,7 +25,7 @@ export default function Messages() {
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
-    refresh();
+    void refresh();
   }, []);
 
   // ⚡ Bolt: items.map を useMemo でラップし、error などの他 state が

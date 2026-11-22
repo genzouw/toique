@@ -32,7 +32,7 @@ export default function Signup() {
     // 確認メール送信完了の案内ページに遷移する。
     // Signup は RedirectIfAuthed 配下にあり、sign-up 成功後の session refetch で
     // 一瞬アンマウントされるため、ここで state を保持せず別ルートに飛ばす。
-    navigate('/verify-email-sent', { state: { email }, replace: true });
+    void navigate('/verify-email-sent', { state: { email }, replace: true });
   }
 
   return (

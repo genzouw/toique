@@ -78,4 +78,25 @@ export default tseslint.config(
     files: ['src/**/*.test.{ts,tsx}'],
     ...vitest.configs.recommended,
   },
+  {
+    // 型情報が必要なルールは tsconfig.app.json の include（src）に入るファイルに限る。
+    // vite.config.ts・e2e/・eslint.config.js などは対象外にする。
+    // await 漏れ・Promise の誤用を検出する（backend は Issue #1074 で導入済み、frontend は Issue #1119）。
+    files: ['src/**/*.{ts,tsx}'],
+    languageOptions: {
+      parserOptions: {
+        projectService: true,
+        tsconfigRootDir: import.meta.dirname,
+      },
+    },
+    rules: {
+      '@typescript-eslint/no-floating-promises': 'error',
+      // onSubmit={handleSubmit} のような JSX 属性への async 関数の受け渡しは検査しない。
+      '@typescript-eslint/no-misused-promises': [
+        'error',
+        { checksVoidReturn: { attributes: false } },
+      ],
+      '@typescript-eslint/await-thenable': 'error',
+    },
+  },
 );
