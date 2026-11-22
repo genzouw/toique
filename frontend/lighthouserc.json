@@ -1,0 +1,31 @@
+{
+  "ci": {
+    "collect": {
+      "startServerCommand": "bunx wrangler pages dev dist --port 4173 --ip 127.0.0.1 --compatibility-date=2026-05-15",
+      "startServerReadyPattern": "Ready on",
+      "url": [
+        "http://127.0.0.1:4173/",
+        "http://127.0.0.1:4173/login",
+        "http://127.0.0.1:4173/signup",
+        "http://127.0.0.1:4173/pricing",
+        "http://127.0.0.1:4173/help",
+        "http://127.0.0.1:4173/faq",
+        "http://127.0.0.1:4173/contact",
+        "http://127.0.0.1:4173/specified-commercial-transactions",
+        "http://127.0.0.1:4173/for/salon"
+      ],
+      "numberOfRuns": 1
+    },
+    "assert": {
+      "assertions": {
+        "is-crawlable": "error",
+        "document-title": "error",
+        "meta-description": "error",
+        "http-status-code": "error",
+        "crawlable-anchors": "error",
+        "categories:performance": ["warn", { "minScore": 0.8 }]
+      }
+    },
+    "upload": { "target": "filesystem", "outputDir": ".lighthouseci" }
+  }
+}

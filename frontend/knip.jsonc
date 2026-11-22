@@ -13,7 +13,9 @@
     "tailwindcss",
     "tw-animate-css",
     // Cloudflare Pages の wrangler は CLI 用 (デプロイ workflow から呼ぶ)
-    "wrangler"
+    "wrangler",
+    // Lighthouse CI は lighthouse.yml から CLI として呼ぶ (コード内の import が無い)
+    "@lhci/cli"
   ],
   "rules": {
     "files": "error",
