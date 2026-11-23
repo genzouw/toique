@@ -1,8 +1,10 @@
 import { Hono } from 'hono';
+import { z } from 'zod';
 import { eq } from 'drizzle-orm';
 import db from '../db.js';
 import { tenants, tenantMembers } from '../schema.js';
 import { requireAuth } from '../middleware/auth.js';
+import { jsonBody } from '../lib/validation.js';
 
 const app = new Hono();
 
@@ -38,16 +40,14 @@ app.get('/me', async (c) => {
 
 const MAX_TENANT_NAME_LENGTH = 100;
 
+const onboardingBody = z.object({
+  tenantName: z.string().trim().min(1).max(MAX_TENANT_NAME_LENGTH),
+});
+
 // テナントを作成し、呼び出し元ユーザーを admin として登録
-app.post('/', async (c) => {
+app.post('/', jsonBody(onboardingBody), async (c) => {
   const user = c.get('authUser');
-  const body = (await c.req.json()) as { tenantName?: string };
-  if (!body.tenantName || body.tenantName.trim().length === 0) {
-    return c.text('tenantName is required', 400);
-  }
-  if (body.tenantName.trim().length > MAX_TENANT_NAME_LENGTH) {
-    return c.text('tenantName is too long', 400);
-  }
+  const body = c.req.valid('json');
 
   // 既に tenant_member がある場合は 409
   const existing = await db
@@ -61,7 +61,7 @@ app.post('/', async (c) => {
 
   const [tenant] = await db
     .insert(tenants)
-    .values({ name: body.tenantName.trim() })
+    .values({ name: body.tenantName })
     .returning();
   if (!tenant) throw new Error('Tenant insert returned no row');
 

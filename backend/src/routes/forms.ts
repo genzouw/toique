@@ -1,9 +1,34 @@
 import { Hono } from 'hono';
+import { z } from 'zod';
 import { and, desc, eq } from 'drizzle-orm';
 import db from '../db.js';
 import { forms, lineChannels } from '../schema.js';
 import { checkQuota } from '../lib/quota.js';
 import { FormSchemaDef } from '../lib/forms/types.js';
+import { jsonBody } from '../lib/validation.js';
+
+// 名前・キーワードの長さの上限は、本番の既存データの最大長を確かめてから別途決める（Issue #1124）
+// name は検証だけにして、保存値は変換しない（従来どおり前後の空白を保つ）
+const FORM_STATUSES = ['draft', 'published', 'archived'] as const;
+
+const formCreateBody = z.object({
+  name: z.string().refine((s) => s.trim().length > 0),
+  lineChannelId: z.uuid(),
+  status: z.enum(FORM_STATUSES).optional(),
+  triggerKeyword: z.string().nullable().optional(),
+  // 中身は従来どおり validateSchema で検証する
+  schema: z.unknown().refine((v) => !!v, { message: 'schema is required' }),
+});
+
+const formPatchBody = z.object({
+  name: z
+    .string()
+    .refine((s) => s.trim().length > 0)
+    .optional(),
+  status: z.enum(FORM_STATUSES).optional(),
+  triggerKeyword: z.string().nullable().optional(),
+  schema: z.unknown().optional(),
+});
 
 const app = new Hono();
 
@@ -50,19 +75,9 @@ app.get('/:id', async (c) => {
   return c.json(row);
 });
 
-app.post('/', async (c) => {
+app.post('/', jsonBody(formCreateBody), async (c) => {
   const tenant = c.get('tenant');
-  const body = (await c.req.json()) as {
-    name?: string;
-    lineChannelId?: string;
-    status?: string;
-    triggerKeyword?: string | null;
-    schema?: unknown;
-  };
-
-  if (!body.name || !body.lineChannelId || !body.schema) {
-    return c.text('name, lineChannelId, schema are required', 400);
-  }
+  const body = c.req.valid('json');
 
   // line_channel がテナント配下かを確認
   const [channel] = await db
@@ -103,15 +118,10 @@ app.post('/', async (c) => {
   return c.json(created, 201);
 });
 
-app.patch('/:id', async (c) => {
+app.patch('/:id', jsonBody(formPatchBody), async (c) => {
   const tenant = c.get('tenant');
   const id = c.req.param('id');
-  const body = (await c.req.json()) as Partial<{
-    name: string;
-    status: string;
-    triggerKeyword: string | null;
-    schema: unknown;
-  }>;
+  const body = c.req.valid('json');
 
   const update: Record<string, unknown> = { updatedAt: new Date() };
   if (body.name !== undefined) update.name = body.name;
