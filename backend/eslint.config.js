@@ -43,6 +43,29 @@ export default tseslint.config(
     },
   },
   {
+    // リクエストボディは zValidator で検証してから受け取る（Issue #1124）。
+    // c.req.json() の形だけを検出する。c.req.raw.json() や c.req.text() + JSON.parse は検出できない。
+    // webhooks は署名検証のため生のボディを読む。contact 系は honeypot より前に検証が走らないよう手書きの検証を残す。
+    files: ['src/routes/**/*.ts'],
+    ignores: [
+      'src/routes/**/*.test.ts',
+      'src/routes/webhooks/**',
+      'src/routes/contact.ts',
+      'src/routes/admin/contacts.ts',
+    ],
+    rules: {
+      'no-restricted-syntax': [
+        'error',
+        {
+          selector:
+            "CallExpression[callee.property.name='json'][callee.object.property.name='req']",
+          message:
+            'リクエストボディは jsonBody() で検証し、c.req.valid("json") で受け取ってください。',
+        },
+      ],
+    },
+  },
+  {
     // .only の混入・await の無い expect・アサーション無しのテストを検出する（Issue #1086）。
     files: ['src/**/*.test.ts'],
     ...vitest.configs.recommended,

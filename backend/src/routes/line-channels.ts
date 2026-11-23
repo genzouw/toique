@@ -1,8 +1,18 @@
 import { Hono } from 'hono';
+import { z } from 'zod';
 import { and, eq } from 'drizzle-orm';
 import db from '../db.js';
 import { lineChannels } from '../schema.js';
 import { checkQuota } from '../lib/quota.js';
+import { jsonBody } from '../lib/validation.js';
+
+// channelSecret・channelAccessToken は長さを LINE 側が決めるため上限を付けない
+const lineChannelCreateBody = z.object({
+  channelId: z.string().min(1),
+  channelSecret: z.string().min(1),
+  channelAccessToken: z.string().min(1),
+  displayName: z.string().min(1),
+});
 
 const app = new Hono();
 
@@ -24,22 +34,9 @@ app.get('/', async (c) => {
   return c.json(rows);
 });
 
-app.post('/', async (c) => {
+app.post('/', jsonBody(lineChannelCreateBody), async (c) => {
   const tenant = c.get('tenant');
-  const body = (await c.req.json()) as {
-    channelId: string;
-    channelSecret: string;
-    channelAccessToken: string;
-    displayName: string;
-  };
-  if (
-    !body.channelId ||
-    !body.channelSecret ||
-    !body.channelAccessToken ||
-    !body.displayName
-  ) {
-    return c.text('Missing required fields', 400);
-  }
+  const body = c.req.valid('json');
 
   const quota = await checkQuota(tenant.id, tenant.plan, 'lineChannels', {
     unlimited: tenant.unlimited,
