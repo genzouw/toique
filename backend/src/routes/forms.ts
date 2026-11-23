@@ -8,10 +8,11 @@ import { FormSchemaDef } from '../lib/forms/types.js';
 import { jsonBody } from '../lib/validation.js';
 
 // 名前・キーワードの長さの上限は、本番の既存データの最大長を確かめてから別途決める（Issue #1124）
+// name は検証だけにして、保存値は変換しない（従来どおり前後の空白を保つ）
 const FORM_STATUSES = ['draft', 'published', 'archived'] as const;
 
 const formCreateBody = z.object({
-  name: z.string().trim().min(1),
+  name: z.string().refine((s) => s.trim().length > 0),
   lineChannelId: z.uuid(),
   status: z.enum(FORM_STATUSES).optional(),
   triggerKeyword: z.string().nullable().optional(),
@@ -20,7 +21,10 @@ const formCreateBody = z.object({
 });
 
 const formPatchBody = z.object({
-  name: z.string().trim().min(1).optional(),
+  name: z
+    .string()
+    .refine((s) => s.trim().length > 0)
+    .optional(),
   status: z.enum(FORM_STATUSES).optional(),
   triggerKeyword: z.string().nullable().optional(),
   schema: z.unknown().optional(),

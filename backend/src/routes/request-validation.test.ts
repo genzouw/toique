@@ -64,6 +64,15 @@ describe('リクエストボディの検証', () => {
     expect(res.status).toBe(400);
   });
 
+  it('PATCH /forms/:id は空白だけの name を 400 で弾く', async () => {
+    const res = await send(
+      'PATCH',
+      `/forms/${FORM_ID}`,
+      JSON.stringify({ name: '   ' }),
+    );
+    expect(res.status).toBe(400);
+  });
+
   it('PATCH /forms/:id は文字列でない triggerKeyword を 400 で弾く', async () => {
     const res = await send(
       'PATCH',
