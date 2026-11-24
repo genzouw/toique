@@ -432,9 +432,8 @@
     },
     {
       "description": [
-        "ローカルの検知フックの更新は自動マージしない。CI には .pre-commit-config.yaml でフックを実行するジョブが無く、",
-        "フックのビルド失敗や .gitleaks.toml との非互換は CI が緑でも検出されない。",
-        "マージ前に手元で pre-commit install-hooks と pre-commit run --all-files を実行して確かめる。",
+        "ローカルの検知フックの更新は自動マージしない。マージ前に CI の Verify pre-commit hooks (pre-commit.yml) が成功したことを確かめる。",
+        ".husky/pre-commit のフォールバック経路 (GITLEAKS_VERSION) は CI では確かめない。",
         "上の automerge のルールより後に置き、そちらを上書きする。"
       ],
       "matchManagers": [
