@@ -379,4 +379,4 @@ jobs:
     if: github.event.workflow_run.conclusion == 'success'
     permissions:
       contents: read
-    uses: ./.github/workflows/production-smoke.yml
+    uses: ./.github/workflows/production-smoke.yml # zizmor: ignore[self-repository]
