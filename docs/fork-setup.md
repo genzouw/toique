@@ -29,7 +29,7 @@
 
 `CORS_ORIGIN` の各要素は、Cloudflare Pages で配信するフロントエンドのオリジンに限る。
 デプロイ後の smoke-test が、各要素の `/` を取得して CSP の `connect-src` を検査するためである。
-フロントエンド以外のオリジン（CSP を返さない検証用ドメインなど）を加えると、Deploy の smoke-test が失敗する。
+フロントエンド以外のオリジン（CSP を返さない検証用ドメインなど）を加えると、Deploy の smoke-test と、3 時間おきの定期実行（`production-smoke.yml`）が失敗する。
 
 `OPERATOR_EMAILS` と `ADMIN_USERNAME` は Secrets 側で管理する (個人情報・管理 UI 識別子のため。下記の Section 2 参照)。
 
@@ -247,6 +247,6 @@ bunx cdktf deploy
 3. `.github/workflows/deploy.yml` が `workflow_run` で起動
 4. 各 deploy ジョブの先頭で preflight validation 実行 (Variables 未設定で fail fast)
 5. backend → backup → frontend の順でデプロイ
-6. smoke-test ジョブが本番の `/health`・CORS preflight・CSP の `connect-src` を検査（失敗しても本番は元に戻らない）
+6. smoke-test ジョブが本番の `/health`・CORS preflight・CSP の `connect-src` を検査（失敗しても本番は元に戻らない）。同じ検査は `production-smoke.yml` が 3 時間おきにも実行する
 
 CI 経由が使えない場合は `docs/manual-deploy.md` のローカル手動デプロイ手順を参照。
