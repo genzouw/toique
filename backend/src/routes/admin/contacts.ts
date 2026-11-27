@@ -82,7 +82,22 @@ app.patch('/:id', async (c) => {
     .update(contacts)
     .set({ status, updatedAt: new Date() })
     .where(eq(contacts.id, id))
-    .returning();
+    .returning({
+      id: contacts.id,
+      userId: contacts.userId,
+      tenantId: contacts.tenantId,
+      name: contacts.name,
+      email: contacts.email,
+      category: contacts.category,
+      subject: contacts.subject,
+      body: contacts.body,
+      url: contacts.url,
+      status: contacts.status,
+      userAgent: contacts.userAgent,
+      ipAddress: contacts.ipAddress,
+      createdAt: contacts.createdAt,
+      updatedAt: contacts.updatedAt,
+    });
   if (!updated) return c.text('Not Found', 404);
   return c.json(updated);
 });

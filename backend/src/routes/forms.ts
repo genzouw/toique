@@ -30,6 +30,20 @@ const formPatchBody = z.object({
   schema: z.unknown().optional(),
 });
 
+// GET /:id・POST・PATCH が返す列。テーブルに足した列は、ここに書くまでレスポンスに含まれない。
+const formColumns = {
+  id: forms.id,
+  tenantId: forms.tenantId,
+  lineChannelId: forms.lineChannelId,
+  name: forms.name,
+  status: forms.status,
+  triggerKeyword: forms.triggerKeyword,
+  schema: forms.schema,
+  version: forms.version,
+  createdAt: forms.createdAt,
+  updatedAt: forms.updatedAt,
+};
+
 const app = new Hono();
 
 function validateSchema(schema: unknown): string | null {
@@ -67,7 +81,7 @@ app.get('/:id', async (c) => {
   const tenant = c.get('tenant');
   const id = c.req.param('id');
   const [row] = await db
-    .select()
+    .select(formColumns)
     .from(forms)
     .where(and(eq(forms.id, id), eq(forms.tenantId, tenant.id)))
     .limit(1);
@@ -81,7 +95,7 @@ app.post('/', jsonBody(formCreateBody), async (c) => {
 
   // line_channel がテナント配下かを確認
   const [channel] = await db
-    .select()
+    .select({ id: lineChannels.id })
     .from(lineChannels)
     .where(
       and(
@@ -112,7 +126,7 @@ app.post('/', jsonBody(formCreateBody), async (c) => {
       triggerKeyword: body.triggerKeyword ?? null,
       schema: body.schema as Record<string, unknown>,
     })
-    .returning();
+    .returning(formColumns);
   if (!created) throw new Error('Form insert returned no row');
 
   return c.json(created, 201);
@@ -138,7 +152,7 @@ app.patch('/:id', jsonBody(formPatchBody), async (c) => {
     .update(forms)
     .set(update)
     .where(and(eq(forms.id, id), eq(forms.tenantId, tenant.id)))
-    .returning();
+    .returning(formColumns);
 
   if (!updated) return c.text('Not Found', 404);
   return c.json(updated);

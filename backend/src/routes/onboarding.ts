@@ -51,7 +51,7 @@ app.post('/', jsonBody(onboardingBody), async (c) => {
 
   // 既に tenant_member がある場合は 409
   const existing = await db
-    .select()
+    .select({ id: tenantMembers.id })
     .from(tenantMembers)
     .where(eq(tenantMembers.userId, user.id))
     .limit(1);
@@ -62,7 +62,7 @@ app.post('/', jsonBody(onboardingBody), async (c) => {
   const [tenant] = await db
     .insert(tenants)
     .values({ name: body.tenantName })
-    .returning();
+    .returning({ id: tenants.id, name: tenants.name, plan: tenants.plan });
   if (!tenant) throw new Error('Tenant insert returned no row');
 
   await db.insert(tenantMembers).values({

@@ -9,7 +9,15 @@ const app = new Hono();
 app.get('/', async (c) => {
   const tenant = c.get('tenant');
   const rows = await db
-    .select()
+    .select({
+      id: submissions.id,
+      tenantId: submissions.tenantId,
+      formId: submissions.formId,
+      lineUserId: submissions.lineUserId,
+      answers: submissions.answers,
+      status: submissions.status,
+      submittedAt: submissions.submittedAt,
+    })
     .from(submissions)
     .where(eq(submissions.tenantId, tenant.id))
     .orderBy(desc(submissions.submittedAt))
@@ -31,7 +39,7 @@ app.get('/export', async (c) => {
 
   // フォーム取得 (テナントスコープ)
   const [form] = await db
-    .select()
+    .select({ name: forms.name, schema: forms.schema })
     .from(forms)
     .where(and(eq(forms.id, formId), eq(forms.tenantId, tenant.id)))
     .limit(1);
@@ -77,7 +85,11 @@ app.get('/export', async (c) => {
 
   // submissions 取得
   const rows = await db
-    .select()
+    .select({
+      submittedAt: submissions.submittedAt,
+      status: submissions.status,
+      answers: submissions.answers,
+    })
     .from(submissions)
     .where(
       and(eq(submissions.formId, formId), eq(submissions.tenantId, tenant.id)),

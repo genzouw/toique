@@ -105,7 +105,7 @@ app.post('/', async (c) => {
       userAgent,
       ipAddress: ip === 'unknown' ? null : ip,
     })
-    .returning();
+    .returning({ id: contacts.id });
   if (!inserted) throw new Error('Contact insert returned no row');
 
   // テナント名解決 (通知メール用)

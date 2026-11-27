@@ -3,6 +3,22 @@ import drizzle from 'eslint-plugin-drizzle';
 import vitest from '@vitest/eslint-plugin';
 import tseslint from 'typescript-eslint';
 
+// 引数の無い select()・returning() はテーブルの全列を返す。秘匿列がレスポンスに混入しないよう、ルートでは列を明示させる（#488）。
+const implicitSelect = [
+  {
+    selector:
+      "CallExpression[callee.property.name='select'][arguments.length=0]",
+    message:
+      'select() は全列を返します。レスポンスに載せる列を select({ ... }) で明示してください。',
+  },
+  {
+    selector:
+      "CallExpression[callee.property.name='returning'][arguments.length=0]",
+    message:
+      'returning() は全列を返します。必要な列を returning({ ... }) で明示してください。',
+  },
+];
+
 export default tseslint.config(
   { ignores: ['dist/'] },
   js.configs.recommended,
@@ -62,8 +78,20 @@ export default tseslint.config(
           message:
             'リクエストボディは jsonBody() で検証し、c.req.valid("json") で受け取ってください。',
         },
+        ...implicitSelect,
       ],
     },
+  },
+  {
+    // c.req.json() の禁止から除外しているルートにも、全列取得の禁止だけは適用する（Issue #1135）。
+    // no-restricted-syntax は後ろのブロックが前の設定を置き換えるため、対象は上のブロックと重ねない。
+    files: [
+      'src/routes/webhooks/**/*.ts',
+      'src/routes/contact.ts',
+      'src/routes/admin/contacts.ts',
+    ],
+    ignores: ['src/routes/**/*.test.ts'],
+    rules: { 'no-restricted-syntax': ['error', ...implicitSelect] },
   },
   {
     // .only の混入・await の無い expect・アサーション無しのテストを検出する（Issue #1086）。
