@@ -7,6 +7,24 @@ const app = new Hono();
 
 const STATUS_VALUES = new Set(['new', 'in_review', 'done']);
 
+// GET /:id と PATCH /:id のレスポンスに載せる列をそろえる。
+const contactColumns = {
+  id: contacts.id,
+  userId: contacts.userId,
+  tenantId: contacts.tenantId,
+  name: contacts.name,
+  email: contacts.email,
+  category: contacts.category,
+  subject: contacts.subject,
+  body: contacts.body,
+  url: contacts.url,
+  status: contacts.status,
+  userAgent: contacts.userAgent,
+  ipAddress: contacts.ipAddress,
+  createdAt: contacts.createdAt,
+  updatedAt: contacts.updatedAt,
+};
+
 /**
  * GET /api/v1/admin/contacts
  * 問い合わせ一覧 (新しい順に最大 200 件)
@@ -38,23 +56,7 @@ app.get('/', async (c) => {
 app.get('/:id', async (c) => {
   const id = c.req.param('id');
   const [row] = await db
-    .select({
-      id: contacts.id,
-      userId: contacts.userId,
-      tenantId: contacts.tenantId,
-      tenantName: tenants.name,
-      name: contacts.name,
-      email: contacts.email,
-      category: contacts.category,
-      subject: contacts.subject,
-      body: contacts.body,
-      url: contacts.url,
-      status: contacts.status,
-      userAgent: contacts.userAgent,
-      ipAddress: contacts.ipAddress,
-      createdAt: contacts.createdAt,
-      updatedAt: contacts.updatedAt,
-    })
+    .select({ ...contactColumns, tenantName: tenants.name })
     .from(contacts)
     .leftJoin(tenants, eq(tenants.id, contacts.tenantId))
     .where(eq(contacts.id, id))
@@ -82,7 +84,7 @@ app.patch('/:id', async (c) => {
     .update(contacts)
     .set({ status, updatedAt: new Date() })
     .where(eq(contacts.id, id))
-    .returning();
+    .returning(contactColumns);
   if (!updated) return c.text('Not Found', 404);
   return c.json(updated);
 });
