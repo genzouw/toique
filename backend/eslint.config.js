@@ -7,13 +7,13 @@ import tseslint from 'typescript-eslint';
 const implicitSelect = [
   {
     selector:
-      "CallExpression[callee.property.name='select'][arguments.length=0]",
+      "CallExpression[arguments.length=0]:matches([callee.property.name='select'], [callee.property.value='select'])",
     message:
       'select() は全列を返します。レスポンスに載せる列を select({ ... }) で明示してください。',
   },
   {
     selector:
-      "CallExpression[callee.property.name='returning'][arguments.length=0]",
+      "CallExpression[arguments.length=0]:matches([callee.property.name='returning'], [callee.property.value='returning'])",
     message:
       'returning() は全列を返します。必要な列を returning({ ... }) で明示してください。',
   },
