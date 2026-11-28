@@ -63,3 +63,7 @@ docs/fork-setup.md:custom-cloudflare-pages-url:22
 docs/public-release-checklist.md:custom-cloudflare-pages-url:153
 docs/public-release-checklist.md:custom-cloudflare-pages-url:173
 .github/workflows/pr_conflict_notify.yml:custom-ai-traces:176
+
+# PR #1136 の途中コミットのテスト用ダミーアドレス（予約 TLD の .test で、実在の個人情報ではないことを確認済み）。
+# ファイル上は後続コミット 4b949d1 で修正済みだが、履歴スキャンには残る。
+a168732166b3c0740307fde7218a20e7a33adbb2:backend/src/routes/response-columns.test.ts:custom-pii-email:224
