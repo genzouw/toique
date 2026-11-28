@@ -221,7 +221,7 @@ describe('ルートのレスポンスに含まれる列', () => {
   it('POST /contact は ok と id を返し、PATCH /admin/contacts/:id は全項目を返す', async () => {
     const res = await send('POST', '/contact', {
       name: 'n',
-      email: 'n@example.test',
+      email: 'n@example.com',
       category: 'other',
       subject: 's',
       body: 'b',
